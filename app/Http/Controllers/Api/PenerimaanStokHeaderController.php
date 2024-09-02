@@ -38,6 +38,8 @@ use App\Http\Requests\StorePenerimaanStokHeaderRequest;
 use App\Http\Requests\UpdatePenerimaanStokHeaderRequest;
 use App\Http\Requests\DestroyPenerimaanStokHeaderRequest;
 use App\Models\Locking;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class PenerimaanStokHeaderController extends Controller
 {
@@ -163,7 +165,7 @@ class PenerimaanStokHeaderController extends Controller
     public function update(UpdatePenerimaanStokHeaderRequest $request, PenerimaanStokHeader $penerimaanStokHeader, $id): JsonResponse
     {
         // dd($request);
-       
+
 
         DB::beginTransaction();
         try {
@@ -261,6 +263,46 @@ class PenerimaanStokHeaderController extends Controller
 
             throw $th;
         }
+    }
+
+    public function persediaanDari($gudangDari, $tradoDari, $gandenganDari)
+    {
+        $kolom = null;
+        $value = 0;
+        if (!empty($gudangDari)) {
+            $kolom = "Dari Gudang";
+            $value = $gudangDari;
+        } elseif (!empty($tradoDari)) {
+            $kolom = "Dari Trado";
+            $value = $tradoDari;
+        } elseif (!empty($gandenganDari)) {
+            $kolom = "Dari Gandengan";
+            $value = $gandenganDari;
+        }
+        return [
+            "columnDari" => $kolom,
+            "valueDari" => $value
+        ];
+    }
+
+    public function persediaanKe($gudangKe, $tradoKe, $gandenganKe)
+    {
+        $kolom = null;
+        $value = 0;
+        if (!empty($gudangKe)) {
+            $kolom = "Ke Gudang";
+            $value = $gudangKe;
+        } elseif (!empty($tradoKe)) {
+            $kolom = "Ke Trado";
+            $value = $tradoKe;
+        } elseif (!empty($gandenganKe)) {
+            $kolom = "Ke Gandengan";
+            $value = $gandenganKe;
+        }
+        return [
+            "columnKe" => $kolom,
+            "valueKe" => $value
+        ];
     }
 
     public function persediaan($gudang, $trado, $gandengan)
@@ -704,7 +746,7 @@ class PenerimaanStokHeaderController extends Controller
 
                 if (!$isPGUsed) {
                     // if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                            (new MyModel())->createLockEditing($id, 'penerimaanstokheader', $useredit);
+                    (new MyModel())->createLockEditing($id, 'penerimaanstokheader', $useredit);
                     // }
 
                     $data = [
@@ -927,107 +969,1207 @@ class PenerimaanStokHeaderController extends Controller
      * @ClassName 
      * @Keterangan CETAK DATA
      */
-    public function report()
-    {
-    }
+    public function report() {}
 
     /**
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL
      */
-    public function export()
+    public function export($id)
     {
+        $penerimaanStokHeader = new PenerimaanStokHeader();
+        $penerimaanstokheaders = $penerimaanStokHeader->find($id);
+
+        $data = $penerimaanstokheaders;
+        $penerimaanStokDetail = new PenerimaanStokDetail();
+        $penerimaanstok_details = $penerimaanStokDetail->get();
+
+        $tglBukti = $penerimaanstokheaders->tglbukti;
+        $timeStamp = strtotime($tglBukti);
+        $dateTglBukti = date('d-m-Y', $timeStamp);
+        $penerimaanstokheaders->tglbukti = $dateTglBukti;
+
+        $parenttglbukti = $penerimaanstokheaders->parrenttglbukti;
+        $timeStamp = strtotime($parenttglbukti);
+        $dateparenttglbukti = date('d-m-Y', $timeStamp);
+        $penerimaanstokheaders->parrenttglbukti = $dateparenttglbukti;
+
+        switch ($penerimaanstokheaders->statusformat) {
+            case '132':
+                //PGDO
+                $spreadsheet = new Spreadsheet();
+                $sheet = $spreadsheet->getActiveSheet();
+                $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+                $sheet->setCellValue('A1', $penerimaanstokheaders->judul);
+                $sheet->setCellValue('A2', 'Laporan Pindah Gudang DO');
+                $sheet->getStyle("A1")->getFont()->setSize(11);
+                $sheet->getStyle("A2")->getFont()->setSize(11);
+                $sheet->getStyle("A1")->getFont()->setBold(true);
+                $sheet->getStyle("A2")->getFont()->setBold(true);
+                $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+                $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+                $sheet->mergeCells('A1:D1');
+                $sheet->mergeCells('A2:D2');
+                $header_start_row = 4;
+                $header_start_row_right = 4;
+                $detail_table_header_row = 8;
+                $detail_start_row = $detail_table_header_row + 1;
+                $alphabets = range('A', 'Z');
+                $header_columns = [
+                    [
+                        'label' => 'No Bukti',
+                        'index' => 'nobukti',
+                    ],
+                    [
+                        'label' => 'Tanggal',
+                        'index' => 'tglbukti',
+                    ],
+                    [
+                        'label' => 'Supplier',
+                        'index' => 'supplier',
+                    ]
+                ];
+                $header_right_columns = [
+                    [
+                        'label' => 'Dari Gudang',
+                        'index' => 'gudangdari',
+                    ],
+                    [
+                        'label' => 'Ke Gudang',
+                        'index' => 'gudangke',
+                    ]
+                ];
+                $detail_columns = [
+                    [
+                        'label' => 'NO',
+                    ],
+                    [
+                        'label' => 'NAMA BARANG',
+                        'index' => 'stok'
+                    ],
+                    [
+                        'label' => 'JUMLAH',
+                        'index' => 'qty'
+                    ],
+                    [
+                        'label' => 'KETERANGAN',
+                        'index' => 'keterangan',
+                    ]
+                ];
+                //LOOPING HEADER        
+                foreach ($header_columns as $header_column) {
+                    $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                    $sheet->setCellValue('C' . $header_start_row++, ': ' . $penerimaanstokheaders->{$header_column['index']});
+                }
+                foreach ($header_right_columns as $header_column_right) {
+                    $sheet->setCellValue('D' . $header_start_row_right, $header_column_right['label']);
+                    $sheet->setCellValue('E' . $header_start_row_right++, ': ' . $penerimaanstokheaders->{$header_column_right['index']});
+                }
+                foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                    $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                }
+                $styleArray = array(
+                    'borders' => array(
+                        'allBorders' => array(
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        ),
+                    ),
+                );
+                $style_number = [
+                    'alignment' => [
+                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                    ],
+
+                    'borders' => [
+                        'top' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'right' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'bottom' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                    ]
+                ];
+                $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->applyFromArray($styleArray);
+                // LOOPING DETAIL
+                foreach ($penerimaanstok_details as $response_index => $response_detail) {
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : 0);
+                        $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->getFont()->setBold(true);
+                        $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                    }
+                    $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                    $sheet->setCellValue("B$detail_start_row", $response_detail->stok);
+                    $sheet->setCellValue("C$detail_start_row", $response_detail->qty);
+                    $sheet->setCellValue("D$detail_start_row", $response_detail->keterangan);
+                    $sheet->getStyle("D$detail_start_row")->getAlignment()->setWrapText(true);
+                    $sheet->getColumnDimension('D')->setWidth(50);
+                    $sheet->getStyle("A$detail_start_row:D$detail_start_row")->applyFromArray($styleArray);
+                    $sheet->getStyle("C$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                }
+                $sheet->getColumnDimension('A')->setAutoSize(true);
+                $sheet->getColumnDimension('B')->setAutoSize(true);
+                $sheet->getColumnDimension('C')->setAutoSize(true);
+                $writer = new Xlsx($spreadsheet);
+                $filename = 'LAPORAN PINDAH GUDANG DO' . date('dmYHis');
+                header('Content-Type: application/vnd.ms-excel');
+                header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                header('Cache-Control: max-age=0');
+                header('Filename: ' . $filename);
+                $writer->save('php://output');
+                break;
+            case '133':
+                //POT
+                $spreadsheet = new Spreadsheet();
+                $sheet = $spreadsheet->getActiveSheet();
+                $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+                $sheet->setCellValue('A1', $penerimaanstokheaders->judul);
+                $sheet->setCellValue('A2', 'Laporan Purchase Order (PO)');
+                $sheet->getStyle("A1")->getFont()->setSize(11);
+                $sheet->getStyle("A2")->getFont()->setSize(11);
+                $sheet->getStyle("A1")->getFont()->setBold(true);
+                $sheet->getStyle("A2")->getFont()->setBold(true);
+                $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+                $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+                $sheet->mergeCells('A1:F1');
+                $sheet->mergeCells('A2:F2');
+                $header_start_row = 4;
+                $detail_table_header_row = 8;
+                $detail_start_row = $detail_table_header_row + 1;
+                $alphabets = range('A', 'Z');
+                $header_columns = [
+                    [
+                        'label' => 'No Bukti',
+                        'index' => 'nobukti',
+                    ],
+                    [
+                        'label' => 'Tanggal',
+                        'index' => 'tglbukti',
+                    ],
+                    [
+                        'label' => 'Supplier',
+                        'index' => 'supplier',
+                    ]
+                ];
+                $detail_columns = [
+                    [
+                        'label' => 'NO',
+                    ],
+                    [
+                        'label' => 'NAMA BARANG',
+                        'index' => 'stok'
+                    ],
+                    [
+                        'label' => 'JUMLAH',
+                        'index' => 'qty'
+                    ],
+                    [
+                        'label' => '@',
+                        'index' => 'harga',
+                        'format' => 'currency'
+                    ],
+                    [
+                        'label' => 'NOMINAL',
+                        'index' => 'total',
+                        'format' => 'currency'
+                    ],
+                    [
+                        'label' => 'KETERANGAN',
+                        'index' => 'keterangan',
+                    ]
+                ];
+                //LOOPING HEADER        
+                foreach ($header_columns as $header_column) {
+                    $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                    $sheet->setCellValue('C' . $header_start_row++, ': ' . $penerimaanstokheaders->{$header_column['index']});
+                }
+                foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                    $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                }
+                $styleArray = array(
+                    'borders' => array(
+                        'allBorders' => array(
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        ),
+                    ),
+                );
+                $style_number = [
+                    'alignment' => [
+                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                    ],
+
+                    'borders' => [
+                        'top' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'right' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'bottom' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                    ]
+                ];
+                $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->applyFromArray($styleArray);
+                // LOOPING DETAIL
+                $nominal = 0;
+                foreach ($penerimaanstok_details as $response_index => $response_detail) {
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : 0);
+                        $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->getFont()->setBold(true);
+                        $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                    }
+                    // $response_detail['hargas'] = number_format((float) $response_detail['harga'], '2', '.', ',');
+                    // $response_detail['totals'] = number_format((float) $response_detail['total'], '2', '.', ',');
+                    $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                    $sheet->setCellValue("B$detail_start_row", $response_detail->stok);
+                    $sheet->setCellValue("C$detail_start_row", $response_detail->qty);
+                    $sheet->setCellValue("D$detail_start_row", $response_detail->harga);
+                    $sheet->setCellValue("E$detail_start_row", $response_detail->total);
+                    $sheet->setCellValue("F$detail_start_row", $response_detail->keterangan);
+                    $sheet->getStyle("F$detail_start_row")->getAlignment()->setWrapText(true);
+                    $sheet->getColumnDimension('F')->setWidth(70);
+                    $sheet->getStyle("A$detail_start_row:F$detail_start_row")->applyFromArray($styleArray);
+                    $sheet->getStyle("D$detail_start_row:F$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $nominal += $response_detail->total;
+                    $detail_start_row++;
+                }
+
+                $total_start_row = $detail_start_row;
+                $sheet->mergeCells('A' . $total_start_row . ':D' . $total_start_row);
+                $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':D' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+
+                $sheet->setCellValue("E$total_start_row", $nominal)->getStyle("E$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+                $sheet->getStyle("E$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                $sheet->getColumnDimension('A')->setAutoSize(true);
+                $sheet->getColumnDimension('B')->setAutoSize(true);
+                $sheet->getColumnDimension('C')->setAutoSize(true);
+                $sheet->getColumnDimension('D')->setAutoSize(true);
+                $sheet->getColumnDimension('E')->setAutoSize(true);
+                $writer = new Xlsx($spreadsheet);
+                $filename = 'LAPORAN PURCHASE ORDER (PO)' . date('dmYHis');
+                header('Content-Type: application/vnd.ms-excel');
+                header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                header('Cache-Control: max-age=0');
+                header('Filename: ' . $filename);
+                $writer->save('php://output');
+                break;
+            case '134':
+                //SPB
+                $spreadsheet = new Spreadsheet();
+                $sheet = $spreadsheet->getActiveSheet();
+                $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+                $sheet->setCellValue('A1', $penerimaanstokheaders->judul);
+                $sheet->setCellValue('A2', 'Laporan Pembelian Stok (SPB)');
+                $sheet->getStyle("A1")->getFont()->setSize(11);
+                $sheet->getStyle("A2")->getFont()->setSize(11);
+                $sheet->getStyle("A1")->getFont()->setBold(true);
+                $sheet->getStyle("A2")->getFont()->setBold(true);
+                $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+                $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+                $sheet->mergeCells('A1:G1');
+                $sheet->mergeCells('A2:G2');
+                $header_start_row = 4;
+                $header_start_row_right = 4;
+                $detail_table_header_row = 8;
+                $detail_start_row = $detail_table_header_row + 1;
+                $alphabets = range('A', 'Z');
+                $header_columns = [
+                    [
+                        'label' => 'No Bukti',
+                        'index' => 'nobukti',
+                    ],
+                    [
+                        'label' => 'Tanggal',
+                        'index' => 'tglbukti',
+                    ],
+                    [
+                        'label' => 'Supplier',
+                        'index' => 'supplier',
+                    ]
+                ];
+                $header_right_columns = [
+                    [
+                        'label' => 'No PO',
+                        'index' => 'penerimaanstok_nobukti',
+                    ],
+                    [
+                        'label' => 'Tanggal PO',
+                        'index' => 'parrenttglbukti',
+                    ]
+                ];
+                $detail_columns = [
+                    [
+                        'label' => 'NO',
+                    ],
+                    [
+                        'label' => 'NAMA BARANG',
+                        'index' => 'stok'
+                    ],
+                    [
+                        'label' => 'JUMLAH',
+                        'index' => 'qty'
+                    ],
+                    [
+                        'label' => '@',
+                        'index' => 'harga',
+                        'format' => 'currency'
+                    ],
+                    [
+                        'label' => 'DISKON',
+                        'index' => 'nominaldiscount',
+                        'format' => 'currency'
+                    ],
+                    [
+                        'label' => 'TOTAL',
+                        'index' => 'total',
+                        'format' => 'currency'
+                    ],
+                    [
+                        'label' => 'KETERANGAN',
+                        'index' => 'keterangan',
+                    ]
+                ];
+                //LOOPING HEADER        
+                foreach ($header_columns as $header_column) {
+                    $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                    $sheet->setCellValue('C' . $header_start_row++, ': ' . $penerimaanstokheaders->{$header_column['index']});
+                }
+                foreach ($header_right_columns as $header_column_right) {
+                    $sheet->setCellValue('D' . $header_start_row_right, $header_column_right['label']);
+                    $sheet->setCellValue('E' . $header_start_row_right++, ': ' . $penerimaanstokheaders->{$header_column_right['index']});
+                }
+                foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                    $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                }
+                $styleArray = array(
+                    'borders' => array(
+                        'allBorders' => array(
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        ),
+                    ),
+                );
+                $style_number = [
+                    'alignment' => [
+                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                    ],
+
+                    'borders' => [
+                        'top' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'right' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'bottom' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                    ]
+                ];
+                $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->applyFromArray($styleArray);
+                // LOOPING DETAIL
+                $nominal = 0;
+                foreach ($penerimaanstok_details as $response_index => $response_detail) {
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : 0);
+                        $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->getFont()->setBold(true);
+                        $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                    }
+                    $sheet->setCellValue("B$detail_start_row", $response_detail->stok);
+                    $sheet->setCellValue("C$detail_start_row", $response_detail->qty);
+                    $sheet->setCellValue("D$detail_start_row", $response_detail->harga);
+                    $sheet->setCellValue("E$detail_start_row", $response_detail->nominaldiscount);
+                    $sheet->setCellValue("F$detail_start_row", $response_detail->total);
+                    $sheet->setCellValue("G$detail_start_row", $response_detail->keterangan);
+                    $sheet->getStyle("G$detail_start_row")->getAlignment()->setWrapText(true);
+                    $sheet->getColumnDimension('G')->setWidth(70);
+
+                    $sheet->getStyle("A$detail_start_row:G$detail_start_row")->applyFromArray($styleArray);
+                    $sheet->getStyle("D$detail_start_row:F$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+
+                    $nominal += $response_detail->total;
+                    $detail_start_row++;
+                }
+
+                $total_start_row = $detail_start_row;
+                $sheet->mergeCells('A' . $total_start_row . ':E' . $total_start_row);
+                $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':E' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                $sheet->setCellValue("F$total_start_row", $nominal)->getStyle("F$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+                $sheet->getStyle("F$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                $sheet->getColumnDimension('A')->setAutoSize(true);
+                $sheet->getColumnDimension('B')->setAutoSize(true);
+                $sheet->getColumnDimension('C')->setAutoSize(true);
+                $sheet->getColumnDimension('D')->setAutoSize(true);
+                $sheet->getColumnDimension('E')->setAutoSize(true);
+                $sheet->getColumnDimension('F')->setAutoSize(true);
+                $writer = new Xlsx($spreadsheet);
+                $filename = 'LAPORAN PEMBELIAN STOK (SPB)' . date('dmYHis');
+                header('Content-Type: application/vnd.ms-excel');
+                header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                header('Cache-Control: max-age=0');
+                header('Filename: ' . $filename);
+                $writer->save('php://output');
+                break;
+            case '136':
+                //KOR
+                $trado = $penerimaanstokheaders->trado;
+                $gandengan = $penerimaanstokheaders->gandengan;
+                $gudang = $penerimaanstokheaders->gudang;
+                $persediaan = $this->persediaan($gudang, $trado, $gandengan);
+                $data->column = $persediaan['column'];
+                $data->value = $persediaan['value'];
+
+                $penerimaanstokheaders = $data;
+                $tglBukti = $penerimaanstokheaders->tglbukti;
+                $timeStamp = strtotime($tglBukti);
+                $dateTglBukti = date('d-m-Y', $timeStamp);
+                $penerimaanstokheaders->tglbukti = $dateTglBukti;
+
+                $spreadsheet = new Spreadsheet();
+                $sheet = $spreadsheet->getActiveSheet();
+                $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+                $sheet->setCellValue('A1', $penerimaanstokheaders->judul);
+                $sheet->setCellValue('A2', 'Laporan Cetak Koreksi Stok (KOR)');
+                $sheet->getStyle("A1")->getFont()->setSize(11);
+                $sheet->getStyle("A2")->getFont()->setSize(11);
+                $sheet->getStyle("A1")->getFont()->setBold(true);
+                $sheet->getStyle("A2")->getFont()->setBold(true);
+                $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+                $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+                $sheet->mergeCells('A1:F1');
+                $sheet->mergeCells('A2:F2');
+                $header_start_row = 4;
+                $detail_table_header_row = 8;
+                $detail_start_row = $detail_table_header_row + 1;
+                $alphabets = range('A', 'Z');
+                $header_columns = [
+                    [
+                        'label' => 'No Bukti',
+                        'index' => 'nobukti',
+                    ],
+                    [
+                        'label' => 'Tanggal',
+                        'index' => 'tglbukti',
+                    ],
+                    [
+                        'label' => $data->column,
+                        'index' => $data->column,
+                    ],
+                ];
+
+                $detail_columns = [
+                    [
+                        'label' => 'NO',
+                    ],
+                    [
+                        'label' => 'NAMA BARANG',
+                        'index' => 'stok'
+                    ],
+                    [
+                        'label' => 'JUMLAH',
+                        'index' => 'qty'
+                    ],
+                    [
+                        'label' => '@',
+                        'index' => 'harga',
+                        'format' => 'currency'
+                    ],
+                    [
+                        'label' => 'TOTAL',
+                        'index' => 'total',
+                        'format' => 'currency'
+                    ],
+                    [
+                        'label' => 'KETERANGAN',
+                        'index' => 'keterangan',
+                    ]
+                ];
+                //LOOPING HEADER      
+                foreach ($header_columns as $header_column) {
+                    $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                    $sheet->setCellValue('C' . $header_start_row++, ': ' . $penerimaanstokheaders->{$header_column['index']});
+                }
+                foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                    $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                }
+                $styleArray = array(
+                    'borders' => array(
+                        'allBorders' => array(
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        ),
+                    ),
+                );
+                $style_number = [
+                    'alignment' => [
+                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                    ],
+
+                    'borders' => [
+                        'top' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'right' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'bottom' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                    ]
+                ];
+                $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->applyFromArray($styleArray);
+                // LOOPING DETAIL
+                $nominal = 0;
+                foreach ($penerimaanstok_details as $response_index => $response_detail) {
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : 0);
+                        $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->getFont()->setBold(true);
+                        $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                    }
+                    $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                    $sheet->setCellValue("B$detail_start_row", $response_detail->stok);
+                    $sheet->setCellValue("C$detail_start_row", $response_detail->qty);
+                    $sheet->setCellValue("D$detail_start_row", $response_detail->harga);
+                    $sheet->setCellValue("E$detail_start_row", $response_detail->total);
+                    $sheet->setCellValue("F$detail_start_row", $response_detail->keterangan);
+                    $sheet->getStyle("F$detail_start_row")->getAlignment()->setWrapText(true);
+                    $sheet->getColumnDimension('F')->setWidth(70);
+                    $sheet->getStyle("A$detail_start_row:F$detail_start_row")->applyFromArray($styleArray);
+                    $sheet->getStyle("D$detail_start_row:E$detail_start_row")->applyFromArray($style_number);
+
+                    $sheet->getStyle("D$detail_start_row:E$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+
+                    $nominal += $response_detail->total;
+                    $detail_start_row++;
+                }
+                $total_start_row = $detail_start_row;
+                $sheet->mergeCells('A' . $total_start_row . ':D' . $total_start_row);
+                $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':D' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                $sheet->setCellValue("E$total_start_row", $nominal)->getStyle("E$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+                $sheet->getStyle("E$total_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+
+                $sheet->getColumnDimension('A')->setAutoSize(true);
+                $sheet->getColumnDimension('B')->setAutoSize(true);
+                $sheet->getColumnDimension('C')->setAutoSize(true);
+                $sheet->getColumnDimension('D')->setAutoSize(true);
+                $sheet->getColumnDimension('E')->setAutoSize(true);
+                $writer = new Xlsx($spreadsheet);
+                $filename = 'LAPORAN CETAK KOREKSI STOK (KOR)' . date('dmYHis');
+                header('Content-Type: application/vnd.ms-excel');
+                header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                header('Cache-Control: max-age=0');
+                header('Filename: ' . $filename);
+                $writer->save('php://output');
+                break;
+            case '137':
+                //PG
+                $tradoDari = $penerimaanstokheaders->tradodari;
+                $gandenganDari = $penerimaanstokheaders->gandengandari;
+                $gudangDari = $penerimaanstokheaders->gudangdari;
+                $persediaanDari = $this->persediaanDari($gudangDari, $tradoDari, $gandenganDari);
+                $data->columnDari = $persediaanDari['columnDari'];
+                $data->valueDari = $persediaanDari['valueDari'];
+
+                $tradoKe = $penerimaanstokheaders->tradoke;
+                $gandenganKe = $penerimaanstokheaders->gandenganke;
+                $gudangKe = $penerimaanstokheaders->gudangke;
+                $persediaanKe = $this->persediaanKe($gudangKe, $tradoKe, $gandenganKe);
+                $data->columnKe = $persediaanKe['columnKe'];
+                $data->valueKe = $persediaanKe['valueKe'];
+
+                $penerimaanstokheaders = $data;
+
+                $spreadsheet = new Spreadsheet();
+                $sheet = $spreadsheet->getActiveSheet();
+                $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+                $sheet->setCellValue('A1', $penerimaanstokheaders->judul);
+                $sheet->setCellValue('A2', 'Laporan Cetak Pindah Gudang(PG)');
+                $sheet->getStyle("A1")->getFont()->setSize(11);
+                $sheet->getStyle("A2")->getFont()->setSize(11);
+                $sheet->getStyle("A1")->getFont()->setBold(true);
+                $sheet->getStyle("A2")->getFont()->setBold(true);
+                $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+                $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+                $sheet->mergeCells('A1:D1');
+                $sheet->mergeCells('A2:D2');
+                $header_start_row = 4;
+                $header_start_row_right = 4;
+                $detail_table_header_row = 8;
+                $detail_start_row = $detail_table_header_row + 1;
+                $alphabets = range('A', 'Z');
+                $header_columns = [
+                    [
+                        'label' => 'No Bukti',
+                        'index' => 'nobukti',
+                    ],
+                    [
+                        'label' => 'Tanggal',
+                        'index' => 'tglbukti',
+                    ],
+                    [
+                        'label' => 'No Bon',
+                        'index' => 'nobon',
+                    ]
+                ];
+                $header_right_columns = [
+                    [
+                        'label' => $data->columnDari,
+                        'index' => 'valueDari',
+                    ],
+                    [
+                        'label' => $data->columnKe,
+                        'index' => 'valueKe',
+                    ]
+                ];
+                $detail_columns = [
+                    [
+                        'label' => 'NO',
+                    ],
+                    [
+                        'label' => 'NAMA BARANG',
+                        'index' => 'stok'
+                    ],
+                    [
+                        'label' => 'JUMLAH',
+                        'index' => 'qty'
+                    ],
+                    [
+                        'label' => 'KETERANGAN',
+                        'index' => 'keterangan',
+                    ]
+                ];
+                //LOOPING HEADER        
+                foreach ($header_columns as $header_column) {
+                    $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                    $sheet->setCellValue('C' . $header_start_row++, ': ' . $penerimaanstokheaders->{$header_column['index']});
+                }
+                foreach ($header_right_columns as $header_column_right) {
+                    $sheet->setCellValue('D' . $header_start_row_right, $header_column_right['label']);
+                    $sheet->setCellValue('E' . $header_start_row_right++, ': ' . $penerimaanstokheaders->{$header_column_right['index']});
+                }
+                foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                    $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                }
+                $styleArray = array(
+                    'borders' => array(
+                        'allBorders' => array(
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        ),
+                    ),
+                );
+                $style_number = [
+                    'alignment' => [
+                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                    ],
+
+                    'borders' => [
+                        'top' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'right' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'bottom' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                    ]
+                ];
+                // dd('test');
+                $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->applyFromArray($styleArray);
+                // LOOPING DETAIL
+                foreach ($penerimaanstok_details as $response_index => $response_detail) {
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : 0);
+                        $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->getFont()->setBold(true);
+                        $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                    }
+                    $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                    $sheet->setCellValue("B$detail_start_row", $response_detail->stok);
+                    $sheet->setCellValue("C$detail_start_row", $response_detail->qty);
+                    $sheet->setCellValue("D$detail_start_row", $response_detail->keterangan);
+                    $sheet->getStyle("D$detail_start_row")->getAlignment()->setWrapText(true);
+                    $sheet->getColumnDimension('D')->setWidth(50);
+                    $sheet->getStyle("A$detail_start_row:D$detail_start_row")->applyFromArray($styleArray);
+                    $sheet->getStyle("D$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                }
+                $sheet->getColumnDimension('A')->setAutoSize(true);
+                $sheet->getColumnDimension('B')->setAutoSize(true);
+                $sheet->getColumnDimension('C')->setAutoSize(true);
+                $writer = new Xlsx($spreadsheet);
+                $filename = 'LAPORAN CETAK PINDAH GUDANG (PG)' . date('dmYHis');
+                header('Content-Type: application/vnd.ms-excel');
+                header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                header('Cache-Control: max-age=0');
+                header('Filename: ' . $filename);
+                $writer->save('php://output');
+                break;
+            case '138':
+                //SPBS
+                $spreadsheet = new Spreadsheet();
+                $sheet = $spreadsheet->getActiveSheet();
+                $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+                $sheet->setCellValue('A1', $penerimaanstokheaders->judul);
+                $sheet->setCellValue('A2', 'Laporan SPB Servis (SPBS)');
+                $sheet->getStyle("A1")->getFont()->setSize(11);
+                $sheet->getStyle("A2")->getFont()->setSize(11);
+                $sheet->getStyle("A1")->getFont()->setBold(true);
+                $sheet->getStyle("A2")->getFont()->setBold(true);
+                $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+                $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+                $sheet->mergeCells('A1:G1');
+                $sheet->mergeCells('A2:G2');
+                $header_start_row = 4;
+                $header_start_row_right = 4;
+                $detail_table_header_row = 8;
+                $detail_start_row = $detail_table_header_row + 1;
+                $alphabets = range('A', 'Z');
+                $header_columns = [
+                    [
+                        'label' => 'No Bukti',
+                        'index' => 'nobukti',
+                    ],
+                    [
+                        'label' => 'Tanggal',
+                        'index' => 'tglbukti',
+                    ],
+                    [
+                        'label' => 'Supplier',
+                        'index' => 'nobon',
+                    ]
+                ];
+                $header_right_columns = [
+                    [
+                        'label' => 'No PO',
+                        'index' => 'penerimaanstok_nobukti',
+                    ],
+                    [
+                        'label' => 'Tanggal PO',
+                        'index' => 'parrenttglbukti',
+                    ]
+                ];
+                $detail_columns = [
+                    [
+                        'label' => 'NO',
+                    ],
+                    [
+                        'label' => 'NAMA BARANG',
+                        'index' => 'stok'
+                    ],
+                    [
+                        'label' => 'JUMLAH',
+                        'index' => 'qty'
+                    ],
+                    [
+                        'label' => '@',
+                        'index' => 'harga',
+                        'format' => 'currency'
+                    ],
+                    [
+                        'label' => 'DISKON',
+                        'index' => 'nominaldiscount',
+                        'format' => 'currency'
+                    ],
+                    [
+                        'label' => 'TOTAL',
+                        'index' => 'total',
+                        'format' => 'currency'
+                    ],
+                    [
+                        'label' => 'KETERANGAN',
+                        'index' => 'keterangan',
+                    ]
+                ];
+                //LOOPING HEADER        
+                foreach ($header_columns as $header_column) {
+                    $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                    $sheet->setCellValue('C' . $header_start_row++, ': ' . $penerimaanstokheaders->{$header_column['index']});
+                }
+                foreach ($header_right_columns as $header_column_right) {
+                    $sheet->setCellValue('D' . $header_start_row_right, $header_column_right['label']);
+                    $sheet->setCellValue('E' . $header_start_row_right++, ': ' . $penerimaanstokheaders->{$header_column_right['index']});
+                }
+                foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                    $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                }
+                $styleArray = array(
+                    'borders' => array(
+                        'allBorders' => array(
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        ),
+                    ),
+                );
+                $style_number = [
+                    'alignment' => [
+                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                    ],
+
+                    'borders' => [
+                        'top' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'right' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'bottom' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                    ]
+                ];
+                $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->applyFromArray($styleArray);
+                // LOOPING DETAIL
+                $nominal = 0;
+                foreach ($penerimaanstok_details as $response_index => $response_detail) {
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : 0);
+                        $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getFont()->setBold(true);
+                        $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                    }
+                    $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                    $sheet->setCellValue("B$detail_start_row", $response_detail->stok);
+                    $sheet->setCellValue("C$detail_start_row", $response_detail->qty);
+                    $sheet->setCellValue("D$detail_start_row", $response_detail->harga);
+                    $sheet->setCellValue("E$detail_start_row", $response_detail->nominaldiscount);
+                    $sheet->setCellValue("F$detail_start_row", $response_detail->total);
+                    $sheet->setCellValue("G$detail_start_row", $response_detail->keterangan);
+                    $sheet->getStyle("G$detail_start_row")->getAlignment()->setWrapText(true);
+                    $sheet->getColumnDimension('G')->setWidth(70);
+                    $sheet->getStyle("A$detail_start_row:G$detail_start_row")->applyFromArray($styleArray);
+                    $sheet->getStyle("D$detail_start_row:F$detail_start_row")->applyFromArray($style_number);
+                    $sheet->getStyle("D$detail_start_row:F$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+
+                    $nominal += $response_detail->total;
+                    $detail_start_row++;
+                }
+
+                $total_start_row = $detail_start_row;
+                $sheet->mergeCells('A' . $total_start_row . ':E' . $total_start_row);
+                $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':E' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                $sheet->setCellValue("F$total_start_row", $nominal)->getStyle("F$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+                $sheet->getStyle("F$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+
+                $sheet->getColumnDimension('A')->setAutoSize(true);
+                $sheet->getColumnDimension('B')->setAutoSize(true);
+                $sheet->getColumnDimension('C')->setAutoSize(true);
+                $sheet->getColumnDimension('D')->setAutoSize(true);
+                $sheet->getColumnDimension('E')->setAutoSize(true);
+                $sheet->getColumnDimension('F')->setAutoSize(true);
+                $writer = new Xlsx($spreadsheet);
+                $filename = 'LAPORAN SPB SERVIS (SPBS)' . date('dmYHis');
+                header('Content-Type: application/vnd.ms-excel');
+                header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                header('Cache-Control: max-age=0');
+                header('Filename: ' . $filename);
+                $writer->save('php://output');
+                break;
+            case '352':
+                //PST
+                $spreadsheet = new Spreadsheet();
+                $sheet = $spreadsheet->getActiveSheet();
+                $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+                $sheet->setCellValue('A1', $penerimaanstokheaders->judul);
+                $sheet->setCellValue('A2', 'Laporan Pengembalian Sparepart Gantung(PST)');
+                $sheet->getStyle("A1")->getFont()->setSize(11);
+                $sheet->getStyle("A2")->getFont()->setSize(11);
+                $sheet->getStyle("A1")->getFont()->setBold(true);
+                $sheet->getStyle("A2")->getFont()->setBold(true);
+                $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+                $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+                $sheet->mergeCells('A1:F1');
+                $sheet->mergeCells('A2:F2');
+                $header_start_row = 4;
+                $header_start_row_right = 4;
+                $detail_table_header_row = 8;
+                $detail_start_row = $detail_table_header_row + 1;
+                $alphabets = range('A', 'Z');
+                $header_columns = [
+                    [
+                        'label' => 'No Bukti',
+                        'index' => 'nobukti',
+                    ],
+                    [
+                        'label' => 'Tanggal',
+                        'index' => 'tglbukti',
+                    ],
+                    [
+                        'label' => 'No GST',
+                        'index' => 'pengeluaranstok_nobukti',
+                    ]
+                ];
+
+                $detail_columns = [
+                    [
+                        'label' => 'NO',
+                    ],
+                    [
+                        'label' => 'NAMA BARANG',
+                        'index' => 'stok'
+                    ],
+                    [
+                        'label' => 'JUMLAH',
+                        'index' => 'qty'
+                    ],
+                    [
+                        'label' => '@',
+                        'index' => 'harga',
+                        'format' => 'currency'
+                    ],
+                    [
+                        'label' => 'TOTAL',
+                        'index' => 'total',
+                        'format' => 'currency'
+                    ],
+                    [
+                        'label' => 'KETERANGAN',
+                        'index' => 'keterangan',
+                    ]
+                ];
+                //LOOPING HEADER        
+                foreach ($header_columns as $header_column) {
+                    $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                    $sheet->setCellValue('C' . $header_start_row++, ': ' . $penerimaanstokheaders->{$header_column['index']});
+                }
+                foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                    $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                }
+                $styleArray = array(
+                    'borders' => array(
+                        'allBorders' => array(
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        ),
+                    ),
+                );
+                $style_number = [
+                    'alignment' => [
+                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                    ],
+
+                    'borders' => [
+                        'top' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'right' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'bottom' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                    ]
+                ];
+                $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->applyFromArray($styleArray);
+                // LOOPING DETAIL
+                $nominal = 0;
+                foreach ($penerimaanstok_details as $response_index => $response_detail) {
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : 0);
+                        $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->getFont()->setBold(true);
+                        $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                    }
+                    $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                    $sheet->setCellValue("B$detail_start_row", $response_detail->stok);
+                    $sheet->setCellValue("C$detail_start_row", $response_detail->qty);
+                    $sheet->setCellValue("D$detail_start_row", $response_detail->harga);
+                    $sheet->setCellValue("E$detail_start_row", $response_detail->total);
+                    $sheet->setCellValue("F$detail_start_row", $response_detail->keterangan);
+                    $sheet->getStyle("F$detail_start_row")->getAlignment()->setWrapText(true);
+                    $sheet->getColumnDimension('F')->setWidth(50);
+                    $sheet->getStyle("A$detail_start_row:F$detail_start_row")->applyFromArray($styleArray);
+                    $sheet->getStyle("D$detail_start_row:E$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+
+                    $nominal += $response_detail->total;
+                    $detail_start_row++;
+                }
+
+                $total_start_row = $detail_start_row;
+                $sheet->mergeCells('A' . $total_start_row . ':D' . $total_start_row);
+                $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':D' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                $sheet->setCellValue("E$total_start_row", $nominal)->getStyle("E$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+                $sheet->getStyle("E$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                $sheet->getColumnDimension('A')->setAutoSize(true);
+                $sheet->getColumnDimension('B')->setAutoSize(true);
+                $sheet->getColumnDimension('C')->setAutoSize(true);
+                $sheet->getColumnDimension('D')->setAutoSize(true);
+                $sheet->getColumnDimension('E')->setAutoSize(true);
+                $writer = new Xlsx($spreadsheet);
+                $filename = 'LAPORAN PENGEMBALIAN SPAREPART GANTUNG (PST)' . date('dmYHis');
+                header('Content-Type: application/vnd.ms-excel');
+                header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                header('Cache-Control: max-age=0');
+                header('Filename: ' . $filename);
+                $writer->save('php://output');
+                break;
+            case '361':
+                //PSPK
+                $spreadsheet = new Spreadsheet();
+                $sheet = $spreadsheet->getActiveSheet();
+                $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+                $sheet->setCellValue('A1', $penerimaanstokheaders->judul);
+                $sheet->setCellValue('A2', 'Laporan Pengembalian SPK');
+                $sheet->getStyle("A1")->getFont()->setSize(11);
+                $sheet->getStyle("A2")->getFont()->setSize(11);
+                $sheet->getStyle("A1")->getFont()->setBold(true);
+                $sheet->getStyle("A2")->getFont()->setBold(true);
+                $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+                $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+                $sheet->mergeCells('A1:F1');
+                $sheet->mergeCells('A2:F2');
+                $header_start_row = 4;
+                $header_start_row_right = 4;
+                $detail_table_header_row = 8;
+                $detail_start_row = $detail_table_header_row + 1;
+                $alphabets = range('A', 'Z');
+                $header_columns = [
+                    [
+                        'label' => 'No Bukti',
+                        'index' => 'nobukti',
+                    ],
+                    [
+                        'label' => 'Tanggal',
+                        'index' => 'tglbukti',
+                    ],
+                    [
+                        'label' => 'No SPK',
+                        'index' => 'pengeluaranstok_nobukti',
+                    ]
+                ];
+
+                $detail_columns = [
+                    [
+                        'label' => 'NO',
+                    ],
+                    [
+                        'label' => 'NAMA BARANG',
+                        'index' => 'stok'
+                    ],
+                    [
+                        'label' => 'JUMLAH',
+                        'index' => 'qty'
+                    ],
+                    [
+                        'label' => '@',
+                        'index' => 'harga',
+                        'format' => 'currency'
+                    ],
+                    [
+                        'label' => 'TOTAL',
+                        'index' => 'total',
+                        'format' => 'currency'
+                    ],
+                    [
+                        'label' => 'KETERANGAN',
+                        'index' => 'keterangan',
+                    ]
+                ];
+                //LOOPING HEADER        
+                foreach ($header_columns as $header_column) {
+                    $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                    $sheet->setCellValue('C' . $header_start_row++, ': ' . $penerimaanstokheaders->{$header_column['index']});
+                }
+                foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                    $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                }
+                $styleArray = array(
+                    'borders' => array(
+                        'allBorders' => array(
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        ),
+                    ),
+                );
+                $style_number = [
+                    'alignment' => [
+                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                    ],
+
+                    'borders' => [
+                        'top' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'right' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'bottom' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                    ]
+                ];
+                $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->applyFromArray($styleArray);
+                // LOOPING DETAIL
+                $nominal = 0;
+                foreach ($penerimaanstok_details as $response_index => $response_detail) {
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : 0);
+                        $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->getFont()->setBold(true);
+                        $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                    }
+                    $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                    $sheet->setCellValue("B$detail_start_row", $response_detail->stok);
+                    $sheet->setCellValue("C$detail_start_row", $response_detail->qty);
+                    $sheet->setCellValue("D$detail_start_row", $response_detail->harga);
+                    $sheet->setCellValue("E$detail_start_row", $response_detail->total);
+                    $sheet->setCellValue("F$detail_start_row", $response_detail->keterangan);
+                    $sheet->getStyle("F$detail_start_row")->getAlignment()->setWrapText(true);
+                    $sheet->getColumnDimension('F')->setWidth(50);
+                    $sheet->getStyle("A$detail_start_row:F$detail_start_row")->applyFromArray($styleArray);
+                    $sheet->getStyle("D$detail_start_row:E$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+
+                    $nominal += $response_detail->total;
+                    $detail_start_row++;
+                }
+
+                $total_start_row = $detail_start_row;
+                $sheet->mergeCells('A' . $total_start_row . ':D' . $total_start_row);
+                $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':D' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                $sheet->setCellValue("E$total_start_row", $nominal)->getStyle("E$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+                $sheet->getStyle("E$total_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                $sheet->getColumnDimension('A')->setAutoSize(true);
+                $sheet->getColumnDimension('B')->setAutoSize(true);
+                $sheet->getColumnDimension('C')->setAutoSize(true);
+                $sheet->getColumnDimension('D')->setAutoSize(true);
+                $sheet->getColumnDimension('E')->setAutoSize(true);
+                $writer = new Xlsx($spreadsheet);
+                $filename = 'LAPORAN PENGEMBALIAN SPK' . date('dmYHis');
+                header('Content-Type: application/vnd.ms-excel');
+                header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                header('Cache-Control: max-age=0');
+                header('Filename: ' . $filename);
+                $writer->save('php://output');
+                break;
+            default:
+                break;
+        }
     }
 
     /**
      * @ClassName 
      * @Keterangan PG DO
      */
-    public function penerimaanstokpgdo()
-    {
-    }
+    public function penerimaanstokpgdo() {}
     /**
      * @ClassName 
      * @Keterangan PO
      */
-    public function penerimaanstokpostok()
-    {
-    }
+    public function penerimaanstokpostok() {}
     /**
      * @ClassName 
      * @Keterangan PEMBELIAN
      */
-    public function penerimaanstokbelistok()
-    {
-    }
+    public function penerimaanstokbelistok() {}
     /**
      * @ClassName 
      * @Keterangan KOREKSI STOK PLUS
      */
-    public function penerimaanstokkoreksistok()
-    {
-    }
+    public function penerimaanstokkoreksistok() {}
     /**
      * @ClassName 
      * @Keterangan PINDAH GUDANG
      */
-    public function penerimaanstokpindahgudang()
-    {
-    }
+    public function penerimaanstokpindahgudang() {}
     /**
      * @ClassName 
      * @Keterangan PERBAIKAN STOK
      */
-    public function penerimaanstokperbaikanstok()
-    {
-    }
+    public function penerimaanstokperbaikanstok() {}
     /**
      * @ClassName 
      * @Keterangan SALDO STOCK
      */
-    public function penerimaanstoksaldostoktrucking()
-    {
-    }
+    public function penerimaanstoksaldostoktrucking() {}
     /**
      * @ClassName 
      * @Keterangan PENGEMBALIAN SPAREPART GANTUNG
      */
-    public function penerimaanstokpengembaliansparepartgantungtrucking()
-    {
-    }
+    public function penerimaanstokpengembaliansparepartgantungtrucking() {}
     /**
      * @ClassName 
      * @Keterangan PENGEMBALIAN SPK
      */
-    public function penerimaanstokpengembalianspk()
-    {
-    }
+    public function penerimaanstokpengembalianspk() {}
     /**
      * @ClassName 
      * @Keterangan KOREKSI VULKAN PLUS
      */
-    public function penerimaanstokkoreksivulkan()
-    {
-    }
+    public function penerimaanstokkoreksivulkan() {}
     /**
      * @ClassName 
      * @Keterangan PENAMBAHAN NILAI
      */
-    public function penerimaanstokpenambahannilai()
-    {
-    }
+    public function penerimaanstokpenambahannilai() {}
     /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
-    public function approvalbukacetak()
-    {
-    }
+    public function approvalbukacetak() {}
     /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */
-    public function approvalkirimberkas()
-    {
-    }
+    public function approvalkirimberkas() {}
 }

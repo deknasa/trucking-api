@@ -74,5 +74,4 @@ class ReminderSpkController extends Controller
 
                 //    return (new EmailReiminderSpk($ReminderBan))->render();
     }
-
 }

@@ -244,6 +244,12 @@ class HistoriPenerimaanStok extends MyModel
             'modifiedby',
         ], $querylaporan);
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
         $datalist = DB::table($templaporan)->from(
             DB::raw($templaporan . " as a")
         )
@@ -257,6 +263,8 @@ class HistoriPenerimaanStok extends MyModel
                 'a.nilaimasuk',
                 DB::raw(" (a.qtymasuk * a.nilaimasuk) as total"),
                 'a.modifiedby',
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Laporan Histori Penerimaan Stok' as judulLaporan"),
             )
             ->leftjoin(DB::raw("kategori as B with (readuncommitted)"), 'a.kategori_id', 'B.id')
             ->orderBy('a.id', 'asc');
@@ -289,7 +297,6 @@ class HistoriPenerimaanStok extends MyModel
                         } else {
                             // $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -315,7 +322,6 @@ class HistoriPenerimaanStok extends MyModel
                             } else {
                                 // $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });

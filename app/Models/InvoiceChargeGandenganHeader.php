@@ -445,6 +445,7 @@ class InvoiceChargeGandenganHeader extends MyModel
             'postingdari' => 'ENTRY INVOICE CHARGE GANDENGAN',
             'invoice' => $invoiceChargeGandenganHeader->nobukti,
             'agen_id' => $data['agen_id'],
+            'jenis' => 'extra',
             'invoice_nobukti' => $invoiceNobukti,
             'nominal_detail' => $nominalDetail,
             'keterangan_detail' => $keteranganDetail,

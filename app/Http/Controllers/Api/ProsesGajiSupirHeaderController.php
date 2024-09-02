@@ -60,6 +60,8 @@ use App\Http\Requests\UpdatePengembalianKasGantungHeaderRequest;
 use App\Http\Requests\DestroyPengembalianKasGantungHeaderRequest;
 use App\Http\Controllers\Api\ProsesGajiSupirDetailController as ApiProsesGajiSupirDetailController;
 use App\Models\Locking;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ProsesGajiSupirHeaderController extends Controller
 {
@@ -636,36 +638,160 @@ class ProsesGajiSupirHeaderController extends Controller
      * @ClassName 
      * @Keterangan CETAK DATA
      */
-    public function report()
-    {
-    }
+    public function report() {}
 
 
     /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
-    public function approvalbukacetak()
-    {
-    }
+    public function approvalbukacetak() {}
     /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */
-    public function approvalkirimberkas()
-    {
-    }
+    public function approvalkirimberkas() {}
 
     /**
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL
      */
-    public function export($id)
+    public function export($id, Request $request)
     {
         $prosesGajiSupirHeader = new ProsesGajiSupirHeader();
-        return response([
-            'data' => $prosesGajiSupirHeader->getExport($id),
-        ]);
+        $proses_GajiSupirHeader = $prosesGajiSupirHeader->getExport($id);
+
+        $prosesGajiSupirDetail = new ProsesGajiSupirDetail();
+        $proses_GajiSupirDetail = $prosesGajiSupirDetail->get();
+
+        if ($request->export == true) {
+            $tglBukti = $proses_GajiSupirHeader->tglbukti;
+            $timeStamp = strtotime($tglBukti);
+            $dateTglBukti = date('d-m-Y', $timeStamp);
+            $proses_GajiSupirHeader->tglbukti = $dateTglBukti;
+
+            //PRINT TO EXCEL
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+            $sheet->setCellValue('A1', $proses_GajiSupirHeader->judul);
+            $sheet->setCellValue('A2', $proses_GajiSupirHeader->judulLaporan);
+            $sheet->getStyle("A1")->getFont()->setSize(11);
+            $sheet->getStyle("A2")->getFont()->setSize(11);
+            $sheet->getStyle("A1")->getFont()->setBold(true);
+            $sheet->getStyle("A2")->getFont()->setBold(true);
+            $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+            $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+            $sheet->mergeCells('A1:C1');
+            $sheet->mergeCells('A2:C2');
+
+            $tglbukti = $proses_GajiSupirHeader->tglbukti;
+            $timeStamp = strtotime($tglbukti);
+            $datetglbukti = date('d-m-Y', $timeStamp);
+            $proses_GajiSupirHeader->tglbukti = $datetglbukti;
+
+            $header_start_row = 4;
+            $detail_table_header_row = 7;
+            $detail_start_row = $detail_table_header_row + 1;
+
+            $alphabets = range('A', 'Z');
+
+            $header_columns = [
+                [
+                    'label' => 'No Bukti',
+                    'index' => 'nobukti',
+                ],
+                [
+                    'label' => 'Tgl Bukti',
+                    'index' => 'tglbukti',
+                ]
+            ];
+
+            $detail_columns = [
+                [
+                    'label' => 'NO',
+                ],
+                [
+                    'label' => 'KETERANGAN',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'JUMLAH',
+                    'index' => 'nominal',
+                ]
+            ];
+
+            //LOOPING HEADER      
+            foreach ($header_columns as $header_column) {
+                $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                $sheet->setCellValue('C' . $header_start_row++, ': ' . $proses_GajiSupirHeader->{$header_column['index']});
+            }
+            foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+            }
+            $styleArray = array(
+                'borders' => array(
+                    'allBorders' => array(
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    ),
+                ),
+            );
+
+            $style_number = [
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                ],
+
+                'borders' => [
+                    'allBorders' => array(
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    ),
+                ]
+            ];
+
+            $sheet->getStyle("A$detail_table_header_row:C$detail_table_header_row")->applyFromArray($styleArray);
+
+            // LOOPING DETAIL
+            $nominal = 0;
+            foreach ($proses_GajiSupirDetail as $response_index => $response_detail) {
+
+                foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                    $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : $response_index + 1);
+                    $sheet->getStyle("A$detail_table_header_row:C$detail_table_header_row")->getFont()->setBold(true);
+                    $sheet->getStyle("A$detail_table_header_row:C$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                }
+                $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                $sheet->setCellValue("B$detail_start_row", $response_detail->keterangan);
+                $sheet->setCellValue("C$detail_start_row", $response_detail->nominal);
+                // $sheet->getStyle("B$detail_start_row")->getAlignment()->setWrapText(true);
+                $sheet->getColumnDimension('B')->setWidth(50);
+                $sheet->getStyle("A$detail_start_row:C$detail_start_row")->applyFromArray($styleArray);
+                $sheet->getStyle("C$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                $detail_start_row++;
+            }
+
+            $total_start_row = $detail_start_row;
+            $sheet->mergeCells('A' . $total_start_row . ':B' . $total_start_row);
+            $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':B' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+            $sheet->setCellValue("C$total_start_row", "=SUM(C8:C" . ($detail_start_row - 1) . ")")->getStyle("C$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+
+            $sheet->getStyle("C$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+
+            $sheet->getColumnDimension('A')->setAutoSize(true);
+            $sheet->getColumnDimension('C')->setAutoSize(true);
+
+            $writer = new Xlsx($spreadsheet);
+            $filename = 'Laporan Proses Gaji Supir' . date('dmYHis');
+            header('Content-Type: application/vnd.ms-excel');
+            header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+            header('Cache-Control: max-age=0');
+
+            $writer->save('php://output');
+        } else {
+            return response([
+                'data' => $proses_GajiSupirHeader
+            ]);
+        }
     }
 
     public function printReport($id)

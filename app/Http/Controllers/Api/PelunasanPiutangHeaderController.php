@@ -47,6 +47,8 @@ use App\Http\Requests\StorePelunasanPiutangHeaderRequest;
 use App\Http\Requests\UpdatePelunasanPiutangHeaderRequest;
 use App\Http\Requests\DestroyPelunasanPiutangHeaderRequest;
 use App\Models\Locking;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class PelunasanPiutangHeaderController extends Controller
 {
@@ -365,35 +367,246 @@ class PelunasanPiutangHeaderController extends Controller
      * @ClassName 
      * @Keterangan CETAK DATA
      */
-    public function report()
-    {
-    }
+    public function report() {}
 
     /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
-    public function approvalbukacetak()
-    {
-    }
+    public function approvalbukacetak() {}
     /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */
-    public function approvalkirimberkas()
-    {
-    }    
+    public function approvalkirimberkas() {}
 
     /**
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL
      */
-    public function export($id)
+    public function export($id, Request $request)
     {
-        $pelunasanpiutang = new PelunasanPiutangHeader();
-        return response([
-            'data' => $pelunasanpiutang->getExport($id)
-        ]);
+        $pelunasanPiutangHeader = new PelunasanPiutangHeader();
+        $pelunasan_PiutangHeader = $pelunasanPiutangHeader->getExport($id);
+
+        $pelunasanPiutangDetail = new PelunasanPiutangDetail();
+        $pelunasan_PiutangDetail = $pelunasanPiutangDetail->get();
+
+        if ($request->export == true) {
+            //PRINT TO EXCEL
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+            $sheet->setCellValue('A1', $pelunasan_PiutangHeader->judul);
+            $sheet->setCellValue('A2', $pelunasan_PiutangHeader->judulLaporan);
+            $sheet->getStyle("A1")->getFont()->setSize(11);
+            $sheet->getStyle("A2")->getFont()->setSize(11);
+            $sheet->getStyle("A1")->getFont()->setBold(true);
+            $sheet->getStyle("A2")->getFont()->setBold(true);
+            $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+            $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+            $sheet->mergeCells('A1:J1');
+            $sheet->mergeCells('A2:J2');
+
+            $header_start_row = 4;
+            $header_right_start_row = 4;
+            $detail_table_header_row = 9;
+            $detail_start_row = $detail_table_header_row + 1;
+
+            $alphabets = range('A', 'Z');
+
+            $header_columns = [
+                [
+                    'label' => 'No Bukti',
+                    'index' => 'nobukti',
+                ],
+                [
+                    'label' => 'Tanggal',
+                    'index' => 'tglbukti',
+                ],
+                [
+                    'label' => 'Bank/Kas',
+                    'index' => 'bank_id',
+                ],
+                [
+                    'label' => 'Customer',
+                    'index' => 'agen_id',
+                ],
+            ];
+            $header_right_columns = [
+                [
+                    'label' => 'No Bukti Penerimaan',
+                    'index' => 'penerimaan_nobukti',
+                ],
+                [
+                    'label' => 'No Bukt Giro',
+                    'index' => 'penerimaangiro_nobukti',
+                ],
+                [
+                    'label' => 'Nota Debet',
+                    'index' => 'notadebet_nobukti',
+                ],
+                [
+                    'label' => 'Nota Kredit / B. PPH',
+                    'index' => 'notakredit_nobukti',
+                ]
+            ];
+            $detail_columns = [
+                [
+                    'label' => 'NO',
+                ],
+                [
+                    'label' => 'NO BUKTI PIUTANG',
+                    'index' => 'piutang_nobukti',
+                ],
+                [
+                    'label' => 'NO BUKTI INVOICE',
+                    'index' => 'invoice_nobukti',
+                ],
+                [
+                    'label' => 'NOMINAL PIUTANG',
+                    'index' => 'nominalpiutang',
+                    'format' => 'currency'
+                ],
+                [
+                    'label' => 'NOMINAL BAYAR',
+                    'index' => 'nominal',
+                    'format' => 'currency'
+                ],
+                [
+                    'label' => 'POTONGAN',
+                    'index' => 'potongan',
+                    'format' => 'currency'
+                ],
+                [
+                    'label' => 'LEBIH BAYAR',
+                    'index' => 'nominallebihbayar',
+                    'format' => 'currency'
+                ],
+                [
+                    'label' => 'KETERANGAN POTONGAN',
+                    'index' => 'keteranganpotongan',
+                ],
+                [
+                    'label' => 'KETERANGAN',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'POTONGAN PPH',
+                    'index' => 'potonganpph',
+                    'format' => 'currency'
+                ],
+                [
+                    'label' => 'KET. POT. PPH',
+                    'index' => 'keteranganpotonganpph',
+                ],
+            ];
+
+            //LOOPING HEADER        
+            foreach ($header_columns as $header_column) {
+                $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                $sheet->setCellValue('C' . $header_start_row++, ': ' . $pelunasan_PiutangHeader->{$header_column['index']});
+            }
+
+            foreach ($header_right_columns as $header_right_column) {
+                if ($header_right_column['index'] == 'notakredit_nobukti') {
+
+                    $sheet->setCellValue('D' . $header_right_start_row, $header_right_column['label']);
+                    $sheet->setCellValue('E' . $header_right_start_row++, ': ' . $pelunasan_PiutangHeader->notakredit_nobukti . ' / ' . $pelunasan_PiutangHeader->notakreditpph_nobukti);
+                } else {
+                    $sheet->setCellValue('D' . $header_right_start_row, $header_right_column['label']);
+                    $sheet->setCellValue('E' . $header_right_start_row++, ': ' . $pelunasan_PiutangHeader->{$header_right_column['index']});
+                }
+            }
+
+            foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+            }
+            $styleArray = array(
+                'borders' => array(
+                    'allBorders' => array(
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    ),
+                ),
+            );
+
+            $style_number = [
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                ],
+
+                'borders' => [
+                    'top' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                    'right' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                    'bottom' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                    'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                ]
+            ];
+
+            // $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF1F456E');
+            $sheet->getStyle("A$detail_table_header_row:K$detail_table_header_row")->applyFromArray($styleArray);
+
+            // LOOPING DETAIL
+            $nominal = 0;
+            foreach ($pelunasan_PiutangDetail as $response_index => $response_detail) {
+
+                // foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                //     $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail[$detail_column['index']] : $response_index + 1);
+                //     $sheet->getStyle("A$detail_table_header_row:J$detail_table_header_row")->getFont()->setBold(true);
+                //     $sheet->getStyle("A$detail_table_header_row:J$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                // }
+                $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                $sheet->setCellValue("B$detail_start_row", $response_detail->piutang_nobukti);
+                $sheet->setCellValue("C$detail_start_row", $response_detail->invoice_nobukti);
+                $sheet->setCellValue("D$detail_start_row", $response_detail->nominalpiutang);
+                $sheet->setCellValue("E$detail_start_row", $response_detail->nominal);
+                $sheet->setCellValue("F$detail_start_row", $response_detail->potongan);
+                $sheet->setCellValue("G$detail_start_row", $response_detail->nominallebihbayar);
+                $sheet->setCellValue("H$detail_start_row", $response_detail->keteranganpotongan);
+                $sheet->setCellValue("I$detail_start_row", $response_detail->keterangan);
+                $sheet->setCellValue("J$detail_start_row", $response_detail->potonganpph);
+                $sheet->setCellValue("K$detail_start_row", $response_detail->keteranganpotonganpph);
+
+                $sheet->getStyle("H$detail_start_row:I$detail_start_row")->getAlignment()->setWrapText(true);
+                $sheet->getColumnDimension('H')->setWidth(30);
+                $sheet->getColumnDimension('I')->setWidth(30);
+                $sheet->getColumnDimension('K')->setWidth(30);
+
+                $sheet->getStyle("A$detail_start_row:K$detail_start_row")->applyFromArray($styleArray);
+                $sheet->getStyle("D$detail_start_row:G$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                $sheet->getStyle("J$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+
+                $nominal += $response_detail->nominal;
+                $detail_start_row++;
+            }
+
+            $total_start_row = $detail_start_row;
+            $sheet->mergeCells('A' . $total_start_row . ':D' . $total_start_row);
+            $sheet->setCellValue("A$total_start_row", 'Total Nominal Bayar')->getStyle('A' . $total_start_row . ':K' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+            $sheet->setCellValue("E$detail_start_row", "=SUM(E10:E" . ($detail_start_row - 1) . ")")->getStyle("E$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+            $sheet->getStyle("E$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+
+            $sheet->getColumnDimension('A')->setAutoSize(true);
+            $sheet->getColumnDimension('B')->setAutoSize(true);
+            $sheet->getColumnDimension('C')->setAutoSize(true);
+            $sheet->getColumnDimension('D')->setAutoSize(true);
+            $sheet->getColumnDimension('E')->setAutoSize(true);
+            $sheet->getColumnDimension('F')->setAutoSize(true);
+            $sheet->getColumnDimension('G')->setAutoSize(true);
+            $sheet->getColumnDimension('J')->setAutoSize(true);
+
+            $writer = new Xlsx($spreadsheet);
+            $filename = 'Laporan Penerimaan Piutang  ' . date('dmYHis');
+            header('Content-Type: application/vnd.ms-excel');
+            header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+            header('Cache-Control: max-age=0');
+
+            $writer->save('php://output');
+        } else {
+            return response([
+                'data' => $pelunasan_PiutangHeader
+            ]);
+        }
     }
 
     public function printReport($id)
@@ -526,7 +739,7 @@ class PelunasanPiutangHeaderController extends Controller
             $totalminutes =  ($diffNow->days * 24 * 60) + ($diffNow->h * 60) + $diffNow->i;
             if ($totalminutes > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                    (new MyModel())->createLockEditing($id, 'pelunasanpiutangheader',$useredit);  
+                    (new MyModel())->createLockEditing($id, 'pelunasanpiutangheader', $useredit);
                 }
 
                 $data = [
@@ -548,12 +761,11 @@ class PelunasanPiutangHeaderController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
+            }
         } else {
 
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                (new MyModel())->createLockEditing($id, 'pelunasanpiutangheader',$useredit);
+                (new MyModel())->createLockEditing($id, 'pelunasanpiutangheader', $useredit);
             }
 
             $data = [
@@ -588,7 +800,7 @@ class PelunasanPiutangHeaderController extends Controller
         } else {
             $getEditing = (new Locking())->getEditing('pelunasanpiutangheader', $id);
             $useredit = $getEditing->editing_by ?? '';
-            (new MyModel())->createLockEditing($id, 'pelunasanpiutangheader',$useredit);
+            (new MyModel())->createLockEditing($id, 'pelunasanpiutangheader', $useredit);
 
             $data = [
                 'error' => false,

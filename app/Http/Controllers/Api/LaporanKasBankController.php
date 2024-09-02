@@ -123,8 +123,9 @@ class LaporanKasBankController extends Controller
             //PRINT TO EXCEL
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
+            $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
             $sheet->setCellValue('A1', $data[0]->judul);
-            $sheet->getStyle("A1")->getFont()->setSize(16)->setBold(true);
+            $sheet->getStyle("A1")->getFont()->setSize(11)->setBold(true);
             $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
             $sheet->mergeCells('A1:G1');
 

@@ -1010,7 +1010,7 @@ class LaporanNeraca extends MyModel
                 $table->string('diperiksa', 500)->nullable();
             });
 
-
+// dd((new LaporanDepositoSupir())->getReport($tglsd, '', 1)->get());
 
             DB::table($tempdepositosupir)->insertUsing([
                 'id',
@@ -2365,8 +2365,8 @@ class LaporanNeraca extends MyModel
                 db::raw("xx.nominalbanding"),
                 db::raw("xx.selisih"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
-                db::raw("'' as Cabang")
-
+                db::raw("'' as Cabang"),
+                DB::raw("'" . auth('api')->user()->name . "' as usercetak")
             )
             ->orderby('xx.id');
 

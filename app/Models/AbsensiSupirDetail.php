@@ -226,6 +226,7 @@ class AbsensiSupirDetail extends MyModel
                 $query->whereIn("absensi_id", $params["whereIn"]);
             }
             if (isset(request()->forReport) && request()->forReport) {
+                $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
                 $query->select(
                     "header.id as id_header",
                     "header.nobukti as nobukti_header",
@@ -250,7 +251,8 @@ class AbsensiSupirDetail extends MyModel
                         $join->on("$this->table.trado_id", "=", "c.trado_id");
                         $join->on("$this->table.statusjeniskendaraan", "=", "c.statusjeniskendaraan");
                     })
-                    ->where('trado.statusabsensisupir', $statusabsensi);
+                    ->where('absensisupirdetail.absensi_id',request()->absensi_id);
+                    // ->where('trado.statusabsensisupir', $statusabsensi);
             } else {
                 
                 $ricsupirtemp = '##ricsupirtemp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
