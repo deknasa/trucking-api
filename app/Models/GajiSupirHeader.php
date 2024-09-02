@@ -2695,16 +2695,15 @@ class GajiSupirHeader extends MyModel
 
         if ($formatCetak->text == 'FORMAT 3') {
             $data = db::table("gajisupirheader")->from(DB::raw("gajisupirheader with (readuncommitted)"))->where("id", $id)->first();
-            $pinjaman = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail as ptd with (readuncommitted)"))
-                ->select(DB::raw("
-                  ptd.supir_id, (SUM(ptd.nominal) - isnull(SUM(pt.nominal), 0)) AS sisa_pinjaman
-                "))
-                ->leftJoin(DB::raw("penerimaantruckingdetail as pt with (readuncommitted)"), 'ptd.nobukti', 'pt.pengeluarantruckingheader_nobukti')
-                ->leftJoin(DB::raw("pengeluarantruckingheader as pth with (readuncommitted)"), 'ptd.nobukti', 'pth.nobukti')
-                ->where('ptd.supir_id', $data->supir_id)
-                ->where("ptd.nobukti",  'LIKE', "%PJT%")
-                ->where("pth.tglbukti",  '<=', $data->tglbukti)
-                ->groupBy('ptd.supir_id')
+            $tempPribadi = $this->createTempPinjPribadi($data->supir_id);
+            $pinjaman = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+                ->select(DB::raw("sum(isnull(sisa.sisa,0)) as sisa_pinjaman"))
+                ->leftJoin(DB::raw("$tempPribadi as sisa with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', "sisa.nobukti")
+                ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', "pengeluarantruckingheader.nobukti")
+                ->whereRaw("pengeluarantruckingdetail.supir_id = $data->supir_id")
+                ->where("pengeluarantruckingheader.pengeluarantrucking_id", 1)
+                ->whereRaw("pengeluarantruckingdetail.nobukti = sisa.nobukti")
+                ->where("pengeluarantruckingheader.tglbukti", "<=", $data->tglbukti)
                 ->first();
             if ($pinjaman != '') {
                 $sisaPinjaman = $pinjaman->sisa_pinjaman;
