@@ -37,8 +37,8 @@ class LaporanTripGandenganDetailController extends Controller
         $sampai = $request->sampai;
         $gandengandari = $request->gandengandari;
         $gandengansampai = $request->gandengansampai;
-        $gandengandari_id = $request->gandengandari_id;
-        $gandengansampai_id = $request->gandengansampai_id;
+        $gandengandari_id = $request->gandengandari_id ?? 0;
+        $gandengansampai_id = $request->gandengansampai_id ?? 0;
 
         $laporantripgandengandetail = new LaporanTripGandenganDetail();
         // $report = LaporanTripGandenganDetail::getReport($sampai, $jenis);
@@ -71,8 +71,8 @@ class LaporanTripGandenganDetailController extends Controller
         $sampai = $request->sampai;
         $gandengandari = $request->gandengandari;
         $gandengansampai = $request->gandengansampai;
-        $gandengandari_id = $request->gandengandari_id;
-        $gandengansampai_id = $request->gandengansampai_id;
+        $gandengandari_id = $request->gandengandari_id ?? 0;
+        $gandengansampai_id = $request->gandengansampai_id ?? 0;
 
         $laporantripgandengandetail = new LaporanTripGandenganDetail();
         $laporan_tripgandengandetail = $laporantripgandengandetail->getReport($gandengandari_id, $gandengansampai_id, date('Y-m-d', strtotime($dari)), date('Y-m-d', strtotime($sampai)));

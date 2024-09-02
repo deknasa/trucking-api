@@ -655,7 +655,7 @@ class HutangHeaderController extends Controller
                 $sheet->setCellValue("C$detail_start_row", $response_detail->keterangan);
                 $sheet->setCellValue("D$detail_start_row", $response_detail->total);
 
-                $sheet->getStyle("C$detail_start_row")->getAlignment()->setWrapText(true);
+                // $sheet->getStyle("C$detail_start_row")->getAlignment()->setWrapText(true);
                 $sheet->getColumnDimension('C')->setWidth(50);
                 $sheet->getStyle("D$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
 

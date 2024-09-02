@@ -705,7 +705,7 @@ class PengeluaranHeaderController extends Controller
                     $sheet->setCellValue("C$detail_start_row", $response_detail->keterangan);
                     $sheet->setCellValue("D$detail_start_row", $response_detail->nominal);
 
-                    $sheet->getStyle("C$detail_start_row")->getAlignment()->setWrapText(true);
+                    // $sheet->getStyle("C$detail_start_row")->getAlignment()->setWrapText(true);
                     $sheet->getColumnDimension('C')->setWidth(50);
 
                     $sheet->getStyle("A$detail_start_row:C$detail_start_row")->applyFromArray($styleArray);
@@ -854,7 +854,7 @@ class PengeluaranHeaderController extends Controller
                     $sheet->setCellValue("F$detail_start_row", $response_detail->keterangan);
                     $sheet->setCellValue("G$detail_start_row", $response_detail->nominal);
 
-                    $sheet->getStyle("F$detail_start_row")->getAlignment()->setWrapText(true);
+                    // $sheet->getStyle("F$detail_start_row")->getAlignment()->setWrapText(true);
                     $sheet->getColumnDimension('F')->setWidth(50);
 
                     $sheet->getStyle("A$detail_start_row:G$detail_start_row")->applyFromArray($styleArray);

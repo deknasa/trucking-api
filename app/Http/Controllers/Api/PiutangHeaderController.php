@@ -470,7 +470,7 @@ class PiutangHeaderController extends Controller
                 $sheet->setCellValue("B$detail_start_row", $response_detail->keterangan);
                 $sheet->setCellValue("C$detail_start_row", $response_detail->nominal);
 
-                $sheet->getStyle("B$detail_start_row")->getAlignment()->setWrapText(true);
+                // $sheet->getStyle("B$detail_start_row")->getAlignment()->setWrapText(true);
                 $sheet->getColumnDimension('B')->setWidth(30);
 
                 $sheet->getStyle("A$detail_start_row:B$detail_start_row")->applyFromArray($styleArray);

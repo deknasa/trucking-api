@@ -53,10 +53,13 @@ class LaporanTripGandenganDetail extends MyModel
             'A.keterangan',
             'A.nocont',          
         ])
-        ->where('A.gandengan_id', '>=', $gandengandari_id)
-        ->where('A.gandengan_id', '<=', $gandengansampai_id)
         ->where('A.tglbukti', '>=', $dari)
         ->where('A.tglbukti', '<=', $sampai);
+        if($gandengandari_id != 0 && $gandengansampai_id !=0){
+            $select_suratpengantar  
+            ->where('A.gandengan_id', '>=', $gandengandari_id)
+            ->where('A.gandengan_id', '<=', $gandengansampai_id);
+        }
  
         // dd($select_suratpengantar->get());
          
@@ -114,8 +117,6 @@ class LaporanTripGandenganDetail extends MyModel
         ->join('container as F', 'A.container_id', '=', 'F.id')
         ->leftJoin('kota as G', 'E.kotadari_id', '=', 'G.id')
         ->leftJoin('kota as H', 'E.kotasampai_id', '=', 'H.id')
-        ->where('A.gandengan_id', '>=', $gandengandari_id)
-        ->where('A.gandengan_id', '<=', $gandengansampai_id)
         ->where('A.tglbukti', '>=', $dari)
         ->where('A.tglbukti', '<=', $sampai)
         ->orderBy('B.keterangan', 'asc')
@@ -123,6 +124,11 @@ class LaporanTripGandenganDetail extends MyModel
         ->orderBy('C.namasupir', 'asc')
         ->orderBy('D.kodetrado', 'asc');
     
+        if($gandengandari_id != 0 && $gandengansampai_id !=0){
+            $select_suratpengantar  
+            ->where('A.gandengan_id', '>=', $gandengandari_id)
+            ->where('A.gandengan_id', '<=', $gandengansampai_id);
+        }
       
         $data = $select_Tempsuratpengantar->get();
         return $data;
