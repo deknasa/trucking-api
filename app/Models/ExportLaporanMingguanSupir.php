@@ -753,7 +753,8 @@ class ExportLaporanMingguanSupir extends Model
                 'b.id',
                 'a.nobukti',
                 'b.notrip',
-                db::raw("(case when charindex(',',suratpengantar_nobukti)=0 then suratpengantar_nobukti else  substring(suratpengantar_nobukti,0,charindex(',',suratpengantar_nobukti)) end) as notripawal")
+                db::raw("(case when charindex(',',suratpengantar_nobukti)=0 then suratpengantar_nobukti else  substring(suratpengantar_nobukti,0,charindex(',',suratpengantar_nobukti)) end) as notripawal"),
+
             )
             ->join(DB::raw($tempOrderanTrucking . " as b "), 'a.orderantrucking_nobukti', 'b.nobukti');
 
@@ -865,6 +866,7 @@ class ExportLaporanMingguanSupir extends Model
             $table->string('jobtrucking', 100)->nullable();
             $table->string('suratpengantar', 100)->nullable();
             $table->double('omsettambahan', 15, 2)->nullable();
+            $table->double('extralain', 15, 2)->nullable();
             $table->longtext('keterangan')->nullable();
         });
 
@@ -873,6 +875,7 @@ class ExportLaporanMingguanSupir extends Model
                 'a.jobtrucking',
                 'a.nobukti as suratpengantar',
                 'b.nominaltagih as omsettambahan',
+                'c.extralain as extralain',
                 'b.keteranganbiaya as keterangan',
             )
             ->join(db::raw("suratpengantarbiayatambahan b with (readuncommitted)"), 'a.id', 'b.suratpengantar_id')
@@ -883,6 +886,7 @@ class ExportLaporanMingguanSupir extends Model
             'jobtrucking',
             'suratpengantar',
             'omsettambahan',
+            'extralain',
             'keterangan',
         ], $querytambahan);
 
@@ -919,7 +923,7 @@ class ExportLaporanMingguanSupir extends Model
             ->select(
                 'a.jobtrucking',
                 db::raw("max(c.notripawal) as suratpengantar"),
-                db::raw("sum(a.omsettambahan+isnull(a.nominalretribusi,0)) as omsettambahan"),
+                db::raw("sum(a.omsettambahan+isnull(a.extralain,0)) as omsettambahan"),
                 db::raw("STRING_AGG(cast(trim(a.keterangan)+'('+format(a.omsettambahan,'#,#0')+')' as nvarchar(max)), ', ') as keterangan"),
             )
             ->join(db::raw($tempInvoice . " c"), 'a.jobtrucking', 'c.jobtrucking')
