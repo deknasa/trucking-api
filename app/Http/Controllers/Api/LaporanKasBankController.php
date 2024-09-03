@@ -221,7 +221,7 @@ class LaporanKasBankController extends Controller
                 foreach ($detail_columns as $detail_columns_index => $detail_column) {
                     $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : $response_index + 1);
                 }
-                if ($cabang == 'PUSAT') {
+                if ($cabang->keterangan == 'PUSAT') {
                     $sheet->setCellValue("A$detail_start_row", $response_detail['tglbukti']);
                 } else {
                     $dateValue = ($response_detail->tglbukti != null) ? Date::PHPToExcel(date('Y-m-d', strtotime($response_detail->tglbukti))) : '';
