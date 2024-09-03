@@ -915,7 +915,7 @@ class ExportLaporanMingguanSupirController extends Controller
         $sheet->mergeCells("W" . ($detail_table_header_row + 1) . ":W" . ($detail_table_header_row + 2));
 
 
-        $sheet->setCellValue("X" . ($detail_table_header_row + 1), 'B. Extra')->getStyle("X2")->applyFromArray($styleHeader)->getFont()->setSize(14)->setBold(true);
+        $sheet->setCellValue("X" . ($detail_table_header_row + 1), 'B. Extra Tagih')->getStyle("X2")->applyFromArray($styleHeader)->getFont()->setSize(14)->setBold(true);
         $sheet->mergeCells("X" . ($detail_table_header_row + 1) . ":X" . ($detail_table_header_row + 2));
         $sheet->setCellValue("Y" . ($detail_table_header_row + 1), 'No Biaya Extra')->getStyle("Y2")->applyFromArray($styleHeader)->getFont()->setSize(14)->setBold(true);
         $sheet->mergeCells("Y" . ($detail_table_header_row + 1) . ":Y" . ($detail_table_header_row + 2));
@@ -1034,33 +1034,33 @@ class ExportLaporanMingguanSupirController extends Controller
         }
         $sheet->getColumnDimension('B')->setAutoSize(true);
         $sheet->getColumnDimension('C')->setAutoSize(true);
-        $sheet->getColumnDimension('D')->setAutoSize(true);
-        $sheet->getColumnDimension('E')->setAutoSize(true);
-        $sheet->getColumnDimension('F')->setAutoSize(true);
-        $sheet->getColumnDimension('G')->setAutoSize(true);
-        $sheet->getColumnDimension('H')->setAutoSize(true);
+        $sheet->getColumnDimension('D')->setWidth(51);
+        $sheet->getColumnDimension('E')->setWidth(6);
+        $sheet->getColumnDimension('F')->setWidth(23);
+        $sheet->getColumnDimension('G')->setWidth(24);
+        $sheet->getColumnDimension('H')->setWidth(10);
         $sheet->getColumnDimension('I')->setAutoSize(true);
         $sheet->getColumnDimension('J')->setAutoSize(true);
         $sheet->getColumnDimension('K')->setAutoSize(true);
-        $sheet->getColumnDimension('L')->setAutoSize(true);
+        $sheet->getColumnDimension('L')->setWidth(16);
         $sheet->getColumnDimension('M')->setAutoSize(true);
         $sheet->getColumnDimension('N')->setAutoSize(true);
         $sheet->getColumnDimension('O')->setAutoSize(true);
         $sheet->getColumnDimension('P')->setAutoSize(true);
         $sheet->getColumnDimension('Q')->setAutoSize(true);
         $sheet->getColumnDimension('R')->setAutoSize(true);
-        $sheet->getColumnDimension('S')->setAutoSize(true);
-        $sheet->getColumnDimension('T')->setAutoSize(true);
+        $sheet->getColumnDimension('S')->setWidth(17);
+        $sheet->getColumnDimension('T')->setWidth(24);
         $sheet->getColumnDimension('U')->setAutoSize(true);
-        $sheet->getColumnDimension('V')->setAutoSize(true);
-        $sheet->getColumnDimension('W')->setAutoSize(true);
+        $sheet->getColumnDimension('V')->setWidth(58);
+        $sheet->getColumnDimension('W')->setWidth(26);
         $sheet->getColumnDimension('X')->setAutoSize(true);
-        $sheet->getColumnDimension('Y')->setAutoSize(true);
-        $sheet->getColumnDimension('Z')->setAutoSize(true);
-        $sheet->getColumnDimension('AA')->setAutoSize(true);
+        $sheet->getColumnDimension('Y')->setWidth(19);
+        $sheet->getColumnDimension('Z')->setWidth(19);
+        $sheet->getColumnDimension('AA')->setWidth(22);
         $sheet->getColumnDimension('AB')->setAutoSize(true);
         $sheet->getColumnDimension('AC')->setAutoSize(true);
-        $sheet->getColumnDimension('AD')->setAutoSize(true);
+        $sheet->getColumnDimension('AD')->setWidth(20);
         $sheet->getColumnDimension('AE')->setAutoSize(true);
 
         $writer = new Xlsx($spreadsheet);
