@@ -919,7 +919,7 @@ class ExportLaporanMingguanSupir extends Model
             ->select(
                 'a.jobtrucking',
                 db::raw("max(c.notripawal) as suratpengantar"),
-                db::raw("sum(a.omsettambahan) as omsettambahan"),
+                db::raw("sum(a.omsettambahan+isnull(a.nominalretribusi,0)) as omsettambahan"),
                 db::raw("STRING_AGG(cast(trim(a.keterangan)+'('+format(a.omsettambahan,'#,#0')+')' as nvarchar(max)), ', ') as keterangan"),
             )
             ->join(db::raw($tempInvoice . " c"), 'a.jobtrucking', 'c.jobtrucking')
