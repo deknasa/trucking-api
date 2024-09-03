@@ -437,8 +437,8 @@ class LaporanKasBank extends MyModel
             ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw("pencairangiropengeluaranheader as c with (readuncommitted)"), 'a.nobukti', 'c.pengeluaran_nobukti')
             ->whereraw("isnull(a.alatbayar_id,0)  in(3,4)")
-            ->whereRaw("a.tglbukti>=cast(ltrim(rtrim(str(year('" . $dariformat . "'))))+'/'+ltrim(rtrim(str(month('" . $dariformat . "'))))+'/1' as datetime) ")
-            ->where('a.tglbukti', '<', $dari)
+            ->whereRaw("c.tglbukti>=cast(ltrim(rtrim(str(year('" . $dariformat . "'))))+'/'+ltrim(rtrim(str(month('" . $dariformat . "'))))+'/1' as datetime) ")
+            ->where('c.tglbukti', '<', $dari)
             ->where('a.bank_id', '=', $bank_id)
             ->first();
         $querysaldoawalpengeluaran1 = $querysaldoawalpengeluaran1->nominal ?? 0;
@@ -485,8 +485,8 @@ class LaporanKasBank extends MyModel
                 ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
                 ->join(DB::raw("pencairangiropengeluaranheader as c with (readuncommitted)"), 'a.nobukti', 'c.pengeluaran_nobukti')
                 ->whereraw("isnull(a.alatbayar_id,0)  in(3,4)")
-                ->whereRaw("a.tglbukti>=cast(ltrim(rtrim(str(year('" . $dariformat . "'))))+'/'+ltrim(rtrim(str(month('" . $dariformat . "'))))+'/1' as datetime) ")
-                ->where('a.tglbukti', '<', $dari)
+                ->whereRaw("c.tglbukti>=cast(ltrim(rtrim(str(year('" . $dariformat . "'))))+'/'+ltrim(rtrim(str(month('" . $dariformat . "'))))+'/1' as datetime) ")
+                ->where('c.tglbukti', '<', $dari)
                 ->where('a.bank_id', '=', $bankpengembaliankepusat->id)
                 ->first();
         }
@@ -521,7 +521,11 @@ class LaporanKasBank extends MyModel
 
         // dd($querysaldoawal->tosql());
         // dd($querysaldoawal->to);
+        // dump($querysaldoawal->nominal,$querysaldoawalpenerimaan->nominal,$querysaldoawalpenerimaanpindahbuku->nominal) ;
+        // dump('test');
+        // dd($querysaldoawalpengeluaran,$querysaldoawalpengeluaranpindahbuku->nominal,$saldoawalpengembaliankepusat);        
         $saldoawal =  ($querysaldoawal->nominal + $querysaldoawalpenerimaan->nominal + $querysaldoawalpenerimaanpindahbuku->nominal) - ($querysaldoawalpengeluaran + $querysaldoawalpengeluaranpindahbuku->nominal + $saldoawalpengembaliankepusat);
+        // dd($saldoawal);
 
         // dd($querysaldoawal->nominal,$querysaldoawalpenerimaan->nominal,$querysaldoawalpenerimaanpindahbuku->nominal,$querysaldoawalpengeluaran->nominal,$querysaldoawalpengeluaranpindahbuku->nominal,$saldoawalpengembaliankepusat);
 
