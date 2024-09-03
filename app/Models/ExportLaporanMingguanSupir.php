@@ -737,6 +737,7 @@ class ExportLaporanMingguanSupir extends Model
             $table->string('jobtrucking', 100)->nullable();
             $table->double('omset', 15, 2)->nullable();
             $table->double('extralain', 15, 2)->nullable();
+            $table->double('retribusi', 15, 2)->nullable();
             $table->integer('id')->nullable();
             $table->string('invoice', 50)->nullable();
             $table->longtext('notrip')->nullable();
@@ -749,7 +750,8 @@ class ExportLaporanMingguanSupir extends Model
             ->select(
                 'a.orderantrucking_nobukti',
                 'a.nominal as omset',
-                DB::RAW("(a.nominalextra+a.nominalretribusi) as extralain"),
+                DB::RAW("(a.nominalextra) as extralain"),
+                DB::RAW("(a.nominalretribusi) as retribusi"),
                 'b.id',
                 'a.nobukti',
                 'b.notrip',
@@ -762,6 +764,7 @@ class ExportLaporanMingguanSupir extends Model
             'jobtrucking',
             'omset',
             'extralain',
+            'retribusi',
             'id',
             'invoice',
             'notrip',
@@ -866,7 +869,6 @@ class ExportLaporanMingguanSupir extends Model
             $table->string('jobtrucking', 100)->nullable();
             $table->string('suratpengantar', 100)->nullable();
             $table->double('omsettambahan', 15, 2)->nullable();
-            $table->double('extralain', 15, 2)->nullable();
             $table->longtext('keterangan')->nullable();
         });
 
@@ -874,8 +876,7 @@ class ExportLaporanMingguanSupir extends Model
             ->select(
                 'a.jobtrucking',
                 'a.nobukti as suratpengantar',
-                'b.nominaltagih as omsettambahan',
-                'c.extralain as extralain',
+                db::raw("isnull(c.retribusi,0)+isnull(b.nominaltagih,0) as omsettambahan"),
                 'b.keteranganbiaya as keterangan',
             )
             ->join(db::raw("suratpengantarbiayatambahan b with (readuncommitted)"), 'a.id', 'b.suratpengantar_id')
@@ -886,7 +887,6 @@ class ExportLaporanMingguanSupir extends Model
             'jobtrucking',
             'suratpengantar',
             'omsettambahan',
-            'extralain',
             'keterangan',
         ], $querytambahan);
 
@@ -894,7 +894,7 @@ class ExportLaporanMingguanSupir extends Model
             ->select(
                 'a.jobtrucking',
                 'a.nobukti as suratpengantar',
-                'b1.nominaltagih as omsettambahan',
+                db::raw("isnull(b1.nominaltagih,0) as omsettambahan"),
                 'b1.keteranganbiaya as keterangan',
             )
             ->join(db::raw("biayaextrasupirheader b with (readuncommitted)"), 'a.nobukti', 'b.suratpengantar_nobukti')
@@ -923,7 +923,7 @@ class ExportLaporanMingguanSupir extends Model
             ->select(
                 'a.jobtrucking',
                 db::raw("max(c.notripawal) as suratpengantar"),
-                db::raw("sum(a.omsettambahan+isnull(a.extralain,0)) as omsettambahan"),
+                db::raw("sum(a.omsettambahan) as omsettambahan"),
                 db::raw("STRING_AGG(cast(trim(a.keterangan)+'('+format(a.omsettambahan,'#,#0')+')' as nvarchar(max)), ', ') as keterangan"),
             )
             ->join(db::raw($tempInvoice . " c"), 'a.jobtrucking', 'c.jobtrucking')
