@@ -218,12 +218,20 @@ class KartuStokController extends Controller
                 'index' => 'kategori_id',
             ],
             [
+                'label' => '@',
+                'index' => 'satuan_masuk'
+            ],
+            [
                 'label' => 'QTY',
                 'index' => 'qtymasuk'
             ],
             [
                 'label' => 'Nominal',
                 'index' => 'nilaimasuk'
+            ],
+            [
+                'label' => '@',
+                'index' => 'satuan_keluar'
             ],
             [
                 'label' => 'QTY',
@@ -245,6 +253,9 @@ class KartuStokController extends Controller
 
         foreach ($detail_columns as $detail_columns_index => $detail_column) {
             $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+            if ($detail_column['label']=='@') {
+                $sheet->getStyle($alphabets[$detail_columns_index] . $detail_table_header_row)->getAlignment()->setHorizontal('center');
+            }
         }
         $styleArray = array(
             'borders' => array(
@@ -267,7 +278,7 @@ class KartuStokController extends Controller
             ]
         ];
 
-        $sheet->getStyle("A$detail_table_header_row:K$detail_table_header_row")->applyFromArray($styleArray);
+        $sheet->getStyle("A$detail_table_header_row:M$detail_table_header_row")->applyFromArray($styleArray);
 
         // LOOPING DETAIL
         foreach ($kartu_Stok as $response_index => $response_detail) {
@@ -286,29 +297,31 @@ class KartuStokController extends Controller
                 ->setFormatCode('dd-mm-yyyy');
             $sheet->setCellValue("D$detail_start_row", $response_detail->nobukti);
             $sheet->setCellValue("E$detail_start_row", $response_detail->kategori_id);
-            $sheet->setCellValue("F$detail_start_row",  $response_detail->qtymasuk)->getStyle("F$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("G$detail_start_row",  $response_detail->nilaimasuk)->getStyle("G$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("H$detail_start_row",  $response_detail->qtykeluar)->getStyle("H$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("I$detail_start_row",  $response_detail->nilaikeluar)->getStyle("I$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("J$detail_start_row",  $response_detail->qtysaldo)->getStyle("J$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("K$detail_start_row",  $response_detail->nilaisaldo)->getStyle("K$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("F$detail_start_row",  $response_detail['satuan_masuk'])->getStyle("F$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("G$detail_start_row",  $response_detail['qtymasuk'])->getStyle("G$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("H$detail_start_row",  $response_detail['nilaimasuk'])->getStyle("H$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("I$detail_start_row",  $response_detail['satuan_keluar'])->getStyle("I$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("J$detail_start_row",  $response_detail['qtykeluar'])->getStyle("J$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("K$detail_start_row",  $response_detail['nilaikeluar'])->getStyle("K$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("L$detail_start_row",  $response_detail['qtysaldo'])->getStyle("L$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("M$detail_start_row",  $response_detail['nilaisaldo'])->getStyle("M$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
 
-            $sheet->getStyle("A$detail_start_row:J$detail_start_row")->applyFromArray($styleArray);
-            $sheet->getStyle("F$detail_start_row:K$detail_start_row")->applyFromArray($style_number);
+            $sheet->getStyle("A$detail_start_row:L$detail_start_row")->applyFromArray($styleArray);
+            $sheet->getStyle("F$detail_start_row:M$detail_start_row")->applyFromArray($style_number);
             $detail_start_row++;
         }
 
         $sheet->mergeCells('A' . $mergecell_start_row . ':E' . $mergecell_start_row);
-        $sheet->mergeCells('F' . $mergecell_start_row . ':G' . $mergecell_start_row);
-        $sheet->mergeCells('H' . $mergecell_start_row . ':I' . $mergecell_start_row);
-        $sheet->mergeCells('J' . $mergecell_start_row . ':K' . $mergecell_start_row);
+        $sheet->mergeCells('F' . $mergecell_start_row . ':H' . $mergecell_start_row);
+        $sheet->mergeCells('I' . $mergecell_start_row . ':K' . $mergecell_start_row);
+        $sheet->mergeCells('L' . $mergecell_start_row . ':M' . $mergecell_start_row);
         $sheet->setCellValue("A$mergecell_start_row", '')->getStyle('A' . $mergecell_start_row . ':E' . $mergecell_start_row)->applyFromArray($styleArray);
-        $sheet->setCellValue("F$mergecell_start_row", 'Masuk')->getStyle('F' . $mergecell_start_row . ':G' . $mergecell_start_row)->applyFromArray($styleArray)->getFont();
+        $sheet->setCellValue("F$mergecell_start_row", 'Masuk')->getStyle('F' . $mergecell_start_row . ':H' . $mergecell_start_row)->applyFromArray($styleArray)->getFont();
         $sheet->getStyle("F$mergecell_start_row")->getAlignment()->setHorizontal('center');
-        $sheet->setCellValue("H$mergecell_start_row", 'Keluar')->getStyle('H' . $mergecell_start_row . ':I' . $mergecell_start_row)->applyFromArray($styleArray)->getFont();
-        $sheet->getStyle("H$mergecell_start_row")->getAlignment()->setHorizontal('center');
-        $sheet->setCellValue("J$mergecell_start_row", 'Saldo')->getStyle('J' . $mergecell_start_row . ':K' . $mergecell_start_row)->applyFromArray($styleArray)->getFont();
-        $sheet->getStyle("J$mergecell_start_row")->getAlignment()->setHorizontal('center');
+        $sheet->setCellValue("I$mergecell_start_row", 'Keluar')->getStyle('I' . $mergecell_start_row . ':K' . $mergecell_start_row)->applyFromArray($styleArray)->getFont();
+        $sheet->getStyle("I$mergecell_start_row")->getAlignment()->setHorizontal('center');
+        $sheet->setCellValue("L$mergecell_start_row", 'Saldo')->getStyle('L' . $mergecell_start_row . ':M' . $mergecell_start_row)->applyFromArray($styleArray)->getFont();
+        $sheet->getStyle("L$mergecell_start_row")->getAlignment()->setHorizontal('center');
 
         $sheet->getColumnDimension('A')->setWidth(39);
         $sheet->getColumnDimension('B')->setWidth(39);
@@ -321,6 +334,8 @@ class KartuStokController extends Controller
         $sheet->getColumnDimension('I')->setAutoSize(true);
         $sheet->getColumnDimension('J')->setAutoSize(true);
         $sheet->getColumnDimension('K')->setAutoSize(true);
+        $sheet->getColumnDimension('L')->setAutoSize(true);
+        $sheet->getColumnDimension('M')->setAutoSize(true);
 
         $writer = new Xlsx($spreadsheet);
         $filename = 'Kartu Stok  ' . date('dmYHis');
