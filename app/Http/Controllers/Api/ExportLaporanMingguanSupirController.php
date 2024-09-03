@@ -9,7 +9,8 @@ use App\Models\ExportLaporanMingguanSupir;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
-
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class ExportLaporanMingguanSupirController extends Controller
 {
@@ -662,7 +663,7 @@ class ExportLaporanMingguanSupirController extends Controller
         $groupRowCount = 0;
         $sheet->setCellValue("D4", "Periode : " . $dari . " s/d " . $sampai);
         foreach ($data as $response_index => $response_detail) {
-            $nopol = $response_detail['nopol'];
+            $nopol = $response_detail->nopol;
 
             if ($nopol != $previous_nopol) {
                 if ($previous_nopol !== null) {
@@ -698,37 +699,37 @@ class ExportLaporanMingguanSupirController extends Controller
                 // Store the starting row index of the current group
                 $groupStartIndex = $rowIndex;
             }
-            $dateValue = ($response_detail['tglbukti'] != null) ? Date::PHPToExcel(date('Y-m-d', strtotime($response_detail['tglbukti']))) : '';
+            $dateValue = ($response_detail->tglbukti != null) ? Date::PHPToExcel(date('Y-m-d', strtotime($response_detail->tglbukti))) : '';
 
             $sheet->setCellValue("A$rowIndex", $dateValue);
             $sheet->getStyle("A$rowIndex")->getNumberFormat()->setFormatCode('dd-mm-yyyy');
-            $sheet->setCellValue("B$rowIndex", $response_detail['namasupir']);
-            $sheet->setCellValue("C$rowIndex", $response_detail['rute']);
-            $sheet->setCellValue("D$rowIndex", $response_detail['qty']);
-            $sheet->setCellValue("E$rowIndex", $response_detail['lokasimuat']);
-            $sheet->setCellValue("F$rowIndex", $response_detail['nocontseal']);
-            $sheet->setCellValue("G$rowIndex", $response_detail['emkl']);
-            $sheet->setCellValue("H$rowIndex", $response_detail['spfull']);
-            $sheet->setCellValue("I$rowIndex", $response_detail['spempty']);
-            $sheet->setCellValue("J$rowIndex", $response_detail['spfullempty']);
-            $sheet->setCellValue("K$rowIndex", $response_detail['jobtrucking']);
-            $sheet->setCellValue("L$rowIndex", $response_detail['omsetsurabaya'])->getStyle("L$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("B$rowIndex", $response_detail->namasupir);
+            $sheet->setCellValue("C$rowIndex", $response_detail->rute);
+            $sheet->setCellValue("D$rowIndex", $response_detail->qty);
+            $sheet->setCellValue("E$rowIndex", $response_detail->lokasimuat);
+            $sheet->setCellValue("F$rowIndex", $response_detail->nocontseal);
+            $sheet->setCellValue("G$rowIndex", $response_detail->emkl);
+            $sheet->setCellValue("H$rowIndex", $response_detail->spfull);
+            $sheet->setCellValue("I$rowIndex", $response_detail->spempty);
+            $sheet->setCellValue("J$rowIndex", $response_detail->spfullempty);
+            $sheet->setCellValue("K$rowIndex", $response_detail->jobtrucking);
+            $sheet->setCellValue("L$rowIndex", $response_detail->omsetsurabaya)->getStyle("L$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
 
-            $sheet->setCellValue("O$rowIndex", $response_detail['invoice']);
-            $sheet->setCellValue("P$rowIndex", $response_detail['borongan'])->getStyle("P$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("Q$rowIndex", $response_detail['nobuktiebs']);
-            $sheet->setCellValue("R$rowIndex", $response_detail['pengeluarannobuktiebs']);
-            $sheet->setCellValue("S$rowIndex", $response_detail['uangburuh'])->getStyle("S$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("U$rowIndex", $response_detail['uangextra'])->getStyle("U$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            if ($response_detail['uangextra'] > 0) {
-                $sheet->setCellValue("V$rowIndex", $response_detail['nobuktikbtkomisi']);
+            $sheet->setCellValue("O$rowIndex", $response_detail->invoice);
+            $sheet->setCellValue("P$rowIndex", $response_detail->borongan)->getStyle("P$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("Q$rowIndex", $response_detail->nobuktiebs);
+            $sheet->setCellValue("R$rowIndex", $response_detail->pengeluarannobuktiebs);
+            $sheet->setCellValue("S$rowIndex", $response_detail->uangburuh)->getStyle("S$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("U$rowIndex", $response_detail->uangextra)->getStyle("U$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            if ($response_detail->uangextra > 0) {
+                $sheet->setCellValue("V$rowIndex", $response_detail->nobuktikbtkomisi);
             }
-            $sheet->setCellValue("W$rowIndex", $response_detail['keteranganbiayatambahan']);
-            $sheet->setCellValue("X$rowIndex", $response_detail['uangjalan'])->getStyle("X$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("Y$rowIndex", $response_detail['uangbbm'])->getStyle("Y$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("W$rowIndex", $response_detail->keteranganbiayatambahan);
+            $sheet->setCellValue("X$rowIndex", $response_detail->uangjalan)->getStyle("X$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("Y$rowIndex", $response_detail->uangbbm)->getStyle("Y$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
             $sheet->setCellValue("AA$rowIndex", "=(P$rowIndex+S$rowIndex+U$rowIndex)")->getStyle("AA$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
             $sheet->setCellValue("AB$rowIndex", "=(L$rowIndex-AA$rowIndex)")->getStyle("AB$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("AC$rowIndex", $response_detail['nobukti']);
+            $sheet->setCellValue("AC$rowIndex", $response_detail->nobukti);
             $rowIndex++;
 
             // Store the current group details in an array
@@ -936,7 +937,7 @@ class ExportLaporanMingguanSupirController extends Controller
         $groupRowCount = 0;
         $sheet->setCellValue("A4", "periode : " . $dari . " s/d " . $sampai);
         foreach ($data as $response_index => $response_detail) {
-            $nopol = $response_detail['nopol'];
+            $nopol = $response_detail->nopol;
 
             if ($nopol != $previous_nopol) {
                 if ($previous_nopol !== null) {
@@ -968,40 +969,40 @@ class ExportLaporanMingguanSupirController extends Controller
                 // Store the starting row index of the current group
                 $groupStartIndex = $rowIndex;
             }
-            $dateValue = ($response_detail['tglbukti'] != null) ? Date::PHPToExcel(date('Y-m-d', strtotime($response_detail['tglbukti']))) : '';
+            $dateValue = ($response_detail->tglbukti != null) ? Date::PHPToExcel(date('Y-m-d', strtotime($response_detail->tglbukti))) : '';
 
             $sheet->setCellValue("A$rowIndex", $dateValue);
             $sheet->getStyle("A$rowIndex")->getNumberFormat()->setFormatCode('dd-mm-yyyy');
-            $sheet->setCellValue("C$rowIndex", $response_detail['namasupir']);
-            $sheet->setCellValue("D$rowIndex", $response_detail['rute']);
-            $sheet->setCellValue("E$rowIndex", $response_detail['qty']);
-            $sheet->setCellValue("F$rowIndex", $response_detail['lokasimuat']);
-            $sheet->setCellValue("G$rowIndex", $response_detail['nocontseal']);
-            $sheet->setCellValue("H$rowIndex", $response_detail['emkl']);
-            $sheet->setCellValue("I$rowIndex", $response_detail['spfull']);
-            $sheet->setCellValue("J$rowIndex", $response_detail['spempty']);
-            $sheet->setCellValue("K$rowIndex", $response_detail['spfullempty']);
-            $sheet->setCellValue("L$rowIndex", $response_detail['jobtrucking']);
-            $sheet->setCellValue("M$rowIndex", $response_detail['omset'])->getStyle("M$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("N$rowIndex", $response_detail['omsettambahan'])->getStyle("N$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("C$rowIndex", $response_detail->namasupir);
+            $sheet->setCellValue("D$rowIndex", $response_detail->rute);
+            $sheet->setCellValue("E$rowIndex", $response_detail->qty);
+            $sheet->setCellValue("F$rowIndex", $response_detail->lokasimuat);
+            $sheet->setCellValue("G$rowIndex", $response_detail->nocontseal);
+            $sheet->setCellValue("H$rowIndex", $response_detail->emkl);
+            $sheet->setCellValue("I$rowIndex", $response_detail->spfull);
+            $sheet->setCellValue("J$rowIndex", $response_detail->spempty);
+            $sheet->setCellValue("K$rowIndex", $response_detail->spfullempty);
+            $sheet->setCellValue("L$rowIndex", $response_detail->jobtrucking);
+            $sheet->setCellValue("M$rowIndex", $response_detail->omset)->getStyle("M$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("N$rowIndex", $response_detail->omsettambahan)->getStyle("N$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
             $sheet->setCellValue("O$rowIndex", "=(M$rowIndex+N$rowIndex)")->getStyle("O$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("P$rowIndex", $response_detail['kettagihomset']);
-            $sheet->setCellValue("Q$rowIndex", $response_detail['omsetextrabbm'])->getStyle("Q$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("R$rowIndex", $response_detail['invoice']);
-            $sheet->setCellValue("S$rowIndex", $response_detail['borongan'])->getStyle("S$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("T$rowIndex", $response_detail['nobuktiebs']);
-            $sheet->setCellValue("U$rowIndex", $response_detail['pengeluarannobuktiebs']);
+            $sheet->setCellValue("P$rowIndex", $response_detail->kettagihomset);
+            $sheet->setCellValue("Q$rowIndex", $response_detail->omsetextrabbm)->getStyle("Q$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("R$rowIndex", $response_detail->invoice);
+            $sheet->setCellValue("S$rowIndex", $response_detail->borongan)->getStyle("S$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("T$rowIndex", $response_detail->nobuktiebs);
+            $sheet->setCellValue("U$rowIndex", $response_detail->pengeluarannobuktiebs);
 
-            $sheet->setCellValue("V$rowIndex", $response_detail['uanglain'])->getStyle("V$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("W$rowIndex", $response_detail['ketuanglain']);
-            $sheet->setCellValue("X$rowIndex", $response_detail['uangmakan'])->getStyle("X$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("Y$rowIndex", $response_detail['biayaextrasupir_nobukti']);
-            $sheet->setCellValue("Z$rowIndex", $response_detail['biayaextrasupir_nominal'])->getStyle("Z$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("AA$rowIndex", $response_detail['biayaextrasupir_keterangan']);
-            $sheet->setCellValue("AB$rowIndex", $response_detail['uangjalan'])->getStyle("AB$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("V$rowIndex", $response_detail->uanglain)->getStyle("V$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("W$rowIndex", $response_detail->ketuanglain);
+            $sheet->setCellValue("X$rowIndex", $response_detail->uangmakan)->getStyle("X$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("Y$rowIndex", $response_detail->biayaextrasupir_nobukti);
+            $sheet->setCellValue("Z$rowIndex", $response_detail->biayaextrasupir_nominal)->getStyle("Z$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("AA$rowIndex", $response_detail->biayaextrasupir_keterangan);
+            $sheet->setCellValue("AB$rowIndex", $response_detail->uangjalan)->getStyle("AB$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
             $sheet->setCellValue("AC$rowIndex", "=S$rowIndex+V$rowIndex+X$rowIndex+Z$rowIndex")->getStyle("AC$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
             $sheet->setCellValue("AD$rowIndex", "=O$rowIndex-AC$rowIndex")->getStyle("AD$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("AE$rowIndex", $response_detail['nobukti']);
+            $sheet->setCellValue("AE$rowIndex", $response_detail->nobukti);
             $rowIndex++;
 
             // Store the current group details in an array

@@ -219,7 +219,9 @@ class LaporanPemakaianStok extends MyModel
                         when isnull(h2.kodegandengan,'')<>'' then isnull(h2.kodegandengan,'')                        
                 else '' end) as kodetrado
                 "),
-                'a.namabarang as namastok',
+                // 'a.namabarang as namastok',
+                db::raw("isnull(c1.kodekelompok,'')+' - '+trim(a.namabarang) as namastok"),
+
                 'a.qtykeluar as qty',
                 'a.nilaikeluar as nominal',
                 db::raw("round((a.nilaikeluar/a.qtykeluar),2) as harga"),
@@ -231,6 +233,7 @@ class LaporanPemakaianStok extends MyModel
 
             )
             ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
+            ->join(db::raw("kelompok c1 with (readuncommitted)"),'b.kelompok_id','c1.id')
             ->leftjoin(db::raw("satuan c with (readuncommitted)"), 'b.satuan_id', 'c.id')
             ->leftjoin(DB::raw("pengeluaranstokdetail as d"), function ($join) {
                 $join->on('a.nobukti', '=', 'd.nobukti');

@@ -245,7 +245,8 @@ class LaporanKasBankController extends Controller
                 }
 
                 $sheet->getStyle("A$detail_start_row:G$detail_start_row")->applyFromArray($styleArray);
-                $sheet->getStyle("E$detail_start_row:G$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                
+                $sheet->getStyle("E$detail_start_row:G$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
 
                 // $sheet->getStyle("D$detail_start_row")->getAlignment()->setWrapText(true);
                 $previousRow = $dataRow; // Update the previous row number
@@ -262,9 +263,9 @@ class LaporanKasBankController extends Controller
             $sheet->setCellValue("F$detail_start_row",  "=SUM(F9:F" . ($dataRow - 1) . ")")->getStyle("F$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
             $sheet->setCellValue("G$detail_start_row",  "=G" . ($dataRow - 1))->getStyle("G$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
 
-            $sheet->getStyle("E$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->getStyle("F$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->getStyle("G$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->getStyle("E$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+            $sheet->getStyle("F$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+            $sheet->getStyle("G$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
 
             $sheet->getColumnDimension('A')->setAutoSize(true);
             $sheet->getColumnDimension('B')->setAutoSize(true);
