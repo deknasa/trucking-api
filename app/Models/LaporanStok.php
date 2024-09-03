@@ -295,9 +295,10 @@ class LaporanStok extends MyModel
                 DB::raw("'' as vulkanisirke"),
                 DB::raw("isnull(c.keterangan,isnull(d.keterangan,'')) as keterangan"),
                 'a.nobukti as nobukti',
-                'a.kodebarang as id',
-                'a.kodebarang',
-                db::raw("(case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end) as namabarang"),
+                db::raw("isnull(c1.kodekelompok,'')+' - '+trim(a.kodebarang) as id"),
+                db::raw("isnull(c1.kodekelompok,'')+' - '+trim(a.kodebarang) as kodebarang"),
+                db::raw("isnull(c1.kodekelompok,'')+' - '+trim(a.namabarang) as namabarang"),
+                // db::raw("(case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end) as namabarang"),
                 'a.tglbukti as tglbukti',
                 db::raw("(isnull(a.qtymasuk,0)+
                 (case when a.nobukti='SALDO AWAL' then 
@@ -322,6 +323,8 @@ class LaporanStok extends MyModel
 
             )
             ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
+            ->join(db::raw("kelompok c1 with (readuncommitted)"),'b.kelompok_id','c1.id')
+
             ->leftjoin(db::raw("pengeluaranstokdetail c with (readuncommitted) "), function ($join) {
                 $join->on('a.nobukti', '=', 'c.nobukti');
                 $join->on('a.stok_id', '=', 'c.stok_id');
@@ -403,6 +406,7 @@ class LaporanStok extends MyModel
 
         // dd(DB::table($temprekapall)->get());
         $data = $query->get();
+        // dd($data);
         return $data;
     }
 }

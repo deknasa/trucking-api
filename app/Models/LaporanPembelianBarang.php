@@ -101,7 +101,9 @@ class LaporanPembelianBarang extends MyModel
             ->select(
                 'a.nobukti',
                 'b.tglbukti',
-                'd.namastok',
+                // 'd.namastok',
+                db::raw("isnull(c1.kodekelompok,'')+' - '+trim(d.namastok) as namastok"),
+
                 'c.qty',
                 db::raw("isnull(e.satuan,'') as satuan"),
                 db::raw("isnull(c.harga,0) as harga"),
@@ -116,6 +118,8 @@ class LaporanPembelianBarang extends MyModel
             ->join(DB::raw("penerimaanstokheader as b with (readuncommitted)"), 'a.nobukti',  'b.nobukti')
             ->join(db::raw("penerimaanstokdetail as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
             ->join(db::raw("stok as d with (readuncommitted)"), 'c.stok_id', 'd.id')
+            ->join(db::raw("kelompok c1 with (readuncommitted)"),'d.kelompok_id','c1.id')
+
             ->leftjoin(db::raw("satuan as e with (readuncommitted)"), 'd.satuan_id', 'e.id')
             ->OrderBy('b.tglbukti','asc')
             ->OrderBy('b.nobukti','asc')
