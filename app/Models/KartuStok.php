@@ -565,6 +565,8 @@ class KartuStok extends MyModel
                 'a.qtykeluar',
                 'a.nilaikeluar',
                 db::raw("isnull(NULLIF(a.nilaikeluar,0) / NULLIF(a.qtykeluar,0),0) AS satuan_keluar"),
+                db::raw("(case when isnull(a.nilaikeluar,0)<>0 then isnull(NULLIF(a.nilaikeluar,0) / NULLIF(a.qtykeluar,0),0)  else  isnull(NULLIF(a.nilaimasuk,0) / NULLIF(a.qtymasuk,0),0) end) AS hrg_satuan"),
+
                 'a.qtysaldo',
                 // db::raw("round(a.nilaisaldo ,2) as nilaisaldo"),
                 'a.nilaisaldo',
