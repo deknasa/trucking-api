@@ -199,9 +199,10 @@ class BankController extends Controller
 
     public function show(Bank $bank)
     {
+        $data = Bank::findAll($bank->id);
         return response([
             'status' => true,
-            'data' => $bank
+            'data' => $data
         ]);
     }
 

@@ -340,26 +340,29 @@ class Bank extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
         });
 
         $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
-            ->select(
-                'id'
+             ->select(
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id, "statusaktifnama" => $statusaktif->text]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
-            ->select(
-                'statusaktif'
-            );
+        ->select(
+            'statusaktif',
+            'statusaktifnama'
+        );
 
         $data = $query->first();
         // dd($data);
@@ -379,8 +382,17 @@ class Bank extends MyModel
                 'bank.statusaktif',
                 'bank.formatpenerimaan',
                 'bank.formatpengeluaran',
+                'bank.formatcetakan',
+                'parameter.text as statusaktifnama',
+                'formatpenerimaan.text as formatpenerimaannama',
+                'formatpengeluaran.text as formatpengeluarannama',
+                'formatcetakan.text as formatcetakannama',
 
             )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'bank.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as formatpenerimaan with (readuncommitted)"), 'bank.formatpenerimaan', '=', 'formatpenerimaan.id')
+            ->leftJoin(DB::raw("parameter as formatpengeluaran with (readuncommitted)"), 'bank.formatpengeluaran', '=', 'formatpengeluaran.id')
+            ->leftJoin(DB::raw("parameter as formatcetakan with (readuncommitted)"), 'bank.formatcetakan', '=', 'formatcetakan.id')
             ->where('bank.id', $id);
 
         $data = $query->first();
