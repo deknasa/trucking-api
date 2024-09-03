@@ -249,13 +249,13 @@ class LaporanStokController extends Controller
                 $sheet->getColumnDimension($alphabets[$data_columns_index])->setAutoSize(true);
             }
         }
-
+        $endsum = $detail_start_row;
         $detail_start_row++;
         // menambahkan sel Total pada baris terakhir + 1
         $sheet->setCellValue("B" . ($detail_start_row), 'TOTAL');
-        $sheet->setCellValue("F" . ($detail_start_row), "=SUM(F" . ($header_start_row + 1) . ":F" . $detail_start_row . ")");
-        $sheet->setCellValue("H" . ($detail_start_row), "=SUM(H" . ($header_start_row + 1) . ":H" . $detail_start_row . ")");
-        $sheet->setCellValue("K" . ($detail_start_row), "=SUM(K" . ($header_start_row + 1) . ":K" . $detail_start_row . ")");
+        $sheet->setCellValue("F" . ($detail_start_row), "=SUM(F" . ($header_start_row + 1) . ":F" . $endsum . ")");
+        $sheet->setCellValue("H" . ($detail_start_row), "=SUM(H" . ($header_start_row + 1) . ":H" . $endsum . ")");
+        $sheet->setCellValue("K" . ($detail_start_row), "=SUM(K" . ($header_start_row + 1) . ":K" . $endsum . ")");
 
         //FORMAT
         $numberColumn = [
