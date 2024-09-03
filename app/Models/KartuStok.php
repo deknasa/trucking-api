@@ -561,9 +561,10 @@ class KartuStok extends MyModel
                 'a.kategori_id',
                 'a.qtymasuk',
                 'a.nilaimasuk',
+                db::raw("isnull(NULLIF(a.nilaimasuk,0) / NULLIF(a.qtymasuk,0),0) AS satuan_masuk"),
                 'a.qtykeluar',
-                // db::raw("round(a.nilaikeluar ,2) as nilaikeluar"),
                 'a.nilaikeluar',
+                db::raw("isnull(NULLIF(a.nilaikeluar,0) / NULLIF(a.qtykeluar,0),0) AS satuan_keluar"),
                 'a.qtysaldo',
                 // db::raw("round(a.nilaisaldo ,2) as nilaisaldo"),
                 'a.nilaisaldo',
@@ -785,6 +786,10 @@ class KartuStok extends MyModel
         // DB::table($tempFilter)->insert(
         //     ["filter" => $filter->id]
         // );
+        $stokdari_id = 0;
+        $stokdari = '';
+        $stoksampai_id = 0;
+        $stoksampai = '';
         DB::table($tempdefault)->insert(
             ["stokdari_id" => $stokdari_id, "stokdari" => $stokdari, "stoksampai_id" => $stoksampai_id, "stoksampai" => $stoksampai, "gudang_id" => $gudang_id, "gudang" => $namagudang, "trado_id" => $trado_id, "trado" => $namatrado, "gandengan_id" => $gandengan_id, "gandengan" => $namagandengan, "filter" => $idstokpersediaan, "statustampil" => $idstatusstok]
         );

@@ -81,31 +81,53 @@ class HariLibur extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
         });
 
         $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('DEFAULT', '=', 'YA')
             ->first();
 
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id, "statusaktifnama" => $statusaktif->text]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
-                'statusaktif'
+                'statusaktif',
+                'statusaktifnama'
             );
 
         $data = $query->first();
         // dd($data);
         return $data;
+    }
+    public function findAll($id)
+    {
+        $query = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))
+            ->select(
+                "harilibur.id",
+                "harilibur.tgl",
+                "harilibur.keterangan",
+                "harilibur.modifiedby",
+                "harilibur.created_at",
+                "harilibur.updated_at",
+                "harilibur.statusaktif",
+                'parameter.text as statusaktifnama',
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'harilibur.statusaktif', 'parameter.id')
+            ->where('harilibur.id', $id)
+            ->first();
+
+        return $query;
     }
 
     public function selectColumns($query)
