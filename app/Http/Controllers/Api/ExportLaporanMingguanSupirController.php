@@ -905,6 +905,8 @@ class ExportLaporanMingguanSupirController extends Controller
         $sheet->setCellValue("T" . ($detail_table_header_row + 1), 'No Pengeluaran EBS')->getStyle("T2")->applyFromArray($styleHeader)->getFont()->setSize(14)->setBold(true);
         $sheet->mergeCells("T" . ($detail_table_header_row + 1) . ":T" . ($detail_table_header_row + 2));
 
+        $sheet->setCellValue("U$detail_table_header_row", 'Biaya Extra')->getStyle("U1")->applyFromArray($styleHeader)->getFont()->setSize(14)->setBold(true);
+        $sheet->mergeCells("U$detail_table_header_row:Z$detail_table_header_row");
         $sheet->setCellValue("U" . ($detail_table_header_row + 1), 'B.Ext Trip')->getStyle("U2")->applyFromArray($styleHeader)->getFont()->setSize(14)->setBold(true);
         $sheet->mergeCells("U" . ($detail_table_header_row + 1) . ":U" . ($detail_table_header_row + 2));
         $sheet->setCellValue("V" . ($detail_table_header_row + 1), 'Ket B.Ex Trip')->getStyle("V2")->applyFromArray($styleHeader)->getFont()->setSize(14)->setBold(true);
@@ -920,9 +922,8 @@ class ExportLaporanMingguanSupirController extends Controller
         $sheet->setCellValue("Z" . ($detail_table_header_row + 1), 'Ket B. Extra')->getStyle("Z2")->applyFromArray($styleHeader)->getFont()->setSize(14)->setBold(true);
         $sheet->mergeCells("Z" . ($detail_table_header_row + 1) . ":Z" . ($detail_table_header_row + 2));
 
-        $sheet->setCellValue("AA$detail_table_header_row", 'Biaya')->getStyle("AA1")->applyFromArray($styleHeader)->getFont()->setSize(14)->setBold(true);
-        $sheet->setCellValue("AA" . ($detail_table_header_row + 1), 'Kas Gantung Supir')->getStyle("AA2")->applyFromArray($styleHeader)->getFont()->setSize(14)->setBold(true);
-        $sheet->mergeCells("AA" . ($detail_table_header_row + 1) . ":AA" . ($detail_table_header_row + 2));
+        $sheet->setCellValue("AA" . ($detail_table_header_row), 'Kas Gantung Supir')->getStyle("AA1")->applyFromArray($styleHeader)->getFont()->setSize(14)->setBold(true);
+        $sheet->mergeCells("AA" . ($detail_table_header_row) . ":AA" . ($detail_table_header_row + 2));
         $sheet->setCellValue("AB$detail_table_header_row", 'Total Biaya')->getStyle("AB1")->applyFromArray($styleHeader)->getFont()->setSize(14)->setBold(true);
         $sheet->mergeCells("AB$detail_table_header_row:AB" . ($detail_table_header_row + 2));
         $sheet->setCellValue("AC$detail_table_header_row", 'Laba')->getStyle("AC1")->applyFromArray($styleHeader)->getFont()->setSize(14)->setBold(true);
