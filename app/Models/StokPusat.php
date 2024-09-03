@@ -353,17 +353,24 @@ class StokPusat extends MyModel
 
         if ($data['stok_idmdn'] != null) {
             $getCabang = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))->where('kodecabang', 'MDN')->first();
-            $gambarmdn = '';
-            if ($data['gambarmdn'] != null) {
-                $gambarmdn = $this->saveFiles('stokpusat/mdn/', config('app.pic_url_mdn'), $data['gambarmdn'], str_replace(' ', '_', $data['namastokmdn']));
-            }
+            // $gambarmdn = '';
+            // if ($data['gambarmdn'] != null) {
+            //     $gambarmdn = $this->saveFiles('stokpusat/mdn/', config('app.pic_url_mdn'), $data['gambarmdn'], str_replace(' ', '_', $data['namastokmdn']));
+            // }
             $datadetails = (new StokPusatRincian())->processStore($stokPusat, [
                 'namastok' => str_replace("''", '"',  strtoupper($data['namastokmdn'])),
                 'kelompok_id' => $data['kelompok_id'],
                 'stok_id' => $data['stok_idmdn'],
                 'cabang_id' => $getCabang->id,
-                'gambar' => ($data['gambarmdn'] != null) ? json_encode([$gambarmdn]) : '',
+                'gambar' => ($data['gambarmdn'] != null) ? json_encode([$data['gambarmdn']]) : '',
             ]);
+            if ($data['gambarmdn'] != null) {
+                $destinationPath = 'stokpusat/mdn/';
+                $imageUrl = config('app.server_mdn') . "trucking-api/public/api/stok/" . str_replace(' ', '%20', $data['gambarmdn']) . "/medium";
+                $destinationFileName = $data['gambarmdn'];
+                $imageData = file_get_contents($imageUrl);
+                Storage::put($destinationPath . $destinationFileName, $imageData);
+            }
             $detaillog[] = $datadetails->toArray();
         }
 
@@ -407,20 +414,23 @@ class StokPusat extends MyModel
             $detaillog[] = $datadetails->toArray();
         }
 
-
         if ($data['stok_idmks'] != null) {
             $getCabang = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))->where('kodecabang', 'MKS')->first();
-            $gambarmks = '';
-            if ($data['gambarmks'] != null) {
-                $gambarmks = $this->saveFiles('stokpusat/mks/', config('app.pic_url_mks'), $data['gambarmks'], str_replace(' ', '_', $data['namastokmks']));
-            }
+
             $datadetails = (new StokPusatRincian())->processStore($stokPusat, [
                 'namastok' => str_replace("''", '"',  strtoupper($data['namastokmks'])),
                 'kelompok_id' => $data['kelompok_id'],
                 'stok_id' => $data['stok_idmks'],
                 'cabang_id' => $getCabang->id,
-                'gambar' => ($data['gambarmks'] != null) ? json_encode([$gambarmks]) : '',
+                'gambar' => ($data['gambarmks'] != null) ? json_encode([$data['gambarmks']]) : '',
             ]);
+            if ($data['gambarmks'] != null) {
+                $destinationPath = 'stokpusat/mks/';
+                $imageUrl = config('app.server_mks') . "trucking-api/public/api/stok/" . str_replace(' ', '%20', $data['gambarmks']) . "/medium";
+                $destinationFileName = $data['gambarmks'];
+                $imageData = file_get_contents($imageUrl);
+                Storage::put($destinationPath . $destinationFileName, $imageData);
+            }
             $detaillog[] = $datadetails->toArray();
         }
 
@@ -504,22 +514,22 @@ class StokPusat extends MyModel
             if ($data['gambarmdn'] != null) {
                 if ($mdn != null) {
                     if($mdn->gambar != '') {
+                       
                         $gbrMedan = json_decode($mdn->gambar)[0];
-                        if (trim($data['gambarmdn']) != trim($gbrMedan)) {
+                        if ($data['gambarmdn'] != $gbrMedan) {
                             if ($gbrMedan != null) {
                                 Storage::delete("stokpusat/mdn/$gbrMedan");
                             }
-                            $gambarmdn =  $this->saveFiles('stokpusat/mdn/', config('app.pic_url_mdn'), $data['gambarmdn'], str_replace(' ', '_', $data['namastokmdn']));
-                        } else {
-                            $gambarmdn = $gbrMedan;
-                        }
-                    }else{                        
-                        $gambarmdn =  $this->saveFiles('stokpusat/mdn/', config('app.pic_url_mdn'), $data['gambarmdn'], str_replace(' ', '_', $data['namastokmdn']));
-                    }
-                    
-                } else {
-                    $gambarmdn = $this->saveFiles('stokpusat/mdn/', config('app.pic_url_mdn'), $data['gambarmdn'], str_replace(' ', '_', $data['namastokmdn']));
-                }
+                        }     
+                    }               
+                } 
+
+                $destinationPath = 'stokpusat/mdn/';
+                $imageUrl = "http://tasmdn.kozow.com:8074/trucking-api/public/api/stok/" . str_replace(' ', '%20', $data['gambarmdn']) . "/medium";
+                $destinationFileName = $data['gambarmdn'];
+                $imageData = file_get_contents($imageUrl);
+                Storage::put($destinationPath . $destinationFileName, $imageData);
+
             } else {
                 if ($mdn != null) {
                     if($mdn->gambar != ''){
@@ -532,12 +542,12 @@ class StokPusat extends MyModel
             }
 
             StokPusatRincian::where('stokpusat_id', $stokPusat->id)->where('cabang_id', $getCabang->id)->delete();
-            $datadetails = (new StokPusatRincian())->processSto1re($stokPusat, [
+            $datadetails = (new StokPusatRincian())->processStore($stokPusat, [
                 'namastok' => str_replace("''", '"',  strtoupper($data['namastokmdn'])),
                 'kelompok_id' => $data['kelompok_id'],
                 'stok_id' => $data['stok_idmdn'],
                 'cabang_id' => $getCabang->id,
-                'gambar' => ($data['gambarmdn'] != null) ? json_encode([$gambarmdn]) : '',
+                'gambar' => ($data['gambarmdn'] != null) ? json_encode([$data['gambarmdn']]) : '',
             ]);
             $detaillog[] = $datadetails->toArray();
         } else {
@@ -664,39 +674,38 @@ class StokPusat extends MyModel
             }
         }
 
-
+        
         if ($data['stok_idmks'] != null) {
             $getCabang = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))->where('kodecabang', 'MKS')->first();
 
             $mks = (new StokPusatRincian())->findMks($stokPusat->id);
-            $gambarmks = '';
             if ($data['gambarmks'] != null) {
                 if ($mks != null) {
-                    if($mks->gambar != '') {
+                    if($mks->gambar !=''){
+                        
                         $gbrMks = json_decode($mks->gambar)[0];
-                        if (trim($data['gambarmks']) != trim($gbrMks)) {
+                        if ($data['gambarmks'] != $gbrMks) {
                             if ($gbrMks != null) {
                                 Storage::delete("stokpusat/mks/$gbrMks");
                             }
-
-                            $gambarmks = $this->saveFiles('stokpusat/mks/', config('app.pic_url_mks'), $data['gambarmks'], str_replace(' ', '_', $data['namastokmks']));
-                        } else {
-                            $gambarmks = $gbrMks;
                         }
-                    }else{
-                        $gambarmks = $this->saveFiles('stokpusat/mks/', config('app.pic_url_mks'), $data['gambarmks'], str_replace(' ', '_', $data['namastokmks']));
                     }
-                } else {
-                    $gambarmks = $this->saveFiles('stokpusat/mks/', config('app.pic_url_mks'), $data['gambarmks'],  str_replace(' ', '_', $data['namastokmks']));
                 }
+
+                $destinationPath = 'stokpusat/mks/';
+                $imageUrl = "http://tasmks.kozow.com:8074/trucking-api/public/api/stok/" . str_replace(' ', '%20', $data['gambarmks']) . "/medium";
+                $destinationFileName = $data['gambarmks'];
+                $imageData = file_get_contents($imageUrl);
+                Storage::put($destinationPath . $destinationFileName, $imageData);
             } else {
-                if ($mks != null) {                    
+                if ($mks != null) {
                     if($mks->gambar != ''){
-                        $gbrMks = json_decode($mks->gambar)[0];
-                        if ($gbrMks != null) {
-                            Storage::delete("stokpusat/mks/$gbrMks");
-                        }
+                        
+                    $gbrMks = json_decode($mks->gambar)[0];
+                    if ($gbrMks != null) {
+                        Storage::delete("stokpusat/mks/$gbrMks");
                     }
+                }
                 }
             }
 
@@ -706,11 +715,11 @@ class StokPusat extends MyModel
                 'kelompok_id' => $data['kelompok_id'],
                 'stok_id' => $data['stok_idmks'],
                 'cabang_id' => $getCabang->id,
-                'gambar' => ($data['gambarmks'] != null) ? json_encode([$gambarmks]) : '',
+                'gambar' => ($data['gambarmks'] != null) ? json_encode([$data['gambarmks']]) : '',
             ]);
             $detaillog[] = $datadetails->toArray();
         } else {
-            $getCabang = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))->where('kodecabang', 'MKS')->first();
+            $getCabang = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))->where('kodecabang', 'mks')->first();
             $mks = (new StokPusatRincian())->findMks($stokPusat->id);
             if ($mks != null) {
                 if ($mks->gambar != null) {
@@ -1035,23 +1044,47 @@ class StokPusat extends MyModel
         $cekParam = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS KONEKSI')->where('text', 'OFFLINE')->first();
         $cabang = Cabang::where('id', 2)->first();
         if ($cabang->statuskoneksi != $cekParam->id) {
-            $this->setRequestParameters();
+            // $this->setRequestParameters();
 
-            $kelompok = DB::table("kelompok")->from(DB::raw("kelompok with (readuncommitted)"))->where('id', $kelompok_id)->first();
-            $query = DB::connection('sqlsrvmdn')->table('Stck')->from(DB::raw("Stck as a with (readuncommitted)"))
-                ->select('FID as id', 'FNstck as namastok', DB::raw("isnull(FPic1, '') as gambar"), 'FSubKelompok as subkelompok')
-                ->where('FKelompok', $kelompok->kodekelompok);
+            // $kelompok = DB::table("kelompok")->from(DB::raw("kelompok with (readuncommitted)"))->where('id', $kelompok_id)->first();
+            // $query = DB::connection('sqlsrvmdn')->table('Stck')->from(DB::raw("Stck as a with (readuncommitted)"))
+            //     ->select('FID as id', 'FNstck as namastok', DB::raw("isnull(FPic1, '') as gambar"), 'FSubKelompok as subkelompok')
+            //     ->where('FKelompok', $kelompok->kodekelompok);
 
-            $this->totalRows = $query->count();
-            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+            // $this->totalRows = $query->count();
+            // $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-            $sortIndex = request()->sortIndex ?? 'FID';
-            $this->sortData($query, $sortIndex);
-            $this->filterData($query);
-            $this->paginateData($query);
-            $data = $query->get();
+            // $sortIndex = request()->sortIndex ?? 'FID';
+            // $this->sortData($query, $sortIndex);
+            // $this->filterData($query);
+            // $this->paginateData($query);
+            // $data = $query->get();
+            $server = config('app.url_token_mdn');
+            $userCabang = env('USER_JAKARTA');
+            $passwordCabang = env('PASSWORD_JAKARTA');
+            $getToken = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json'
+            ])
+                ->post($server, [
+                    'user' => $userCabang,
+                    'password' => $passwordCabang,
+                    'ipclient' => '',
+                    'ipserver' => '',
+                    'latitude' => '',
+                    'longitude' => '',
+                    'browser' => '',
+                    'os' => '',
+                ]);
+            if ($getToken->getStatusCode() != '200') {
+                throw new \Exception("SERVER MEDAN TIDAK BISA DIAKSES");
+            } else {
+                $access_token = json_decode($getToken, TRUE)['access_token'];
+                session(['access_token_mdn_stok' => $access_token]);
+                $data = $access_token;
+            }
         } else {
-            $data = [];
+            $data = '';
         }
         return $data;
     }
@@ -1086,23 +1119,47 @@ class StokPusat extends MyModel
         $cekParam = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS KONEKSI')->where('text', 'OFFLINE')->first();
         $cabang = Cabang::where('id', 5)->first();
         if ($cabang->statuskoneksi != $cekParam->id) {
-            $this->setRequestParameters();
+            // $this->setRequestParameters();
 
-            $kelompok = DB::table("kelompok")->from(DB::raw("kelompok with (readuncommitted)"))->where('id', $kelompok_id)->first();
-            $query = DB::connection('sqlsrvmks')->table('Stck')->from(DB::raw("Stck as a with (readuncommitted)"))
-                ->select('FID as id', 'FNstck as namastok', DB::raw("isnull(FPic1, '') as gambar"), 'FSubKelompok as subkelompok')
-                ->where('FKelompok', $kelompok->kodekelompok);
+            // $kelompok = DB::table("kelompok")->from(DB::raw("kelompok with (readuncommitted)"))->where('id', $kelompok_id)->first();
+            // $query = DB::connection('sqlsrvmks')->table('Stck')->from(DB::raw("Stck as a with (readuncommitted)"))
+            //     ->select('FID as id', 'FNstck as namastok', DB::raw("isnull(FPic1, '') as gambar"), 'FSubKelompok as subkelompok')
+            //     ->where('FKelompok', $kelompok->kodekelompok);
 
-            $this->totalRows = $query->count();
-            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+            // $this->totalRows = $query->count();
+            // $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-            $sortIndex = request()->sortIndex ?? 'FID';
-            $this->sortData($query, $sortIndex);
-            $this->filterData($query);
-            $this->paginateData($query);
-            $data = $query->get();
+            // $sortIndex = request()->sortIndex ?? 'FID';
+            // $this->sortData($query, $sortIndex);
+            // $this->filterData($query);
+            // $this->paginateData($query);
+            // $data = $query->get();
+            $server = config('app.url_token_mks');
+            $userCabang = env('USER_JAKARTA');
+            $passwordCabang = env('PASSWORD_JAKARTA');
+            $getToken = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json'
+            ])
+                ->post($server, [
+                    'user' => $userCabang,
+                    'password' => $passwordCabang,
+                    'ipclient' => '',
+                    'ipserver' => '',
+                    'latitude' => '',
+                    'longitude' => '',
+                    'browser' => '',
+                    'os' => '',
+                ]);
+            if ($getToken->getStatusCode() != '200') {
+                throw new \Exception("SERVER MAKASSAR TIDAK BISA DIAKSES");
+            } else {
+                $access_token = json_decode($getToken, TRUE)['access_token'];
+                session(['access_token_mks_stok' => $access_token]);
+                $data = $access_token;
+            }
         } else {
-            $data = [];
+            $data = '';
         }
         return $data;
     }
@@ -1271,11 +1328,18 @@ class StokPusat extends MyModel
 
             if ($data['stok_idmdn'] != '') {
                 $accessTokenMdnStok = session('access_token_mdn_stok');
+                $data['konsolidasi'] = true;
+
                 if (!$accessTokenMdnStok) {
                     $postRequest = [
-                        'grant_type' => 'client_credentials',
-                        'client_id' => config('app.client_id_mdn'),
-                        'client_secret' =>  config('app.client_secret_mdn')
+                        'user' => config('app.user_api'),
+                        'password' => config('app.pass_api'),
+                        'ipclient' => '',
+                        'ipserver' => '',
+                        'latitude' => '',
+                        'longitude' => '',
+                        'browser' => '',
+                        'os' => '',
                     ];
                     $token = $this->getToken(config('app.url_token_mdn'), $postRequest);
 
@@ -1287,6 +1351,7 @@ class StokPusat extends MyModel
                             session(['access_token_mdn_stok' => $token['access_token']]);
                             $send = $this->postData(config('app.url_post_konsol_mdn'), 'POST', $accessToken, $data);
                             $send = json_decode($send, TRUE);
+
                             if (array_key_exists('status', $send)) {
                                 goto selesai;
                             } else {
@@ -1311,11 +1376,17 @@ class StokPusat extends MyModel
             }
             if ($data['stok_idmdndel'] != '') {
                 $accessTokenMdnStok = session('access_token_mdn_stok');
+                $data['konsolidasi'] = true;
                 if (!$accessTokenMdnStok) {
                     $postRequest = [
-                        'grant_type' => 'client_credentials',
-                        'client_id' => config('app.client_id_mdn'),
-                        'client_secret' =>  config('app.client_secret_mdn')
+                        'user' => config('app.user_api'),
+                        'password' => config('app.pass_api'),
+                        'ipclient' => '',
+                        'ipserver' => '',
+                        'latitude' => '',
+                        'longitude' => '',
+                        'browser' => '',
+                        'os' => '',
                     ];
                     $token = $this->getToken(config('app.url_token_mdn'), $postRequest);
 
@@ -1339,89 +1410,6 @@ class StokPusat extends MyModel
                     }
                 } else {
                     $send = $this->postData(config('app.url_post_konsol_mdn'), 'POST', $accessTokenMdnStok, $data);
-
-                    $send = json_decode($send, TRUE);
-                    if (array_key_exists('status', $send)) {
-                        goto selesai;
-                    } else {
-                        throw new \Exception($send['message']);
-                    }
-                }
-            }
-        }
-
-        if (array_key_exists('MKS', $cabangTerkoneksi)) {
-            if ($data['stok_idmks'] != '') {
-                $accessTokenMksStok = session('access_token_mks_stok');
-                if (!$accessTokenMksStok) {
-                    $postRequest = [
-                        'grant_type' => 'client_credentials',
-                        'client_id' => config('app.client_id_mks'),
-                        'client_secret' =>  config('app.client_secret_mks')
-                    ];
-                    $token = $this->getToken(config('app.url_token_mks'), $postRequest);
-
-                    $token = json_decode($token, TRUE);
-                    if ($token != '') {
-
-                        if (array_key_exists('access_token', $token)) {
-                            $accessToken = $token['access_token'];
-                            session(['access_token_mks_stok' => $token['access_token']]);
-                            $send = $this->postData(config('app.url_post_konsol_mks'), 'POST', $accessToken, $data);
-                            $send = json_decode($send, TRUE);
-                            if (array_key_exists('status', $send)) {
-                                goto selesai;
-                            } else {
-                                throw new \Exception($send['message']);
-                            }
-                        } else {
-                            throw new \Exception("server Makassar tidak bisa diakses");
-                        }
-                    } else {
-                        throw new \Exception("server Makassar tidak bisa diakses");
-                    }
-                } else {
-                    $send = $this->postData(config('app.url_post_konsol_mks'), 'POST', $accessTokenMksStok, $data);
-
-                    $send = json_decode($send, TRUE);
-                    if (array_key_exists('status', $send)) {
-                        goto selesai;
-                    } else {
-                        throw new \Exception($send['message']);
-                    }
-                }
-            }
-            if ($data['stok_idmksdel'] != '') {
-                $accessTokenMksStok = session('access_token_mks_stok');
-                if (!$accessTokenMksStok) {
-                    $postRequest = [
-                        'grant_type' => 'client_credentials',
-                        'client_id' => config('app.client_id_mks'),
-                        'client_secret' =>  config('app.client_secret_mks')
-                    ];
-                    $token = $this->getToken(config('app.url_token_mks'), $postRequest);
-
-                    $token = json_decode($token, TRUE);
-                    if ($token != '') {
-
-                        if (array_key_exists('access_token', $token)) {
-                            $accessToken = $token['access_token'];
-                            session(['access_token_mks_stok' => $token['access_token']]);
-                            $send = $this->postData(config('app.url_post_konsol_mks'), 'POST', $accessToken, $data);
-                            $send = json_decode($send, TRUE);
-                            if (array_key_exists('status', $send)) {
-                                goto selesai;
-                            } else {
-                                throw new \Exception($send['message']);
-                            }
-                        } else {
-                            throw new \Exception("server Makassar tidak bisa diakses");
-                        }
-                    } else {
-                        throw new \Exception("server Makassar tidak bisa diakses");
-                    }
-                } else {
-                    $send = $this->postData(config('app.url_post_konsol_mks'), 'POST', $accessTokenMksStok, $data);
 
                     $send = json_decode($send, TRUE);
                     if (array_key_exists('status', $send)) {
@@ -1590,6 +1578,104 @@ class StokPusat extends MyModel
 
                     $send = json_decode($send, TRUE);
 
+                    if (array_key_exists('status', $send)) {
+                        goto selesai;
+                    } else {
+                        throw new \Exception($send['message']);
+                    }
+                }
+            }
+        }
+        
+
+        if (array_key_exists('MKS', $cabangTerkoneksi)) {
+            if ($data['stok_idmks'] != '') {
+                $accessTokenMksStok = session('access_token_mks_stok');
+                $data['konsolidasi'] = true;
+                if (!$accessTokenMksStok) {
+                    $postRequest = [
+                        'user' => config('app.user_api'),
+                        'password' => config('app.pass_api'),
+                        'ipclient' => '',
+                        'ipserver' => '',
+                        'latitude' => '',
+                        'longitude' => '',
+                        'browser' => '',
+                        'os' => '',
+                    ];
+                    $token = $this->getToken(config('app.url_token_mks'), $postRequest);
+                    
+                    $token = json_decode($token, TRUE);
+                    if($token != '' ){
+                        
+                        if (array_key_exists('access_token', $token)) {
+                            $accessToken = $token['access_token'];
+                            session(['access_token_mks_stok' => $token['access_token']]);
+
+                            $send = $this->postData(config('app.url_post_konsol_mks'), 'POST', $accessToken, $data);
+                            $send = json_decode($send, TRUE);
+                            if (array_key_exists('status', $send)) {
+                                goto selesai;
+                            } else {
+                                throw new \Exception($send['message']);
+                            }
+                        } else {
+                            throw new \Exception("server Makassar tidak bisa diakses");
+                        }
+                    } else {
+                        throw new \Exception("server Makassar tidak bisa diakses");
+                    }
+                } else {
+                    $send = $this->postData(config('app.url_post_konsol_mks'), 'POST', $accessTokenMksStok, $data);
+
+                    $send = json_decode($send, TRUE);
+                    if (array_key_exists('status', $send)) {
+                        goto selesai;
+                    } else {
+                        throw new \Exception($send['message']);
+                    }
+                }
+            }
+            if ($data['stok_idmksdel'] != '') {
+                $accessTokenMksStok = session('access_token_mks_stok');
+                $data['konsolidasi'] = true;
+                if (!$accessTokenMksStok) {
+                    $postRequest = [
+                        'user' => config('app.user_api'),
+                        'password' => config('app.pass_api'),
+                        'ipclient' => '',
+                        'ipserver' => '',
+                        'latitude' => '',
+                        'longitude' => '',
+                        'browser' => '',
+                        'os' => '',
+                    ];
+                    $token = $this->getToken(config('app.url_token_mks'), $postRequest);
+                    
+                    $token = json_decode($token, TRUE);
+                    if($token != '' ){
+                        
+                        if (array_key_exists('access_token', $token)) {
+                            $accessToken = $token['access_token'];
+                            session(['access_token_mks_stok' => $token['access_token']]);
+
+                            $send = $this->postData(config('app.url_post_konsol_mks'), 'POST', $accessToken, $data);
+                            $send = json_decode($send, TRUE);
+                            if (array_key_exists('status', $send)) {
+                                goto selesai;
+                            } else {
+                                throw new \Exception($send['message']);
+                            }
+                        } else {
+                            throw new \Exception("server Makassar tidak bisa diakses");
+                        }
+                    } else {
+                        throw new \Exception("server Makassar tidak bisa diakses");
+                    }
+                } else {
+                    $send = $this->postData(config('app.url_post_konsol_mks'), 'POST', $accessTokenMksStok, $data);
+
+                    $send = json_decode($send, TRUE);
                     if (array_key_exists('status', $send)) {
                         goto selesai;
                     } else {
