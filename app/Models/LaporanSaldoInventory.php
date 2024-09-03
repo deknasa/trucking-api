@@ -462,7 +462,8 @@ class LaporanSaldoInventory extends MyModel
                 // DB::raw("'VulKe :'+trim(str(isnull(b.totalvulkanisir,0))) as vulkanisirke"),
                 'a.stok_id as stok_id',
                 'a.kodebarang',
-                db::raw("(case when isnull(b.keterangan,'')='' then b.namastok else b.keterangan end)+ ' '+
+                // db::raw("(case when isnull(b.keterangan,'')='' then b.namastok else b.keterangan end)+ ' '+
+                db::raw("isnull(c.kodekelompok,'')+' - '+trim(b.namastok)+ ' '+
                 (case when isnull(c1.stok_id,0)<>0 then ' ( '+
                 (case when " . $bytgl . "=1 then 'TGL PAKAI '+format(c1.tglawal,'dd-MM-yyyy')+',' else '' end)+
                 'UMUR AKI : '+format(isnull(c1.jumlahhari,0),'#,#0')+' HARI )' 
