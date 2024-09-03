@@ -38,9 +38,10 @@ class ExportLaporanMingguanSupirController extends Controller
         $sampai = $request->sampai;
         $tradodari = $request->tradodari_id;
         $tradosampai = $request->tradosampai_id;
+        $jenislaporan = $request->jenislaporan ?? 0;
 
         $exportlaporanmingguan = new ExportLaporanMingguanSupir();
-        $export_laporanmingguan = $exportlaporanmingguan->getExport($dari, $sampai, $tradodari, $tradosampai);
+        $export_laporanmingguan = $exportlaporanmingguan->getExport($dari, $sampai, $tradodari, $tradosampai,$jenislaporan);
 
         foreach ($export_laporanmingguan as $data) {
             $data->tglbukti = date('d-m-Y', strtotime($data->tglbukti));
