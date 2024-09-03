@@ -37,6 +37,10 @@ use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Controllers\Api\InvoiceDetailController as ApiInvoiceDetailController;
 use App\Models\Locking;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class InvoiceHeaderController extends Controller
 {
@@ -577,7 +581,7 @@ class InvoiceHeaderController extends Controller
 
             $getEditing = (new Locking())->getEditing('invoiceheader', $id);
             $useredit = $getEditing->editing_by ?? '';
-            (new MyModel())->createLockEditing($id, 'invoiceheader',$useredit);   
+            (new MyModel())->createLockEditing($id, 'invoiceheader', $useredit);
             $data = [
                 'error' => false,
                 'message' => '',
@@ -591,36 +595,258 @@ class InvoiceHeaderController extends Controller
      * @ClassName
      * @Keterangan CETAK DATA
      */
-    public function report()
-    {
-    }
+    public function report() {}
 
 
     /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
-    public function approvalbukacetak()
-    {
-    }
+    public function approvalbukacetak() {}
 
     /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */
-    public function approvalkirimberkas()
-    {
-    }
+    public function approvalkirimberkas() {}
 
     /**
      * @ClassName
      * @Keterangan EXPORT KE EXCEL
      */
-    public function export($id)
+    public function export($id, Request $request)
     {
-        $invoiceheader = new InvoiceHeader();
-        return response([
-            'data' => $invoiceheader->getExport($id)
-        ]);
+        $invoiceHeader = new InvoiceHeader();
+        $invoice_Header = $invoiceHeader->getExport($id);
+
+        $invoiceDetail = new InvoiceDetail();
+        $invoice_Detail = $invoiceDetail->get();
+
+        if ($request->export == true) {
+            $tglBukti = $invoice_Header->tglbukti;
+            $timeStamp = strtotime($tglBukti);
+            $dateTglBukti = date('d-m-Y', $timeStamp);
+            $invoice_Header->tglbukti = $dateTglBukti;
+
+            $tglterima = $invoice_Header->tglterima;
+            $timeStamp = strtotime($tglterima);
+            $datetglterima = date('d-m-Y', $timeStamp);
+            $invoice_Header->tglterima = $datetglterima;
+
+            $tgljatuhtempo = $invoice_Header->tgljatuhtempo;
+            $timeStamp = strtotime($tgljatuhtempo);
+            $datetgljatuhtempo = date('d-m-Y', $timeStamp);
+            $invoice_Header->tgljatuhtempo = $datetgljatuhtempo;
+
+            //PRINT TO EXCEL
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+            $sheet->setCellValue('A1', $invoice_Header->judul);
+            $sheet->setCellValue('A2', $invoice_Header->judulLaporan);
+            $sheet->getStyle("A1")->getFont()->setSize(11);
+            $sheet->getStyle("A2")->getFont()->setSize(11);
+            $sheet->getStyle("A1")->getFont()->setBold(true);
+            $sheet->getStyle("A2")->getFont()->setBold(true);
+            $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+            $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+            $sheet->mergeCells('A1:M1');
+            $sheet->mergeCells('A2:M2');
+
+            $header_start_row = 4;
+            $header_right_start_row = 4;
+            $detail_table_header_row = 8;
+            $detail_start_row = $detail_table_header_row + 1;
+
+            $alphabets = range('A', 'Z');
+
+            $header_columns = [
+                [
+                    'label' => 'No Invoice',
+                    'index' => 'nobukti',
+                ],
+                [
+                    'label' => 'Tanggal',
+                    'index' => 'tglbukti',
+                ],
+                [
+                    'label' => 'Tanggal Jatuh Tempo',
+                    'index' => 'tgljatuhtempo',
+                ]
+            ];
+
+            $header_right_columns = [
+                [
+                    'label' => 'Customer',
+                    'index' => 'agen',
+                ],
+                [
+                    'label' => 'Jenis Order',
+                    'index' => 'jenisorder_id',
+                ],
+                [
+                    'label' => 'No Bukti Piutang',
+                    'index' => 'piutang_nobukti',
+                ]
+            ];
+
+            $detail_columns = [
+                [
+                    'label' => 'NO',
+                ],
+                [
+                    'label' => 'TANGGAL SP',
+                    'index' => 'tglsp',
+                ],
+                [
+                    'label' => 'SHIPPER',
+                    'index' => 'shipper',
+                ],
+                [
+                    'label' => 'TUJUAN',
+                    'index' => 'tujuan',
+                ],
+                [
+                    'label' => 'NO CONT',
+                    'index' => 'nocont',
+                ],
+                [
+                    'label' => 'UK. CONT',
+                    'index' => 'ukcont',
+                ],
+                [
+                    'label' => 'FULL',
+                    'index' => 'full'
+                ],
+                [
+                    'label' => 'EMPTY',
+                    'index' => 'empty'
+                ],
+                [
+                    'label' => 'FULL / EMPTY',
+                    'index' => 'fullEmpty'
+                ],
+                [
+                    'label' => 'OMSET',
+                    'index' => 'omset',
+                    'format' => 'currency'
+                ],
+                [
+                    'label' => 'EXTRA',
+                    'index' => 'extra',
+                    'format' => 'currency'
+                ],
+                [
+                    'label' => 'JUMLAH',
+                    'index' => 'jumlah',
+                    'format' => 'currency'
+                ],
+                [
+                    'label' => 'KETERANGAN',
+                    'index' => 'keterangan'
+                ]
+            ];
+
+            //LOOPING HEADER       
+            foreach ($header_columns as $header_column) {
+                $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                $sheet->setCellValue('C' . $header_start_row++, ': ' . $invoice_Header->{$header_column['index']});
+            }
+            foreach ($header_right_columns as $header_right_column) {
+                $sheet->setCellValue('D' . $header_right_start_row, $header_right_column['label']);
+                $sheet->setCellValue('E' . $header_right_start_row++, ': ' . $invoice_Header->{$header_right_column['index']});
+            }
+            foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+            }
+            $styleArray = array(
+                'borders' => array(
+                    'allBorders' => array(
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    ),
+                ),
+            );
+
+            $style_number = [
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                ],
+
+                'borders' => [
+                    'allBorders' => array(
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    ),
+                ]
+            ];
+
+            // $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF1F456E');
+            $sheet->getStyle("A$detail_table_header_row:M$detail_table_header_row")->applyFromArray($styleArray);
+
+            // LOOPING DETAIL
+            $jumlah = 0;
+            foreach ($invoice_Detail as $response_index => $response_detail) {
+
+                foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                    $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : $response_index + 1);
+                    $sheet->getStyle("A$detail_table_header_row:M$detail_table_header_row")->getFont()->setBold(true);
+                    $sheet->getStyle("A$detail_table_header_row:M$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                }
+
+                $tglSp = ($response_detail->tglsp != null) ? Date::PHPToExcel(date('Y-m-d', strtotime($response_detail->tglsp))) : '';
+
+                $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                $sheet->setCellValue("B$detail_start_row", $tglSp);
+                $sheet->setCellValue("C$detail_start_row", $response_detail->shipper);
+                $sheet->setCellValue("D$detail_start_row", $response_detail->tujuan);
+                $sheet->setCellValue("E$detail_start_row", $response_detail->nocont);
+                $sheet->setCellValue("F$detail_start_row", $response_detail->ukcont);
+                $sheet->setCellValueExplicit("G$detail_start_row", $response_detail->full, DataType::TYPE_STRING);
+                $sheet->setCellValueExplicit("H$detail_start_row", $response_detail->empty, DataType::TYPE_STRING);
+                $sheet->setCellValueExplicit("I$detail_start_row", $response_detail->fullEmpty, DataType::TYPE_STRING);
+                $sheet->setCellValue("J$detail_start_row", $response_detail->omset);
+                $sheet->setCellValue("K$detail_start_row", $response_detail->extra);
+                $sheet->setCellValue("L$detail_start_row", $response_detail->jumlah);
+                $sheet->setCellValue("M$detail_start_row", $response_detail->keterangan);
+
+                $sheet->getColumnDimension('M')->setWidth(30);
+
+                $sheet->getStyle("A$detail_start_row:M$detail_start_row")->applyFromArray($styleArray);
+                $sheet->getStyle("B$detail_start_row")->getNumberFormat()->setFormatCode('dd-mm-yyyy');
+                $sheet->getStyle("J$detail_start_row:L$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                $detail_start_row++;
+            }
+
+            $total_start_row = $detail_start_row;
+            $sheet->mergeCells('A' . $total_start_row . ':K' . $total_start_row);
+            $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':M' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+            $sheet->setCellValue("L$detail_start_row", "=SUM(L9:L" . ($detail_start_row - 1) . ")")->getStyle("L$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+
+            $sheet->getStyle("L$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+
+            $sheet->getColumnDimension('A')->setAutoSize(true);
+            $sheet->getColumnDimension('B')->setAutoSize(true);
+            $sheet->getColumnDimension('C')->setAutoSize(true);
+            $sheet->getColumnDimension('D')->setAutoSize(true);
+            $sheet->getColumnDimension('E')->setAutoSize(true);
+            $sheet->getColumnDimension('F')->setAutoSize(true);
+            $sheet->getColumnDimension('G')->setAutoSize(true);
+            $sheet->getColumnDimension('H')->setAutoSize(true);
+            $sheet->getColumnDimension('I')->setAutoSize(true);
+            $sheet->getColumnDimension('J')->setAutoSize(true);
+            $sheet->getColumnDimension('K')->setAutoSize(true);
+            $sheet->getColumnDimension('L')->setAutoSize(true);
+
+            $writer = new Xlsx($spreadsheet);
+            $filename = 'Laporan Invoice ' . date('dmYHis');
+            header('Content-Type: application/vnd.ms-excel');
+            header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+            header('Cache-Control: max-age=0');
+
+            $writer->save('php://output');
+        } else {
+            return response([
+                'data' => $invoice_Header
+            ]);
+        }
     }
 }

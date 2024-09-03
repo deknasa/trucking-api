@@ -45,6 +45,8 @@ use App\Http\Requests\UpdateSuratPengantarRequest;
 use App\Http\Requests\DestroySuratPengantarRequest;
 
 use App\Models\Locking;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class SuratPengantarController extends Controller
 {
@@ -809,12 +811,317 @@ class SuratPengantarController extends Controller
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL
      */
-    public function export()
+    public function export(Request $request)
     {
         $suratPengantar = new SuratPengantar();
-        return response([
-            'data' => $suratPengantar->getExport(),
-        ]);
+        $surat_Pengantar = $suratPengantar->getExport();
+
+        if ($request->export == true) {
+            $surat_PengantarData = $surat_Pengantar['data'];
+
+            $timeStamp = strtotime($request->tgldari);
+            $datetglDari = date('d-m-Y', $timeStamp);
+            $periodeDari = $datetglDari;
+
+            $timeStamp = strtotime($request->tglsampai);
+            $datetglSampai = date('d-m-Y', $timeStamp);
+            $periodeSampai = $datetglSampai;
+
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+            $sheet->setCellValue('A1', $surat_Pengantar['parameter']->judul);
+            $sheet->setCellValue('A2', $surat_Pengantar['parameter']->judulLaporan);
+            $sheet->getStyle("A1")->getFont()->setSize(11);
+            $sheet->getStyle("A2")->getFont()->setSize(11);
+            $sheet->getStyle("A1")->getFont()->setBold(true);
+            $sheet->getStyle("A2")->getFont()->setBold(true);
+            $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+            $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+            $sheet->mergeCells('A1:Z1');
+            $sheet->mergeCells('A2:Z2');
+
+            $header_start_row = 4;
+            $detail_table_header_row = 7;
+            $detail_start_row = $detail_table_header_row + 1;
+            $alphabets = range('A', 'Z');
+
+            $header_columns = [
+                [
+                    'label' => 'Periode Dari',
+                    'index' => $periodeDari
+                ],
+                [
+                    'label' => 'Periode Sampai',
+                    'index' => $periodeSampai
+                ]
+            ];
+
+            $columns = [
+                [
+                    'label' => 'NO',
+                ],
+                [
+                    'label' => 'JOB TRUCKING',
+                    'index' => 'jobtrucking',
+                ],
+                [
+                    'label' => 'NO TRIP',
+                    'index' => 'nobukti',
+                ],
+                [
+                    'label' => 'TANGGAL TRIP',
+                    'index' => 'tglbukti',
+                ],
+                [
+                    'label' => 'NO SP',
+                    'index' => 'nosp',
+                ],
+                [
+                    'label' => 'TANGGAL SP',
+                    'index' => 'tglsp',
+                ],
+                [
+                    'label' => 'SHIPPER',
+                    'index' => 'pelanggan_id',
+                ],
+                [
+                    'label' => 'KETERANGAN',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'NO JOB',
+                    'index' => 'nojob',
+                ],
+                [
+                    'label' => 'DARI',
+                    'index' => 'dari_id',
+                ],
+                [
+                    'label' => 'SAMPAI',
+                    'index' => 'sampai_id',
+                ],
+                [
+                    'label' => 'PENYESUAIAN',
+                    'index' => 'penyesuaian',
+                ],
+                [
+                    'label' => 'CUSTOMER',
+                    'index' => 'agen_id',
+                ],
+                [
+                    'label' => 'JENIS ORDER',
+                    'index' => 'jenisorder_id',
+                ],
+                [
+                    'label' => 'JARAK (KM)',
+                    'index' => 'jarak',
+                ],
+                [
+                    'label' => 'NO CONTAINER',
+                    'index' => 'nocont',
+                ],
+                [
+                    'label' => 'CONTAINER',
+                    'index' => 'container_id',
+                ],
+                [
+                    'label' => 'STATUS CONTAINER',
+                    'index' => 'statuscontainer_id',
+                ],
+                [
+                    'label' => 'GUDANG',
+                    'index' => 'gudang',
+                ],
+                [
+                    'label' => 'NO POLISI',
+                    'index' => 'trado_id',
+                ],
+                [
+                    'label' => 'SUPIR',
+                    'index' => 'supir_id',
+                ],
+                [
+                    'label' => 'CHASIS',
+                    'index' => 'gandengan_id',
+                ],
+                [
+                    'label' => 'LOKASI BONGKAR MUAT',
+                    'index' => 'tarif_id',
+                ],
+                [
+                    'label' => 'MANDOR TRADO',
+                    'index' => 'mandortrado_id',
+                ],
+                [
+                    'label' => 'MANDOR SUPIR',
+                    'index' => 'mandorsupir_id',
+                ],
+                [
+                    'label' => 'NO SEAL',
+                    'index' => 'noseal',
+                ],
+                [
+                    'label' => 'TOTAL OMSET',
+                    'index' => 'totalomset',
+                    'format' => 'currency'
+                ],
+                [
+                    'label' => 'GAJI SUPIR',
+                    'index' => 'gajisupir',
+                    'format' => 'currency'
+                ],
+            ];
+
+            //LOOPING HEADER        
+            foreach ($header_columns as $header_column) {
+                $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                $sheet->setCellValue('C' . $header_start_row++, ': ' . $header_column['index']);
+            }
+            $alphabets = [];
+            for ($i = 0; $i < 26; $i++) {
+                $alphabets[] = chr(65 + $i);
+            }
+
+            for ($i = 0; $i < 26; $i++) {
+                for ($j = 0; $j < 26; $j++) {
+                    $alphabets[] = chr(65 + $i) . chr(65 + $j);
+                }
+            }
+            foreach ($columns as $detail_columns_index => $detail_column) {
+                $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+            }
+            $styleArray = array(
+                'borders' => array(
+                    'allBorders' => array(
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    ),
+                ),
+            );
+
+            $style_number = [
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                ],
+
+                'borders' => [
+                    'top' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                    'right' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                    'bottom' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                    'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                ]
+            ];
+            $sheet->getStyle("A$detail_table_header_row:AB$detail_table_header_row")->applyFromArray($styleArray);
+            $sheet->getStyle("A$detail_table_header_row:AB$detail_table_header_row")->getFont()->setBold(true);
+
+            if (is_iterable($surat_PengantarData)) {
+                $gajisupir = 0;
+                foreach ($surat_PengantarData as $response_index => $response_detail) {
+
+                    $response_detail->gajisupirs = number_format((float) $response_detail->gajisupir, '2', '.', ',');
+
+                    $tglTrip = $response_detail->tglbukti;
+                    $timeStamp = strtotime($tglTrip);
+                    $datetglTrip = date('d-m-Y', $timeStamp);
+                    $response_detail->tglbukti = $datetglTrip;
+
+                    $tglSp = $response_detail->tglsp;
+                    $timeStamp = strtotime($tglSp);
+                    $datetglSp = date('d-m-Y', $timeStamp);
+                    $response_detail->tglsp = $datetglSp;
+
+                    $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                    $sheet->setCellValue("B$detail_start_row", $response_detail->jobtrucking);
+                    $sheet->setCellValue("C$detail_start_row", $response_detail->nobukti);
+                    $sheet->setCellValue("D$detail_start_row", $response_detail->tglbukti);
+                    $sheet->setCellValue("E$detail_start_row", $response_detail->nosp);
+                    $sheet->setCellValue("F$detail_start_row", $response_detail->tglsp);
+                    $sheet->setCellValue("G$detail_start_row", $response_detail->pelanggan_id);
+                    $sheet->setCellValue("H$detail_start_row", $response_detail->keterangan);
+                    $sheet->setCellValue("I$detail_start_row", $response_detail->nojob);
+                    $sheet->setCellValue("J$detail_start_row", $response_detail->dari_id);
+                    $sheet->setCellValue("K$detail_start_row", $response_detail->sampai_id);
+                    $sheet->setCellValue("L$detail_start_row", $response_detail->penyesuaian);
+                    $sheet->setCellValue("M$detail_start_row", $response_detail->agen_id);
+                    $sheet->setCellValue("N$detail_start_row", $response_detail->jenisorder_id);
+                    $sheet->setCellValue("O$detail_start_row", $response_detail->jarak);
+                    $sheet->setCellValue("P$detail_start_row", $response_detail->nocont);
+                    $sheet->setCellValue("Q$detail_start_row", $response_detail->container_id);
+                    $sheet->setCellValue("R$detail_start_row", $response_detail->statuscontainer_id);
+                    $sheet->setCellValue("S$detail_start_row", $response_detail->gudang);
+                    $sheet->setCellValue("T$detail_start_row", $response_detail->trado_id);
+                    $sheet->setCellValue("U$detail_start_row", $response_detail->supir_id);
+                    $sheet->setCellValue("V$detail_start_row", $response_detail->gandengan_id);
+                    $sheet->setCellValue("W$detail_start_row", $response_detail->tarif_id);
+                    $sheet->setCellValue("X$detail_start_row", $response_detail->mandortrado_id);
+                    $sheet->setCellValue("Y$detail_start_row", $response_detail->mandorsupir_id);
+                    $sheet->setCellValue("Z$detail_start_row", $response_detail->noseal);
+                    $sheet->setCellValue("AA$detail_start_row", $response_detail->totalomset);
+                    $sheet->setCellValue("AB$detail_start_row", $response_detail->gajisupir);
+
+                    $sheet->getStyle("H$detail_start_row")->getAlignment()->setWrapText(true);
+                    $sheet->getColumnDimension('H')->setWidth(50);
+
+                    $sheet->getStyle("A$detail_start_row:Z$detail_start_row")->applyFromArray($styleArray);
+                    $sheet->getStyle("AA$detail_start_row")->applyFromArray($style_number);
+                    $sheet->getStyle("AB$detail_start_row")->applyFromArray($style_number);
+
+                    $sheet->getStyle("AA$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->getStyle("AB$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+
+                    $gajisupir += $response_detail->gajisupir;
+                    $detail_start_row++;
+                }
+                $total_start_row = $detail_start_row;
+                $sheet->mergeCells('A' . $total_start_row . ':Z' . $total_start_row);
+                $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':Z' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                $sheet->setCellValue("AA$total_start_row", "=SUM(AA8:AA" . ($detail_start_row - 1) . ")")->getStyle("AA$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+                $sheet->setCellValue("AB$total_start_row", "=SUM(AB8:AB" . ($detail_start_row - 1) . ")")->getStyle("AB$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+
+                $sheet->getStyle("AA$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                $sheet->getStyle("AB$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            }
+
+            $sheet->getColumnDimension('A')->setAutoSize(true);
+            $sheet->getColumnDimension('B')->setAutoSize(true);
+            $sheet->getColumnDimension('C')->setAutoSize(true);
+            $sheet->getColumnDimension('D')->setAutoSize(true);
+            $sheet->getColumnDimension('E')->setAutoSize(true);
+            $sheet->getColumnDimension('F')->setAutoSize(true);
+            $sheet->getColumnDimension('G')->setAutoSize(true);
+            $sheet->getColumnDimension('I')->setAutoSize(true);
+            $sheet->getColumnDimension('J')->setAutoSize(true);
+            $sheet->getColumnDimension('K')->setAutoSize(true);
+            $sheet->getColumnDimension('L')->setAutoSize(true);
+            $sheet->getColumnDimension('M')->setAutoSize(true);
+            $sheet->getColumnDimension('N')->setAutoSize(true);
+            $sheet->getColumnDimension('O')->setAutoSize(true);
+            $sheet->getColumnDimension('P')->setAutoSize(true);
+            $sheet->getColumnDimension('Q')->setAutoSize(true);
+            $sheet->getColumnDimension('R')->setAutoSize(true);
+            $sheet->getColumnDimension('S')->setAutoSize(true);
+            $sheet->getColumnDimension('T')->setAutoSize(true);
+            $sheet->getColumnDimension('U')->setAutoSize(true);
+            $sheet->getColumnDimension('V')->setAutoSize(true);
+            $sheet->getColumnDimension('W')->setAutoSize(true);
+            $sheet->getColumnDimension('X')->setAutoSize(true);
+            $sheet->getColumnDimension('Y')->setAutoSize(true);
+            $sheet->getColumnDimension('Z')->setAutoSize(true);
+            $sheet->getColumnDimension('AA')->setAutoSize(true);
+            $sheet->getColumnDimension('AB')->setAutoSize(true);
+
+            $writer = new Xlsx($spreadsheet);
+            $filename = 'Laporan Surat Pengantar' . date('dmYHis');
+            header('Content-Type: application/vnd.ms-excel');
+            header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+            header('Cache-Control: max-age=0');
+
+            $writer->save('php://output');
+        } else {
+            return response([
+                'data' => $surat_Pengantar
+            ]);
+        }
     }
 
     public function addrow(Request $request)

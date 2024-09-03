@@ -1154,6 +1154,7 @@ class LogAbsensi extends MyModel
     }
     public function get($tgldari, $tglsampai)
     {
+        // dd(request());
         $this->setRequestParameters();
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;

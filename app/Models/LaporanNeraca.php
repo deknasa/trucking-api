@@ -1010,7 +1010,7 @@ class LaporanNeraca extends MyModel
                 $table->string('diperiksa', 500)->nullable();
             });
 
-
+// dd((new LaporanDepositoSupir())->getReport($tglsd, '', 1)->get());
 
             DB::table($tempdepositosupir)->insertUsing([
                 'id',
@@ -1124,6 +1124,7 @@ class LaporanNeraca extends MyModel
                 $table->string('keterangancoa', 500)->nullable();
                 $table->string('namabank', 500)->nullable();
                 $table->date('tglbukti')->nullable();
+                $table->date('tglbukti2')->nullable();
                 $table->string('nobukti', 500)->nullable();
                 $table->longText('keterangan')->nullable();
                 $table->double('debet')->nullable();
@@ -1166,6 +1167,7 @@ class LaporanNeraca extends MyModel
                 'keterangancoa',
                 'namabank',
                 'tglbukti',
+                'tglbukti2',
                 'nobukti',
                 'keterangan',
                 'debet',
@@ -1194,6 +1196,7 @@ class LaporanNeraca extends MyModel
                     $table->string('keterangancoa', 500)->nullable();
                     $table->string('namabank', 500)->nullable();
                     $table->date('tglbukti')->nullable();
+                    $table->date('tglbukti2')->nullable();
                     $table->string('nobukti', 500)->nullable();
                     $table->longText('keterangan')->nullable();
                     $table->double('debet')->nullable();
@@ -1225,6 +1228,7 @@ class LaporanNeraca extends MyModel
                     'keterangancoa',
                     'namabank',
                     'tglbukti',
+                    'tglbukti2',
                     'nobukti',
                     'keterangan',
                     'debet',
@@ -1252,6 +1256,7 @@ class LaporanNeraca extends MyModel
                 $table->string('keterangancoa', 500)->nullable();
                 $table->string('namabank', 500)->nullable();
                 $table->date('tglbukti')->nullable();
+                $table->date('tglbukti2')->nullable();
                 $table->string('nobukti', 500)->nullable();
                 $table->longText('keterangan')->nullable();
                 $table->double('debet')->nullable();
@@ -1281,6 +1286,7 @@ class LaporanNeraca extends MyModel
                 'keterangancoa',
                 'namabank',
                 'tglbukti',
+                'tglbukti2',
                 'nobukti',
                 'keterangan',
                 'debet',
@@ -1344,7 +1350,7 @@ class LaporanNeraca extends MyModel
                 'nilaisaldo',
                 'disetujui',
                 'diperiksa',
-            ], (new LaporanSaldoInventory())->getReport('', '', '', 186, 364, $tglsd, 0, 0, 1, 1));
+            ], (new LaporanSaldoInventory())->getReport('', '', '', 186, 364, $tglsd, 0, 0, 1, 1,715));
 
             //  dd(db::table($tempdepositosupir)->get());
             // dd('test');
@@ -2365,8 +2371,8 @@ class LaporanNeraca extends MyModel
                 db::raw("xx.nominalbanding"),
                 db::raw("xx.selisih"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
-                db::raw("'' as Cabang")
-
+                db::raw("'' as Cabang"),
+                DB::raw("'" . auth('api')->user()->name . "' as usercetak")
             )
             ->orderby('xx.id');
 

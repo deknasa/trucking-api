@@ -30,15 +30,15 @@ class LaporanTripGandenganDetail extends MyModel
         // dd($dari, $sampai, $gandengandari_id, $gandengansampai_id);
         $Tempsuratpengantar = '##Tempsuratpengantar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($Tempsuratpengantar, function ($table) {
-            $table->date('tglbukti');
-            $table->string('nosp', 1000);
-            $table->integer('supir_id');
-            $table->integer('gandengan_id');
-            $table->integer('container_id');
-            $table->integer('trado_id');
-            $table->integer('upah_id');
-            $table->longText('keterangan');
-            $table->string('nocont', 1000);
+            $table->date('tglbukti')->nullable(); 
+            $table->string('nosp', 1000)->nullable();
+            $table->integer('supir_id')->nullable();
+            $table->integer('gandengan_id')->nullable();
+            $table->integer('container_id')->nullable();
+            $table->integer('trado_id')->nullable();
+            $table->integer('upah_id')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('nocont', 1000)->nullable();
         });
 
         $select_suratpengantar = DB::table('suratpengantar AS A')
@@ -53,10 +53,13 @@ class LaporanTripGandenganDetail extends MyModel
             'A.keterangan',
             'A.nocont',          
         ])
-        ->where('A.gandengan_id', '>=', $gandengandari_id)
-        ->where('A.gandengan_id', '<=', $gandengansampai_id)
         ->where('A.tglbukti', '>=', $dari)
         ->where('A.tglbukti', '<=', $sampai);
+        if($gandengandari_id != 0 && $gandengansampai_id !=0){
+            $select_suratpengantar  
+            ->where('A.gandengan_id', '>=', $gandengandari_id)
+            ->where('A.gandengan_id', '<=', $gandengansampai_id);
+        }
  
         // dd($select_suratpengantar->get());
          
@@ -114,8 +117,6 @@ class LaporanTripGandenganDetail extends MyModel
         ->join('container as F', 'A.container_id', '=', 'F.id')
         ->leftJoin('kota as G', 'E.kotadari_id', '=', 'G.id')
         ->leftJoin('kota as H', 'E.kotasampai_id', '=', 'H.id')
-        ->where('A.gandengan_id', '>=', $gandengandari_id)
-        ->where('A.gandengan_id', '<=', $gandengansampai_id)
         ->where('A.tglbukti', '>=', $dari)
         ->where('A.tglbukti', '<=', $sampai)
         ->orderBy('B.keterangan', 'asc')
@@ -123,6 +124,11 @@ class LaporanTripGandenganDetail extends MyModel
         ->orderBy('C.namasupir', 'asc')
         ->orderBy('D.kodetrado', 'asc');
     
+        if($gandengandari_id != 0 && $gandengansampai_id !=0){
+            $select_suratpengantar  
+            ->where('A.gandengan_id', '>=', $gandengandari_id)
+            ->where('A.gandengan_id', '<=', $gandengansampai_id);
+        }
       
         $data = $select_Tempsuratpengantar->get();
         return $data;

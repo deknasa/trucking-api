@@ -31,6 +31,8 @@ use App\Http\Requests\UpdateOrderanTruckingRequest;
 use App\Http\Requests\DestroyOrderanTruckingRequest;
 use App\Http\Requests\ValidasiApprovalOrderanTruckingRequest;
 use App\Models\Locking;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class OrderanTruckingController extends Controller
 {
@@ -64,7 +66,7 @@ class OrderanTruckingController extends Controller
         ]);
     }
 
-    public function cekValidasi($id, $aksi,Request $request)
+    public function cekValidasi($id, $aksi, Request $request)
     {
 
         $error = new Error();
@@ -74,19 +76,19 @@ class OrderanTruckingController extends Controller
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
 
-        $nobuktilist=$request->nobukti ?? '';
+        $nobuktilist = $request->nobukti ?? '';
 
 
-        $querysp=DB::table('orderantrucking')->from(
+        $querysp = DB::table('orderantrucking')->from(
             DB::raw("orderantrucking a with (readuncommitted)")
         )
-        ->select('a.id')
-        ->where('a.nobukti',$nobuktilist)
-        ->first();
+            ->select('a.id')
+            ->where('a.nobukti', $nobuktilist)
+            ->first();
         if (isset($querysp)) {
             goto validasilanjut;
         } else {
-    
+
             $data1 = [
                 'kondisi' => true,
                 'keterangan' => '',
@@ -96,13 +98,13 @@ class OrderanTruckingController extends Controller
             $keteranganerror = $error->cekKeteranganError('BMS') ?? '';
             $keterror = 'No Bukti <b>' . $nobuktilist . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
 
-        //     $query = DB::table('error')
-        //     ->select(
-        //         DB::raw("'No Bukti ". $nobuktilist ." '+ltrim(rtrim(keterangan)) as keterangan")
-        //     )
-        //     ->where('kodeerror', '=', 'BMS')
-        //     ->get();
-        // $keterangan = $query['0'];
+            //     $query = DB::table('error')
+            //     ->select(
+            //         DB::raw("'No Bukti ". $nobuktilist ." '+ltrim(rtrim(keterangan)) as keterangan")
+            //     )
+            //     ->where('kodeerror', '=', 'BMS')
+            //     ->get();
+            // $keterangan = $query['0'];
             $data = [
                 'error' => true,
                 'message' => $keterror,
@@ -156,7 +158,7 @@ class OrderanTruckingController extends Controller
         //     $passes = false;
         //     // return response($data);
         // }
-        
+
 
         if ($cekdata['kondisi'] == true) {
             // $query = DB::table('error')
@@ -189,9 +191,9 @@ class OrderanTruckingController extends Controller
                 'statuspesan' => 'warning',
             ];
 
-            return response($data);            
+            return response($data);
         } else if ($useredit != '' && $useredit != $user) {
-           
+
             $waktu = (new Parameter())->cekBatasWaktuEdit('Nota Kredit Header BUKTI');
 
             $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
@@ -199,7 +201,7 @@ class OrderanTruckingController extends Controller
             $totalminutes =  ($diffNow->days * 24 * 60) + ($diffNow->h * 60) + $diffNow->i;
             if ($totalminutes > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                    (new MyModel())->createLockEditing($id, 'orderantrucking',$useredit);  
+                    (new MyModel())->createLockEditing($id, 'orderantrucking', $useredit);
                 }
 
                 $data = [
@@ -221,10 +223,9 @@ class OrderanTruckingController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
+            }
         } else {
-            (new MyModel())->createLockEditing($id, 'orderantrucking',$useredit);  
+            (new MyModel())->createLockEditing($id, 'orderantrucking', $useredit);
 
             $data = [
                 'message' => '',
@@ -273,7 +274,7 @@ class OrderanTruckingController extends Controller
             ];
             $orderanTrucking = (new OrderanTrucking())->processStore($data);
             $orderanTrucking->position = $this->getPosition($orderanTrucking, $orderanTrucking->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $orderanTrucking->page = ceil($orderanTrucking->position / (10));
             } else {
                 $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
@@ -294,7 +295,7 @@ class OrderanTruckingController extends Controller
     public function show($id)
     {
         $orderanTrucking = (new OrderanTrucking)->findAll($id);
-        $hideCol = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'LOOKUP ORDERAN EMKL')->where('subgrp','PELANGGAN')->first()->text ?? 'YA';
+        $hideCol = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'LOOKUP ORDERAN EMKL')->where('subgrp', 'PELANGGAN')->first()->text ?? 'YA';
         return response([
             'status' => true,
             'data' => $orderanTrucking,
@@ -311,15 +312,15 @@ class OrderanTruckingController extends Controller
         DB::beginTransaction();
 
         try {
-            $orderan=$request->jenisorderemkl ?? $request->jenisorder ;
-            $jenisorderemkl_id=db::table("jenisorder")->from(
+            $orderan = $request->jenisorderemkl ?? $request->jenisorder;
+            $jenisorderemkl_id = db::table("jenisorder")->from(
                 db::raw("jenisorder a with (readuncommitted)")
             )
-            ->select(
-                'a.id'
-            )
-            ->where ('a.keterangan','=', $orderan)
-            ->first();
+                ->select(
+                    'a.id'
+                )
+                ->where('a.keterangan', '=', $orderan)
+                ->first();
             $data = [
                 'tglbukti' => $request->tglbukti,
                 'container_id' => $request->container_id,
@@ -340,7 +341,7 @@ class OrderanTruckingController extends Controller
             ];
             $orderanTrucking = (new OrderanTrucking())->processUpdate($orderantrucking, $data);
             $orderanTrucking->position = $this->getPosition($orderanTrucking, $orderanTrucking->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $orderanTrucking->page = ceil($orderanTrucking->position / (10));
             } else {
                 $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
@@ -362,19 +363,20 @@ class OrderanTruckingController extends Controller
      * @ClassName
      * @Keterangan APPROVAL TANPA JOB EMKL
      */
-    public function updateNoContainer(UpdateOrderanTruckingRequest $request, OrderanTrucking $orderantrucking): JsonResponse{
+    public function updateNoContainer(UpdateOrderanTruckingRequest $request, OrderanTrucking $orderantrucking): JsonResponse
+    {
         DB::beginTransaction();
 
         try {
-            $orderan=$request->jenisorderemkl ?? $request->jenisorder ;
-            $jenisorderemkl_id=db::table("jenisorder")->from(
+            $orderan = $request->jenisorderemkl ?? $request->jenisorder;
+            $jenisorderemkl_id = db::table("jenisorder")->from(
                 db::raw("jenisorder a with (readuncommitted)")
             )
-            ->select(
-                'a.id'
-            )
-            ->where ('a.keterangan','=', $orderan)
-            ->first();
+                ->select(
+                    'a.id'
+                )
+                ->where('a.keterangan', '=', $orderan)
+                ->first();
             $data = [
                 'tglbukti' => $request->tglbukti,
                 'container_id' => $request->container_id,
@@ -394,7 +396,7 @@ class OrderanTruckingController extends Controller
             ];
             $orderanTrucking = (new OrderanTrucking())->processUpdateNoContainer($orderantrucking, $data);
             $orderanTrucking->position = $this->getPosition($orderanTrucking, $orderanTrucking->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $orderanTrucking->page = ceil($orderanTrucking->position / (10));
             } else {
                 $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
@@ -424,7 +426,7 @@ class OrderanTruckingController extends Controller
             $selected = $this->getPosition($orderanTrucking, $orderanTrucking->getTable(), true);
             $orderanTrucking->position = $selected->position;
             $orderanTrucking->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $orderanTrucking->page = ceil($orderanTrucking->position / (10));
             } else {
                 $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
@@ -558,9 +560,7 @@ class OrderanTruckingController extends Controller
      * @ClassName 
      * @Keterangan CETAK DATA
      */
-    public function report()
-    {
-    }
+    public function report() {}
     /**
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL
@@ -570,9 +570,199 @@ class OrderanTruckingController extends Controller
         $dari = date('Y-m-d', strtotime($request->dari));
         $sampai = date('Y-m-d', strtotime($request->sampai));
         $orderanTrucking = new OrderanTrucking();
-        return response([
-            'data' => $orderanTrucking->getExport($dari, $sampai),
-        ]);
+        $orderan_Trucking = $orderanTrucking->getExport($dari, $sampai);
+
+        if ($request->export == true) {
+
+            $orderan_Truck = $orderan_Trucking['data'];
+
+            $timeStamp = strtotime($request->dari);
+            $datetglDari = date('d-m-Y', $timeStamp);
+            $periodeDari = $datetglDari;
+
+            $timeStamp = strtotime($request->sampai);
+            $datetglSampai = date('d-m-Y', $timeStamp);
+            $periodeSampai = $datetglSampai;
+
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+            $sheet->setCellValue('A1', $orderan_Trucking['parameter']->judul);
+            $sheet->setCellValue('A2', $orderan_Trucking['parameter']->judulLaporan);
+            $sheet->getStyle("A1")->getFont()->setSize(11);
+            $sheet->getStyle("A2")->getFont()->setSize(11);
+            $sheet->getStyle("A1")->getFont()->setBold(true);
+            $sheet->getStyle("A2")->getFont()->setBold(true);
+            $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+            $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+            $sheet->mergeCells('A1:O1');
+            $sheet->mergeCells('A2:O2');
+
+            $header_start_row = 4;
+            $detail_table_header_row = 7;
+            $detail_start_row = $detail_table_header_row + 1;
+
+            $alphabets = range('A', 'Z');
+
+            $header_columns = [
+                [
+                    'label' => 'Periode Dari',
+                    'index' => $periodeDari
+                ],
+                [
+                    'label' => 'Periode Sampai',
+                    'index' => $periodeSampai
+                ]
+            ];
+            $columns = [
+                [
+                    'label' => 'NO',
+                ],
+                [
+                    'label' => 'NO BUKTI',
+                    'index' => 'nobukti',
+                ],
+                [
+                    'label' => 'TANGGAL',
+                    'index' => 'tglbukti',
+                ],
+                [
+                    'label' => 'CONTAINER',
+                    'index' => 'container_id',
+                ],
+                [
+                    'label' => 'CUSTOMER',
+                    'index' => 'agen_id',
+                ],
+                [
+                    'label' => 'JENIS ORDER',
+                    'index' => 'jenisorder_id',
+                ],
+                [
+                    'label' => 'SHIPPER',
+                    'index' => 'pelanggan_id',
+                ],
+                [
+                    'label' => 'NO JOB EMKL(1)',
+                    'index' => 'nojobemkl',
+                ],
+                [
+                    'label' => 'NO CONT(1)',
+                    'index' => 'nocont',
+                ],
+                [
+                    'label' => 'NO SEAL(1)',
+                    'index' => 'noseal',
+                ],
+                [
+                    'label' => 'NO JOB EMKL(2)',
+                    'index' => 'nojobemkl2',
+                ],
+                [
+                    'label' => 'NO CONT(2)',
+                    'index' => 'nocont2',
+                ],
+                [
+                    'label' => 'NO SEAL(2)',
+                    'index' => 'noseal2',
+                ],
+            ];
+
+            //LOOPING HEADER        
+            foreach ($header_columns as $header_column) {
+                $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                $sheet->setCellValue('C' . $header_start_row++, ': ' . $header_column['index']);
+            }
+            foreach ($columns as $detail_columns_index => $detail_column) {
+                $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+            }
+            $styleArray = array(
+                'borders' => array(
+                    'allBorders' => array(
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    ),
+                ),
+            );
+
+            $style_number = [
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                ],
+
+                'borders' => [
+                    'top' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                    'right' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                    'bottom' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                    'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                ]
+            ];
+            $sheet->getStyle("A$detail_table_header_row:M$detail_table_header_row")->applyFromArray($styleArray);
+
+            // dd($orderan_Trucking);
+            $nominal = 0;
+            if (is_iterable($orderan_Truck)) {
+
+                foreach ($orderan_Truck as $response_index => $response_detail) {
+                    foreach ($columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : $response_index + 1);
+                        $sheet->getStyle("A$detail_table_header_row:M$detail_table_header_row")->getFont()->setBold(true);
+                        $sheet->getStyle("A$detail_table_header_row:M$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                    }
+                    $response_detail->nominals = number_format((float) $response_detail->nominal, '2', '.', ',');
+
+                    $tglbukti = $response_detail->tglbukti;
+                    $timeStamp = strtotime($tglbukti);
+                    $datetglbukti = date('d-m-Y', $timeStamp);
+                    $response_detail->tglbukti = $datetglbukti;
+
+                    $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                    $sheet->setCellValue("B$detail_start_row", $response_detail->nobukti);
+                    $sheet->setCellValue("C$detail_start_row", $response_detail->tglbukti);
+                    $sheet->setCellValue("D$detail_start_row", $response_detail->container_id);
+                    $sheet->setCellValue("E$detail_start_row", $response_detail->agen_id);
+                    $sheet->setCellValue("F$detail_start_row", $response_detail->jenisorder_id);
+                    $sheet->setCellValue("G$detail_start_row", $response_detail->pelanggan_id);
+                    $sheet->setCellValue("H$detail_start_row", $response_detail->nojobemkl);
+                    $sheet->setCellValue("I$detail_start_row", $response_detail->nocont);
+                    $sheet->setCellValue("J$detail_start_row", $response_detail->noseal);
+                    $sheet->setCellValue("K$detail_start_row", $response_detail->nojobemkl2);
+                    $sheet->setCellValue("L$detail_start_row", $response_detail->nocont2);
+                    $sheet->setCellValue("M$detail_start_row", $response_detail->noseal2);
+
+                    $sheet->getStyle("A$detail_start_row:M$detail_start_row")->applyFromArray($styleArray);
+
+                    $detail_start_row++;
+                }
+            }
+
+            $sheet->getColumnDimension('A')->setAutoSize(true);
+            $sheet->getColumnDimension('B')->setAutoSize(true);
+            $sheet->getColumnDimension('C')->setAutoSize(true);
+            $sheet->getColumnDimension('D')->setAutoSize(true);
+            $sheet->getColumnDimension('E')->setAutoSize(true);
+            $sheet->getColumnDimension('F')->setAutoSize(true);
+            $sheet->getColumnDimension('G')->setAutoSize(true);
+            $sheet->getColumnDimension('H')->setAutoSize(true);
+            $sheet->getColumnDimension('I')->setAutoSize(true);
+            $sheet->getColumnDimension('J')->setAutoSize(true);
+            $sheet->getColumnDimension('K')->setAutoSize(true);
+            $sheet->getColumnDimension('L')->setAutoSize(true);
+            $sheet->getColumnDimension('M')->setAutoSize(true);
+            $sheet->getColumnDimension('N')->setAutoSize(true);
+            $sheet->getColumnDimension('O')->setAutoSize(true);
+
+            $writer = new Xlsx($spreadsheet);
+            $filename = 'Laporan Orderan Trucking' . date('dmYHis');
+            header('Content-Type: application/vnd.ms-excel');
+            header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+            header('Cache-Control: max-age=0');
+
+            $writer->save('php://output');
+        } else {
+            return response([
+                'data' => $orderan_Trucking
+            ]);
+        }
     }
     /**
      * @ClassName
@@ -597,5 +787,4 @@ class OrderanTruckingController extends Controller
             throw $th;
         }
     }
-
 }

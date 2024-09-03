@@ -356,14 +356,14 @@ class ListTrip extends MyModel
         //     ->where('subgrp', '=', 'PELABUHAN CABANG')
         //     ->first();
 
-            $parameter = new Parameter();
-            $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
-            $pelabuhan=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+        $parameter = new Parameter();
+        $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN', 'PELABUHAN') ?? 0;
+        $pelabuhan = db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
             ->select(
                 db::raw("STRING_AGG(id,',') as id"),
             )
-            ->where('a.statuspelabuhan',$statuspelabuhan)
-            ->first()->id ?? 1;             
+            ->where('a.statuspelabuhan', $statuspelabuhan)
+            ->first()->id ?? 1;
 
 
         $idkandang = (new Parameter())->cekText('KANDANG', 'KANDANG') ?? 0;
@@ -768,6 +768,7 @@ class ListTrip extends MyModel
 
                     goto trip;
                 }
+                goto trip;
             }
         }
 
@@ -1066,13 +1067,13 @@ class ListTrip extends MyModel
             $idstatuskandang = $parameter->cekId('STATUS KANDANG', 'STATUS KANDANG', 'KANDANG') ?? 0;
             $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
             // $idpelabuhan = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? 0;
-            $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
-            $idpelabuhan=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
-            ->select(
-                db::raw("STRING_AGG(id,',') as id"),
-            )
-            ->where('a.statuspelabuhan',$statuspelabuhan)
-            ->first()->id ?? 1;             
+            $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN', 'PELABUHAN') ?? 0;
+            $idpelabuhan = db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+                ->select(
+                    db::raw("STRING_AGG(id,',') as id"),
+                )
+                ->where('a.statuspelabuhan', $statuspelabuhan)
+                ->first()->id ?? 1;
 
             $upahsupirkandnag = db::table("upahsupir")->from(db::raw("upahsupir a with (readuncommitted)"))
                 ->select(
@@ -1092,7 +1093,7 @@ class ListTrip extends MyModel
                     'b.modifiedby',
                 )
                 ->join(db::raw("upahsupirrincian b with (readuncommitted)"), 'a.id', 'b.upahsupir_id')
-                ->whereraw("a.kotadari_id in(". $idpelabuhan.")")
+                ->whereraw("a.kotadari_id in(" . $idpelabuhan . ")")
                 ->where('a.kotasampai_id', $idkandang)
                 ->where('b.container_id', $data['container_id'])
                 ->where('b.statuscontainer_id', $data['statuscontainer_id'])

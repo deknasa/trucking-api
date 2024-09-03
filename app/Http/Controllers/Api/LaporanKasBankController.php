@@ -123,8 +123,9 @@ class LaporanKasBankController extends Controller
             //PRINT TO EXCEL
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
+            $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
             $sheet->setCellValue('A1', $data[0]->judul);
-            $sheet->getStyle("A1")->getFont()->setSize(16)->setBold(true);
+            $sheet->getStyle("A1")->getFont()->setSize(11)->setBold(true);
             $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
             $sheet->mergeCells('A1:G1');
 
@@ -220,7 +221,7 @@ class LaporanKasBankController extends Controller
                 foreach ($detail_columns as $detail_columns_index => $detail_column) {
                     $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : $response_index + 1);
                 }
-                if ($cabang == 'PUSAT') {
+                if ($cabang->keterangan == 'PUSAT') {
                     $sheet->setCellValue("A$detail_start_row", $response_detail['tglbukti']);
                 } else {
                     $dateValue = ($response_detail->tglbukti != null) ? Date::PHPToExcel(date('Y-m-d', strtotime($response_detail->tglbukti))) : '';

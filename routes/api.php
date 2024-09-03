@@ -317,6 +317,7 @@ use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
+use App\Http\Controllers\Api\StatusGandenganTradoController;
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
@@ -362,6 +363,9 @@ route::middleware(['auth:api'])->group(function () {
 route::middleware(['auth:api'])->group(function () {
     Route::get('approvalkirimberkas/combo', [ApprovalKirimBerkasController::class, 'combo']);
     Route::resource('approvalkirimberkas', ApprovalKirimBerkasController::class)->whereNumber('approvalkirimberkas');
+
+    Route::post('printpowershell', [HutangHeaderController::class, 'printPowerShell']);
+
 
     Route::post('bataledit', [Controller::class, 'batalEditingBy']);
     Route::post('removeedit', [Controller::class, 'removeEditingBy']);
@@ -1323,6 +1327,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('penerimaanstokheader/{id}/approvaleditketerangan', [PenerimaanStokHeaderController::class, 'approvalEditKeterangan']);
     Route::get('penerimaanstokheader/{id}/pengeluaranstoknobukti', [PenerimaanStokHeaderController::class, 'getPengeluaranStok'])->name('penerimaanstokheader.pengeluaranstoknobukti')->whereNumber('id');
     Route::get('penerimaanstokheader/{id}/detailspbp', [PenerimaanStokHeaderController::class, 'getDetailSPBP']);
+    Route::get('penerimaanstokheader/{id}/export', [PenerimaanStokHeaderController::class, 'export']);
     Route::apiResource('penerimaanstokheader', PenerimaanStokHeaderController::class)->whereNumber('penerimaanstokheader');
     Route::get('penerimaanstokdetail/hutang', [PenerimaanStokDetailController::class, 'hutang']);
     Route::get('penerimaanstokdetail/supplier/{supplier_id}', [PenerimaanStokDetailController::class,'supplierGetSpb']);
@@ -1334,7 +1339,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pengeluaranstok/default', [PengeluaranStokController::class, 'default']);
     Route::post('pengeluaranstok/{id}/cekValidasi', [PengeluaranStokController::class, 'cekValidasi'])->name('pengeluaranstok.cekValidasi')->whereNumber('id');
 
-
+    Route::get('pengeluaranstokheader/{id}/export', [PengeluaranStokHeaderController::class, 'export']);
     Route::get('pengeluaranstokheader/{id}/printreport', [PengeluaranStokHeaderController::class, 'printReport'])->whereNumber('id');
     Route::post('pengeluaranstokheader/{id}/cekvalidasi', [PengeluaranStokHeaderController::class, 'cekValidasi'])->name('pengeluaranstokheader.cekValidasi')->whereNumber('id');
     Route::post('pengeluaranstokheader/{id}/approvaledit', [PengeluaranStokHeaderController::class, 'approvalEdit']);
@@ -1376,6 +1381,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('hutangheader/no_bukti', [HutangHeaderController::class, 'getNoBukti']);
     Route::post('hutangheader/addrow', [HutangDetailController::class, 'addrow']);
     Route::post('hutangheader/approval', [HutangHeaderController::class, 'approval']);
+    Route::post('hutangheader/printdocument', [HutangHeaderController::class, 'printdocument']);
     Route::get('hutangheader/combo', [HutangHeaderController::class, 'combo']);
     Route::get('hutangheader/grid', [HutangHeaderController::class, 'grid']);
     Route::get('hutangheader/field_length', [HutangHeaderController::class, 'fieldLength']);
@@ -2055,11 +2061,14 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::resource('karyawanlogabsensi', KaryawanLogAbsensiController::class)->whereNumber('karyawanlogabsensi');
     Route::resource('reminderoli', ReminderOliController::class)->whereNumber('reminderoli');
+    Route::get('reminderoli/export', [ReminderOliController::class, 'export'])->whereNumber('export');
     Route::resource('expsim', ExpSimController::class)->whereNumber('expsim');
     Route::resource('expstnk', ExpStnkController::class)->whereNumber('expstnk');
     Route::resource('expasuransi', ExpAsuransiController::class)->whereNumber('expasuransi');
     Route::resource('reminderstok', ReminderStokController::class)->whereNumber('reminderstok');
+    Route::get('reminderstok/export', [ReminderStokController::class, 'export'])->whereNumber('export');
     Route::resource('statusolitrado', StatusOliTradoController::class)->whereNumber('statusolitrado');
+    Route::get('statusolitrado/export', [StatusOliTradoController::class, 'export'])->whereNumber('export');
     // Route::resource('statusolitradodetail', StatusOliTradoDetailController::class)->whereNumber('statusolitradodetail');
     Route::resource('reminderspk', ReminderSpkController::class)->whereNumber('reminderspk');
     Route::resource('reminderspkdetail', ReminderSpkDetailController::class)->whereNumber('reminderspkdetail');
@@ -2184,6 +2193,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('biayaextrasupirheader/{id}/cekValidasiAksi', [BiayaExtraSupirHeaderController::class, 'cekValidasiAksi'])->name('biayaextrasupirheader.cekValidasiAksi')->whereNumber('id');
     Route::resource('biayaextrasupirheader', BiayaExtraSupirHeaderController::class)->whereNumber('biayaextrasupirheader');
     Route::resource('biayaextrasupirdetail', BiayaExtraSupirDetailController::class)->whereNumber('biayaextrasupirdetail');
+
+    Route::resource('statusgandengantrado', StatusGandenganTradoController::class)->whereNumber('statusgandengantrado');
 
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);

@@ -130,6 +130,7 @@ class LaporanLabaRugi extends MyModel
             $table->string('disetujui', 1000);
             $table->string('judul', 1000);
             $table->string('cabang', 1000);
+            $table->string('usercetak', 1000);
         });
 
         $TempLabaRugiParent = '##TempLabaRugiParent' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -222,10 +223,8 @@ class LaporanLabaRugi extends MyModel
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
-                db::raw("(case when '" . $cabang . "'='' then '' else 'Cabang : " . $cabang . "'  end) as Cabang")
-
-
-
+                db::raw("(case when '" . $cabang . "'='' then '' else 'Cabang : " . $cabang . "'  end) as Cabang"),
+                DB::raw("'" . auth('api')->user()->name . "' as usercetak")
             )
             ->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
             ->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
@@ -234,10 +233,6 @@ class LaporanLabaRugi extends MyModel
             ->whereIn('AT.kodetype', ['Pendapatan'])
             ->whereRaw("isnull(E.nominal,0)<>0")
             ->orderBy('coa');
-
-        // dd($results->toSql());
-
-
 
         DB::table($TempLabaRugi)->insertUsing([
             'keteranganmain',
@@ -258,6 +253,7 @@ class LaporanLabaRugi extends MyModel
             'disetujui',
             'judul',
             'cabang',
+            'usercetak'
         ], $results);
         // dd($results->get()); 
 
@@ -280,8 +276,8 @@ class LaporanLabaRugi extends MyModel
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
-                db::raw("(case when '" . $cabang . "'='' then '' else 'Cabang :" . $cabang . "'  end) as Cabang")
-
+                db::raw("(case when '" . $cabang . "'='' then '' else 'Cabang :" . $cabang . "'  end) as Cabang"),
+                DB::raw("'" . auth('api')->user()->name . "' as usercetak")
             )
             ->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
             ->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
@@ -309,6 +305,7 @@ class LaporanLabaRugi extends MyModel
             'disetujui',
             'judul',
             'cabang',
+            'usercetak'
         ], $results2);
 
         $data1 = $results->get();

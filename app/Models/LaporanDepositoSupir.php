@@ -277,7 +277,7 @@ class LaporanDepositoSupir extends MyModel
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
                 db::raw("'" . $disetujui . "' as disetujui"),
-                db::raw("'" . $diperiksa . "' as diperiksa"),
+                db::raw("'" . $diperiksa . "' as diperiksa")
             )
             ->join(DB::raw($temprangedeposito . " as b "), function ($join) {
                 $join->on('a.total', '>=', 'b.nominalawal');
@@ -293,6 +293,7 @@ class LaporanDepositoSupir extends MyModel
             $data = $query->get();
         }
 
+        // dd($data);
         return $data;
     }
 

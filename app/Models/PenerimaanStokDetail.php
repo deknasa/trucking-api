@@ -28,6 +28,7 @@ class PenerimaanStokDetail extends MyModel
     ];
     public function get()
     {
+        // dd(request()->penerimaanstokheader_id);
         $this->setRequestParameters();
 
         $from = request()->from ?? '';
@@ -36,8 +37,8 @@ class PenerimaanStokDetail extends MyModel
         // dd(request());
         if ($cabang == 'TNL') {
             $query = $this->getForTnl();
-             goto endTnl;
-         }
+            goto endTnl;
+        }
 
         if ($nobukti == '') {
             $nobukti = request()->penerimaanstokheader_nobukti ?? '';
@@ -105,9 +106,9 @@ class PenerimaanStokDetail extends MyModel
                 'a.qtyterpakai',
                 'a.pengeluaranstokproses_nobukti',
             );
-            if ($nobukti != "") {
-                $querypenerimaandetail->where('a.nobukti', $nobukti);
-            }
+        if ($nobukti != "") {
+            $querypenerimaandetail->where('a.nobukti', $nobukti);
+        }
 
         DB::table($temtabelpenerimaandetail)->insertUsing([
             'id',
@@ -188,10 +189,12 @@ class PenerimaanStokDetail extends MyModel
         if (isset(request()->id)) {
             $query->where("$this->table.id", request()->id);
         }
-  
-        // if (isset(request()->penerimaanstokheader_id)) {
-        //     $query->where("$this->table.penerimaanstokheader_id", request()->penerimaanstokheader_id);
-        // }
+
+        if (isset(request()->penerimaanstokheader_id)) {
+            $query = DB::table($temtabelpenerimaandetail)->from(DB::raw($temtabelpenerimaandetail . " penerimaanstokdetail "));
+            $query->where("$this->table.penerimaanstokheader_id", request()->penerimaanstokheader_id);
+        }
+
         if (isset(request()->nobukti)) {
             $query->where("$this->table.nobukti", request()->nobukti);
         }
@@ -397,7 +400,7 @@ class PenerimaanStokDetail extends MyModel
             $totalRows =  $query->count();
             $penerimaanStokDetail = $query->get();
         } else {
-            // dd('test');
+            // dd(request()->penerimaanstokheader_id);
             $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->select('text')
                 ->where('grp', 'JUDULAN LAPORAN')
@@ -490,6 +493,7 @@ class PenerimaanStokDetail extends MyModel
             //         ->havingRaw("$this->table.qty > COALESCE(SUM(pengeluaranstokdetail.qty), 0)");
             //     return $query->get();
             // }
+            // dd('haha',$query->toSql());
 
             $this->totalNominal = $query->sum($this->table . '.total');
             $this->filter($query);
@@ -499,7 +503,7 @@ class PenerimaanStokDetail extends MyModel
             $this->sort($query);
             $this->paginate($query);
         }
-        
+
         endTnl:
         return $query->get();
     }
@@ -576,9 +580,9 @@ class PenerimaanStokDetail extends MyModel
                 'a.qtyterpakai',
                 'a.pengeluaranstokproses_nobukti',
             );
-            if ($nobukti != "") {
-                $querypenerimaandetail->where('a.nobukti', $nobukti);
-            }
+        if ($nobukti != "") {
+            $querypenerimaandetail->where('a.nobukti', $nobukti);
+        }
 
         DB::connection('srvtnl')->table($temtabelpenerimaandetail)->insertUsing([
             'id',
@@ -659,7 +663,7 @@ class PenerimaanStokDetail extends MyModel
         if (isset(request()->id)) {
             $query->where("$this->table.id", request()->id);
         }
-  
+
         // if (isset(request()->penerimaanstokheader_id)) {
         //     $query->where("$this->table.penerimaanstokheader_id", request()->penerimaanstokheader_id);
         // }
@@ -1042,7 +1046,8 @@ class PenerimaanStokDetail extends MyModel
         return $temtabel;
     }
 
-    function getSpbSuplier($supplier){
+    function getSpbSuplier($supplier)
+    {
         $this->setRequestParameters();
 
         $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
@@ -1066,22 +1071,22 @@ class PenerimaanStokDetail extends MyModel
             "$this->table.modifiedby",
         )
 
-        ->where('penerimaanstokheader.penerimaanstok_id', $spb->text)
-        ->where('penerimaanstokheader.supplier_id', $supplier)
-        ->where('penerimaanstokdetail.stok_id', request()->stok_id)
+            ->where('penerimaanstokheader.penerimaanstok_id', $spb->text)
+            ->where('penerimaanstokheader.supplier_id', $supplier)
+            ->where('penerimaanstokdetail.stok_id', request()->stok_id)
             ->leftJoin(db::raw("penerimaanstokheader"), "$this->table.nobukti", "penerimaanstokheader.nobukti")
             ->leftJoin("stok", "$this->table.stok_id", "stok.id")
             ->leftJoin("satuan", "stok.satuan_id", "satuan.id")
             ->leftJoin('parameter as statusban', 'stok.statusban', 'statusban.id');
 
-            $this->totalNominal = $query->sum($this->table . '.total');
-            $this->filter($query);
-            $this->totalRows = $query->count();
-            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        $this->totalNominal = $query->sum($this->table . '.total');
+        $this->filter($query);
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-            $this->sort($query);
-            $this->paginate($query);
-        
+        $this->sort($query);
+        $this->paginate($query);
+
         return $query->get();
     }
 
@@ -1273,7 +1278,7 @@ class PenerimaanStokDetail extends MyModel
         return $penerimaanStokDetail;
     }
 
-    public function processUpdate(PenerimaanStokDetail $penerimaanStokDetail,PenerimaanStokHeader $penerimaanStokHeader, array $data): PenerimaanStokDetail
+    public function processUpdate(PenerimaanStokDetail $penerimaanStokDetail, PenerimaanStokHeader $penerimaanStokHeader, array $data): PenerimaanStokDetail
     {
         $stok = Stok::where('id', $data['stok_id'])->first();
         $stokreuse = Parameter::where('grp', 'STATUS REUSE')->where('subgrp', 'STATUS REUSE')->where('text', 'REUSE')->first();

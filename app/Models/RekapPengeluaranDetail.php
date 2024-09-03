@@ -34,6 +34,7 @@ class RekapPengeluaranDetail extends MyModel
         }
 
         if (isset(request()->rekappengeluaran_id)) {
+            $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
             $query->where("$this->table.rekappengeluaran_id", request()->rekappengeluaran_id);
         }
 
