@@ -1997,7 +1997,7 @@ class PengeluaranTruckingHeader extends MyModel
         }
         $pengeluaranTruckingDetails = [];
         $nominalBiaya = 0;
-        
+
         if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'TDEK') {
 
             $kondisi = true;
@@ -2326,6 +2326,62 @@ class PengeluaranTruckingHeader extends MyModel
                     "keterangan_detail" => $keterangan_detail,
                     'bulanbeban' => $tglkasmasuk,
                 ];
+
+                $parameter = new Parameter();
+                $cabang = $parameter->cekText('CABANG', 'CABANG') ?? 0;
+
+                // dd($cabang);
+                if ($cabang == 'MEDAN') {
+                    if ($fetchFormat->kodepengeluaran == 'BIT') {
+                        $queryPengeluaran = Bank::from(DB::raw("bank with (readuncommitted)"))->select('parameter.grp', 'parameter.subgrp', 'bank.formatpengeluaran', 'bank.coa', 'bank.tipe')->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')->where("bank.id", $data['bank_id'])->first();
+
+                        // $tglbuktidetail=[];
+                        // $postingdaridetail=[];
+                        // $statusapprovaldetail=[];
+                        for ($i = 0; $i < count($data['nominal']); $i++) {
+                            $tglbuktidetail = $pengeluaranTruckingHeader->tglbukti;
+                            $postingdaridetail = $data['postingdari'] ?? "EDIT PENGELUARAN TRUCKING";
+                            $statusapprovaldetail = $statusApproval->id;
+                            $dibayarkedetail = '';
+                            $pelanggan_iddetail = 0;
+                            $alatbayar_iddetail = $alatbayar->id;
+                            $bank_iddetail = $data['bank_id'];
+                            $transferkeandetail = '';
+                            $transferkeacdetail = '';
+                            $transferkebankdetail = '';
+                            $userapprovaldetail = '';
+                            $tglapprovaldetail = '';
+                            $nowarkatdetail[] = '';
+                            $tgljatuhtempodetail[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
+                            $nominal_detaildetail[] = $data['nominal'][$i];
+                            $coadebetdetail[] = $data['coa'];
+                            $coakreditdetail[] = $queryPengeluaran->coa;;
+                            $keterangan_detaildetail[] = $data['keterangan'][$i];
+                            $bulanbebandetail[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
+                        }
+                        $pengeluaranRequest = [
+                            'tglbukti' => $tglbuktidetail,
+                            'pelanggan_id' => $pelanggan_iddetail,
+                            'postingdari' => $postingdaridetail,
+                            'statusapproval' => $statusapprovaldetail,
+                            'dibayarke' => $dibayarkedetail,
+                            'alatbayar_id' => $alatbayar_iddetail,
+                            'bank_id' => $bank_iddetail,
+                            'transferkeac' => $transferkeacdetail,
+                            'transferkean' => $transferkeandetail,
+                            'transferkebank' => $transferkebankdetail,
+                            'userapproval' => $userapprovaldetail,
+                            'tglapproval' => $tglapprovaldetail,
+                            'nowarkat' => $nowarkatdetail,
+                            'tgljatuhtempo' => $tgljatuhtempodetail,
+                            "nominal_detail" => $nominal_detaildetail,
+                            'coadebet' => $coadebetdetail,
+                            'coakredit' => $coakreditdetail,
+                            "keterangan_detail" => $keterangan_detaildetail,
+                            'bulanbeban' => $bulanbebandetail,
+                        ];
+                    }
+                }
 
                 $pengeluaranHeader = (new PengeluaranHeader())->processStore($pengeluaranRequest);
 
@@ -2823,7 +2879,7 @@ class PengeluaranTruckingHeader extends MyModel
                                 $dibayarkedetail = '';
                                 $pelanggan_iddetail = 0;
                                 $alatbayar_iddetail = $alatbayar->id;
-                                $bank_iddetail= $data['bank_id'];
+                                $bank_iddetail = $data['bank_id'];
                                 $transferkeandetail = '';
                                 $transferkeacdetail = '';
                                 $transferkebankdetail = '';
@@ -2969,7 +3025,7 @@ class PengeluaranTruckingHeader extends MyModel
             ->join(db::raw("penerimaantruckingdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->whereraw("a.penerimaantrucking_id=3")
             ->where('b.supir_id', $supir_id)
-            ->where('a.tglbukti','<=', $tglbukti)
+            ->where('a.tglbukti', '<=', $tglbukti)
             ->groupby('b.supir_id')
             ->groupby('a.nobukti');
 
