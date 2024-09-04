@@ -16,6 +16,7 @@ use App\Rules\ExistKaryawanForPengeluaranTrucking;
 use App\Rules\validasiJenisOrderanPengeluaranTrucking;
 use App\Rules\ValidasiKlaimPosting;
 use App\Rules\ValidasiDestroyPengeluaranTruckingHeader;
+use App\Rules\validasiNominalTarikDeposito;
 use App\Rules\validasiTarikDeposito;
 use App\Rules\validasiTarikDepositoKaryawan;
 
@@ -239,7 +240,8 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
                 // 'statusposting' => 'required',
                 'bank' => [$ruleBank],
-                'supirheader' => ['required',  new ValidasiDetail($jumlahdetail), new validasiTarikDeposito()],
+                'supirheader' => ['required'],
+                'nominalpenarikan' => ['required','numeric','min:1', new validasiNominalTarikDeposito()],
                 // 'keterangancoa' => 'required',
             ];
         }else if($kodepengeluaran == 'TDEK'){

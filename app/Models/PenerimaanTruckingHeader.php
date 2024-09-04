@@ -501,8 +501,8 @@ class PenerimaanTruckingHeader extends MyModel
 
     public function getDeposito($supir_id)
     {
-        $tempPribadi = $this->createTempDeposito($supir_id);
         $tglbukti = date('Y-m-d', strtotime(request()->tglbukti));
+        $tempPribadi = $this->createTempDeposito($supir_id,$tglbukti);
 
         $query = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
             ->select(DB::raw("row_number() Over(Order By penerimaantruckingdetail.nobukti) as id,penerimaantruckingheader.tglbukti,penerimaantruckingdetail.nobukti,penerimaantruckingdetail.keterangan," . $tempPribadi . ".sisa"))
@@ -521,7 +521,7 @@ class PenerimaanTruckingHeader extends MyModel
         return $query->get();
     }
 
-    public function createTempDeposito($supir_id)
+    public function createTempDeposito($supir_id, $tglbukti)
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
@@ -561,6 +561,7 @@ class PenerimaanTruckingHeader extends MyModel
             ->join(db::raw("penerimaantruckingdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->whereraw("a.penerimaantrucking_id=3")
             ->where('b.supir_id', $supir_id)
+            ->where('a.tglbukti','<=', $tglbukti)
             ->groupby('b.supir_id')
             ->groupby('a.nobukti');
 
@@ -607,7 +608,7 @@ class PenerimaanTruckingHeader extends MyModel
 
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
-            $table->bigInteger('sisa')->nullable();
+            $table->double('sisa', 15, 2)->nullable();
         });
 
         $tes = DB::table($temp)->insertUsing(['nobukti', 'sisa'], $fetch);

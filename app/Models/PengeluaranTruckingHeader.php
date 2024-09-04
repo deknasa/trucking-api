@@ -698,6 +698,7 @@ class PengeluaranTruckingHeader extends MyModel
                     'pengeluarantruckingheader.periodedari',
                     'pengeluarantruckingheader.periodesampai',
                     'pengeluarantruckingheader.periode',
+                    db::raw("cast(pengeluarantruckingheader.nominalpenarikan AS float) AS nominalpenarikan"),
                     'akunpusat.keterangancoa',
                     'pengeluarantruckingheader.pengeluaran_nobukti',
                     'pengeluarantruckingheader.jenisorder_id as jenisorderan_id',
@@ -1982,6 +1983,7 @@ class PengeluaranTruckingHeader extends MyModel
         $pengeluaranTruckingHeader->gandengantnl_id = $gandenganTNL;
         $pengeluaranTruckingHeader->statuscabang = $data['statuscabang'] ?? '';
         $pengeluaranTruckingHeader->jenisorder_id = $data['jenisorderan_id'] ?? '';
+        $pengeluaranTruckingHeader->nominalpenarikan = $data['nominalpenarikan'] ?? 0;
         $pengeluaranTruckingHeader->agen_id = $data['agen_id'] ?? '';
         $pengeluaranTruckingHeader->container_id = $data['containerheader_id'] ?? '';
         $pengeluaranTruckingHeader->statusformat = $data['statusformat'] ?? $format->id;
@@ -1995,6 +1997,141 @@ class PengeluaranTruckingHeader extends MyModel
         }
         $pengeluaranTruckingDetails = [];
         $nominalBiaya = 0;
+        
+        if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'TDEK') {
+
+            $kondisi = true;
+            $nominaltarik = $data['nominalpenarikan'];
+            $a = 0;
+            while ($kondisi == true) {
+                $a++;
+                if ($fetchFormat->kodepengeluaran == 'TDE') {
+
+                    $tglbukti = date('Y-m-d', strtotime(request()->tglbukti));
+                    $tempPribadi = (new PenerimaanTruckingHeader())->createTempDeposito($pengeluaranTruckingHeader->supir_id, $tglbukti);
+
+                    $query = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                        ->select(DB::raw("penerimaantruckingdetail.nobukti,penerimaantruckingdetail.keterangan," . $tempPribadi . ".sisa"))
+                        ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', $tempPribadi . ".nobukti")
+                        ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', "penerimaantruckingheader.nobukti")
+                        ->whereRaw("penerimaantruckingdetail.supir_id = $pengeluaranTruckingHeader->supir_id")
+                        ->whereRaw("penerimaantruckingdetail.nobukti = $tempPribadi.nobukti")
+                        ->where(function ($query) use ($tempPribadi) {
+                            $query->whereRaw("$tempPribadi.sisa != 0")
+                                ->orWhereRaw("$tempPribadi.sisa is null");
+                        })
+                        ->where("penerimaantruckingheader.tglbukti", '<=', $tglbukti)
+                        ->orderBy('penerimaantruckingheader.id', 'asc')
+                        ->first();
+                } else {
+
+                    $tempPribadi = (new PenerimaanTruckingHeader())->createTempDepositoKaryawan($pengeluaranTruckingHeader->karyawan_id);
+                    $tglbukti = date('Y-m-d', strtotime(request()->tglbukti));
+
+                    $query = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                        ->select(DB::raw("rpenerimaantruckingdetail.nobukti,penerimaantruckingdetail.keterangan," . $tempPribadi . ".sisa"))
+                        ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', $tempPribadi . ".nobukti")
+                        ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', "penerimaantruckingheader.nobukti")
+                        ->whereRaw("penerimaantruckingdetail.karyawan_id = $pengeluaranTruckingHeader->karyawan_id")
+                        ->whereRaw("penerimaantruckingdetail.nobukti = $tempPribadi.nobukti")
+                        ->where(function ($query) use ($tempPribadi) {
+                            $query->whereRaw("$tempPribadi.sisa != 0")
+                                ->orWhereRaw("$tempPribadi.sisa is null");
+                        })
+                        ->where("penerimaantruckingheader.tglbukti", '<=', $tglbukti)
+                        ->orderBy('penerimaantruckingheader.id', 'asc')
+                        ->first();
+                }
+
+                if (isset($query)) {
+                    $nominalsisa = $query->sisa ?? 0;
+                    if ($nominaltarik <= $nominalsisa) {
+
+                        $pengeluaranTruckingDetail = (new PengeluaranTruckingDetail())->processStore($pengeluaranTruckingHeader, [
+                            'pengeluarantruckingheader_id' => $pengeluaranTruckingHeader->id,
+                            'nobukti' => $pengeluaranTruckingHeader->nobukti,
+                            'supir_id' => $data['supirheader_id'] ?? null,
+                            'karyawan_id' => 0,
+                            'stok_id' => 0,
+                            'pengeluaranstok_nobukti' => '',
+                            'penerimaanstok_nobukti' => '',
+                            'stoktnl_id' => 0,
+                            'pengeluaranstoktnl_nobukti' => '',
+                            'penerimaanstoktnl_nobukti' => '',
+                            'qty' => 0,
+                            'harga' => 0,
+                            'total' => 0,
+                            'trado_id' => 0,
+                            'penerimaantruckingheader_nobukti' => $query->nobukti,
+                            'invoice_nobukti' => '',
+                            'orderantrucking_nobukti' => '',
+                            'keterangan' => $query->keterangan,
+                            'nominal' => $nominaltarik,
+                            'modifiedby' => $pengeluaranTruckingHeader->modifiedby,
+
+                            // 'suratpengantar_id' => $data['suratpengantar_id'][$i] ?? null,
+                            'statustitipanemkl' =>  null,
+                            'suratpengantar_nobukti' => null,
+                            'trado_id' => null,
+                            'container_id' => null,
+                            'pelanggan_id' => null,
+                            'nominaltagih' =>  0,
+                            'jenisorder' => null,
+                            'nominaltambahan' => 0,
+                            'keterangantambahan' => '',
+                        ]);
+                        $pengeluaranTruckingDetails[] = $pengeluaranTruckingDetail->toArray();
+
+                        $kondisi = false;
+                        // if ($a == 8) {
+                        //     $nominalsisa = $query->sisa ?? 0;
+                        //     dd($nominaltarik <= $nominalsisa, $nominaltarik, $nominalsisa, $kondisi, $query);
+                        // }
+                    } else {
+
+                        $nominaltarik = $nominaltarik - $nominalsisa;
+                        // dd($nominaltarik);
+                        $pengeluaranTruckingDetail = (new PengeluaranTruckingDetail())->processStore($pengeluaranTruckingHeader, [
+                            'pengeluarantruckingheader_id' => $pengeluaranTruckingHeader->id,
+                            'nobukti' => $pengeluaranTruckingHeader->nobukti,
+                            'supir_id' => $data['supirheader_id'] ?? null,
+                            'karyawan_id' => 0,
+                            'stok_id' => 0,
+                            'pengeluaranstok_nobukti' => '',
+                            'penerimaanstok_nobukti' => '',
+                            'stoktnl_id' => 0,
+                            'pengeluaranstoktnl_nobukti' => '',
+                            'penerimaanstoktnl_nobukti' => '',
+                            'qty' => 0,
+                            'harga' => 0,
+                            'total' => 0,
+                            'trado_id' => 0,
+                            'penerimaantruckingheader_nobukti' => $query->nobukti,
+                            'invoice_nobukti' => '',
+                            'orderantrucking_nobukti' => '',
+                            'keterangan' => $query->keterangan,
+                            'nominal' => $nominalsisa,
+                            'modifiedby' => $pengeluaranTruckingHeader->modifiedby,
+
+                            // 'suratpengantar_id' => $data['suratpengantar_id'][$i] ?? null,
+                            'statustitipanemkl' =>  null,
+                            'suratpengantar_nobukti' => null,
+                            'trado_id' => null,
+                            'container_id' => null,
+                            'pelanggan_id' => null,
+                            'nominaltagih' =>  0,
+                            'jenisorder' => null,
+                            'nominaltambahan' => 0,
+                            'keterangantambahan' => '',
+                        ]);
+                        $pengeluaranTruckingDetails[] = $pengeluaranTruckingDetail->toArray();
+                    }
+                }
+            }
+
+            goto postingkas;
+        }
+
         for ($i = 0; $i < count($data['nominal']); $i++) {
             $qty = $data['qty'][$i] ?? 0;
             $harga = $data['harga'][$i] ?? 0;
@@ -2068,7 +2205,7 @@ class PengeluaranTruckingHeader extends MyModel
 
         if (($tanpaprosesnobukti != 2) && ($data['statusposting'] != $statusPosting->id)) {
 
-
+            postingkas:
             if ($klaim->id == $data['pengeluarantrucking_id']) {
                 $isKaryawan = false;
                 if ($data['karyawanheader_id']) {
@@ -2136,16 +2273,35 @@ class PengeluaranTruckingHeader extends MyModel
                         $keterangan_detail[] = $nonEmptyArray[0] ?? "$fetchFormat->keterangan periode " . $data['periode'] . " $pengeluaranTruckingHeader->nobukti";
                     }
                 } else {
-                    // for ($i = 0; $i < count($nominal_detail); $i++) {
-                    $nominal_detail = [];
-                    $nominal_detail[] = $nominalBiaya;
-                    $keterangan_detail = [];
-                    $keterangan_detail[] = $data['keterangan'][0];
-                    $coakredit_detail[] = $queryPengeluaran->coa;
-                    $coadebet_detail[] = $data['coa'];
-                    $nowarkat[] = "";
-                    $tglkasmasuk[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
-                    // }
+                    if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'TDEK') {
+                        if ($fetchFormat->kodepengeluaran == 'TDE') {
+                            $namasupir = db::table("supir")->from(DB::raw("supir with (readuncommitted)"))->where('id', $data['supirheader_id'])->first()->namasupir;
+
+                            $keterangan_detail[] = 'PENARIKAN DEPOSITO SUPIR ' . $namasupir . ' SEBESAR Rp ' . number_format($data['nominalpenarikan'], 2);
+                        } else {
+                            $namakaryawan = db::table("karyawan")->from(DB::raw("karyawan with (readuncommitted)"))->where('id', $data['karyawanheader_id'])->first()->namakaryawan;
+
+                            $keterangan_detail[] = 'PENARIKAN DEPOSITO KARYAWAN ' . $namakaryawan . ' SEBESAR Rp ' . number_format($data['nominalpenarikan'], 2);
+                        }
+                        $nominal_detail = [];
+                        $nominal_detail[] = $data['nominalpenarikan'];
+                        $coakredit_detail[] = $queryPengeluaran->coa;
+                        $coadebet_detail[] = $data['coa'];
+                        $nowarkat[] = "";
+                        $tglkasmasuk[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
+                    } else {
+
+                        // for ($i = 0; $i < count($nominal_detail); $i++) {
+                        $nominal_detail = [];
+                        $nominal_detail[] = $nominalBiaya;
+                        $keterangan_detail = [];
+                        $keterangan_detail[] = $data['keterangan'][0];
+                        $coakredit_detail[] = $queryPengeluaran->coa;
+                        $coadebet_detail[] = $data['coa'];
+                        $nowarkat[] = "";
+                        $tglkasmasuk[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
+                        // }
+                    }
                 }
                 /*STORE PENGELUARAN*/
                 $pengeluaranRequest = [
@@ -2308,6 +2464,7 @@ class PengeluaranTruckingHeader extends MyModel
         $pengeluaranTruckingHeader->gandengantnl_id = $gandenganTNL;
         $pengeluaranTruckingHeader->statuscabang = $data['statuscabang'] ?? '';
         $pengeluaranTruckingHeader->jenisorder_id = $data['jenisorderan_id'] ?? '';
+        $pengeluaranTruckingHeader->nominalpenarikan = $data['nominalpenarikan'] ?? 0;
         $pengeluaranTruckingHeader->agen_id = $data['agen_id'] ?? '';
         $pengeluaranTruckingHeader->container_id = $data['containerheader_id'] ?? '';
         $pengeluaranTruckingHeader->statusformat = $data['statusformat'] ?? $format->id;
@@ -2333,6 +2490,118 @@ class PengeluaranTruckingHeader extends MyModel
 
         $pengeluaranTruckingDetails = [];
         $nominalBiaya = 0;
+        if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'TDEK') {
+
+            $kondisi = true;
+            $nominaltarik = $data['nominalpenarikan'];
+            $a = 0;
+            while ($kondisi == true) {
+                $a++;
+                $tglbukti = date('Y-m-d', strtotime(request()->tglbukti));
+                $tempPribadi = (new PenerimaanTruckingHeader())->createTempDeposito($pengeluaranTruckingHeader->supir_id, $tglbukti);
+
+                $query = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                    ->select(DB::raw("penerimaantruckingdetail.nobukti,penerimaantruckingdetail.keterangan," . $tempPribadi . ".sisa"))
+                    ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', $tempPribadi . ".nobukti")
+                    ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', "penerimaantruckingheader.nobukti")
+                    ->whereRaw("penerimaantruckingdetail.supir_id = $pengeluaranTruckingHeader->supir_id")
+                    ->whereRaw("penerimaantruckingdetail.nobukti = $tempPribadi.nobukti")
+                    ->where(function ($query) use ($tempPribadi) {
+                        $query->whereRaw("$tempPribadi.sisa != 0")
+                            ->orWhereRaw("$tempPribadi.sisa is null");
+                    })
+                    ->where("penerimaantruckingheader.tglbukti", '<=', $tglbukti)
+                    ->orderBy('penerimaantruckingheader.id', 'asc')
+                    ->first();
+                if (isset($query)) {
+                    $nominalsisa = $query->sisa ?? 0;
+                    if ($nominaltarik <= $nominalsisa) {
+
+                        $pengeluaranTruckingDetail = (new PengeluaranTruckingDetail())->processStore($pengeluaranTruckingHeader, [
+                            'pengeluarantruckingheader_id' => $pengeluaranTruckingHeader->id,
+                            'nobukti' => $pengeluaranTruckingHeader->nobukti,
+                            'supir_id' => $data['supirheader_id'] ?? null,
+                            'karyawan_id' => 0,
+                            'stok_id' => 0,
+                            'pengeluaranstok_nobukti' => '',
+                            'penerimaanstok_nobukti' => '',
+                            'stoktnl_id' => 0,
+                            'pengeluaranstoktnl_nobukti' => '',
+                            'penerimaanstoktnl_nobukti' => '',
+                            'qty' => 0,
+                            'harga' => 0,
+                            'total' => 0,
+                            'trado_id' => 0,
+                            'penerimaantruckingheader_nobukti' => $query->nobukti,
+                            'invoice_nobukti' => '',
+                            'orderantrucking_nobukti' => '',
+                            'keterangan' => $query->keterangan,
+                            'nominal' => $nominaltarik,
+                            'modifiedby' => $pengeluaranTruckingHeader->modifiedby,
+
+                            // 'suratpengantar_id' => $data['suratpengantar_id'][$i] ?? null,
+                            'statustitipanemkl' =>  null,
+                            'suratpengantar_nobukti' => null,
+                            'trado_id' => null,
+                            'container_id' => null,
+                            'pelanggan_id' => null,
+                            'nominaltagih' =>  0,
+                            'jenisorder' => null,
+                            'nominaltambahan' => 0,
+                            'keterangantambahan' => '',
+                        ]);
+                        $pengeluaranTruckingDetails[] = $pengeluaranTruckingDetail->toArray();
+
+                        $kondisi = false;
+                        // if ($a == 8) {
+                        //     $nominalsisa = $query->sisa ?? 0;
+                        //     dd($nominaltarik <= $nominalsisa, $nominaltarik, $nominalsisa, $kondisi, $query);
+                        // }
+                    } else {
+
+                        $nominaltarik = $nominaltarik - $nominalsisa;
+                        // dd($nominaltarik);
+                        $pengeluaranTruckingDetail = (new PengeluaranTruckingDetail())->processStore($pengeluaranTruckingHeader, [
+                            'pengeluarantruckingheader_id' => $pengeluaranTruckingHeader->id,
+                            'nobukti' => $pengeluaranTruckingHeader->nobukti,
+                            'supir_id' => $data['supirheader_id'] ?? null,
+                            'karyawan_id' => 0,
+                            'stok_id' => 0,
+                            'pengeluaranstok_nobukti' => '',
+                            'penerimaanstok_nobukti' => '',
+                            'stoktnl_id' => 0,
+                            'pengeluaranstoktnl_nobukti' => '',
+                            'penerimaanstoktnl_nobukti' => '',
+                            'qty' => 0,
+                            'harga' => 0,
+                            'total' => 0,
+                            'trado_id' => 0,
+                            'penerimaantruckingheader_nobukti' => $query->nobukti,
+                            'invoice_nobukti' => '',
+                            'orderantrucking_nobukti' => '',
+                            'keterangan' => $query->keterangan,
+                            'nominal' => $nominalsisa,
+                            'modifiedby' => $pengeluaranTruckingHeader->modifiedby,
+
+                            // 'suratpengantar_id' => $data['suratpengantar_id'][$i] ?? null,
+                            'statustitipanemkl' =>  null,
+                            'suratpengantar_nobukti' => null,
+                            'trado_id' => null,
+                            'container_id' => null,
+                            'pelanggan_id' => null,
+                            'nominaltagih' =>  0,
+                            'jenisorder' => null,
+                            'nominaltambahan' => 0,
+                            'keterangantambahan' => '',
+                        ]);
+                        $pengeluaranTruckingDetails[] = $pengeluaranTruckingDetail->toArray();
+                    }
+                }
+            }
+
+            goto postingkas;
+        }
+
         for ($i = 0; $i < count($data['nominal']); $i++) {
             $qty = $data['qty'][$i] ?? 0;
             $harga = $data['harga'][$i] ?? 0;
@@ -2404,6 +2673,8 @@ class PengeluaranTruckingHeader extends MyModel
 
 
         if (($tanpaprosesnobukti != 2)) {
+
+            postingkas:
             if ($klaim->id == $data['pengeluarantrucking_id']) {
                 $isKaryawan = false;
                 if ($data['karyawanheader_id']) {
@@ -2479,20 +2750,37 @@ class PengeluaranTruckingHeader extends MyModel
                         } else {
                             $nonEmptyArray = array_filter($data['keterangan']);
                             $nonEmptyArray = array_values($nonEmptyArray);
-                            $keterangan_detail[] = $nonEmptyArray[0] ?? "$fetchFormat->keterangan periode " . $data['periode'] . " $pengeluaranTruckingHeader->nobukti";
+                            $keterangan_detail[] = "$fetchFormat->keterangan periode " . $data['periode'] . " $pengeluaranTruckingHeader->nobukti";
                         }
                     } else {
+                        if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'TDEK') {
+                            if ($fetchFormat->kodepengeluaran == 'TDE') {
+                                $namasupir = db::table("supir")->from(DB::raw("supir with (readuncommitted)"))->where('id', $data['supirheader_id'])->first()->namasupir;
 
-                        // for ($i = 0; $i < count($nominal_detail); $i++) {
-                        $nominal_detail = [];
-                        $nominal_detail[] = $nominalBiaya;
-                        $keterangan_detail = [];
-                        $keterangan_detail[] = $data['keterangan'][0];
-                        $coakredit_detail[] = $queryPengeluaran->coa;
-                        $coadebet_detail[] = $data['coa'];
-                        $nowarkat[] = "";
-                        $tglkasmasuk[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
-                        // }
+                                $keterangan_detail[] = 'PENARIKAN DEPOSITO SUPIR ' . $namasupir . ' SEBESAR Rp ' . number_format($data['nominalpenarikan'], 2);
+                            } else {
+                                $namakaryawan = db::table("karyawan")->from(DB::raw("karyawan with (readuncommitted)"))->where('id', $data['karyawanheader_id'])->first()->namakaryawan;
+
+                                $keterangan_detail[] = 'PENARIKAN DEPOSITO KARYAWAN ' . $namakaryawan . ' SEBESAR Rp ' . number_format($data['nominalpenarikan'], 2);
+                            }
+                            $nominal_detail = [];
+                            $nominal_detail[] = $data['nominalpenarikan'];
+                            $coakredit_detail[] = $queryPengeluaran->coa;
+                            $coadebet_detail[] = $data['coa'];
+                            $nowarkat[] = "";
+                            $tglkasmasuk[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
+                        } else {
+                            // for ($i = 0; $i < count($nominal_detail); $i++) {
+                            $nominal_detail = [];
+                            $nominal_detail[] = $nominalBiaya;
+                            $keterangan_detail = [];
+                            $keterangan_detail[] = $data['keterangan'][0];
+                            $coakredit_detail[] = $queryPengeluaran->coa;
+                            $coadebet_detail[] = $data['coa'];
+                            $nowarkat[] = "";
+                            $tglkasmasuk[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
+                            // }
+                        }
                     }
                     /*STORE PENGELUARAN*/
                     $pengeluaranRequest = [
@@ -2650,5 +2938,91 @@ class PengeluaranTruckingHeader extends MyModel
         ]);
 
         return $pengeluaranTruckingHeader;
+    }
+
+    public function cekValidasiTarikDeposito($supir_id, $nobukti, $tglbukti)
+    {
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        $temppenerimaandeposito = '##temppenerimaandeposito' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppenerimaandeposito, function ($table) {
+            $table->bigInteger('supir_id')->nullable();
+            $table->string('nobukti')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+        $temppengeluarandeposito = '##temppengeluarandeposito' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppengeluarandeposito, function ($table) {
+            $table->bigInteger('supir_id')->nullable();
+            $table->string('nobukti')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+
+
+        $querypenerimaandeposito = db::table("penerimaantruckingheader")->from(db::raw("penerimaantruckingheader a with (readuncommitted)"))
+            ->select(
+                'b.supir_id',
+                'a.nobukti',
+                db::raw("sum(b.nominal) as nominal")
+            )
+            ->join(db::raw("penerimaantruckingdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->whereraw("a.penerimaantrucking_id=3")
+            ->where('b.supir_id', $supir_id)
+            ->where('a.tglbukti','<=', $tglbukti)
+            ->groupby('b.supir_id')
+            ->groupby('a.nobukti');
+
+
+        $querypengeluarandeposito = db::table("pengeluarantruckingheader")->from(db::raw("pengeluarantruckingheader a with (readuncommitted)"))
+            ->select(
+                'b.supir_id',
+                db::raw("b.penerimaantruckingheader_nobukti as nobukti"),
+                db::raw("sum(b.nominal) as nominal")
+            )
+            ->join(db::raw("pengeluarantruckingdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->whereraw("a.pengeluarantrucking_id=2")
+            ->where('b.supir_id', $supir_id)
+            ->where('a.nobukti', '!=', $nobukti)
+            ->groupby('b.supir_id')
+            ->groupby('b.penerimaantruckingheader_nobukti');
+
+        DB::table($temppenerimaandeposito)->insertUsing([
+            'supir_id',
+            'nobukti',
+            'nominal'
+        ], $querypenerimaandeposito);
+
+        DB::table($temppengeluarandeposito)->insertUsing([
+            'supir_id',
+            'nobukti',
+            'nominal'
+        ], $querypengeluarandeposito);
+
+        // dump(db::table($temppenerimaandeposito)->get());
+        // dd(db::table($temppengeluarandeposito)->get());
+
+        $fetch = db::table($temppenerimaandeposito)->from(db::raw($temppenerimaandeposito . " a"))
+            ->select(
+                'a.nobukti',
+                db::raw("(isnull(a.nominal,0)-isnull(b.nominal,0)) as sisa")
+
+            )
+            ->leftjoin(db::raw($temppengeluarandeposito . " b"), 'a.nobukti', 'b.nobukti')
+            ->whereRaw("(isnull(a.nominal,0)-isnull(b.nominal,0))<>0")
+            ->orderBy('a.nobukti', 'asc');
+
+
+        // dd($fetch->get());
+
+        Schema::create($temp, function ($table) {
+            $table->string('nobukti');
+            $table->double('sisa', 15, 2)->nullable();
+        });
+
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'sisa'], $fetch);
+
+
+        return $temp;
     }
 }

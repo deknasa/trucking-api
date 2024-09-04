@@ -171,7 +171,7 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
             'kbbm_id.*' => $requiredKBBM,
             'id_detail' => [$requiredBST, 'array'],
             'id_detail.*' => $requiredBST,
-            'sisa.*' => [$requiredTDE, $requiredKBBM, $sisaNominus],
+            'sisa.*' => [$requiredKBBM, $sisaNominus],
             'supir.*' => [$requiredPJT, new ValidasiSupirPJT()],
             // 'nominal' => ['array','required', 'numeric', 'gt:0'],
             'nominal.*' => ['required', $min],

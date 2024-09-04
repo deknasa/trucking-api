@@ -165,13 +165,11 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
         }
 
         $rules = [
-            'tde_id' => [$requiredTDE, 'array'],
-            'tde_id.*' => $requiredTDE,
             'kbbm_id' => [$requiredKBBM, 'array'],
             'kbbm_id.*' => $requiredKBBM,
             'id_detail' => [$requiredBST, 'array'],
             'id_detail.*' => $requiredBST,
-            'sisa.*' => [$requiredTDE, $requiredKBBM, $sisaNominus],
+            'sisa.*' => [ $requiredKBBM, $sisaNominus],
             'supir.*' => [$requiredPJT, new ValidasiSupirPJT()],
             'nominal.*' => ['required', $min],
             'keterangan' => [$requiredKeterangan, 'array'],

@@ -12,6 +12,7 @@ use App\Rules\ExistSupir;
 use App\Rules\ExistSupirForPengeluaranTrucking;
 use App\Rules\ValidasiDetail;
 use App\Rules\validasiJenisOrderanPengeluaranTrucking;
+use App\Rules\validasiNominalTarikDeposito;
 use App\Rules\validasiTarikDeposito;
 use App\Rules\validasiTarikDepositoKaryawan;
 use Illuminate\Validation\Rule;
@@ -302,7 +303,9 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                 ],
                 'pengeluarantrucking' => 'required', 'numeric', 'min:1',
                 'bank' => [$ruleBank],
-                'supirheader' => ['required',  new ValidasiDetail($jumlahdetail), new validasiTarikDeposito()],
+                // 'supirheader' => ['required',  new ValidasiDetail($jumlahdetail), new validasiTarikDeposito()],
+                'supirheader' => ['required'],
+                'nominalpenarikan' => ['required','numeric','min:1', new validasiNominalTarikDeposito()],
                 // 'keterangancoa' => 'required',
             ];
         } else if ($kodepengeluaran == 'TDEK') {
@@ -325,7 +328,8 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                 ],
                 'pengeluarantrucking' => 'required', 'numeric', 'min:1',
                 'bank' => [$ruleBank],
-                'karyawanheader' => ['required',  new ValidasiDetail($jumlahdetail), new validasiTarikDepositoKaryawan()],
+                'karyawanheader' => ['required'],
+                'nominalpenarikan' => ['required','numeric','min:1'],
                 // 'keterangancoa' => 'required',
             ];
         } elseif ($kodepengeluaran == 'BBT') {
