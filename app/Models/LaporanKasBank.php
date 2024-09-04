@@ -175,7 +175,7 @@ class LaporanKasBank extends MyModel
             DB::raw("pengeluaranheader as a with (readuncommitted)")
         )
             ->select(
-                db::raw("format(a.tglbukti,'MM-yyyy') as bulan"),
+                db::raw("format(c.tglbukti,'MM-yyyy') as bulan"),
                 DB::raw("a.bank_id"),
                 DB::raw("0 as nominaldebet"),
                 DB::raw("sum(b.nominal) as nominalkredit")
@@ -183,11 +183,11 @@ class LaporanKasBank extends MyModel
             ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw("pencairangiropengeluaranheader as c with (readuncommitted)"), 'a.nobukti', 'c.pengeluaran_nobukti')
             ->whereraw("isnull(a.alatbayar_id,0) in(3,4)")
-            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
+            ->whereRaw("c.tglbukti>='" . $tglawalcek . "' and c.tglbukti<='" . $tgl2 . "'")
             ->groupby('a.bank_id')
-            ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
+            ->groupby(db::raw("format(c.tglbukti,'MM-yyyy')"));
 
-
+// dd($querykredit->get());
         DB::table($tempsaldoawal)->insertUsing([
             'bulan',
             'bank_id',
@@ -283,7 +283,7 @@ class LaporanKasBank extends MyModel
             DB::raw("pengeluaranheader as a with (readuncommitted)")
         )
             ->select(
-                db::raw("format(a.tglbukti,'MM-yyyy') as bulan"),
+                db::raw("format(d.tglbukti,'MM-yyyy') as bulan"),
                 DB::raw("c.bank_id"),
                 DB::raw("0 as nominaldebet"),
                 DB::raw("sum(b.nominal) as nominalkredit")
@@ -292,9 +292,9 @@ class LaporanKasBank extends MyModel
             ->join(DB::raw($temppengembaliankepusat . " as c with (readuncommitted)"), 'a.bank_id', 'c.bankpengembalian_id')
             ->join(DB::raw("pencairangiropengeluaranheader as d with (readuncommitted)"), 'a.nobukti', 'd.pengeluaran_nobukti')
             ->whereraw("isnull(a.alatbayar_id,0) in(3,4)")
-            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
+            ->whereRaw("d.tglbukti>='" . $tglawalcek . "' and d.tglbukti<='" . $tgl2 . "'")
             ->groupby('c.bank_id')
-            ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
+            ->groupby(db::raw("format(d.tglbukti,'MM-yyyy')"));
 
 
 
