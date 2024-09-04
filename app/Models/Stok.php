@@ -961,6 +961,42 @@ class Stok extends MyModel
         return $temtabel;
     }
 
+    public function showTnlForSPB($id){
+        $query = DB::connection('srvtnl')->table('stok')->from(DB::raw("stok with (Readuncommitted)"))->select(
+            'stok.id',
+            'stok.jenistrado_id',
+            'stok.kelompok_id',
+            'stok.subkelompok_id',
+            'stok.kategori_id',
+            'stok.merk_id',
+            'stok.satuan_id',
+            'stok.namastok',
+            'stok.statusaktif',
+            'stok.statusreuse',
+            'stok.statusban',
+            'stok.statusservicerutin',
+            'stok.qtymin',
+            'stok.qtymax',
+            'stok.hargabelimin',
+            'stok.hargabelimax',
+            'stok.vulkanisirawal',
+            'stok.totalvulkanisir',
+            'stok.keterangan',
+            'stok.gambar',
+            'stok.namaterpusat',
+            'stok.statusapprovaltanpaklaim',
+            'stok.userapprovaltanpaklaim',
+            'stok.tglapprovaltanpaklaim',
+            'stok.info',
+            'stok.tas_id',
+            'stok.editing_by',
+            'stok.editing_at',
+            'stok.modifiedby',
+            'stok.statuspembulatanlebih2decimal',
+        )->where('stok.tas_id', '=', $id)->first();
+       return $query;
+    }
+
     public function default()
     {
 

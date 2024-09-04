@@ -1203,9 +1203,13 @@ class PenerimaanStokDetail extends MyModel
                 throw ValidationException::withMessages(["detail_penerimaanstoknobukti" => "penerimaan stok No Bukti tidak valid"]);
             }
         }
-        // if ($penerimaanStokHeader->penerimaanstok_id == $spb->text) {
-        //     $this->updateStokBanMasak($stok);
-        // }
+        if ($penerimaanStokHeader->penerimaanstok_id == $spb->text) {
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $supplierTNL = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SUPPLIER TNL')->first()->text ?? '';
+            if (($cekStatusPostingTnl->text == 'POSTING TNL')   && ($penerimaanStokHeader->supplier_id == $supplierTNL)) {
+                $this->updateStokBanSesuaiTnl($stok);
+            }        
+        }
         if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
             if (($penerimaanStokHeader->penerimaanstok_id == $spb->text) || ($penerimaanStokHeader->penerimaanstok_id == $kor->text) || ($penerimaanStokHeader->penerimaanstok_id == $pst->text) || ($penerimaanStokHeader->penerimaanstok_id == $pspk->text)) {
                 $persediaan = $this->persediaan($penerimaanStokHeader->gudang_id, $penerimaanStokHeader->trado_id, $penerimaanStokHeader->gandengan_id);
@@ -1310,6 +1314,7 @@ class PenerimaanStokDetail extends MyModel
             }
         }
         // if ($penerimaanStokHeader->penerimaanstok_id == $spb->text) {
+            // updateStokBanSesuaiTnl
         //     $this->updateStokBanMasak($stok);
         // }
         if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
@@ -1394,6 +1399,21 @@ class PenerimaanStokDetail extends MyModel
         if ($stok->kelompok_id == $kelompokBan->id) {
             $kondisiBanMasak = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS KONDISI BAN')->where('subgrp', 'STATUS KONDISI BAN')->where('text', 'MASAK')->first();
             $stok->statusban = $kondisiBanMasak->id;
+            $stok->totalvulkanisir = 0;
+            $stok->save();
+            return true;
+        }
+    }
+    public function updateStokBanSesuaiTnl(Stok $stok)
+    {
+        $dataLama = $stok;
+        $kelompokBan = DB::table('kelompok')->select('id')->where('kelompok.kodekelompok', 'BAN')->first();
+        if (!$stok) {
+            return false;
+        }
+        if ($stok->kelompok_id == $kelompokBan->id) {
+            $stokTNL = (new Stok())->showTnlForSPB($stok->id);
+            $stok->statusban = $stokTNL->statusban ?? $dataLama->statusban;
             $stok->totalvulkanisir = 0;
             $stok->save();
             return true;
