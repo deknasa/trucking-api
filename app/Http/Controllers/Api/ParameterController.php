@@ -81,10 +81,6 @@ class ParameterController extends Controller
             } else {
                 $parameter->page = ceil($parameter->position / ($request->limit ?? 10));
             }
-            
-            if (isset($request->limit)) {
-                $parameter->page = ceil($parameter->position / $request->limit);
-            }
 
             DB::commit();
 
