@@ -1367,6 +1367,7 @@ class PengeluaranHeader extends MyModel
 
     public function processUpdate(PengeluaranHeader $pengeluaranHeader, array $data): PengeluaranHeader
     {
+        // dd($data);
         $nobuktiOld = $pengeluaranHeader->nobukti;
         $bankid = $data['bank_id'];
         $manual = $data['manual'] ?? false;
