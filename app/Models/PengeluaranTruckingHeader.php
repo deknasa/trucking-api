@@ -437,7 +437,7 @@ class PengeluaranTruckingHeader extends MyModel
                         }
                     }
                 }
-                if(request()->pengeluaranheader_id == 7){//klaim
+                if (request()->pengeluaranheader_id == 7) { //klaim
                     $namakaryawan = $item['karyawan'];
                 }
                 DB::table($temtabel)->insert([
@@ -552,17 +552,17 @@ class PengeluaranTruckingHeader extends MyModel
         if ($cek->pengeluarantrucking_id == 7) {
 
             $detail = PengeluaranTruckingdetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
-            ->select(
-                'pengeluarantruckingheader_id',
-                db::raw("COALESCE(NULLIF(pengeluaranstok_nobukti, ''), NULLIF(penerimaanstok_nobukti, '')) AS hasil")
-            )
-            ->where('pengeluarantruckingheader_id', $id)->limit(1);
+                ->select(
+                    'pengeluarantruckingheader_id',
+                    db::raw("COALESCE(NULLIF(pengeluaranstok_nobukti, ''), NULLIF(penerimaanstok_nobukti, '')) AS hasil")
+                )
+                ->where('pengeluarantruckingheader_id', $id)->limit(1);
             $tempcekdetailnobukti = '##tempcekdetailnobukti' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempcekdetailnobukti, function ($table) {
                 $table->string('id')->nullable();
                 $table->string('nobukti')->nullable();
             });
-            DB::table($tempcekdetailnobukti)->insertUsing(['id','nobukti'], $detail);
+            DB::table($tempcekdetailnobukti)->insertUsing(['id', 'nobukti'], $detail);
 
             if ($cek->statuscabang == 516) {
                 $tabelTrado = (new Trado())->getTNLForKlaim();
@@ -576,7 +576,7 @@ class PengeluaranTruckingHeader extends MyModel
                         'pengeluarantrucking.keterangan as pengeluarantrucking',
                         'pengeluarantrucking.kodepengeluaran as kodepengeluaran',
                         'pengeluarantruckingheader.bank_id',
-                        'bank.namabank as bank',                        
+                        'bank.namabank as bank',
                         'pengeluarantruckingheader.karyawan_id as karyawanheader_id',
                         'pengeluarantruckingheader.supir_id',
                         'pengeluarantruckingheader.supir_id as supirheader_id',
@@ -584,7 +584,7 @@ class PengeluaranTruckingHeader extends MyModel
                         'pengeluarantruckingheader.tradotnl_id as tradoheader_id',
                         'gandengan.keterangan as gandengan',
                         'pengeluarantruckingheader.gandengantnl_id as gandenganheader_id',
-                        'supir.namasupir as supirheader',                        
+                        'supir.namasupir as supirheader',
                         'karyawan.namakaryawan as karyawanheader',
                         'supir.namasupir as supir',
                         'pengeluarantruckingheader.pengeluarantrucking_nobukti',
@@ -602,7 +602,7 @@ class PengeluaranTruckingHeader extends MyModel
                         'jenisorder.keterangan as jenisorderan'
                     )
                     ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'pengeluarantruckingheader.pengeluarantrucking_id', 'pengeluarantrucking.id')
-                    ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluarantruckingheader.bank_id', 'bank.id')                    
+                    ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluarantruckingheader.bank_id', 'bank.id')
                     ->leftJoin(DB::raw("karyawan with (readuncommitted)"), 'pengeluarantruckingheader.karyawan_id', 'karyawan.id')
                     ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingheader.supir_id', 'supir.id')
                     ->leftJoin(DB::raw("$tabelTrado as trado with (readuncommitted)"), 'pengeluarantruckingheader.tradotnl_id', 'trado.id')
@@ -2084,16 +2084,15 @@ class PengeluaranTruckingHeader extends MyModel
                 if ($isKaryawan) {
                     $getnama = DB::table('karyawan')->select('namakaryawan')->where('id', $data['karyawanheader_id'])->first();
                     $keteranganPosting = "PINJAMAN KARYAWAN $getnama->namakaryawan ATAS ";
-                }else{
+                } else {
                     $getnama = DB::table('supir')->select('namasupir')->where('id', $data['supirheader_id'])->first();
                     $keteranganPosting = "PINJAMAN SUPIR $getnama->namasupir ATAS ";
-
                 }
                 $totalPjtNominal = 0;
                 $aggPjtKeterangan = "";
                 for ($i = 0; $i < count($data['nominal']); $i++) {
                     $aggPjtKeterangan .= $keteranganPosting . $data['keterangan'][$i];
-                    $aggPjtKeterangan .=" ";
+                    $aggPjtKeterangan .= " ";
                     $totalPjtNominal += $data['nominal'][$i];
                 }
                 $posting_keterangan[] = $aggPjtKeterangan;
@@ -2419,7 +2418,7 @@ class PengeluaranTruckingHeader extends MyModel
                 if ($isKaryawan) {
                     $getnama = DB::table('karyawan')->select('namakaryawan')->where('id', $data['karyawanheader_id'])->first();
                     $keteranganPosting = "PINJAMAN KARYAWAN $getnama->namakaryawan ATAS ";
-                }else{
+                } else {
                     $getnama = DB::table('supir')->select('namasupir')->where('id', $data['supirheader_id'])->first();
                     $keteranganPosting = "PINJAMAN SUPIR $getnama->namasupir ATAS ";
                 }
@@ -2433,14 +2432,14 @@ class PengeluaranTruckingHeader extends MyModel
                 $aggPjtKeterangan = "";
                 for ($i = 0; $i < count($data['nominal']); $i++) {
                     $aggPjtKeterangan .= $keteranganPosting . $data['keterangan'][$i];
-                    $aggPjtKeterangan .=" ";
+                    $aggPjtKeterangan .= " ";
                     $totalPjtNominal += $data['nominal'][$i];
                 }
                 $posting_keterangan = [$aggPjtKeterangan];
                 $posting_nominal = [$totalPjtNominal];
                 $posting_karyawan_id = [$data['karyawanheader_id']];
                 $posting_supir_id = [$data['supirheader_id']];
-                
+
                 $pjtRequest = [
                     "tglbukti" => $data['tglbukti'],
                     "pengeluarantrucking_id" => $pinjaman->id,
@@ -2518,6 +2517,64 @@ class PengeluaranTruckingHeader extends MyModel
                         "keterangan_detail" => $keterangan_detail,
                         'bulanbeban' => $tglkasmasuk,
                     ];
+                    $parameter = new Parameter();
+                    $cabang = $parameter->cekText('CABANG', 'CABANG') ?? 0;
+
+                    // dd($cabang);
+                    if ($cabang == 'MEDAN') {
+                        if ($fetchFormat->kodepengeluaran == 'BIT') {
+                            $queryPengeluaran = Bank::from(DB::raw("bank with (readuncommitted)"))->select('parameter.grp', 'parameter.subgrp', 'bank.formatpengeluaran', 'bank.coa', 'bank.tipe')->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')->where("bank.id", $data['bank_id'])->first();
+
+                            // $tglbuktidetail=[];
+                            // $postingdaridetail=[];
+                            // $statusapprovaldetail=[];
+                            for ($i = 0; $i < count($data['nominal']); $i++) {
+                                $tglbuktidetail = $pengeluaranTruckingHeader->tglbukti;
+                                $postingdaridetail = $data['postingdari'] ?? "EDIT PENGELUARAN TRUCKING";
+                                $statusapprovaldetail = $statusApproval->id;
+                                $dibayarkedetail = '';
+                                $pelanggan_iddetail = 0;
+                                $alatbayar_iddetail = $alatbayar->id;
+                                $bank_iddetail= $data['bank_id'];
+                                $transferkeandetail = '';
+                                $transferkeacdetail = '';
+                                $transferkebankdetail = '';
+                                $userapprovaldetail = '';
+                                $tglapprovaldetail = '';
+                                $nowarkatdetail[] = '';
+                                $tgljatuhtempodetail[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
+                                $nominal_detaildetail[] = $data['nominal'][$i];
+                                $coadebetdetail[] = $data['coa'];
+                                $coakreditdetail[] = $queryPengeluaran->coa;;
+                                $keterangan_detaildetail[] = $data['keterangan'][$i];
+                                $bulanbebandetail[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
+                            }
+                            $pengeluaranRequest = [
+                                'tglbukti' => $tglbuktidetail,
+                                'pelanggan_id' => $pelanggan_iddetail,
+                                'postingdari' => $postingdaridetail,
+                                'statusapproval' => $statusapprovaldetail,
+                                'dibayarke' => $dibayarkedetail,
+                                'alatbayar_id' => $alatbayar_iddetail,
+                                'bank_id' => $bank_iddetail,
+                                'transferkeac' => $transferkeacdetail,
+                                'transferkean' => $transferkeandetail,
+                                'transferkebank' => $transferkebankdetail,
+                                'userapproval' => $userapprovaldetail,
+                                'tglapproval' => $tglapprovaldetail,
+                                'nowarkat' => $nowarkatdetail,
+                                'tgljatuhtempo' => $tgljatuhtempodetail,
+                                "nominal_detail" => $nominal_detaildetail,
+                                'coadebet' => $coadebetdetail,
+                                'coakredit' => $coakreditdetail,
+                                "keterangan_detail" => $keterangan_detaildetail,
+                                'bulanbeban' => $bulanbebandetail,
+                            ];
+                        }
+                    }
+
+
+                    // dd($pengeluaranRequest);
 
                     $pengeluaranHeader = PengeluaranHeader::where('nobukti', $pengeluaranTruckingHeader->pengeluaran_nobukti)->first();
                     $pengeluaranHeader = (new PengeluaranHeader())->processUpdate($pengeluaranHeader, $pengeluaranRequest);
