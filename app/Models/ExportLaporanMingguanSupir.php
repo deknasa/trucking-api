@@ -895,11 +895,12 @@ class ExportLaporanMingguanSupir extends Model
                 'a.jobtrucking',
                 'a.nobukti as suratpengantar',
                 db::raw("isnull(c.retribusi,0) as omsettambahan"),
-                'b.keteranganbiaya as keterangan',
+                db::raw("'Retribusi' as keterangan"),
             )
-            ->join(db::raw("suratpengantarbiayatambahan b with (readuncommitted)"), 'a.id', 'b.suratpengantar_id')
             ->join(db::raw($tempInvoice . " c"), 'a.jobtrucking', 'c.jobtrucking')
             ->whereraw("isnull(c.retribusi,0)<>0");
+
+
 
         DB::table($tempInvoicetambahan)->insertUsing([
             'jobtrucking',
