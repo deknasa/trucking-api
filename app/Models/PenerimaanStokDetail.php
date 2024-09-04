@@ -1203,9 +1203,9 @@ class PenerimaanStokDetail extends MyModel
                 throw ValidationException::withMessages(["detail_penerimaanstoknobukti" => "penerimaan stok No Bukti tidak valid"]);
             }
         }
-        if ($penerimaanStokHeader->penerimaanstok_id == $spb->text) {
-            $this->updateStokBanMasak($stok);
-        }
+        // if ($penerimaanStokHeader->penerimaanstok_id == $spb->text) {
+        //     $this->updateStokBanMasak($stok);
+        // }
         if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
             if (($penerimaanStokHeader->penerimaanstok_id == $spb->text) || ($penerimaanStokHeader->penerimaanstok_id == $kor->text) || ($penerimaanStokHeader->penerimaanstok_id == $pst->text) || ($penerimaanStokHeader->penerimaanstok_id == $pspk->text)) {
                 $persediaan = $this->persediaan($penerimaanStokHeader->gudang_id, $penerimaanStokHeader->trado_id, $penerimaanStokHeader->gandengan_id);
@@ -1309,9 +1309,9 @@ class PenerimaanStokDetail extends MyModel
                 throw ValidationException::withMessages(["detail_penerimaanstoknobukti" => "penerimaan stok No Bukti tidak valid"]);
             }
         }
-        if ($penerimaanStokHeader->penerimaanstok_id == $spb->text) {
-            $this->updateStokBanMasak($stok);
-        }
+        // if ($penerimaanStokHeader->penerimaanstok_id == $spb->text) {
+        //     $this->updateStokBanMasak($stok);
+        // }
         if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
             if (($penerimaanStokHeader->penerimaanstok_id == $spb->text) || ($penerimaanStokHeader->penerimaanstok_id == $kor->text) || ($penerimaanStokHeader->penerimaanstok_id == $pst->text) || ($penerimaanStokHeader->penerimaanstok_id == $pspk->text)) {
                 $persediaan = $this->persediaan($penerimaanStokHeader->gudang_id, $penerimaanStokHeader->trado_id, $penerimaanStokHeader->gandengan_id);
