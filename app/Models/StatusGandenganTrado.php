@@ -31,7 +31,7 @@ class StatusGandenganTrado extends MyModel
             $table->longtext('gudang');
             $table->integer('urut');
         });
-
+     
         $querytrip = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
             ->select(
                 'a.nobukti',
@@ -46,8 +46,10 @@ class StatusGandenganTrado extends MyModel
             )
             ->join(db::raw("pelanggan b with (readuncommitted)"), 'a.pelanggan_id', 'b.id')
             ->join(db::raw("kota c with (readuncommitted)"), 'a.sampai_id', 'c.id')
-            ->whereraw("a.tglbukti<='" . $tgl . "' and A.tglbukti>=('" . $tgl . "'-60)")
+            ->whereraw("a.tglbukti<='" . $tgl . "' and A.tglbukti>=(cast('" . $tgl . "' as datetime)-60)")
             ->whereRaw("isnull(a.gandengan_id,0)<>0");
+
+            // dd($querytrip->get());
 
         DB::table($temptrip)->insertUsing([
             'nobukti',
@@ -61,7 +63,7 @@ class StatusGandenganTrado extends MyModel
             'gudang',
         ], $querytrip);
 
-
+    
         DB::delete(DB::raw("delete " . $temptrip . " WHERE urut<>1"));
 
         $tempritasi = '##tempritasi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -86,7 +88,7 @@ class StatusGandenganTrado extends MyModel
                 'b.gandengan_id',
                 'a.dari_id',
                 'a.sampai_id',
-                'row_number() Over(partition BY b.gandengan_id Order By a.nobukti desc ) as urut',
+                db::raw("row_number() Over(partition BY b.gandengan_id Order By a.nobukti desc ) as urut"),
                 'b.pelanggan',
                 'c.kodekota as sampai',
                 'b.gudang'
@@ -171,6 +173,8 @@ class StatusGandenganTrado extends MyModel
             ->leftjoin(db::raw("kota e with (readuncommitted)"), 'b.sampai_id', 'e.id')
             ->orderBY(db::raw("isnull(c.kodegandengan,'')"), 'asc');
 
+           
+
         DB::table($tempdatagandengan)->insertUsing([
             'nobukti',
             'tglbukti',
@@ -188,7 +192,6 @@ class StatusGandenganTrado extends MyModel
         Schema::create($tempdatagandenganlist, function ($table) {
             $table->id();
             $table->string('nobukti', 50);
-            $table->string('nobukti', 50);
             $table->date('tglbukti');
             $table->longtext('gandengan');
             $table->longtext('nopol');
@@ -196,8 +199,8 @@ class StatusGandenganTrado extends MyModel
             $table->longtext('container');
             $table->longtext('gudang');
             $table->longtext('kodeagen');
-            $table->longtext('kodejeniscontainer');
-            $table->longtext('kodestatuscontainer');
+            $table->longtext('jenisorder');
+            $table->longtext('statuscontainer');
             $table->longtext('lokasi');
             $table->longtext('pelanggan');
         });
@@ -213,8 +216,8 @@ class StatusGandenganTrado extends MyModel
                 db::raw("(case when isnull(i.nobukti,'')='' then e.kodecontainer  else '' end )as container"),
                 'a.gudang',
                 db::raw("(case when isnull(i.nobukti,'')='' then f.kodeagen  else '' end )as kodeagen"),
-                db::raw("(case when isnull(i.nobukti,'')='' then g.kodejenisorder  else '' end )as kodejenisorder"),
-                db::raw("(case when isnull(i.nobukti,'')='' then h.kodestatuscontainer  else '' end )as kodestatuscontainer"),
+                db::raw("(case when isnull(i.nobukti,'')='' then g.kodejenisorder  else '' end )as jenisorder"),
+                db::raw("(case when isnull(i.nobukti,'')='' then h.kodestatuscontainer  else '' end )as statuscontainer"),
                 'a.lokasi',
                 db::raw("(case when isnull(i.nobukti,'')='' then a.pelanggan  else '' end )as pelanggan")
             )
@@ -224,8 +227,7 @@ class StatusGandenganTrado extends MyModel
             ->leftjoin(db::raw("container e with (readuncommitted)"), 'b.container_id', 'e.id')
             ->leftjoin(db::raw("agen f with (readuncommitted)"), 'b.agen_id', 'f.id')
             ->leftjoin(db::raw("jenisorder g with (readuncommitted)"), 'b.jenisorder_id', 'g.id')
-            ->leftjoin(db::raw("statuscontainer h with (readuncommitted)"), 'b.statusorder_id', 'h.id')
-            ->leftjoin(db::raw("ritasi i with (readuncommitted)"), 'b.statusorder_id', 'h.id')
+            ->leftjoin(db::raw("statuscontainer h with (readuncommitted)"), 'b.statuscontainer_id', 'h.id')
             ->leftjoin(DB::raw("ritasi as i with (readuncommitted)"), function ($join) {
                 $join->on('a.nobukti', '=', 'i.suratpengantar_nobukti');
                 $join->on('a.nobuktiritasi', '=', 'i.nobukti');
@@ -241,8 +243,8 @@ class StatusGandenganTrado extends MyModel
             'container',
             'gudang',
             'kodeagen',
-            'kodejeniscontainer',
-            'kodestatuscontainer',
+            'jenisorder',
+            'statuscontainer',
             'lokasi',
             'pelanggan',
         ], $querylist);
@@ -250,6 +252,7 @@ class StatusGandenganTrado extends MyModel
 
         $query = db::table($tempdatagandenganlist)->from(db::raw($tempdatagandenganlist . " a"))
             ->select(
+                'a.id',
                 'a.nobukti',
                 'a.tglbukti',
                 'a.gandengan',
@@ -258,11 +261,13 @@ class StatusGandenganTrado extends MyModel
                 'a.container',
                 'a.gudang',
                 'a.kodeagen',
-                'a.kodejeniscontainer',
-                'a.kodestatuscontainer',
+                'a.jenisorder',
+                'a.statuscontainer',
                 'a.lokasi',
                 'a.pelanggan',
             );
+
+            // dd($query->get());
         // 
 
         $this->sort($query);
@@ -270,14 +275,15 @@ class StatusGandenganTrado extends MyModel
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $this->paginate($query);
-
         $data = $query->get();
+
+        // dd($data);
         return $data;
     }
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
     public function filter($query, $relationFields = [])
