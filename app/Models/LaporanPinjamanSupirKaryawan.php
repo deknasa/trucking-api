@@ -93,6 +93,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
                 ->OrderBy('c.namakaryawan', 'asc')
                 ->OrderBy('a.tglbukti', 'asc')
                 ->OrderBy('a.nobukti', 'asc');
+  
         }
        
 
@@ -109,6 +110,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
 
         // dd(db::table($temphistory)->get());
 
+      
         if ($jenis==0) {
             $queryhistory = DB::table('penerimaantruckingheader')->from(
                 DB::raw("penerimaantruckingheader a with (readuncommitted) ")
@@ -161,7 +163,8 @@ class LaporanPinjamanSupirKaryawan extends MyModel
                 ->OrderBy('f.namakaryawan', 'asc')
                 ->OrderBy('a.tglbukti', 'asc')
                 ->OrderBy('a.nobukti', 'asc');
-    
+         
+             
         }
        
    
@@ -202,7 +205,6 @@ class LaporanPinjamanSupirKaryawan extends MyModel
 
             )
             ->groupBy('a.nobukti');
-
         DB::table($temprekapdata)->insertUsing([
             'nobukti',
             'nobuktipelunasan',
@@ -211,6 +213,8 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             'nominal',
             'namakaryawan',
         ], $queryrekapdata);
+
+        DB::delete(DB::raw("delete " . $temprekapdata . " WHERE isnull(nominal,0)=0"));
 
         if ($jenis==0) {
             $queryrekapdata = DB::table('penerimaantruckingheader')->from(
