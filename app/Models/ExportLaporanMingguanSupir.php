@@ -383,10 +383,15 @@ class ExportLaporanMingguanSupir extends Model
                 db::raw("(trim(b.suratpengantar_nobukti)+trim(a.nobukti)) as suratpengantarric"),
 
             )
-            ->join(db::raw($templisttrip . " b"), 'a.nobukti', 'b.nobukti');
+            // ->join(db::raw($templisttrip . " b"), 'a.nobukti', 'b.nobukti');
+            // ->join(db::raw("gajisupirdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti');
+            ->join(DB::raw("gajisupirdetail as b "), function ($join)  use ($param1) {
+                $join->on('a.nobukti', '=', 'b.nobukti');
+                $join->on('b.nourut', '=', DB::raw($param1 ));
+                $join->on('b.urutextra', '=', DB::raw($param1 ));
+            });
 
         // dd($querytempuangjalan->where('b.suratpengantar_nobukti','TRP 0067/VIII/2024')->get());
-        // dd($querytempuangjalan->get());
         DB::table($tempuangjalan)->insertUsing([
             'nobukti',
             'suratpengantar_nobukti',
@@ -395,6 +400,11 @@ class ExportLaporanMingguanSupir extends Model
             'nominaluangmakan',
             'suratpengantarric',
         ], $querytempuangjalan);
+
+        // dd(db::table($tempuangjalan)->whereraw("suratpengantar_nobukti in('TRP 0006/VIII/2024','TRP 0004/VIII/2024')") ->get());
+
+        
+
 
 
         $tempuangjalanrekap = '##tempdatauangjalanrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -958,6 +968,11 @@ class ExportLaporanMingguanSupir extends Model
             'keterangan',
         ], $querylist);
 
+        
+        // dd(db::table($tempuangjalanrekap)->get());
+
+        // dd($statusjenislaporan,$jenislaporan);
+
         $paramurutextra=1;
         if ($statusjenislaporan == $jenislaporan) {
 
@@ -1079,6 +1094,11 @@ class ExportLaporanMingguanSupir extends Model
                 ->leftjoin(DB::raw($tempInvoice . " as b "), 'a.nobukti', 'b.notripawal')
                 ->leftjoin(DB::raw($tempInvoice . " as c "), 'a.jobtrucking', 'c.jobtrucking')
                 ->leftjoin(DB::raw($tempuangjalanrekap . " as d "), db::raw("isnull(a.nobukti,'')"), 'd.suratpengantar_nobukti')
+                // ->leftJoin(DB::raw($tempuangjalanrekap . " as d "), function ($join)  use ($paramurutextra) {
+                //     $join->on(db::raw("isnull(a.suratpengantarric,'')"), '=', 'd.suratpengantar_nobukti');
+                //     $join->on('a.urutextra', '=', DB::raw($paramurutextra ));
+                // })                
+
                 ->leftjoin(DB::raw($temptrip . " as e "), 'a.nobukti', 'e.nobukti')
                 ->leftjoin(DB::raw($tempuanglain . " as f "), 'a.nobukti', 'f.nobukti')
                 ->leftjoin(DB::raw($tempbuktikomisi . " as g "), 'a.nobukti', 'g.nobukti')
@@ -1206,7 +1226,11 @@ class ExportLaporanMingguanSupir extends Model
                 )
                 ->leftjoin(DB::raw($tempInvoice . " as b "), 'a.nobukti', 'b.notripawal')
                 ->leftjoin(DB::raw($tempInvoice . " as c "), 'a.jobtrucking', 'c.jobtrucking')
-                ->leftjoin(DB::raw($tempuangjalanrekap . " as d "), db::raw("isnull(a.suratpengantarric,'')"), 'd.suratpengantar_nobukti')
+                // ->leftjoin(DB::raw($tempuangjalanrekap . " as d "), db::raw("isnull(a.suratpengantarric,'')"), 'd.suratpengantar_nobukti')
+                ->leftJoin(DB::raw($tempuangjalanrekap . " as d "), function ($join)  use ($paramurutextra) {
+                    $join->on(db::raw("isnull(a.suratpengantarric,'')"), '=', 'd.suratpengantar_nobukti');
+                    $join->on('a.urutextra', '=', DB::raw($paramurutextra ));
+                })                
                 ->leftjoin(DB::raw($temptrip . " as e "), 'a.nobukti', 'e.nobukti')
                 ->leftjoin(DB::raw($tempuanglain . " as f "), 'a.nobukti', 'f.nobukti')
                 ->leftjoin(DB::raw($tempbuktikomisi . " as g "), 'a.nobukti', 'g.nobukti')
