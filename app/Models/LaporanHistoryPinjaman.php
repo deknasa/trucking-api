@@ -27,21 +27,20 @@ class LaporanHistoryPinjaman extends MyModel
 
     public function getReport($supirdari_id, $supirsampai_id)
     {
-        if ($supirdari_id==0 || $supirsampai_id==0) {
-            $supirdari_id=db::table("supir")->from(db::raw("supir a with (readuncommitted)"))
-            ->select(
-                'a.id'
-            )->orderby('a.id','asc')
-            ->first()->id ?? 0;
+        if ($supirdari_id == 0 || $supirsampai_id == 0) {
+            $supirdari_id = db::table("supir")->from(db::raw("supir a with (readuncommitted)"))
+                ->select(
+                    'a.id'
+                )->orderby('a.id', 'asc')
+                ->first()->id ?? 0;
 
-            $supirsampai_id=db::table("supir")->from(db::raw("supir a with (readuncommitted)"))
-            ->select(
-                'a.id'
-            )->orderby('a.id','desc')
-            ->first()->id ?? 0;
-
+            $supirsampai_id = db::table("supir")->from(db::raw("supir a with (readuncommitted)"))
+                ->select(
+                    'a.id'
+                )->orderby('a.id', 'desc')
+                ->first()->id ?? 0;
         }
-        
+
         $getJudul = DB::table('parameter')->select('text')->where('grp', 'JUDULAN LAPORAN')->where('subgrp', 'JUDULAN LAPORAN')->first();
         $pengeluarantrucking_id = 1;
         $penerimaantrucking_id = 2;
@@ -69,7 +68,7 @@ class LaporanHistoryPinjaman extends MyModel
                 DB::raw("isnull(b.keterangan,'') as keterangan"),
                 'A.nobukti as nobuktipinjaman',
                 'A.tglbukti as tglbuktipinjaman',
-                ])
+            ])
             ->join(DB::raw("pengeluarantruckingdetail AS B with (readuncommitted)"), 'A.nobukti', '=', 'B.nobukti');
         if ($supirdari_id != '') {
             $select_temphistory->whereRaw("B.supir_id >= $supirdari_id")
@@ -88,8 +87,8 @@ class LaporanHistoryPinjaman extends MyModel
             'nominal',
             'tipe',
             'keterangan',
-            'nobuktipinjaman',            
-            'tglbuktipinjaman',            
+            'nobuktipinjaman',
+            'tglbuktipinjaman',
         ], $select_temphistory);
         // dd($select_temphistory->get());
         // dd($select_temphistory->get());
@@ -106,21 +105,29 @@ class LaporanHistoryPinjaman extends MyModel
                 DB::raw("isnull(d1.tglbukti,'1900/1/1') as tglbuktipinjaman"),
             ])
             ->join(DB::raw("penerimaantruckingdetail AS B with (readuncommitted)"), 'A.nobukti', '=', 'B.nobukti')
-            ->leftJoin(DB::raw("gajisupirpelunasanpinjaman AS C with (readuncommitted)"), 'A.nobukti', 'C.penerimaantrucking_nobukti')
-            ->leftJoin(DB::raw("prosesgajisupirdetail AS D with (readuncommitted)"), 'c.gajisupir_nobukti', 'd.gajisupir_nobukti')
             ->leftJoin(DB::raw("pengeluarantruckingheader AS D1 with (readuncommitted)"), 'b.pengeluarantruckingheader_nobukti', 'd1.nobukti')
+            // ->leftJoin(DB::raw("gajisupirpelunasanpinjaman AS C with (readuncommitted)"), 'A.nobukti', 'C.penerimaantrucking_nobukti')
+            ->leftjoin(DB::raw("gajisupirpelunasanpinjaman as c with (readuncommitted) "), function ($join) {
+                $join->on('a.nobukti', '=', 'c.penerimaantrucking_nobukti');
+                $join->on('d1.nobukti', '=', 'c.pengeluarantrucking_nobukti');
+            })
+            ->leftJoin(DB::raw("prosesgajisupirdetail AS D with (readuncommitted)"), 'c.gajisupir_nobukti', 'd.gajisupir_nobukti')
             ->leftJoin(DB::raw("pemutihansupirheader AS c1 with (readuncommitted)"), 'a.nobukti', 'c1.penerimaantruckingnonposting_nobukti')
-            ->leftJoin(DB::raw("pemutihansupirheader AS c2 with (readuncommitted)"), 'a.nobukti', 'c2.penerimaantruckingposting_nobukti');
+            ->leftJoin(DB::raw("pemutihansupirheader AS c2 with (readuncommitted)"), 'a.nobukti', 'c2.penerimaantruckingposting_nobukti')
+            ->Join(DB::raw("penerimaanheader as e with (readuncommitted)"), 'a.penerimaan_nobukti', 'e.nobukti');
+
 
         if ($supirdari_id != '') {
             $select_temphistory2->where('B.supir_id', '>=', $supirdari_id)
                 ->where('B.supir_id', '<=', $supirsampai_id);
         }
+        // dd($select_temphistory2->where('a.penerimaan_nobukti', 'KMT 0048/VIII/2024')->get());
+
         $select_temphistory2->where('penerimaantrucking_id', '=', $penerimaantrucking_id)
             ->orderBy('B.supir_id')
             ->orderBy('A.tglbukti')
             ->orderBy('A.nobukti');
-            // dd($select_temphistory2->get());
+        // dd($select_temphistory2->get());
 
         DB::table($temphistory)->insertUsing([
             'nobukti',
@@ -132,7 +139,7 @@ class LaporanHistoryPinjaman extends MyModel
             'nobuktipinjaman',
             'tglbuktipinjaman',
         ], $select_temphistory2);
-    
+
 
         $temphistoryrekap = '##temphistoryrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temphistoryrekap, function ($table) {
@@ -228,10 +235,10 @@ class LaporanHistoryPinjaman extends MyModel
                 db::raw("'" . $supirsampai . "' as supirsampai"),
                 'A.nobuktipinjaman',
                 'A.tglbuktipinjaman',
-                ])
-                ->orderBy('A.namasupir','asc')
-                ->orderBy('A.tglbuktipinjaman','asc')
-                ->orderBy('A.nobuktipinjaman','asc')
+            ])
+            ->orderBy('A.namasupir', 'asc')
+            ->orderBy('A.tglbuktipinjaman', 'asc')
+            ->orderBy('A.nobuktipinjaman', 'asc')
             ->orderBy('A.id');
         // dd($select_temphistoryrekap2->get());
         $data = $select_temphistoryrekap2->get();

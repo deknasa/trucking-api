@@ -125,6 +125,8 @@ class LaporanPinjamanSupirKaryawan extends MyModel
                 ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
                 ->join(DB::raw("pengeluarantruckingheader as c with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'c.nobukti')
                 ->leftjoin(DB::raw("karyawan as f with (readuncommitted) "), 'b.karyawan_id', 'f.id')
+                ->Join(DB::raw("penerimaanheader as g with (readuncommitted)"), 'a.penerimaan_nobukti', 'g.nobukti')
+
     
                 ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
                 ->whereRaw("a.tglbukti<'" . date('Y/m/d', strtotime($sampai)) . "'")
@@ -149,6 +151,8 @@ class LaporanPinjamanSupirKaryawan extends MyModel
                 ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
                 ->join(DB::raw("pengeluarantruckingheader as c with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'c.nobukti')
                 ->leftjoin(DB::raw("karyawan as f with (readuncommitted) "), 'b.karyawan_id', 'f.id')
+                ->Join(DB::raw("penerimaanheader as g with (readuncommitted)"), 'a.penerimaan_nobukti', 'g.nobukti')
+
     
                 ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
                 ->whereRaw("a.tglbukti<'" . date('Y/m/d', strtotime($sampai)) . "'")
@@ -224,6 +228,8 @@ class LaporanPinjamanSupirKaryawan extends MyModel
                 ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
                 ->leftjoin(DB::raw("pengeluarantruckingheader as e with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'e.nobukti')
                 ->leftjoin(DB::raw("karyawan as f with (readuncommitted) "), 'b.karyawan_id', 'f.id')
+                ->Join(DB::raw("penerimaanheader as g with (readuncommitted)"), 'a.penerimaan_nobukti', 'g.nobukti')
+
                 ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
                 ->whereRaw("a.tglbukti='" . date('Y/m/d', strtotime($sampai)) . "'")
                 ->whereRaw("isnull(b.karyawan_id,0)<>0")
@@ -246,6 +252,8 @@ class LaporanPinjamanSupirKaryawan extends MyModel
                 ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
                 ->leftjoin(DB::raw("pengeluarantruckingheader as e with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'e.nobukti')
                 ->leftjoin(DB::raw("karyawan as f with (readuncommitted) "), 'b.karyawan_id', 'f.id')
+                ->Join(DB::raw("penerimaanheader as g with (readuncommitted)"), 'a.penerimaan_nobukti', 'g.nobukti')
+
                 ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
                 ->whereRaw("a.tglbukti='" . date('Y/m/d', strtotime($sampai)) . "'")
                 ->whereRaw("isnull(b.karyawan_id,0)<>0")
