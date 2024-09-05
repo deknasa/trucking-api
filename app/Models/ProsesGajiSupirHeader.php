@@ -1797,14 +1797,14 @@ class ProsesGajiSupirHeader extends MyModel
             //     ->whereRaw("pengembaliankasgantungdetail.kasgantung_nobukti in ($allSP)")
             //     ->first();
             $penerimaan = db::table("prosesgajisupirheader")->from(db::raw("prosesgajisupirheader with (readuncommitted)"))
-            ->select('pengembaliankasgantungheader.penerimaan_nobukti','pengembaliankasgantungheader.bank_id', 'bank.namabank')
-            ->join(db::raw("pengembaliankasgantungheader with (readuncommitted)"), 'prosesgajisupirheader.pengembaliankasgantung_nobukti', 'pengembaliankasgantungheader.nobukti')
-            ->join(db::raw("bank with (readuncommitted)"), 'pengembaliankasgantungheader.bank_id', 'bank.id')
-            ->where('prosesgajisupirheader.id', $id)
-            ->first();
+                ->select('pengembaliankasgantungheader.penerimaan_nobukti', 'pengembaliankasgantungheader.bank_id', 'bank.namabank')
+                ->join(db::raw("pengembaliankasgantungheader with (readuncommitted)"), 'prosesgajisupirheader.pengembaliankasgantung_nobukti', 'pengembaliankasgantungheader.nobukti')
+                ->join(db::raw("bank with (readuncommitted)"), 'pengembaliankasgantungheader.bank_id', 'bank.id')
+                ->where('prosesgajisupirheader.id', $id)
+                ->first();
 
             $data = [];
-            if($penerimaan != ''){
+            if ($penerimaan != '') {
                 $data = [
                     'bank_id' => $penerimaan->bank_id,
                     'bankUangjalan' => $penerimaan->namabank,
@@ -2011,7 +2011,7 @@ class ProsesGajiSupirHeader extends MyModel
             ->join(DB::raw("suratpengantar as d with (readuncommitted)"), 'c.suratpengantar_nobukti', 'd.nobukti')
 
             ->whereRaw("isnull(B.uangmakanharian ,0)<>0")
-        ->groupby('d.tglbukti');
+            ->groupby('d.tglbukti');
 
         // dd($fetchTempRincianJurnal3->get());
         DB::table($tempRincianJurnal)->insertUsing(['tglbukti', 'nominal', 'keterangan'], $fetchTempRincianJurnal3);
@@ -2070,7 +2070,7 @@ class ProsesGajiSupirHeader extends MyModel
             })
             ->join(DB::raw("suratpengantar as d with (readuncommitted)"), 'c.suratpengantar_nobukti', 'd.nobukti')
             ->whereRaw("isnull(B.biayaextra ,0)<>0")
-        ->groupby('d.tglbukti');
+            ->groupby('d.tglbukti');
         // dd('test');
         // $cekBiayaExtraHeader = $fetchTempRincianJurnal4->first();
         // dd($fetchTempRincianJurnal4->get());
@@ -2450,6 +2450,8 @@ class ProsesGajiSupirHeader extends MyModel
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG') ?? 0;
+
         $prosesGajiSupirHeader = new ProsesGajiSupirHeader();
 
         $prosesGajiSupirHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
@@ -2654,8 +2656,11 @@ class ProsesGajiSupirHeader extends MyModel
                                     $nobuktiNonPostingPS = $nobuktiNonPostingPS . ', ' .  $dataPS->pengeluarantrucking_nobukti;
                                 }
                             }
-                            $keteranganPostingNonPS['nonposting'] =  '(NON POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiNonPostingPS;
-
+                            if ($cabang == 'MEDAN') {
+                                $keteranganPostingNonPS['nonposting'] =  '(NON POSTING) POTONGAN PINJAMAN SEMUA PERIODE ';
+                            } else {
+                                $keteranganPostingNonPS['nonposting'] =  '(NON POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiNonPostingPS;
+                            }
                             $nominalPostingNonPS['nonposting'] += $dataPS->nominal;
                         } else {
                             if ($firstBuktiPostingPS == '') {
@@ -2671,10 +2676,28 @@ class ProsesGajiSupirHeader extends MyModel
                                     $nobuktiPostingPS = $nobuktiPostingPS . ', ' . $dataPS->pengeluarantrucking_nobukti;
                                 }
                             }
-                            $keteranganPostingNonPS['posting'] =  '(POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiPostingPS;
-
+                            if ($cabang == 'MEDAN') {
+                                $keteranganPostingNonPS['posting'] =  '(POSTING) POTONGAN PINJAMAN SEMUA PERIODE ';
+                            } else {
+                                $keteranganPostingNonPS['posting'] =  '(POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiPostingPS;
+                            }
                             $nominalPostingNonPS['posting'] += $dataPS->nominal;
                         }
+                    }
+                }
+            }
+            if ($cabang == 'MEDAN') {
+                $getPeriode = db::table("prosesgajisupirheader")->from(db::raw("prosesgajisupirheader a with (readuncommitted)"))
+                    ->select(db::raw("format(min(d.tglbukti),'dd-MM-yyyy') +' s/d '+format(max(d.tglbukti),'dd-MM-yyyy') as periode"))
+                    ->join(db::raw("prosesgajisupirdetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                    ->join(db::raw("gajisupirdetail as c with (readuncommitted)"), 'b.gajisupir_nobukti ', 'c.nobukti')
+                    ->join(db::raw("suratpengantar as d with (readuncommitted)"), 'c.suratpengantar_nobukti', 'd.nobukti')
+                    ->where('a.nobukti', $prosesGajiSupirHeader->nobukti)
+                    ->groupBy('a.nobukti')
+                    ->first()->periode ?? '';
+                foreach ($keteranganPostingNonPS as $key => $value) {
+                    if ($value !== '') {
+                        $keteranganPostingNonPS[$key] = $value . $getPeriode;
                     }
                 }
             }
@@ -2777,7 +2800,11 @@ class ProsesGajiSupirHeader extends MyModel
                             } else {
                                 $nobuktiNonPosting = $nobuktiNonPosting . ', ' .  $dataPP->pengeluarantrucking_nobukti;
                             }
-                            $keteranganPostingNon['nonposting'] =  '(NON POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiNonPosting;
+                            if ($cabang == 'MEDAN') {
+                                $keteranganPostingNon['nonposting'] =  '(NON POSTING) POTONGAN PINJAMAN SUPIR PERIODE ';
+                            } else {
+                                $keteranganPostingNon['nonposting'] =  '(NON POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiNonPosting;
+                            }
 
                             $nominalPostingNon['nonposting'] += $dataPP->nominal;
                         } else {
@@ -2789,10 +2816,28 @@ class ProsesGajiSupirHeader extends MyModel
                             } else {
                                 $nobuktiPosting = $nobuktiPosting . ', ' . $dataPP->pengeluarantrucking_nobukti;
                             }
-                            $keteranganPostingNon['posting'] =  '(POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiPosting;
-
+                            if ($cabang == 'MEDAN') {
+                                $keteranganPostingNon['posting'] =  '(POSTING) POTONGAN PINJAMAN SUPIR PERIODE ';
+                            } else {
+                                $keteranganPostingNon['posting'] =  '(POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiPosting;
+                            }
                             $nominalPostingNon['posting'] += $dataPP->nominal;
                         }
+                    }
+                }
+            }
+            if ($cabang == 'MEDAN') {
+                $getPeriode = db::table("prosesgajisupirheader")->from(db::raw("prosesgajisupirheader a with (readuncommitted)"))
+                    ->select(db::raw("format(min(d.tglbukti),'dd-MM-yyyy') +' s/d '+format(max(d.tglbukti),'dd-MM-yyyy') as periode"))
+                    ->join(db::raw("prosesgajisupirdetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                    ->join(db::raw("gajisupirdetail as c with (readuncommitted)"), 'b.gajisupir_nobukti ', 'c.nobukti')
+                    ->join(db::raw("suratpengantar as d with (readuncommitted)"), 'c.suratpengantar_nobukti', 'd.nobukti')
+                    ->where('a.nobukti', $prosesGajiSupirHeader->nobukti)
+                    ->groupBy('a.nobukti')
+                    ->first()->periode ?? '';
+                foreach ($keteranganPostingNon as $key => $value) {
+                    if ($value !== '') {
+                        $keteranganPostingNon[$key] = $value . $getPeriode;
                     }
                 }
             }
@@ -3163,6 +3208,8 @@ class ProsesGajiSupirHeader extends MyModel
             $prosesGajiSupirHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
 
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG') ?? 0;
+
         $prosesGajiSupirHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
         $prosesGajiSupirHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
         $prosesGajiSupirHeader->keterangan = 'PROSES GAJI SUPIR ' . date('d-m-Y', strtotime($data['tgldari'])) . ' s/d ' .  date('d-m-Y', strtotime($data['tglsampai']));
@@ -3414,7 +3461,11 @@ class ProsesGajiSupirHeader extends MyModel
                                     $nobuktiNonPostingPS = $nobuktiNonPostingPS . ', ' .  $dataPS->pengeluarantrucking_nobukti;
                                 }
                             }
-                            $keteranganPostingNonPS['nonposting'] =  '(NON POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiNonPostingPS;
+                            if ($cabang == 'MEDAN') {
+                                $keteranganPostingNonPS['nonposting'] =  '(NON POSTING) POTONGAN PINJAMAN SEMUA PERIODE ';
+                            } else {
+                                $keteranganPostingNonPS['nonposting'] =  '(NON POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiNonPostingPS;
+                            }
 
                             $nominalPostingNonPS['nonposting'] += $dataPS->nominal;
                         } else {
@@ -3431,8 +3482,11 @@ class ProsesGajiSupirHeader extends MyModel
                                     $nobuktiPostingPS = $nobuktiPostingPS . ', ' . $dataPS->pengeluarantrucking_nobukti;
                                 }
                             }
-                            $keteranganPostingNonPS['posting'] =  '(POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiPostingPS;
-
+                            if ($cabang == 'MEDAN') {
+                                $keteranganPostingNonPS['posting'] =  '(POSTING) POTONGAN PINJAMAN SEMUA PERIODE ';
+                            } else {
+                                $keteranganPostingNonPS['posting'] =  '(POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiPostingPS;
+                            }
                             $nominalPostingNonPS['posting'] += $dataPS->nominal;
                         }
                     }
@@ -3465,8 +3519,12 @@ class ProsesGajiSupirHeader extends MyModel
                             } else {
                                 $nobuktiNonPosting = $nobuktiNonPosting . ', ' .  $dataPP->pengeluarantrucking_nobukti;
                             }
-                            $keteranganPostingNon['nonposting'] =  '(NON POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiNonPosting;
 
+                            if ($cabang == 'MEDAN') {
+                                $keteranganPostingNon['nonposting'] =  '(NON POSTING) POTONGAN PINJAMAN SUPIR PERIODE ';
+                            } else {
+                                $keteranganPostingNon['nonposting'] =  '(NON POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiNonPosting;
+                            }
                             $nominalPostingNon['nonposting'] += $dataPP->nominal;
                         } else {
                             if ($firstBuktiPosting == '') {
@@ -3477,7 +3535,11 @@ class ProsesGajiSupirHeader extends MyModel
                             } else {
                                 $nobuktiPosting = $nobuktiPosting . ', ' . $dataPP->pengeluarantrucking_nobukti;
                             }
-                            $keteranganPostingNon['posting'] =  '(POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiPosting;
+                            if ($cabang == 'MEDAN') {
+                                $keteranganPostingNon['posting'] =  '(POSTING) POTONGAN PINJAMAN SUPIR PERIODE ';
+                            } else {
+                                $keteranganPostingNon['posting'] =  '(POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiPosting;
+                            }
 
                             $nominalPostingNon['posting'] += $dataPP->nominal;
                         }
@@ -3505,6 +3567,21 @@ class ProsesGajiSupirHeader extends MyModel
             $getPS = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
                 ->select('id')
                 ->where('nobukti', $penerimaan_nobuktiPS)->first();
+            if ($cabang == 'MEDAN') {
+                $getPeriode = db::table("prosesgajisupirheader")->from(db::raw("prosesgajisupirheader a with (readuncommitted)"))
+                    ->select(db::raw("format(min(d.tglbukti),'dd-MM-yyyy') +' s/d '+format(max(d.tglbukti),'dd-MM-yyyy') as periode"))
+                    ->join(db::raw("prosesgajisupirdetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                    ->join(db::raw("gajisupirdetail as c with (readuncommitted)"), 'b.gajisupir_nobukti ', 'c.nobukti')
+                    ->join(db::raw("suratpengantar as d with (readuncommitted)"), 'c.suratpengantar_nobukti', 'd.nobukti')
+                    ->where('a.nobukti', $prosesGajiSupirHeader->nobukti)
+                    ->groupBy('a.nobukti')
+                    ->first()->periode ?? '';
+                foreach ($keteranganPostingNonPS as $key => $value) {
+                    if ($value !== '') {
+                        $keteranganPostingNonPS[$key] = $value . $getPeriode;
+                    }
+                }
+            }
             $nominalPostingNonPS = array_filter($nominalPostingNonPS, function ($value) {
                 return $value !== 0;
             });
@@ -3580,7 +3657,21 @@ class ProsesGajiSupirHeader extends MyModel
             $getPP = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
                 ->select('id')
                 ->where('nobukti', $penerimaan_nobuktiPP)->first();
-
+            if ($cabang == 'MEDAN') {
+                $getPeriode = db::table("prosesgajisupirheader")->from(db::raw("prosesgajisupirheader a with (readuncommitted)"))
+                    ->select(db::raw("format(min(d.tglbukti),'dd-MM-yyyy') +' s/d '+format(max(d.tglbukti),'dd-MM-yyyy') as periode"))
+                    ->join(db::raw("prosesgajisupirdetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                    ->join(db::raw("gajisupirdetail as c with (readuncommitted)"), 'b.gajisupir_nobukti ', 'c.nobukti')
+                    ->join(db::raw("suratpengantar as d with (readuncommitted)"), 'c.suratpengantar_nobukti', 'd.nobukti')
+                    ->where('a.nobukti', $prosesGajiSupirHeader->nobukti)
+                    ->groupBy('a.nobukti')
+                    ->first()->periode ?? '';
+                foreach ($keteranganPostingNon as $key => $value) {
+                    if ($value !== '') {
+                        $keteranganPostingNon[$key] = $value . $getPeriode;
+                    }
+                }
+            }
             $nominalPostingNon = array_filter($nominalPostingNon, function ($value) {
                 return $value !== 0;
             });

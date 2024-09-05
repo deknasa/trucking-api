@@ -502,7 +502,7 @@ class PenerimaanTruckingHeader extends MyModel
     public function getDeposito($supir_id)
     {
         $tglbukti = date('Y-m-d', strtotime(request()->tglbukti));
-        $tempPribadi = $this->createTempDeposito($supir_id,$tglbukti);
+        $tempPribadi = $this->createTempDeposito($supir_id, $tglbukti);
 
         $query = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
             ->select(DB::raw("row_number() Over(Order By penerimaantruckingdetail.nobukti) as id,penerimaantruckingheader.tglbukti,penerimaantruckingdetail.nobukti,penerimaantruckingdetail.keterangan," . $tempPribadi . ".sisa"))
@@ -514,7 +514,7 @@ class PenerimaanTruckingHeader extends MyModel
                 $query->whereRaw("$tempPribadi.sisa != 0")
                     ->orWhereRaw("$tempPribadi.sisa is null");
             })
-            ->where("penerimaantruckingheader.tglbukti", '<=', $tglbukti )
+            ->where("penerimaantruckingheader.tglbukti", '<=', $tglbukti)
             ->orderBy('penerimaantruckingheader.tglbukti', 'asc')
             ->orderBy('penerimaantruckingdetail.nobukti', 'asc');
 
@@ -561,7 +561,7 @@ class PenerimaanTruckingHeader extends MyModel
             ->join(db::raw("penerimaantruckingdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->whereraw("a.penerimaantrucking_id=3")
             ->where('b.supir_id', $supir_id)
-            ->where('a.tglbukti','<=', $tglbukti)
+            ->where('a.tglbukti', '<=', $tglbukti)
             ->groupby('b.supir_id')
             ->groupby('a.nobukti');
 
@@ -633,7 +633,7 @@ class PenerimaanTruckingHeader extends MyModel
                 $query->whereRaw("$tempPribadi.sisa != 0")
                     ->orWhereRaw("$tempPribadi.sisa is null");
             })
-            ->where("penerimaantruckingheader.tglbukti", '<=', $tglbukti )
+            ->where("penerimaantruckingheader.tglbukti", '<=', $tglbukti)
             ->orderBy('penerimaantruckingheader.tglbukti', 'asc')
             ->orderBy('penerimaantruckingdetail.nobukti', 'asc');
 
@@ -784,7 +784,7 @@ class PenerimaanTruckingHeader extends MyModel
                     ->orWhereRaw("$tempPribadi.sisa is null");
             })
             ->where("pengeluarantruckingheader.pengeluarantrucking_id",  1)
-            ->where("pengeluarantruckingheader.tglbukti", '<=', $tglbukti )
+            ->where("pengeluarantruckingheader.tglbukti", '<=', $tglbukti)
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
         if ($isCekPemutihan) {
@@ -812,7 +812,7 @@ class PenerimaanTruckingHeader extends MyModel
                 $query->whereRaw("$tempPribadi.sisa != 0")
                     ->orWhereRaw("$tempPribadi.sisa is null");
             })
-            ->where("pengeluarantruckingheader.tglbukti", '<=', $tglbukti )
+            ->where("pengeluarantruckingheader.tglbukti", '<=', $tglbukti)
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
 
@@ -1414,6 +1414,7 @@ class PenerimaanTruckingHeader extends MyModel
         ]);
 
 
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG') ?? 0;
         $penerimaanTruckingDetails = [];
         $totalNominal = 0;
         $firstBuktiPosting = '';
@@ -1454,6 +1455,7 @@ class PenerimaanTruckingHeader extends MyModel
                 'modifiedby' => $penerimaanTruckingHeader->modifiedby,
             ]);
             $nobuktipengeluarantrucking = $data['pengeluarantruckingheader_nobukti'][$i] ?? '';
+            $keteranganpengeluarantrucking = $data['keterangan'][$i] ?? '';
             $penerimaanTruckingDetails[] = $penerimaanTruckingDetail->toArray();
             if ($fetchFormat->kodepenerimaan == 'PJP' || $fetchFormat->kodepenerimaan == 'PJPK') {
                 $queryposting = db::table('pengeluarantruckingheader')->from(db::raw("pengeluarantruckingheader a with (readuncommitted)"))
@@ -1469,13 +1471,21 @@ class PenerimaanTruckingHeader extends MyModel
                             ->first()->id ?? 0;
                         if ($bukanposting == $queryposting->statusposting) {
                             if ($firstBuktiNonPosting == '') {
-                                $nobuktiNonPosting = $nobuktiNonPosting . $nobuktipengeluarantrucking;
+                                if ($cabang == 'MEDAN') {
+                                    $nobuktiNonPosting = $nobuktiNonPosting . $nobuktipengeluarantrucking . " ($keteranganpengeluarantrucking)";
+                                } else {
+                                    $nobuktiNonPosting = $nobuktiNonPosting . $nobuktipengeluarantrucking;
+                                }
                                 $coakreditPostingNon['nonposting'] =  $queryposting->coa ?? $data['coa'];
                                 $coadebet_detail[] = $coadebet;
                                 $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
                                 $firstBuktiNonPosting = $nobuktipengeluarantrucking;
                             } else {
-                                $nobuktiNonPosting = $nobuktiNonPosting . ', ' . $nobuktipengeluarantrucking;
+                                if ($cabang == 'MEDAN') {
+                                    $nobuktiNonPosting = $nobuktiNonPosting . ', ' . $nobuktipengeluarantrucking . " ($keteranganpengeluarantrucking)";
+                                } else {
+                                    $nobuktiNonPosting = $nobuktiNonPosting . ', ' . $nobuktipengeluarantrucking;
+                                }
                             }
                             if ($tanpaprosesnobukti == 3) {
                                 if ($fetchFormat->kodepenerimaan == 'PJP') {
@@ -1487,13 +1497,21 @@ class PenerimaanTruckingHeader extends MyModel
                             $nominalPostingNon['nonposting'] += $data['nominal'][$i];
                         } else {
                             if ($firstBuktiPosting == '') {
-                                $nobuktiPosting = $nobuktiPosting . $nobuktipengeluarantrucking;
+                                if ($cabang == 'MEDAN') {
+                                    $nobuktiPosting = $nobuktiPosting . $nobuktipengeluarantrucking . " ($keteranganpengeluarantrucking)";
+                                } else {
+                                    $nobuktiPosting = $nobuktiPosting . $nobuktipengeluarantrucking;
+                                }
                                 $coakreditPostingNon['posting'] = $data['coa'];
                                 $coadebet_detail[] = $coadebet;
                                 $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
                                 $firstBuktiPosting = $nobuktipengeluarantrucking;
                             } else {
-                                $nobuktiPosting = $nobuktiPosting . ', ' . $nobuktipengeluarantrucking;
+                                if ($cabang == 'MEDAN') {
+                                    $nobuktiPosting = $nobuktiPosting . ', ' . $nobuktipengeluarantrucking . " ($keteranganpengeluarantrucking)";
+                                } else {
+                                    $nobuktiPosting = $nobuktiPosting . ', ' . $nobuktipengeluarantrucking;
+                                }
                             }
                             if ($tanpaprosesnobukti == 3) {
                                 if ($fetchFormat->kodepenerimaan == 'PJP') {
@@ -1844,6 +1862,7 @@ class PenerimaanTruckingHeader extends MyModel
             /*DELETE EXISTING PenerimaanTruckingDetail*/
             $penerimaanTruckingDetail = PenerimaanTruckingDetail::where('penerimaantruckingheader_id', $penerimaanTruckingHeader->id)->lockForUpdate()->delete();
 
+            $cabang = (new Parameter())->cekText('CABANG', 'CABANG') ?? 0;
             $penerimaanTruckingDetails = [];
             $totalNominal = 0;
             $firstBuktiPosting = '';
@@ -1886,6 +1905,7 @@ class PenerimaanTruckingHeader extends MyModel
                     'modifiedby' => $penerimaanTruckingHeader->modifiedby,
                 ]);
                 $nobuktipengeluarantrucking = $data['pengeluarantruckingheader_nobukti'][$i] ?? '';
+                $keteranganpengeluarantrucking = $data['keterangan'][$i] ?? '';
                 $penerimaanTruckingDetails[] = $penerimaanTruckingDetail->toArray();
                 if ($fetchFormat->kodepenerimaan == 'PJP' || $fetchFormat->kodepenerimaan == 'PJPK') {
                     $queryposting = db::table('pengeluarantruckingheader')->from(db::raw("pengeluarantruckingheader a with (readuncommitted)"))
@@ -1900,13 +1920,21 @@ class PenerimaanTruckingHeader extends MyModel
                                 ->first()->id ?? 0;
                             if ($bukanposting == $queryposting->statusposting) {
                                 if ($firstBuktiNonPosting == '') {
-                                    $nobuktiNonPosting = $nobuktiNonPosting . $nobuktipengeluarantrucking;
+                                    if ($cabang == 'MEDAN') {
+                                        $nobuktiNonPosting = $nobuktiNonPosting . $nobuktipengeluarantrucking . " ($keteranganpengeluarantrucking)";
+                                    } else {
+                                        $nobuktiNonPosting = $nobuktiNonPosting . $nobuktipengeluarantrucking;
+                                    }
                                     $coakreditPostingNon['nonposting'] =  $queryposting->coa ?? $data['coa'];
                                     $coadebet_detail[] = $coadebet;
                                     $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
                                     $firstBuktiNonPosting = $nobuktipengeluarantrucking;
                                 } else {
-                                    $nobuktiNonPosting = $nobuktiNonPosting . ', ' . $nobuktipengeluarantrucking;
+                                    if ($cabang == 'MEDAN') {
+                                        $nobuktiNonPosting = $nobuktiNonPosting . ', ' . $nobuktipengeluarantrucking . " ($keteranganpengeluarantrucking)";
+                                    } else {
+                                        $nobuktiNonPosting = $nobuktiNonPosting . ', ' . $nobuktipengeluarantrucking;
+                                    }
                                 }
                                 if ($tanpaprosesnobukti == 3) {
                                     if ($fetchFormat->kodepenerimaan == 'PJP') {
@@ -1918,13 +1946,21 @@ class PenerimaanTruckingHeader extends MyModel
                                 $nominalPostingNon['nonposting'] += $data['nominal'][$i];
                             } else {
                                 if ($firstBuktiPosting == '') {
-                                    $nobuktiPosting = $nobuktiPosting . $nobuktipengeluarantrucking;
+                                    if ($cabang == 'MEDAN') {
+                                        $nobuktiPosting = $nobuktiPosting . $nobuktipengeluarantrucking . " ($keteranganpengeluarantrucking)";
+                                    } else {
+                                        $nobuktiPosting = $nobuktiPosting . $nobuktipengeluarantrucking;
+                                    }
                                     $coakreditPostingNon['posting'] = $data['coa'];
                                     $coadebet_detail[] = $coadebet;
                                     $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
                                     $firstBuktiPosting = $nobuktipengeluarantrucking;
                                 } else {
-                                    $nobuktiPosting = $nobuktiPosting . ', ' . $nobuktipengeluarantrucking;
+                                    if ($cabang == 'MEDAN') {
+                                        $nobuktiPosting = $nobuktiPosting  . ', '. $nobuktipengeluarantrucking . " ($keteranganpengeluarantrucking)";
+                                    } else {
+                                        $nobuktiPosting = $nobuktiPosting . ', ' . $nobuktipengeluarantrucking;
+                                    }
                                 }
                                 if ($tanpaprosesnobukti == 3) {
                                     if ($fetchFormat->kodepenerimaan == 'PJP') {
