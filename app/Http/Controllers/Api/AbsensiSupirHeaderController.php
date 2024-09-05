@@ -535,6 +535,10 @@ class AbsensiSupirHeaderController extends Controller
         $getEditing = (new Locking())->getEditing('absensisupirheader', $id);
         $useredit = $getEditing->editing_by ?? '';
 
+        if ($aksi == 'PRINTER BESAR' || $aksi == 'PRINTER KECIL') {
+            goto printvalidasi;
+        }
+
         $cekgajisupiruangjalan = DB::table("gajisupiruangjalan")->from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
             ->where('absensisupir_nobukti', $nobukti)
             ->first();
@@ -587,6 +591,7 @@ class AbsensiSupirHeaderController extends Controller
             }
         }
 
+        printvalidasi:
         if ($aksi == 'PRINTER BESAR' || $aksi == 'PRINTER KECIL') {
             //validasi cetak
             $printValidation = AbsensiSupirHeader::printValidation($id);
