@@ -126,13 +126,15 @@ class ExportLaporanKasHarianController extends Controller
             }
 
             // return response([
-            //     'data' => $export[0],
-            //     'dataDua' => $export[1],
+            //     'data' => $export_kasharian[0],
+            //     'dataDua' => $export_kasharian[1],
             //     'namacabang' => 'CABANG ' . $getCabang->namacabang,
             //     'namacabang2' =>  $getCabang->namacabang
             // ]);
 
             $data = json_decode($export_kasharian[0]);
+            $dataLaporanRekap = json_decode($export_kasharian[0]);
+            $dataLaporanRekap01 = json_decode($export_kasharian[0]);
             $dataDua = json_decode($export_kasharian[1]);
             $namacabang = 'CABANG ' . $getCabang->namacabang;
             $namacabang2 = $getCabang->namacabang;
@@ -386,8 +388,8 @@ class ExportLaporanKasHarianController extends Controller
                 $rekapColumnIndex++;
             }
 
-            $filteredRekapData = array_filter($data, function ($row) {
-                $row->jenislaporan = 'LAPORAN REKAP';
+            $filteredRekapData = array_filter($dataLaporanRekap, function ($row) {
+                // $row->jenislaporan = 'LAPORAN REKAP';
                 return $row->jenislaporan == 'LAPORAN REKAP';
             });
 
@@ -517,8 +519,8 @@ class ExportLaporanKasHarianController extends Controller
                 $rekap01ColumnIndex++;
             }
 
-            $filteredRekap01Data = array_filter($data, function ($row) {
-                $row->jenislaporan = 'LAPORAN REKAP 01';
+            $filteredRekap01Data = array_filter($dataLaporanRekap01, function ($row) {
+                // $row->jenislaporan = 'LAPORAN REKAP 01';
                 return $row->jenislaporan == 'LAPORAN REKAP 01';
             });
 
