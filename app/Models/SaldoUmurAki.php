@@ -93,6 +93,26 @@ class SaldoUmurAki extends MyModel
             'idsaldo',
         ], $querysaldo);
 
+        $querysaldo = db::table('pengeluaranstokdetail')->from(db::raw("pengeluaranstokdetail a with (readuncommitted)"))
+        ->select(
+            'a.stok_id',
+            'b.trado_id',
+            'b.tglbukti as tglawal',
+            db::raw("0 as jumlahharitrip"),
+            'a.id',
+        )
+        ->join(db::raw("pengeluaranstokheader b"), "a.nobukti", "b.nobukti")
+        ->where('a.stok_id', $id)
+        ->where('a.statusservicerutin', '344');//STATUS SERVICE RUTIN
+    
+        DB::table($tempSaldoAki)->insertUsing([
+            'stok_id',
+            'trado_id',
+            'tglawal',
+            'jumlahharitrip',
+            'idsaldo',
+        ], $querysaldo);
+
 
         $tempumurakiberjalan = '##tempumurakiberjalan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempumurakiberjalan, function ($table) {
@@ -106,7 +126,10 @@ class SaldoUmurAki extends MyModel
                 'a.trado_id',
                 'a.tglbukti',
             )
-            ->join(db::raw($tempSaldoAki . " b"), "a.trado_id", "b.trado_id")
+            ->join(db::raw($tempSaldoAki . " b"), function ($join)  {
+                $join->on('a.trado_id', '=', 'b.trado_id');
+                $join->on('a.tglbukti', '>=', 'b.tglawal');
+            })
             ->groupBy('a.trado_id')
             ->groupBy('a.tglbukti');
 
