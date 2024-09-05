@@ -2929,31 +2929,31 @@ class GajiSupirHeader extends MyModel
             ], $queryGetUrut);
 
             DB::update(DB::raw("UPDATE gajisupirdetail SET gajisupirdetail.urutextra=a.furut from gajisupirdetail join " . $tempurutan . " as a  on gajisupirdetail.id = a.id"));
-
-            // NO URUT
-            $tempnourut = '##tempnourut' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($tempnourut, function ($table) {
-                $table->bigInteger('id')->nullable();
-                $table->string('nobukti', 50)->nullable();
-                $table->string('suratpengantar_nobukti', 50)->nullable();
-                $table->bigInteger('furut')->nullable();
-            });
-            $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
-                ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,ROW_NUMBER() OVER(PARTITION BY c.tglbukti,c.nobukti ORDER BY c.tglbukti,c.nobukti,b.tglbukti,a.suratpengantar_nobukti,a.id) as furut"))
-
-                ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
-                ->join(db::raw("$temptrip as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.suratpengantar_nobukti')
-                ->where('a.suratpengantar_nobukti', $row->suratpengantar_nobukti);
-
-            DB::table($tempnourut)->insertUsing([
-                'id',
-                'nobukti',
-                'suratpengantar_nobukti',
-                'furut'
-            ], $queryGetUrut);
-
-            DB::update(DB::raw("UPDATE gajisupirdetail SET gajisupirdetail.nourut=a.furut from gajisupirdetail join " . $tempnourut . " as a  on gajisupirdetail.id = a.id"));
         }
+
+        // NO URUT
+        $tempnourut = '##tempnourut' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempnourut, function ($table) {
+            $table->bigInteger('id')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->string('suratpengantar_nobukti', 50)->nullable();
+            $table->bigInteger('furut')->nullable();
+        });
+        $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
+            ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,ROW_NUMBER() OVER(PARTITION BY c.nobukti ORDER BY b.tglbukti,b.nobukti,a.id) as furut"))
+
+            ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+            ->join(db::raw("suratpengantar as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.nobukti')
+            ->where('a.nobukti', $gajiSupirHeader->nobukti);
+
+        DB::table($tempnourut)->insertUsing([
+            'id',
+            'nobukti',
+            'suratpengantar_nobukti',
+            'furut'
+        ], $queryGetUrut);
+
+        DB::update(DB::raw("UPDATE gajisupirdetail SET gajisupirdetail.nourut=a.furut from gajisupirdetail join " . $tempnourut . " as a  on gajisupirdetail.id = a.id"));
 
         $gajiSupirHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => $gajiSupirHeader->getTable(),
@@ -3361,31 +3361,29 @@ class GajiSupirHeader extends MyModel
             ], $queryGetUrut);
 
             DB::update(DB::raw("UPDATE gajisupirdetail SET gajisupirdetail.urutextra=a.furut from gajisupirdetail join " . $tempurutan . " as a  on gajisupirdetail.id = a.id"));
-
-            // NO URUT
-            $tempnourut = '##tempnourut' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($tempnourut, function ($table) {
-                $table->bigInteger('id')->nullable();
-                $table->string('nobukti', 50)->nullable();
-                $table->string('suratpengantar_nobukti', 50)->nullable();
-                $table->bigInteger('furut')->nullable();
-            });
-            $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
-                ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,ROW_NUMBER() OVER(PARTITION BY c.tglbukti,c.nobukti ORDER BY c.tglbukti,c.nobukti,b.tglbukti,a.suratpengantar_nobukti,a.id) as furut"))
-
-                ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
-                ->join(db::raw("$temptrip as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.suratpengantar_nobukti')
-                ->where('a.suratpengantar_nobukti', $row->suratpengantar_nobukti);
-
-            DB::table($tempnourut)->insertUsing([
-                'id',
-                'nobukti',
-                'suratpengantar_nobukti',
-                'furut'
-            ], $queryGetUrut);
-
-            DB::update(DB::raw("UPDATE gajisupirdetail SET gajisupirdetail.nourut=a.furut from gajisupirdetail join " . $tempnourut . " as a  on gajisupirdetail.id = a.id"));
         }
+        // NO URUT
+        $tempnourut = '##tempnourut' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempnourut, function ($table) {
+            $table->bigInteger('id')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->string('suratpengantar_nobukti', 50)->nullable();
+            $table->bigInteger('furut')->nullable();
+        });
+        $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
+            ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,ROW_NUMBER() OVER(PARTITION BY c.nobukti ORDER BY b.tglbukti,b.nobukti,a.id) as furut"))
+
+            ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+            ->join(db::raw("suratpengantar as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.nobukti')
+            ->where('a.nobukti', $gajiSupirHeader->nobukti);
+        DB::table($tempnourut)->insertUsing([
+            'id',
+            'nobukti',
+            'suratpengantar_nobukti',
+            'furut'
+        ], $queryGetUrut);
+
+        DB::update(DB::raw("UPDATE gajisupirdetail SET gajisupirdetail.nourut=a.furut from gajisupirdetail join " . $tempnourut . " as a  on gajisupirdetail.id = a.id"));
 
         $gajiSupirHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => $gajiSupirHeader->getTable(),
