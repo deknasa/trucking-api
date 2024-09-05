@@ -348,6 +348,10 @@ class PelunasanHutangHeaderController extends Controller
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
         $aksi = request()->aksi ?? '';
 
+        if ($aksi == 'PRINTER BESAR' || $aksi == 'PRINTER KECIL') {
+            goto lanjut;
+        }
+
         $pengeluaran = $PelunasanHutang->pengeluaran_nobukti ?? '';
         // dd($pengeluaran);
         $idpengeluaran = db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
