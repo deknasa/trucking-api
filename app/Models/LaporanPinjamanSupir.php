@@ -121,16 +121,9 @@ class LaporanPinjamanSupir extends MyModel
 
                 )
                 ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
-                // ->join(DB::raw("gajisupirpelunasanpinjaman as c with(readuncommitted)"), function ($join) {
-                //     $join->on('a.nobukti', '=', 'c.penerimaantrucking_nobukti');
-                //     $join->on('b.supir_id', '=', 'c.supir_id');
-                //     $join->on('b.pengeluarantruckingheader_nobukti', '=', 'c.pengeluarantrucking_nobukti');
-                // })
-
-                // ->leftjoin(DB::raw("prosesgajisupirdetail as d with (readuncommitted) "), 'c.gajisupir_nobukti', 'd.gajisupir_nobukti')
                 ->leftjoin(DB::raw("pengeluarantruckingheader as e with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'e.nobukti')
                 ->leftjoin(DB::raw("supir as f with (readuncommitted) "), 'b.supir_id', 'f.id')
-                ->Join(DB::raw("penerimaanheader as g with (readuncommitted)"), 'a.penerimaan_nobukti', 'g.nobukti')
+                // ->Join(DB::raw("penerimaanheader as g with (readuncommitted)"), 'a.penerimaan_nobukti', 'g.nobukti')
 
 
                 ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
@@ -140,6 +133,17 @@ class LaporanPinjamanSupir extends MyModel
                 ->OrderBy('f.namasupir', 'asc')
                 ->OrderBy('a.tglbukti', 'asc')
                 ->OrderBy('a.nobukti', 'asc');
+
+                DB::table($temphistory)->insertUsing([
+                    'nobukti',
+                    'tglbukti',
+                    'supir_id',
+                    'nominal',
+                    'tipe',
+                    'namasupir',
+                    'created_at',
+                ], $queryhistory);
+
         } else {
             $queryhistory = DB::table('penerimaantruckingheader')->from(
                 DB::raw("penerimaantruckingheader a with (readuncommitted) ")
@@ -156,16 +160,9 @@ class LaporanPinjamanSupir extends MyModel
 
                 )
                 ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
-                // ->join(DB::raw("gajisupirpelunasanpinjaman as c with(readuncommitted)"), function ($join) {
-                //     $join->on('a.nobukti', '=', 'c.penerimaantrucking_nobukti');
-                //     $join->on('b.supir_id', '=', 'c.supir_id');
-                //     $join->on('b.pengeluarantruckingheader_nobukti', '=', 'c.pengeluarantrucking_nobukti');
-                // })
-
-                // ->leftjoin(DB::raw("prosesgajisupirdetail as d with (readuncommitted) "), 'c.gajisupir_nobukti', 'd.gajisupir_nobukti')
                 ->leftjoin(DB::raw("pengeluarantruckingheader as e with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'e.nobukti')
                 ->leftjoin(DB::raw("supir as f with (readuncommitted) "), 'b.supir_id', 'f.id')
-                ->Join(DB::raw("penerimaanheader as g with (readuncommitted)"), 'a.penerimaan_nobukti', 'g.nobukti')
+                // ->Join(DB::raw("penerimaanheader as g with (readuncommitted)"), 'a.penerimaan_nobukti', 'g.nobukti')
 
 
                 ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
@@ -176,17 +173,19 @@ class LaporanPinjamanSupir extends MyModel
                 ->OrderBy('f.namasupir', 'asc')
                 ->OrderBy('a.tglbukti', 'asc')
                 ->OrderBy('a.nobukti', 'asc');
+
+                DB::table($temphistory)->insertUsing([
+                    'nobukti',
+                    'tglbukti',
+                    'supir_id',
+                    'nominal',
+                    'tipe',
+                    'namasupir',
+                    'created_at',
+                ], $queryhistory);                
         }
 
-        DB::table($temphistory)->insertUsing([
-            'nobukti',
-            'tglbukti',
-            'supir_id',
-            'nominal',
-            'tipe',
-            'namasupir',
-            'created_at',
-        ], $queryhistory);
+       
 
         // dd(db::table($temphistory)->get());
 
@@ -263,16 +262,9 @@ class LaporanPinjamanSupir extends MyModel
                     'a.created_at'
                 )
                 ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
-                // ->leftjoin(DB::raw("gajisupirpelunasanpinjaman as c with(readuncommitted)"), function ($join) {
-                //     $join->on('a.nobukti', '=', 'c.penerimaantrucking_nobukti');
-                //     $join->on('b.supir_id', '=', 'c.supir_id');
-                //     $join->on('b.pengeluarantruckingheader_nobukti', '=', 'c.pengeluarantrucking_nobukti');
-                // })
-
-                // ->leftjoin(DB::raw("prosesgajisupirdetail as d with (readuncommitted) "), 'c.gajisupir_nobukti', 'd.gajisupir_nobukti')
                 ->join(DB::raw("pengeluarantruckingheader as e with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'e.nobukti')
                 ->join(DB::raw("supir as f with (readuncommitted) "), 'b.supir_id', 'f.id')
-                ->Join(DB::raw("penerimaanheader as g with (readuncommitted)"), 'a.penerimaan_nobukti', 'g.nobukti')
+                // ->Join(DB::raw("penerimaanheader as g with (readuncommitted)"), 'a.penerimaan_nobukti', 'g.nobukti')
 
                 ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
                 ->whereRaw("a.tglbukti='" . date('Y/m/d', strtotime($sampai)) . "'")
@@ -297,16 +289,9 @@ class LaporanPinjamanSupir extends MyModel
                     'a.created_at'
                 )
                 ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
-                // ->leftjoin(DB::raw("gajisupirpelunasanpinjaman as c with(readuncommitted)"), function ($join) {
-                //     $join->on('a.nobukti', '=', 'c.penerimaantrucking_nobukti');
-                //     $join->on('b.supir_id', '=', 'c.supir_id');
-                //     $join->on('b.pengeluarantruckingheader_nobukti', '=', 'c.pengeluarantrucking_nobukti');
-                // })
-
-                // ->leftjoin(DB::raw("prosesgajisupirdetail as d with (readuncommitted) "), 'c.gajisupir_nobukti', 'd.gajisupir_nobukti')
                 ->join(DB::raw("pengeluarantruckingheader as e with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'e.nobukti')
                 ->join(DB::raw("supir as f with (readuncommitted) "), 'b.supir_id', 'f.id')
-                ->Join(DB::raw("penerimaanheader as g with (readuncommitted)"), 'a.penerimaan_nobukti', 'g.nobukti')
+                // ->Join(DB::raw("penerimaanheader as g with (readuncommitted)"), 'a.penerimaan_nobukti', 'g.nobukti')
 
                 ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
                 ->whereRaw("a.tglbukti='" . date('Y/m/d', strtotime($sampai)) . "'")
