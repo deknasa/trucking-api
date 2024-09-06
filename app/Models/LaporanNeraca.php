@@ -1350,7 +1350,7 @@ class LaporanNeraca extends MyModel
                 'nilaisaldo',
                 'disetujui',
                 'diperiksa',
-            ], (new LaporanSaldoInventory())->getReport('', '', '', 186, 364, $tglsd, 0, 0, 1, 1,715));
+            ], (new LaporanSaldoInventory())->getReport('', '', '', 186, 364, $tglsd, 0, 0, 1, 1,714));
 
             //  dd(db::table($tempdepositosupir)->get());
             // dd('test');
