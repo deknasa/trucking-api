@@ -259,7 +259,11 @@ class LaporanKartuPiutangPerAgen extends MyModel
             ->join(db::raw("piutangheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
             ->join(db::raw("pelunasanpiutangdetail c with (readuncommitted) "), 'a.nobukti', 'c.piutang_nobukti')
             ->join(db::raw("pelunasanpiutangheader d with (readuncommitted) "), 'c.nobukti', 'd.nobukti')
-            ->leftjoin(db::raw("notakreditdetail e with (readuncommitted) "), 'c.invoice_nobukti', 'e.invoice_nobukti')
+            // ->leftjoin(db::raw("notakreditdetail e with (readuncommitted) "), 'c.invoice_nobukti', 'e.invoice_nobukti')
+            ->leftjoin(DB::raw("notakreditdetail as e"), function ($join) {
+                $join->on('c.invoice_nobukti', '=', 'e.invoice_nobukti');
+                $join->on('d.notakredit_nobukti', '=', 'e.nobukti');
+            })
             ->whereRaw("(d.tglbukti>='" . $dari1 . "' and d.tglbukti<='" . $sampai . "')")
             ->whereRaw("isnull(c.potongan,0)<>0");
 
@@ -293,7 +297,11 @@ class LaporanKartuPiutangPerAgen extends MyModel
             ->join(db::raw("piutangheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
             ->join(db::raw("pelunasanpiutangdetail c with (readuncommitted) "), 'a.nobukti', 'c.piutang_nobukti')
             ->join(db::raw("pelunasanpiutangheader d with (readuncommitted) "), 'c.nobukti', 'd.nobukti')
-            ->leftjoin(db::raw("notakreditdetail e with (readuncommitted) "), 'c.invoice_nobukti', 'e.invoice_nobukti')
+            // ->leftjoin(db::raw("notakreditdetail e with (readuncommitted) "), 'c.invoice_nobukti', 'e.invoice_nobukti')
+            ->leftjoin(DB::raw("notakreditdetail as e"), function ($join) {
+                $join->on('c.invoice_nobukti', '=', 'e.invoice_nobukti');
+                $join->on('d.notakreditpph_nobukti', '=', 'e.nobukti');
+            })
             ->whereRaw("(d.tglbukti>='" . $dari1 . "' and d.tglbukti<='" . $sampai . "')")
             ->whereRaw("isnull(c.potonganpph,0)<>0");
 
