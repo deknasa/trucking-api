@@ -12,6 +12,7 @@ use App\Rules\ExistSupir;
 use App\Rules\ExistSupirForPengeluaranTrucking;
 use App\Rules\ValidasiDetail;
 use App\Rules\validasiJenisOrderanPengeluaranTrucking;
+use App\Rules\validasiKeteranganTarikDeposito;
 use App\Rules\validasiNominalTarikDeposito;
 use App\Rules\validasiTarikDeposito;
 use App\Rules\validasiTarikDepositoKaryawan;
@@ -305,7 +306,8 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                 'bank' => [$ruleBank],
                 // 'supirheader' => ['required',  new ValidasiDetail($jumlahdetail), new validasiTarikDeposito()],
                 'supirheader' => ['required'],
-                'nominalpenarikan' => ['required','numeric','min:1', new validasiNominalTarikDeposito()],
+                'keterangan_header' => ['required', new validasiKeteranganTarikDeposito()],
+                'nominalpenarikan' => ['required','numeric','gt:0', new validasiNominalTarikDeposito()],
                 // 'keterangancoa' => 'required',
             ];
         } else if ($kodepengeluaran == 'TDEK') {
@@ -329,6 +331,7 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                 'pengeluarantrucking' => 'required', 'numeric', 'min:1',
                 'bank' => [$ruleBank],
                 'karyawanheader' => ['required'],
+                'keterangan_header' => ['required'],
                 'nominalpenarikan' => ['required','numeric','min:1'],
                 // 'keterangancoa' => 'required',
             ];
