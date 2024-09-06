@@ -547,7 +547,7 @@ class PengeluaranTruckingHeader extends MyModel
     public function findAll($id)
     {
         $cek  = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
-            ->select('pengeluarantrucking_id', 'statuscabang')
+            ->select('pengeluarantrucking_id', 'statuscabang','supir_id','nobukti','tglbukti')
             ->where('id', $id)->first();
         if ($cek->pengeluarantrucking_id == 7) {
 
@@ -665,12 +665,20 @@ class PengeluaranTruckingHeader extends MyModel
 
             $data = $query->first();
         } else {
+            $saldodeposito = 0;
+            if ($cek->pengeluarantrucking_id == 2 || $cek->pengeluarantrucking_id == 16) {
+                $getdeposito = (new PengeluaranTruckingHeader())->cekValidasiTarikDeposito($cek->supir_id, $cek->nobukti, date('Y-m-d', strtotime($cek->tglbukti)));
+
+                $query = DB::table($getdeposito)->select(db::raw("isnull(sum(isnull(sisa,0)),0) as sisa"))->first();
+                $saldodeposito = $query->sisa;
+            }
 
             $query = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
                 ->select(
                     'pengeluarantruckingheader.id',
                     'pengeluarantruckingheader.nobukti',
                     'pengeluarantruckingheader.tglbukti',
+                    'pengeluarantruckingheader.keterangan as keterangan_header',
                     'pengeluarantruckingheader.pengeluarantrucking_id',
                     'pengeluarantrucking.keterangan as pengeluarantrucking',
                     'pengeluarantrucking.kodepengeluaran as kodepengeluaran',
@@ -698,6 +706,7 @@ class PengeluaranTruckingHeader extends MyModel
                     'pengeluarantruckingheader.periodedari',
                     'pengeluarantruckingheader.periodesampai',
                     'pengeluarantruckingheader.periode',
+                    db::raw("$saldodeposito as saldopenarikan"),
                     db::raw("cast(pengeluarantruckingheader.nominalpenarikan AS float) AS nominalpenarikan"),
                     'akunpusat.keterangancoa',
                     'pengeluarantruckingheader.pengeluaran_nobukti',
@@ -1986,6 +1995,7 @@ class PengeluaranTruckingHeader extends MyModel
         $pengeluaranTruckingHeader->nominalpenarikan = $data['nominalpenarikan'] ?? 0;
         $pengeluaranTruckingHeader->agen_id = $data['agen_id'] ?? '';
         $pengeluaranTruckingHeader->container_id = $data['containerheader_id'] ?? '';
+        $pengeluaranTruckingHeader->keterangan = $data['keterangan_header'] ?? '';
         $pengeluaranTruckingHeader->statusformat = $data['statusformat'] ?? $format->id;
         $pengeluaranTruckingHeader->statuscetak = $statusCetak->id;
         $pengeluaranTruckingHeader->modifiedby = auth('api')->user()->name;
@@ -2275,13 +2285,13 @@ class PengeluaranTruckingHeader extends MyModel
                 } else {
                     if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'TDEK') {
                         if ($fetchFormat->kodepengeluaran == 'TDE') {
-                            $namasupir = db::table("supir")->from(DB::raw("supir with (readuncommitted)"))->where('id', $data['supirheader_id'])->first()->namasupir;
+                            // $namasupir = db::table("supir")->from(DB::raw("supir with (readuncommitted)"))->where('id', $data['supirheader_id'])->first()->namasupir;
 
-                            $keterangan_detail[] = 'PENARIKAN DEPOSITO SUPIR ' . $namasupir . ' SEBESAR Rp ' . number_format($data['nominalpenarikan'], 2);
+                            $keterangan_detail[] = $pengeluaranTruckingHeader->keterangan;
                         } else {
-                            $namakaryawan = db::table("karyawan")->from(DB::raw("karyawan with (readuncommitted)"))->where('id', $data['karyawanheader_id'])->first()->namakaryawan;
+                            // $namakaryawan = db::table("karyawan")->from(DB::raw("karyawan with (readuncommitted)"))->where('id', $data['karyawanheader_id'])->first()->namakaryawan;
 
-                            $keterangan_detail[] = 'PENARIKAN DEPOSITO KARYAWAN ' . $namakaryawan . ' SEBESAR Rp ' . number_format($data['nominalpenarikan'], 2);
+                            $keterangan_detail[] = $pengeluaranTruckingHeader->keterangan;
                         }
                         $nominal_detail = [];
                         $nominal_detail[] = $data['nominalpenarikan'];
@@ -2523,6 +2533,7 @@ class PengeluaranTruckingHeader extends MyModel
         $pengeluaranTruckingHeader->nominalpenarikan = $data['nominalpenarikan'] ?? 0;
         $pengeluaranTruckingHeader->agen_id = $data['agen_id'] ?? '';
         $pengeluaranTruckingHeader->container_id = $data['containerheader_id'] ?? '';
+        $pengeluaranTruckingHeader->keterangan = $data['keterangan_header'] ?? '';
         $pengeluaranTruckingHeader->statusformat = $data['statusformat'] ?? $format->id;
         $pengeluaranTruckingHeader->modifiedby = auth('api')->user()->name;
         $pengeluaranTruckingHeader->editing_by = '';
@@ -2811,13 +2822,13 @@ class PengeluaranTruckingHeader extends MyModel
                     } else {
                         if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'TDEK') {
                             if ($fetchFormat->kodepengeluaran == 'TDE') {
-                                $namasupir = db::table("supir")->from(DB::raw("supir with (readuncommitted)"))->where('id', $data['supirheader_id'])->first()->namasupir;
+                                // $namasupir = db::table("supir")->from(DB::raw("supir with (readuncommitted)"))->where('id', $data['supirheader_id'])->first()->namasupir;
 
-                                $keterangan_detail[] = 'PENARIKAN DEPOSITO SUPIR ' . $namasupir . ' SEBESAR Rp ' . number_format($data['nominalpenarikan'], 2);
+                                $keterangan_detail[] = $pengeluaranTruckingHeader->keterangan;
                             } else {
-                                $namakaryawan = db::table("karyawan")->from(DB::raw("karyawan with (readuncommitted)"))->where('id', $data['karyawanheader_id'])->first()->namakaryawan;
+                                // $namakaryawan = db::table("karyawan")->from(DB::raw("karyawan with (readuncommitted)"))->where('id', $data['karyawanheader_id'])->first()->namakaryawan;
 
-                                $keterangan_detail[] = 'PENARIKAN DEPOSITO KARYAWAN ' . $namakaryawan . ' SEBESAR Rp ' . number_format($data['nominalpenarikan'], 2);
+                                $keterangan_detail[] = $pengeluaranTruckingHeader->keterangan;
                             }
                             $nominal_detail = [];
                             $nominal_detail[] = $data['nominalpenarikan'];
@@ -3080,5 +3091,17 @@ class PengeluaranTruckingHeader extends MyModel
 
 
         return $temp;
+    }
+
+    public function getSisaDeposito()
+    {
+        $aksi = strtoupper(request()->aksi);
+        if ($aksi == 'ADD') {
+            $getdeposito = (new PenerimaanTruckingHeader())->createTempDeposito(request()->supir, date('Y-m-d', strtotime(request()->tglbukti)));
+        } else {
+            $getdeposito = (new PengeluaranTruckingHeader())->cekValidasiTarikDeposito(request()->supir, request()->nobukti, date('Y-m-d', strtotime(request()->tglbukti)));
+        }
+        $query = DB::table($getdeposito)->select(db::raw("isnull(sum(isnull(sisa,0)),0) as sisa"))->first();
+        return $query;
     }
 }

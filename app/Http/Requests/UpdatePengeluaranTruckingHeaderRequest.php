@@ -16,6 +16,7 @@ use App\Rules\ExistKaryawanForPengeluaranTrucking;
 use App\Rules\validasiJenisOrderanPengeluaranTrucking;
 use App\Rules\ValidasiKlaimPosting;
 use App\Rules\ValidasiDestroyPengeluaranTruckingHeader;
+use App\Rules\validasiKeteranganTarikDeposito;
 use App\Rules\validasiNominalTarikDeposito;
 use App\Rules\validasiTarikDeposito;
 use App\Rules\validasiTarikDepositoKaryawan;
@@ -241,6 +242,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
                 // 'statusposting' => 'required',
                 'bank' => [$ruleBank],
                 'supirheader' => ['required'],
+                'keterangan_header' => ['required',new validasiKeteranganTarikDeposito()],
                 'nominalpenarikan' => ['required','numeric','min:1', new validasiNominalTarikDeposito()],
                 // 'keterangancoa' => 'required',
             ];
@@ -263,6 +265,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
                     'before_or_equal:'.date('d-m-Y'),
                     new DateTutupBuku()
                 ],
+                'keterangan_header' => ['required'],
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
                 // 'statusposting' => 'required',
                 'bank' => [$ruleBank],

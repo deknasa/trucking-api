@@ -123,6 +123,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 'coa' => $request->coa,
                 "pengeluaran_nobukti" => $request->pengeluaran_nobukti,
                 "nominalpenarikan" => $request->nominalpenarikan,
+                "keterangan_header" => $request->keterangan_header,
                 "dibayarke" => $request->dibayarke,
                 "alatbayar_id" => $request->alatbayar_id,
                 "userapproval" => $request->userapproval,
@@ -304,6 +305,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 "tglsampai" => $request->tglsampai,
                 "jenisorderan_id" => $request->jenisorderan_id,
                 "nominalpenarikan" => $request->nominalpenarikan,
+                "keterangan_header" => $request->keterangan_header,
                 'coa' => $request->coa,
                 "pengeluaran_nobukti" => $request->pengeluaran_nobukti,
                 "dibayarke" => $request->dibayarke,
@@ -2675,4 +2677,11 @@ class PengeluaranTruckingHeaderController extends Controller
      * @Keterangan LAPANGAN TAMBAHAN TOL
      */
     public function pengeluarantruckinglapangantambahantol() {}
+
+    public function getSisaDeposito() {
+        $data = (new PengeluaranTruckingHeader())->getSisaDeposito();
+        return response([
+            'data' => $data
+        ]);
+    }
 }
