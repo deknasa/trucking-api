@@ -29,7 +29,10 @@ class LaporanKartuHutangPrediksi extends MyModel
 
     public function getReport($sampai, $dari)
     {
-        $ptglawalprogram = '2023/5/1';
+        // $ptglawalprogram = '2023/5/1';
+        $parameter = new Parameter();
+
+        $ptglawalprogram = $parameter->cekText('SALDO', 'SALDO') ?? '1900-01-01';
 
         $dari = '01-' . date('m', strtotime($sampai)) . '-' . date('Y', strtotime($sampai));
         $templist = '##templist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -37,6 +40,7 @@ class LaporanKartuHutangPrediksi extends MyModel
         Schema::create($templist, function ($table) {
             $table->id();
             $table->string('nobukti', 1000)->nullable();
+            $table->string('nobuktiebs', 1000)->nullable();
             $table->date('tglbukti')->nullable();
             $table->string('nobuktitrans', 1000)->nullable();
             $table->string('keterangan', 1000)->nullable();
@@ -112,6 +116,7 @@ class LaporanKartuHutangPrediksi extends MyModel
             ->from(DB::raw("saldohutangprediksi as a with (readuncommitted)"))
             ->select(
                 'a.nobukti',
+                'a.nobukti as nobuktiebs',
                 DB::raw("format(getdate(),'yyyy/MM/dd') as tglbuktitglbukti"),
                 DB::raw("'' as nobuktitrans"),
                 'a.keterangan',
@@ -123,6 +128,7 @@ class LaporanKartuHutangPrediksi extends MyModel
 
         DB::table($templist)->insertUsing([
             'nobukti',
+            'nobuktiebs',
             'tglbukti',
             'nobuktitrans',
             'keterangan',
@@ -136,6 +142,7 @@ class LaporanKartuHutangPrediksi extends MyModel
             ->from(DB::raw("prosesgajisupirheader as h with (readuncommitted)"))
             ->select(
                 'h.nobukti',
+                'h.nobukti as nobuktiebs',
                 DB::raw("max(h.tglbukti) as tglbukti"),
                 'h.nobukti as nobuktitrans',
                 DB::raw("max(h.keterangan) as keterangan"),
@@ -152,6 +159,7 @@ class LaporanKartuHutangPrediksi extends MyModel
 
         DB::table($templist)->insertUsing([
             'nobukti',
+            'nobuktiebs',            
             'tglbukti',
             'nobuktitrans',
             'keterangan',
@@ -167,6 +175,7 @@ class LaporanKartuHutangPrediksi extends MyModel
             ->from(DB::raw("prosesgajisupirheader as h with (readuncommitted)"))
             ->select(
                 'h.nobukti',
+                'h.nobukti as nobuktiebs',                
                 DB::raw("max(h.tglbukti) as tglbukti"),
                 'h.pengeluaran_nobukti as nobuktitrans',
                 DB::raw("max(h.keterangan) as keterangan"),
@@ -185,6 +194,7 @@ class LaporanKartuHutangPrediksi extends MyModel
 
         DB::table($templist)->insertUsing([
             'nobukti',
+            'nobuktiebs',
             'tglbukti',
             'nobuktitrans',
             'keterangan',
@@ -198,6 +208,7 @@ class LaporanKartuHutangPrediksi extends MyModel
             ->from(DB::raw("hutangheader as d with (readuncommitted)"))
             ->select(
                 'd.nobukti',
+                db::raw("(d.nobukti) as nobuktiebs"),
                 DB::raw("max(j.tglbukti) as tglbukti"),
                 'd.nobukti as nobuktitrans',
                 DB::raw("max(j.keterangan) as keterangan"),
@@ -214,6 +225,7 @@ class LaporanKartuHutangPrediksi extends MyModel
 
         DB::table($templist)->insertUsing([
             'nobukti',
+            'nobuktiebs',
             'tglbukti',
             'nobuktitrans',
             'keterangan',
@@ -221,12 +233,13 @@ class LaporanKartuHutangPrediksi extends MyModel
             'kredit',
             'saldo',
         ], $querytemplist);
-
+    
         // 5
         $querytemplist = DB::table('pelunasanhutangheader')
             ->from(DB::raw("pelunasanhutangheader as d with (readuncommitted)"))
             ->select(
                 'd.nobukti',
+                'd.pengeluaran_nobukti as nobuktiebs',
                 DB::raw("max(j.tglbukti) as tglbukti"),
                 'd.pengeluaran_nobukti as nobuktitrans',
                 DB::raw("max(j.keterangan) as keterangan"),
@@ -245,6 +258,7 @@ class LaporanKartuHutangPrediksi extends MyModel
 
         DB::table($templist)->insertUsing([
             'nobukti',
+            'nobuktiebs',
             'tglbukti',
             'nobuktitrans',
             'keterangan',
@@ -258,6 +272,7 @@ class LaporanKartuHutangPrediksi extends MyModel
             ->from(DB::raw("jurnalumumheader as d with (readuncommitted)"))
             ->select(
                 'j.nobukti',
+                'j.nobukti as nobuktiebs',
                 DB::raw("max(j.tglbukti) as tglbukti"),
                 'j.nobukti as nobuktitrans',
                 DB::raw("max(j.keterangan) as keterangan"),
@@ -276,6 +291,7 @@ class LaporanKartuHutangPrediksi extends MyModel
 
         DB::table($templist)->insertUsing([
             'nobukti',
+            'nobuktiebs',
             'tglbukti',
             'nobuktitrans',
             'keterangan',
@@ -289,6 +305,7 @@ class LaporanKartuHutangPrediksi extends MyModel
             ->from(DB::raw("prosesgajisupirheader as h with (readuncommitted)"))
             ->select(
                 'h.nobukti',
+                'h.nobukti AS nobuktiebs',
                 'h.tglbukti  AS tglbukti',
                 'h.nobukti AS nobuktitrans',
                 'h.keterangan',
@@ -305,6 +322,7 @@ class LaporanKartuHutangPrediksi extends MyModel
 
         DB::table($templist)->insertUsing([
             'nobukti',
+            'nobuktiebs',
             'tglbukti',
             'nobuktitrans',
             'keterangan',
@@ -312,12 +330,13 @@ class LaporanKartuHutangPrediksi extends MyModel
             'kredit',
             'saldo',
         ], $querytemplist);
-
+        
         // 8
         $querytemplist = DB::table('prosesgajisupirheader')
             ->from(DB::raw("prosesgajisupirheader as h with (readuncommitted)"))
             ->select(
                 'h.nobukti',
+                'h.nobukti as nobuktiebs',
                 'h.tglbukti',
                 'h.pengeluaran_nobukti AS nobuktitrans',
                 'h.keterangan',
@@ -336,6 +355,7 @@ class LaporanKartuHutangPrediksi extends MyModel
 
         DB::table($templist)->insertUsing([
             'nobukti',
+            'nobuktiebs',
             'tglbukti',
             'nobuktitrans',
             'keterangan',
@@ -344,11 +364,13 @@ class LaporanKartuHutangPrediksi extends MyModel
             'saldo',
         ], $querytemplist);
         //   dd('test');
+        
         // 9
         $querytemplist = DB::table('hutangheader')
             ->from(DB::raw("hutangheader as d with (readuncommitted)"))
             ->select(
                 'j.nobukti',
+                'j.nobukti as nobuktiebs',
                 'j.tglbukti',
                 'j.nobukti as nobuktitrans',
                 'j.keterangan',
@@ -366,6 +388,7 @@ class LaporanKartuHutangPrediksi extends MyModel
 
         DB::table($templist)->insertUsing([
             'nobukti',
+            'nobuktiebs',
             'tglbukti',
             'nobuktitrans',
             'keterangan',
@@ -379,6 +402,7 @@ class LaporanKartuHutangPrediksi extends MyModel
             ->from(DB::raw("pelunasanhutangheader as d with (readuncommitted)"))
             ->select(
                 'j.nobukti',
+                'j.nobukti as nobuktiebs',
                 'j.tglbukti',
                 'j.nobukti as nobuktitrans',
                 'j.keterangan',
@@ -397,6 +421,7 @@ class LaporanKartuHutangPrediksi extends MyModel
 
         DB::table($templist)->insertUsing([
             'nobukti',
+            'nobuktiebs',
             'tglbukti',
             'nobuktitrans',
             'keterangan',
@@ -410,6 +435,7 @@ class LaporanKartuHutangPrediksi extends MyModel
             ->from(DB::raw("jurnalumumheader as d with (readuncommitted)"))
             ->select(
                 'j.nobukti',
+                'j.nobukti as nobuktiebs',
                 'j.tglbukti',
                 'j.nobukti as nobuktitrans',
                 'j.keterangan',
@@ -430,6 +456,7 @@ class LaporanKartuHutangPrediksi extends MyModel
 
         DB::table($templist)->insertUsing([
             'nobukti',
+            'nobuktiebs',
             'tglbukti',
             'nobuktitrans',
             'keterangan',
@@ -536,6 +563,7 @@ class LaporanKartuHutangPrediksi extends MyModel
             ->from(DB::raw($templist . " as a with (readuncommitted)"))
             ->select(
                 DB::raw("(case when isnull(a.nobuktitrans,'')='' then a.nobukti else a.nobuktitrans end) as noebs"),
+                DB::raw("a.nobuktiebs as noebsdata"),
                 'a.tglbukti as tanggal',
                 'a.nobuktitrans as nobukti',
                 'a.keterangan',
@@ -550,6 +578,43 @@ class LaporanKartuHutangPrediksi extends MyModel
                 db::raw("'" . $diperiksa . "' as diperiksa"),
             )
             ->Orderby('a.id');
+
+            // $templist1 = 'templistdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+            // Schema::create($templist1, function ($table) {
+            //     $table->id();
+            //     $table->string('noebs', 1000)->nullable();
+            //     $table->string('noebsdata', 1000)->nullable();
+            //     $table->date('tanggal')->nullable();
+            //     $table->string('nobukti', 1000)->nullable();
+            //     $table->string('keterangan', 1000)->nullable();
+            //     $table->double('nominal')->nullable();
+            //     $table->double('bayar')->nullable();
+            //     $table->double('saldo')->nullable();
+            //     $table->longtext('judulLaporan')->nullable();
+            //     $table->longtext('judul')->nullable();
+            //     $table->longtext('tglcetak')->nullable();
+            //     $table->longtext('usercetak')->nullable();
+            //     $table->longtext('disetujui')->nullable();
+            //     $table->longtext('diperiksa')->nullable();
+            // });
+
+            // DB::table($templist1)->insertUsing([
+            //     'noebs',
+            //     'noebsdata',
+            //     'tanggal',
+            //     'nobukti',
+            //     'keterangan',
+            //     'nominal',
+            //     'bayar',
+            //     'saldo',
+            //     'judulLaporan',
+            //     'judul',
+            //     'tglcetak',
+            //     'usercetak',
+            //     'disetujui',
+            //     'diperiksa',
+            // ], $query);
 
 
         $data = $query->get();
