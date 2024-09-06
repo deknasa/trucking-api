@@ -232,8 +232,8 @@ class LaporanKartuPiutangPerAgenController extends Controller
                         $sheet->getStyle("A$detail_start_row:$lastColumn$detail_start_row")->applyFromArray($styleArray)->getFont()->setBold(true);
                     }
                     $detail_start_row++;
-                    $bayarCell = 'F' . ($detail_start_row + count($row));
-                    $nominalCell = 'D' . ($detail_start_row + count($row));
+                    $bayarCell = 'F' . ($detail_start_row + count($row)-1);
+                    $nominalCell = 'D' . ($detail_start_row + count($row)-1);
                     // // DATA
                     $prevNobukti = '';
                     foreach ($row as $response_detail) {
