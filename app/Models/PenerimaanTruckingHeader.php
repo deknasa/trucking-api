@@ -1450,7 +1450,7 @@ class PenerimaanTruckingHeader extends MyModel
                 'supir_id' =>   $data['supir_id'][$i] ?? '',
                 'karyawan_id' =>   $data['karyawan_id'][$i] ?? '',
                 'pengeluarantruckingheader_nobukti' => $data['pengeluarantruckingheader_nobukti'][$i] ?? '',
-                'keterangan' =>  $data['keterangan'][$i],
+                'keterangan' =>  mb_convert_encoding($data['keterangan'][$i], 'ISO-8859-1', 'UTF-8'),
                 'nominal' =>  $data['nominal'][$i],
                 'modifiedby' => $penerimaanTruckingHeader->modifiedby,
             ]);

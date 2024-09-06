@@ -476,7 +476,7 @@ class PengeluaranTruckingDetail extends MyModel
         $pengeluaranTruckingDetail->nominaltambahan = $data['nominaltambahan'] ?? 0;
         $pengeluaranTruckingDetail->keterangantambahan = $data['keterangantambahan'] ?? "";
         $pengeluaranTruckingDetail->trado_id = $data['trado_id'] ?? 0;
-        $pengeluaranTruckingDetail->keterangan = $data['keterangan'];
+        $pengeluaranTruckingDetail->keterangan = mb_convert_encoding($data['keterangan'],  'ISO-8859-1', 'UTF-8');
         $pengeluaranTruckingDetail->invoice_nobukti = $data['invoice_nobukti'];
         $pengeluaranTruckingDetail->orderantrucking_nobukti = $data['orderantrucking_nobukti'];
         $pengeluaranTruckingDetail->nominal = $data['nominal'];

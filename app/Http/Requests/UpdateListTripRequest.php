@@ -348,7 +348,15 @@ class UpdateListTripRequest extends FormRequest
             if ($this->trado != '') {
                 $rulesTrado_id = [
                     'trado_id' => [
-                        'required', 'numeric', 'min:1', new ExistTrado(), new validasiBatasLuarKota(), new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin), new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling), new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan), new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa)
+                        'required',
+                        'numeric',
+                        'min:1',
+                        new ExistTrado(),
+                        new validasiBatasLuarKota(),
+                        new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin),
+                        new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling),
+                        new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan),
+                        new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa)
                     ],
                     'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()],
                     'absensidetail_id' => ['required', 'numeric', 'min:1', new ExistAbsensiSupirDetail()],
@@ -363,7 +371,8 @@ class UpdateListTripRequest extends FormRequest
             }
             $rules = [
                 'tglbukti' => [
-                    'required', 'date_format:d-m-Y',
+                    'required',
+                    'date_format:d-m-Y',
                     new DateApprovalQuota()
                 ],
                 "agen" => ["required"],
@@ -423,17 +432,18 @@ class UpdateListTripRequest extends FormRequest
             $idUpahSupir = 0;
             $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
             if ($trip->statuscontainer_id != 3) {
-
-                if ($trip->dari_id == 1 || $trip->dari_id == $idkandang) {
-                    $cekjobtrucking = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $trip->jobtrucking)->where('id', '<>', request()->id)->first();
-                    if ($cekjobtrucking != '') {
-                        $idUpahSupir = $trip->upah_id;
-                        $ruleAgen = Rule::in($trip->agen);
-                        $ruleContainer = Rule::in($trip->container);
-                        $ruleStatusContainer = Rule::in($trip->statuscontainer);
-                        $ruleJenisorder = Rule::in($trip->jenisorder);
-                        $rulePelanggan = Rule::in($trip->pelanggan);
-                        $ruleGudang = Rule::in($trip->gudang);
+                if ($trip->jobtrucking != '') {
+                    if ($trip->dari_id == 1 || $trip->dari_id == $idkandang) {
+                        $cekjobtrucking = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $trip->jobtrucking)->where('id', '<>', request()->id)->first();
+                        if ($cekjobtrucking != '') {
+                            $idUpahSupir = $trip->upah_id;
+                            $ruleAgen = Rule::in($trip->agen);
+                            $ruleContainer = Rule::in($trip->container);
+                            $ruleStatusContainer = Rule::in($trip->statuscontainer);
+                            $ruleJenisorder = Rule::in($trip->jenisorder);
+                            $rulePelanggan = Rule::in($trip->pelanggan);
+                            $ruleGudang = Rule::in($trip->gudang);
+                        }
                     }
                 }
             }
@@ -808,7 +818,15 @@ class UpdateListTripRequest extends FormRequest
             if ($this->trado != '') {
                 $rulesTrado_id = [
                     'trado_id' => [
-                        'required', 'numeric', 'min:1', new ExistTrado(), new validasiBatasLuarKota(), new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin), new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling), new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan), new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa)
+                        'required',
+                        'numeric',
+                        'min:1',
+                        new ExistTrado(),
+                        new validasiBatasLuarKota(),
+                        new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin),
+                        new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling),
+                        new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan),
+                        new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa)
                     ],
                     'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()],
                     'absensidetail_id' => ['required', 'numeric', 'min:1', new ExistAbsensiSupirDetail()],
@@ -841,7 +859,8 @@ class UpdateListTripRequest extends FormRequest
                 if ($getgerobak->id == $gerobakVal) {
                     $rules = [
                         'tglbukti' => [
-                            'required', 'date_format:d-m-Y',
+                            'required',
+                            'date_format:d-m-Y',
                             new DateApprovalQuota()
                         ],
                         "nobukti_tripasal" => $ruleTripAsal,
@@ -877,7 +896,8 @@ class UpdateListTripRequest extends FormRequest
                     }
                     $rules = [
                         'tglbukti' => [
-                            'required', 'date_format:d-m-Y',
+                            'required',
+                            'date_format:d-m-Y',
                             new DateApprovalQuota()
                         ],
                         "nobukti_tripasal" => $ruleTripAsal,
@@ -920,7 +940,8 @@ class UpdateListTripRequest extends FormRequest
                 if ($getgerobak->id == $gerobakVal) {
                     $rules = [
                         'tglbukti' => [
-                            'required', 'date_format:d-m-Y',
+                            'required',
+                            'date_format:d-m-Y',
                             new DateApprovalQuota()
                         ],
                         "nobukti_tripasal" => $ruleTripAsal,
@@ -957,7 +978,8 @@ class UpdateListTripRequest extends FormRequest
                     }
                     $rules = [
                         'tglbukti' => [
-                            'required', 'date_format:d-m-Y',
+                            'required',
+                            'date_format:d-m-Y',
                             // new DateApprovalQuota()
                         ],
                         "nobukti_tripasal" => $ruleTripAsal,
@@ -1004,7 +1026,7 @@ class UpdateListTripRequest extends FormRequest
             $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
             $jobmanual = $parameter->cekText('JOB TRUCKING MANUAL', 'JOB TRUCKING MANUAL') ?? 'TIDAK';
             $rulesJobTrucking = [];
-            if($jobmanual =='TIDAK'){
+            if ($jobmanual == 'TIDAK') {
                 if ((request()->statuslongtrip == 66) && (request()->statuslangsir == 80) && (request()->statusgudangsama == 205)) {
                     if (request()->dari_id != $idkandang && request()->nobukti_tripasal == '') {
                         $rulesJobTrucking = [

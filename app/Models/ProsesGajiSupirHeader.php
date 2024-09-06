@@ -3127,26 +3127,26 @@ class ProsesGajiSupirHeader extends MyModel
             $isTangki = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'ABSENSI TANGKI')->first()->text ?? 'TIDAK';
             if ($isTangki == 'YA') {
                 $gajiSupirUangjalan = GajisUpirUangJalan::from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
-                    ->select(DB::raw("gajisupiruangjalan.kasgantung_nobukti,kasgantungheader.coakaskeluar, sum(gajisupiruangjalan.nominal) as nominal"))
+                    ->select(DB::raw("gajisupiruangjalan.kasgantung_nobukti,kasgantungheader.coakaskeluar,kasgantungheader.tglbukti, sum(gajisupiruangjalan.nominal) as nominal"))
                     ->join(DB::raw("kasgantungheader with (readuncommitted)"), 'gajisupiruangjalan.kasgantung_nobukti', 'kasgantungheader.nobukti')
                     ->whereRaw("gajisupiruangjalan.gajisupir_nobukti in ($allSP)")
-                    ->groupBy('gajisupiruangjalan.kasgantung_nobukti', 'kasgantungheader.coakaskeluar')
+                    ->groupBy('gajisupiruangjalan.kasgantung_nobukti', 'kasgantungheader.coakaskeluar','kasgantungheader.tglbukti')
                     ->get();
             } else {
 
                 $gajiSupirUangjalan = GajisUpirUangJalan::from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
-                    ->select(DB::raw("absensisupirheader.kasgantung_nobukti,kasgantungheader.coakaskeluar, sum(gajisupiruangjalan.nominal) as nominal"))
+                    ->select(DB::raw("absensisupirheader.kasgantung_nobukti,kasgantungheader.coakaskeluar,kasgantungheader.tglbukti, sum(gajisupiruangjalan.nominal) as nominal"))
                     ->join(DB::raw("absensisupirheader with (readuncommitted)"), 'gajisupiruangjalan.absensisupir_nobukti', 'absensisupirheader.nobukti')
                     ->join(DB::raw("kasgantungheader with (readuncommitted)"), 'absensisupirheader.kasgantung_nobukti', 'kasgantungheader.nobukti')
                     ->whereRaw("gajisupiruangjalan.gajisupir_nobukti in ($allSP)")
-                    ->groupBy('absensisupirheader.kasgantung_nobukti', 'kasgantungheader.coakaskeluar')
+                    ->groupBy('absensisupirheader.kasgantung_nobukti', 'kasgantungheader.coakaskeluar','kasgantungheader.tglbukti')
                     ->get();
             }
             $nilaiuangjalan = 0;
             foreach ($gajiSupirUangjalan as $key => $value) {
-
+                $tglKgt = date('d-m-Y', strtotime($value->tglbukti));
                 $nominalUangJalan[] = $value->nominal;
-                $keteranganUangJalan[] = 'POSTING UANG JALAN ' . $prosesGajiSupirHeader->nobukti;
+                $keteranganUangJalan[] = 'POSTING UANG JALAN ' . $prosesGajiSupirHeader->nobukti . " ($value->kasgantung_nobukti TANGGAL $tglKgt)";
                 $kasgantung_nobukti[] = $value->kasgantung_nobukti;
                 $coaDetailKasGantung[] = $value->coakaskeluar;
                 $nilaiuangjalan += $value->nominal;
@@ -3154,6 +3154,7 @@ class ProsesGajiSupirHeader extends MyModel
 
             if ($nilaiuangjalan != 0) {
                 $pengembalianKasGantungHeader = [
+                    'proseslain' => 1,
                     'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
                     'bank_id' => $data['bank_id'],
                     'tgldari' => date('Y-m-d', strtotime($data['tgldari'])),
@@ -4029,28 +4030,30 @@ class ProsesGajiSupirHeader extends MyModel
             $isTangki = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'ABSENSI TANGKI')->first()->text ?? 'TIDAK';
             if ($isTangki == 'YA') {
                 $gajiSupirUangjalan = GajisUpirUangJalan::from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
-                    ->select(DB::raw("gajisupiruangjalan.kasgantung_nobukti, kasgantungheader.coakaskeluar, sum(gajisupiruangjalan.nominal) as nominal"))
+                    ->select(DB::raw("gajisupiruangjalan.kasgantung_nobukti, kasgantungheader.coakaskeluar,kasgantungheader.tglbukti, sum(gajisupiruangjalan.nominal) as nominal"))
                     ->join(DB::raw("kasgantungheader with (readuncommitted)"), 'gajisupiruangjalan.kasgantung_nobukti', 'kasgantungheader.nobukti')
                     ->whereRaw("gajisupiruangjalan.gajisupir_nobukti in ($allSP)")
-                    ->groupBy('gajisupiruangjalan.kasgantung_nobukti', 'kasgantungheader.coakaskeluar')
+                    ->groupBy('gajisupiruangjalan.kasgantung_nobukti', 'kasgantungheader.coakaskeluar', 'kasgantungheader.tglbukti')
                     ->get();
             } else {
 
                 $gajiSupirUangjalan = GajisUpirUangJalan::from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
-                    ->select(DB::raw("absensisupirheader.kasgantung_nobukti, kasgantungheader.coakaskeluar, sum(gajisupiruangjalan.nominal) as nominal"))
+                    ->select(DB::raw("absensisupirheader.kasgantung_nobukti, kasgantungheader.coakaskeluar,kasgantungheader.tglbukti, sum(gajisupiruangjalan.nominal) as nominal"))
                     ->join(DB::raw("absensisupirheader with (readuncommitted)"), 'gajisupiruangjalan.absensisupir_nobukti', 'absensisupirheader.nobukti')
                     ->join(DB::raw("kasgantungheader with (readuncommitted)"), 'absensisupirheader.kasgantung_nobukti', 'kasgantungheader.nobukti')
                     ->whereRaw("gajisupiruangjalan.gajisupir_nobukti in ($allSP)")
-                    ->groupBy('absensisupirheader.kasgantung_nobukti', 'kasgantungheader.coakaskeluar')
+                    ->groupBy('absensisupirheader.kasgantung_nobukti', 'kasgantungheader.coakaskeluar', 'kasgantungheader.tglbukti')
                     ->get();
             }
-            foreach ($gajiSupirUangjalan as $key => $value) {
+            foreach ($gajiSupirUangjalan as $key => $value) {        
+                $tglKgt = date('d-m-Y', strtotime($value->tglbukti));
                 $nominalUangJalan[] = $value->nominal;
-                $keteranganUangJalan[] = 'POSTING UANG JALAN ' . $prosesGajiSupirHeader->nobukti;
+                $keteranganUangJalan[] = 'POSTING UANG JALAN ' . $prosesGajiSupirHeader->nobukti . " ($value->kasgantung_nobukti TANGGAL $tglKgt)";
                 $kasgantung_nobukti[] = $value->kasgantung_nobukti;
                 $coaDetailKasGantung[] = $value->coakaskeluar;
             }
             $pengembalianKasGantungHeader = [
+                'proseslain' => 1,
                 'tglbukti' => $prosesGajiSupirHeader->tglbukti,
                 'bank_id' => $data['bank_id'],
                 'tgldari' => date('Y-m-d', strtotime($data['tgldari'])),

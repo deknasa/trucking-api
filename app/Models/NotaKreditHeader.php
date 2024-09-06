@@ -120,6 +120,24 @@ class NotaKreditHeader extends MyModel
             ];
             goto selesai;
         }
+        $pelunasanPiutang = DB::table('pelunasanpiutangheader')
+            ->from(
+                DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti',
+                'a.notakreditpph_nobukti'
+            )
+            ->where('a.notakreditpph_nobukti', '=', $notaKredit->nobukti)
+            ->first();
+        if (isset($pelunasanPiutang)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' =>  'No Bukti <b>' . $notaKredit->nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti PELUNASAN PIUTANG <b>' . $pelunasanPiutang->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
 
         $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
         if ($notaKredit->pengeluaran_nobukti != '') {
@@ -334,7 +352,7 @@ class NotaKreditHeader extends MyModel
                 DB::raw('(case when (year(notakreditheader.tglbukacetak) <= 2000) then null else notakreditheader.tglbukacetak end ) as tglbukacetak'),
                 "statuskirimberkas.text as statuskirimberkas",
                 "$this->table.userkirimberkas",
-                "$this->table.tglkirimberkas",           
+                "$this->table.tglkirimberkas",
                 "$this->table.modifiedby",
                 "$this->table.created_at",
                 "$this->table.updated_at",

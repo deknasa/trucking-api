@@ -59,29 +59,29 @@ class DateApprovalQuota implements Rule
         $kondisi = true;
         // if ($getBatasHari != 0) {
 
-            while ($kondisi) {
-                $cekHarilibur = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))
-                    ->where('tgl', $tanggal)
-                    ->first();
+        while ($kondisi) {
+            $cekHarilibur = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))
+                ->where('tgl', $tanggal)
+                ->first();
 
-                $todayIsSunday = date('l', strtotime($tanggal));
-                $tomorrowIsSunday = date('l', strtotime($tanggal . "+1 days"));
-                if ($cekHarilibur == '') {
-                    $kondisi = false;
-                    $allowed = true;
-                    if (strtolower($todayIsSunday) == 'sunday') {
-                        $kondisi = true;
-                        $batasHari += 1;
-                    }
-                    if (strtolower($tomorrowIsSunday) == 'sunday') {
-                        $kondisi = true;
-                        $batasHari += 1;
-                    }
-                } else {
+            $todayIsSunday = date('l', strtotime($tanggal));
+            $tomorrowIsSunday = date('l', strtotime($tanggal . "+1 days"));
+            if ($cekHarilibur == '') {
+                $kondisi = false;
+                $allowed = true;
+                if (strtolower($todayIsSunday) == 'sunday') {
+                    $kondisi = true;
                     $batasHari += 1;
                 }
-                $tanggal = date('Y-m-d', strtotime($date . "+$batasHari days"));
+                if (strtolower($tomorrowIsSunday) == 'sunday') {
+                    $kondisi = true;
+                    $batasHari += 1;
+                }
+            } else {
+                $batasHari += 1;
             }
+            $tanggal = date('Y-m-d', strtotime($date . "+$batasHari days"));
+        }
         // }
         if (date('Y-m-d H:i:s') > $tanggal . ' ' . $getBatasInput->text) {
             $allowed = false;
@@ -190,6 +190,19 @@ class DateApprovalQuota implements Rule
             //     dump($user_id );
             // dd($getAll);
             if ($getAll == '') {
+
+                // CEK APAKAH TRIP EDIT ATAU BUKAN, JIKA EDIT TRIP, DI CEK APAKAH TGL BATAS EDITNYA ADA
+                $idtrip = request()->id ?? 0;
+                $trip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+                    ->select('nobukti', 'jobtrucking', 'tglbukti', DB::raw("isnull(approvalbukatanggal_id,0) as approvalbukatanggal_id"), 'tglbataseditsuratpengantar')
+                    ->where('id', $idtrip)
+                    ->first();
+                if ($trip != '') {
+
+                    if (date('Y-m-d H:i:s') < date('Y-m-d H:i:s', strtotime($trip->tglbataseditsuratpengantar))) {
+                        return true;
+                    }
+                }
                 return false;
             }
 
