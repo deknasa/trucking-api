@@ -405,6 +405,7 @@ class SuratPengantar extends MyModel
                 $table->dateTime('created_at')->nullable();
                 $table->dateTime('updated_at')->nullable();
                 $table->string('gajisupir_nobukti', 500)->nullable();
+                $table->string('prosesgajisupir_nobukti', 500)->nullable();
                 $table->string('invoice_nobukti', 500)->nullable();
                 $table->unsignedBigInteger('statusgajisupir')->nullable();
                 $table->unsignedBigInteger('statusinvoice')->nullable();
@@ -419,12 +420,20 @@ class SuratPengantar extends MyModel
             $tempspric = '##tempspric' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempspric, function ($table) {
                 $table->string('nobukti', 50)->nullable();
+                $table->string('ebsnobukti', 50)->nullable();
                 $table->string('suratpengantar_nobukti', 50)->nullable();
             });
-            $queryric = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail with (readuncommitted)"))
-                ->select(db::raw("max(nobukti) as nobukti"), 'suratpengantar_nobukti')->groupBy('suratpengantar_nobukti');
+            $queryric = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail a with (readuncommitted)"))
+                ->select(
+                    db::raw("max(a.nobukti) as nobukti"),
+                    db::raw("max(b.nobukti) as ebsnobukti"),
+                    'a.suratpengantar_nobukti'
+                )
+                ->leftjoin(db::raw("prosesgajisupirdetail b"), 'a.nobukti', 'b.gajisupir_nobukti')
+                ->groupBy('a.suratpengantar_nobukti');
             DB::table($tempspric)->insertUsing([
                 'nobukti',
+                'ebsnobukti',
                 'suratpengantar_nobukti',
             ], $queryric);
 
@@ -516,7 +525,8 @@ class SuratPengantar extends MyModel
                     'suratpengantar.modifiedby',
                     'suratpengantar.created_at',
                     'suratpengantar.updated_at',
-                    'b.nobukti as gajisupir_nobukti',
+                    db::raw("isnull(b.nobukti,'') as gajisupir_nobukti"),
+                    db::raw("isnull(b.ebsnobukti,'') as prosesgajisupir_nobukti"),
                     'c.nobukti as invoice_nobukti',
                     db::raw("(case when isnull(b.nobukti,'')='' then " . $getBelumbuka->id . " else " . $getSudahbuka->id . " end) as statusgajisupir"),
                     db::raw("(case when isnull(c.nobukti,'')='' then " . $getBelumbuka->id . " else " . $getSudahbuka->id . " end) as statusinvoice"),
@@ -698,6 +708,7 @@ class SuratPengantar extends MyModel
                 'created_at',
                 'updated_at',
                 'gajisupir_nobukti',
+                'prosesgajisupir_nobukti',
                 'invoice_nobukti',
                 'statusgajisupir',
                 'statusinvoice',
@@ -1042,6 +1053,7 @@ class SuratPengantar extends MyModel
                 'suratpengantar.created_at',
                 'suratpengantar.updated_at',
                 'suratpengantar.gajisupir_nobukti',
+                'suratpengantar.prosesgajisupir_nobukti',
                 'suratpengantar.invoice_nobukti',
                 'statusgajisupir.memo as statusgajisupir',
                 'statusinvoice.memo as statusinvoice',
@@ -1084,6 +1096,7 @@ class SuratPengantar extends MyModel
             ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id')
             ->leftJoin(DB::raw("orderantrucking as orderantrucking with (readuncommitted)"), 'suratpengantar.jobtrucking', 'orderantrucking.nobukti')
             ->leftJoin(DB::raw("gajisupirheader  with (readuncommitted)"), 'suratpengantar.gajisupir_nobukti', 'gajisupirheader.nobukti')
+            ->leftJoin(DB::raw("prosesgajisupirdetail  with (readuncommitted)"), 'gajisupirheader.nobukti', 'prosesgajisupirdetail.gajisupir_nobukti')
             ->leftJoin(DB::raw("invoiceheader  with (readuncommitted)"), 'suratpengantar.invoice_nobukti', 'invoiceheader.nobukti');
 
         if (request()->tgldari) {
@@ -2301,6 +2314,7 @@ class SuratPengantar extends MyModel
             $table->dateTime('tglbataseditsuratpengantar')->nullable();
             $table->date('tglapprovalbiayatitipanemkl')->nullable();
             $table->string('gajisupir_nobukti', 500)->nullable();
+            $table->string('prosesgajisupir_nobukti', 500)->nullable();
             $table->string('invoice_nobukti', 500)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
@@ -2319,12 +2333,20 @@ class SuratPengantar extends MyModel
         $tempspric = '##tempspric' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempspric, function ($table) {
             $table->string('nobukti', 50)->nullable();
+            $table->string('ebsnobukti', 50)->nullable();
             $table->string('suratpengantar_nobukti', 50)->nullable();
         });
-        $queryric = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail with (readuncommitted)"))
-            ->select(db::raw("max(nobukti) as nobukti"), 'suratpengantar_nobukti')->groupBy('suratpengantar_nobukti');
+        $queryric = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail a with (readuncommitted)"))
+            ->select(
+                db::raw("max(a.nobukti) as nobukti"),
+                db::raw("max(b.nobukti) as ebsnobukti"),
+                'a.suratpengantar_nobukti'
+            )
+            ->leftjoin(db::raw("prosesgajisupirdetail b"), 'a.nobukti', 'b.gajisupir_nobukti')
+            ->groupBy('a.suratpengantar_nobukti');
         DB::table($tempspric)->insertUsing([
             'nobukti',
+            'ebsnobukti',
             'suratpengantar_nobukti',
         ], $queryric);
 
@@ -2378,6 +2400,7 @@ class SuratPengantar extends MyModel
                 'suratpengantar.tglbataseditsuratpengantar',
                 'suratpengantar.tglapprovalbiayatitipanemkl',
                 'b.nobukti as gajisupir_nobukti',
+                'b.ebsnobukti as prosesgajisupir_nobukti',
                 'c.nobukti as invoice_nobukti',
                 'suratpengantar.modifiedby',
                 'suratpengantar.created_at',
@@ -2439,6 +2462,7 @@ class SuratPengantar extends MyModel
             'tglbataseditsuratpengantar',
             'tglapprovalbiayatitipanemkl',
             'gajisupir_nobukti',
+            'prosesgajisupir_nobukti',
             'invoice_nobukti',
             'modifiedby',
             'created_at',
@@ -2503,6 +2527,7 @@ class SuratPengantar extends MyModel
                 suratpengantar.tglbataseditsuratpengantar,
                 suratpengantar.tglapprovalbiayatitipanemkl,
                 suratpengantar.gajisupir_nobukti,
+                suratpengantar.prosesgajisupir_nobukti,
                 suratpengantar.invoice_nobukti,
                 suratpengantar.modifiedby,
                 suratpengantar.created_at,
@@ -2815,6 +2840,7 @@ class SuratPengantar extends MyModel
             $table->date('tglbataseditsuratpengantar')->nullable();
             $table->date('tglapprovalbiayatitipanemkl')->nullable();
             $table->string('gajisupir_nobukti')->nullable();
+            $table->string('prosesgajisupir_nobukti')->nullable();
             $table->longText('invoice_nobukti')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
@@ -2889,6 +2915,7 @@ class SuratPengantar extends MyModel
             'tglbataseditsuratpengantar',
             'tglapprovalbiayatitipanemkl',
             'gajisupir_nobukti',
+            'prosesgajisupir_nobukti',
             'invoice_nobukti',
             'modifiedby',
             'created_at',
