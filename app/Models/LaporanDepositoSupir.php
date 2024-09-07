@@ -33,13 +33,16 @@ class LaporanDepositoSupir extends MyModel
         $pengeluarantrucking_id = 2;
         $sampai = date('Y-m-d', strtotime($sampai)) ?? '1900/1/1';
         $jenis = request()->jenis ?? '';
-        
+
         $temppenerimaantrucking = '##temppenerimaantrucking' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temppenerimaantrucking, function ($table) {
             $table->unsignedBigInteger('supir_id')->nullable();
             $table->unsignedBigInteger('jumlah')->nullable();
             $table->double('nominal', 15, 2)->nullable();
         });
+        $parameter = new Parameter();
+        $statusaktif = $parameter->cekId('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF') ?? 0;
+        $statusnonaktif = $parameter->cekId('STATUS AKTIF', 'STATUS AKTIF', 'NON AKTIF') ?? 0;
         $querypenerimaantrucking = DB::table('penerimaantruckingheader')->from(
             DB::raw("penerimaantruckingheader as a with (readuncommitted)")
         )
@@ -82,7 +85,7 @@ class LaporanDepositoSupir extends MyModel
             'nominal',
         ], $querypengeluarantrucking);
 
-   
+
         // 
         $temppenerimaantruckinglist = '##temppenerimaantruckinglist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temppenerimaantruckinglist, function ($table) {
@@ -100,6 +103,7 @@ class LaporanDepositoSupir extends MyModel
                 DB::raw("sum(b.nominal) as nominal")
             )
             ->join(DB::raw("penerimaantruckingdetail b with (readuncommitted)"), 'a.id', 'b.penerimaantruckingheader_id')
+
             ->where('a.tglbukti', '=', $sampai)
             ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
             ->groupBy('b.supir_id');
@@ -257,18 +261,40 @@ class LaporanDepositoSupir extends MyModel
             ->where('grp', 'DIPERIKSA')
             ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
-        $query = DB::table($tempsaldo)->from(
+        $temphasil = '##temphasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temphasil, function ($table) {
+            $table->id();
+            $table->integer('iddeposito')->nullable();
+            $table->integer('supir_id')->nullable();
+            $table->string('namasupir', 200)->nullable();
+            $table->double('saldo', 15, 2)->nullable();
+            $table->double('deposito', 15, 2)->nullable();
+            $table->double('penarikan', 15, 2)->nullable();
+            $table->double('total', 15, 2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->double('cicil', 15, 2)->nullable();
+            $table->longText('keterangan1')->nullable();
+            $table->longText('keterangandeposito')->nullable();
+            $table->longText('judulLaporan')->nullable();
+            $table->longText('judul')->nullable();
+            $table->longText('tglcetak')->nullable();
+            $table->longText('usercetak')->nullable();
+            $table->longText('disetujui')->nullable();
+            $table->longText('diperiksa')->nullable();
+        });
+
+        $queryhasil = DB::table($tempsaldo)->from(
             DB::raw($tempsaldo . " as a")
         )
             ->select(
-                'b.id',
+                'b.id as iddeposito',
                 'a.supir_id',
                 'a.namasupir',
                 'a.saldo',
                 'a.deposito',
                 'a.penarikan',
                 'a.total',
-                'a.keterangan',
+                'a.keterangan as keterangan1',
                 'a.cicil',
                 DB::raw("b.keterangan as keterangan"),
                 DB::raw("'DEPOSITO SUPIR A/N '+trim(a.namasupir) as keterangandeposito"),
@@ -283,10 +309,104 @@ class LaporanDepositoSupir extends MyModel
                 $join->on('a.total', '>=', 'b.nominalawal');
                 $join->on('a.total', '<=', 'b.nominalakhir');
             })
+            ->join(DB::raw("supir c with (readuncommitted)"), 'a.supir_id', 'c.id')
+            ->where('c.statusaktif', $statusaktif)
+
             ->orderBy('b.id', 'asc')
             ->orderBy('a.namasupir', 'asc');
 
-    //   dd($query->get());
+        DB::table($temphasil)->insertUsing([
+            'iddeposito',
+            'supir_id',
+            'namasupir',
+            'saldo',
+            'deposito',
+            'penarikan',
+            'total',
+            'keterangan1',
+            'cicil',
+            'keterangan',
+            'keterangandeposito',
+            'judulLaporan',
+            'judul',
+            'tglcetak',
+            'usercetak',
+            'disetujui',
+            'diperiksa',
+        ], $queryhasil);
+
+        $queryhasil = DB::table($tempsaldo)->from(
+            DB::raw($tempsaldo . " as a")
+        )
+            ->select(
+                db::raw("1000 as iddeposito"),
+                'a.supir_id',
+                'a.namasupir',
+                'a.saldo',
+                'a.deposito',
+                'a.penarikan',
+                'a.total',
+                'a.keterangan as keterangan1',
+                'a.cicil',
+                DB::raw("'Keterangan Deposito Supir Non Aktif' as keterangan"),
+                DB::raw("'DEPOSITO SUPIR A/N '+trim(a.namasupir) as keterangandeposito"),
+                DB::raw("'Laporan Deposito' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa")
+            )
+            ->join(DB::raw("supir c with (readuncommitted)"), 'a.supir_id', 'c.id')
+            ->where('c.statusaktif', $statusnonaktif)
+
+            ->orderBy('a.namasupir', 'asc');
+
+        DB::table($temphasil)->insertUsing([
+            'iddeposito',
+            'supir_id',
+            'namasupir',
+            'saldo',
+            'deposito',
+            'penarikan',
+            'total',
+            'keterangan1',
+            'cicil',
+            'keterangan',
+            'keterangandeposito',
+            'judulLaporan',
+            'judul',
+            'tglcetak',
+            'usercetak',
+            'disetujui',
+            'diperiksa',
+        ], $queryhasil);
+
+        $query = DB::table($temphasil)->from(
+            DB::raw($temphasil . " as a")
+        )
+            ->select(
+                'a.iddeposito as id',
+                'a.supir_id',
+                'a.namasupir',
+                'a.saldo',
+                'a.deposito',
+                'a.penarikan',
+                'a.total',
+                'a.keterangan',
+                'a.cicil',
+                'a.keterangan1',
+                'a.keterangandeposito',
+                'a.judulLaporan',
+                'a.judul',
+                'a.tglcetak',
+                'a.usercetak',
+                'a.disetujui',
+                'a.diperiksa'
+            )
+            ->orderby('a.iddeposito','asc');
+
+        //   dd($query->get());
         if ($prosesneraca == 1) {
             $data = $query;
         } else {
@@ -559,7 +679,7 @@ class LaporanDepositoSupir extends MyModel
             ->orderBy('b.id', 'asc')
             ->orderBy('a.namasupir', 'asc');
 
-    //   dd($query->get());
+        //   dd($query->get());
         if ($prosesneraca == 1) {
             $data = $query;
         } else {
