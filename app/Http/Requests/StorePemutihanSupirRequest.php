@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistBank;
+use App\Rules\ExistKaryawan;
 use App\Rules\ExistSupir;
 use App\Rules\ValidasiHutangList;
 use Illuminate\Foundation\Http\FormRequest;
@@ -32,15 +33,31 @@ class StorePemutihanSupirRequest extends FormRequest
         $jumlahdetail = $this->jumlahdetail ?? 0;
         $supir_id = $this->supir_id;
         $rulesSupir_id = [];
-        if ($supir_id != null) {
-            $rulesSupir_id = [
-                'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
-            ];
-        } else if ($supir_id == null && $this->supir != '') {
-            $rulesSupir_id = [
-                'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
-            ];
+        if ($this->karyawan == '') {
+            if ($supir_id != null) {
+                $rulesSupir_id = [
+                    'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
+                ];
+            } else if ($supir_id == null && $this->supir != '') {
+                $rulesSupir_id = [
+                    'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
+                ];
+            }
         }
+        $karyawan_id = $this->karyawan_id;
+        $rulesKaryawan_id = [];
+        if ($this->supir == '') {
+            if ($karyawan_id != null) {
+                $rulesKaryawan_id = [
+                    'karyawan_id' => ['required', 'numeric', 'min:1', new ExistKaryawan()]
+                ];
+            } else if ($karyawan_id == null && $this->karyawan != '') {
+                $rulesKaryawan_id = [
+                    'karyawan_id' => ['required', 'numeric', 'min:1', new ExistKaryawan()]
+                ];
+            }
+        }
+
 
         $bank_id = $this->bank_id;
         $ruleBank_id = [];
@@ -65,19 +82,26 @@ class StorePemutihanSupirRequest extends FormRequest
 
         $rules = [
             'tglbukti' => [
-                'required', 'date_format:d-m-Y',
+                'required',
+                'date_format:d-m-Y',
                 'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
             'supir' => [
-                'required', new ValidasiHutangList($jumlahdetail)
+                "required_if:karyawan,=,null",
+                new ValidasiHutangList($jumlahdetail)
+            ],
+            'karyawan' => [
+                "required_if:supir,=,null",
+                new ValidasiHutangList($jumlahdetail)
             ],
             'bank' => $requiredBank,
         ];
         $rules = array_merge(
             $rules,
             $ruleBank_id,
-            $rulesSupir_id
+            $rulesSupir_id,
+            $rulesKaryawan_id
         );
 
         return $rules;
@@ -87,6 +111,8 @@ class StorePemutihanSupirRequest extends FormRequest
     {
         return [
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
+            'supir.required_if' => app(ErrorController::class)->geterror('WI')->keterangan,
+            'karyawan.required_if' => app(ErrorController::class)->geterror('WI')->keterangan,
         ];
     }
 }

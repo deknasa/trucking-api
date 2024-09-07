@@ -65,8 +65,10 @@ class PemutihanSupirController extends Controller
 
             $data = [
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)) ?? '',
-                'supir_id' => $request->supir_id ?? '',
+                'supir_id' => $request->supir_id ?? 0,
                 'supir' => $request->supir ?? '',
+                'karyawan_id' => $request->karyawan_id ?? 0,
+                'karyawan' => $request->karyawan ?? '',
                 'nonposting_nominal' => $request->nonposting_nominal ?? '',
                 'nonposting_nobukti' => $request->nonposting_nobukti ?? '',
                 'posting_nominal' => $request->posting_nominal ?? 0,
@@ -133,8 +135,10 @@ class PemutihanSupirController extends Controller
 
             $data = [
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)) ?? '',
-                'supir_id' => $request->supir_id ?? '',
+                'supir_id' => $request->supir_id ?? 0,
                 'supir' => $request->supir ?? '',
+                'karyawan_id' => $request->karyawan_id ?? 0,
+                'karyawan' => $request->karyawan ?? '',
                 'nonposting_nominal' => $request->nonposting_nominal ?? '',
                 'nonposting_nobukti' => $request->nonposting_nobukti ?? '',
                 'posting_nominal' => $request->posting_nominal ?? 0,
@@ -212,9 +216,20 @@ class PemutihanSupirController extends Controller
     public function getPost()
     {
         $data = new PemutihanSupir();
-        $supirId = request()->supir_id;
-        if ($supirId != '') {
-            $post = $data->getPosting($supirId);
+        $supirId = request()->supir_id ?? 0;
+        $karyawanId = request()->karyawan_id ?? 0;
+        if ($supirId != 0) {
+            $post = $data->getPosting($supirId, 'supir');
+
+            return response([
+                'post' => $post,
+                'attributes' => [
+                    'totalRows' => $data->totalRows,
+                    'totalPages' => $data->totalPages,
+                ]
+            ]);
+        } else if ($karyawanId != 0) {
+            $post = $data->getPosting($karyawanId, 'karyawan');
 
             return response([
                 'post' => $post,
@@ -236,9 +251,19 @@ class PemutihanSupirController extends Controller
     public function getNonPost()
     {
         $data = new PemutihanSupir();
-        $supirId = request()->supir_id;
-        if ($supirId != '') {
-            $non = $data->getNonposting($supirId);
+        $supirId = request()->supir_id ?? 0;
+        $karyawanId = request()->karyawan_id ?? 0;
+        if ($supirId != 0) {
+            $non = $data->getNonposting($supirId, 'supir');
+            return response([
+                'non' => $non,
+                'attributesNon' => [
+                    'totalRows' => $data->totalRows,
+                    'totalPages' => $data->totalPages,
+                ]
+            ]);
+        } else if ($karyawanId != 0) {
+            $non = $data->getNonposting($karyawanId, 'karyawan');
             return response([
                 'non' => $non,
                 'attributesNon' => [
@@ -260,10 +285,19 @@ class PemutihanSupirController extends Controller
     public function getEditPost($id)
     {
         $data = new PemutihanSupir();
-        $supirId = request()->supir_id;
-        if ($supirId != '') {
+        $supirId = request()->supir_id ?? 0;
+        $karyawanId = request()->karyawan_id ?? 0;
+        if ($supirId != 0) {
             return response([
-                'post' => $data->getEditPost($id, $supirId),
+                'post' => $data->getEditPost($id, $supirId, 'supir'),
+                'attributes' => [
+                    'totalRows' => $data->totalRows,
+                    'totalPages' => $data->totalPages,
+                ]
+            ]);
+        } else if ($karyawanId != 0) {
+            return response([
+                'post' => $data->getEditPost($id, $karyawanId, 'karyawan'),
                 'attributes' => [
                     'totalRows' => $data->totalRows,
                     'totalPages' => $data->totalPages,
@@ -283,10 +317,19 @@ class PemutihanSupirController extends Controller
     public function getEditNonPost($id)
     {
         $data = new PemutihanSupir();
-        $supirId = request()->supir_id;
-        if ($supirId != '') {
+        $supirId = request()->supir_id ?? 0;
+        $karyawanId = request()->karyawan_id ?? 0;
+        if ($supirId != 0) {
             return response([
-                'non' => $data->getEditNonPost($id, $supirId),
+                'non' => $data->getEditNonPost($id, $supirId, 'supir'),
+                'attributesNon' => [
+                    'totalRows' => $data->totalRows,
+                    'totalPages' => $data->totalPages,
+                ]
+            ]);
+        } else if ($karyawanId != 0) {
+            return response([
+                'non' => $data->getEditNonPost($id, $karyawanId, 'karyawan'),
                 'attributesNon' => [
                     'totalRows' => $data->totalRows,
                     'totalPages' => $data->totalPages,
@@ -307,10 +350,19 @@ class PemutihanSupirController extends Controller
     public function getDeletePost($id)
     {
         $data = new PemutihanSupir();
-        $supirId = request()->supir_id;
-        if ($supirId != '') {
+        $supirId = request()->supir_id ?? 0;
+        $karyawanId = request()->karyawan_id ?? 0;
+        if ($supirId != 0) {
             return response([
-                'post' => $data->getDeletePost($id, $supirId),
+                'post' => $data->getDeletePost($id, $supirId, 'supir'),
+                'attributes' => [
+                    'totalRows' => $data->totalRows,
+                    'totalPages' => $data->totalPages,
+                ]
+            ]);
+        } else if ($karyawanId != 0) {
+            return response([
+                'post' => $data->getDeletePost($id, $karyawanId, 'karyawan'),
                 'attributes' => [
                     'totalRows' => $data->totalRows,
                     'totalPages' => $data->totalPages,
@@ -330,10 +382,19 @@ class PemutihanSupirController extends Controller
     public function getDeleteNonPost($id)
     {
         $data = new PemutihanSupir();
-        $supirId = request()->supir_id;
-        if ($supirId != '') {
+        $supirId = request()->supir_id ?? 0;
+        $karyawanId = request()->karyawan_id ?? 0;
+        if ($supirId != 0) {
             return response([
-                'non' => $data->getDeleteNonPost($id, $supirId),
+                'non' => $data->getDeleteNonPost($id, $supirId, 'supir'),
+                'attributesNon' => [
+                    'totalRows' => $data->totalRows,
+                    'totalPages' => $data->totalPages,
+                ]
+            ]);
+        } else if ($karyawanId != 0) {
+            return response([
+                'non' => $data->getDeleteNonPost($id, $karyawanId, 'karyawan'),
                 'attributesNon' => [
                     'totalRows' => $data->totalRows,
                     'totalPages' => $data->totalPages,

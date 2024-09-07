@@ -498,7 +498,7 @@ class Karyawan extends MyModel
         return $karyawan;
     }
 
-    public function processApprovalnonaktif(array $data)
+    public function processApprovalnonaktif(array $data, $postingdari = 'APPROVAL NON AKTIF KARYAWAN')
     {
 
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
@@ -512,7 +512,7 @@ class Karyawan extends MyModel
             if ($Karyawan->save()) {
                 (new LogTrail())->processStore([
                     'namatabel' => strtoupper($Karyawan->getTable()),
-                    'postingdari' => 'APPROVAL NON AKTIF KARYAWAN',
+                    'postingdari' => $postingdari,
                     'idtrans' => $Karyawan->id,
                     'nobuktitrans' => $Karyawan->id,
                     'aksi' => $aksi,

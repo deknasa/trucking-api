@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\PemutihanSupir;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistBank;
+use App\Rules\ExistKaryawan;
 use App\Rules\ExistSupir;
 use App\Rules\ValidasiDestroyPemutihanSupir;
 use App\Rules\ValidasiHutangList;
@@ -37,14 +38,30 @@ class UpdatePemutihanSupirRequest extends FormRequest
         $jumlahdetail = $this->jumlahdetail ?? 0;
         $supir_id = $this->supir_id;
         $rulesSupir_id = [];
-        if ($supir_id != null) {
-            $rulesSupir_id = [
-                'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
-            ];
-        } else if ($supir_id == null && $this->supir != '') {
-            $rulesSupir_id = [
-                'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
-            ];
+        if ($this->karyawan == '') {
+
+            if ($supir_id != null) {
+                $rulesSupir_id = [
+                    'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
+                ];
+            } else if ($supir_id == null && $this->supir != '') {
+                $rulesSupir_id = [
+                    'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
+                ];
+            }
+        }
+        $karyawan_id = $this->karyawan_id;
+        $rulesKaryawan_id = [];
+        if ($this->supir == '') {
+            if ($karyawan_id != null) {
+                $rulesKaryawan_id = [
+                    'karyawan_id' => ['required', 'numeric', 'min:1', new ExistKaryawan()]
+                ];
+            } else if ($karyawan_id == null && $this->karyawan != '') {
+                $rulesKaryawan_id = [
+                    'karyawan_id' => ['required', 'numeric', 'min:1', new ExistKaryawan()]
+                ];
+            }
         }
 
         $bank_id = $this->bank_id;
@@ -61,7 +78,7 @@ class UpdatePemutihanSupirRequest extends FormRequest
                 ];
             }
         }
-        
+
         $requiredBank = Rule::requiredIf(function () {
             $jumlahposting = request()->jumlahposting;
             if ($jumlahposting > 0) {
@@ -73,19 +90,27 @@ class UpdatePemutihanSupirRequest extends FormRequest
             'id' => new ValidasiDestroyPemutihanSupir(),
             'nobukti' => [Rule::in($getData->nobukti)],
             'tglbukti' => [
-                'required', 'date_format:d-m-Y',
+                'required',
+                'date_format:d-m-Y',
                 'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
             'supir' => [
-                'required', Rule::in($getData->supir), new ValidasiHutangList($jumlahdetail)
+                "required_if:karyawan,=,null",
+                Rule::in($getData->supir),
+                new ValidasiHutangList($jumlahdetail)
+            ],
+            'karyawan' => [
+                "required_if:supir,=,null",
+                new ValidasiHutangList($jumlahdetail)
             ],
             'bank' => $requiredBank,
         ];
         $rules = array_merge(
             $rules,
             $ruleBank_id,
-            $rulesSupir_id
+            $rulesSupir_id,
+            $rulesKaryawan_id
         );
 
         return $rules;
