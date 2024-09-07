@@ -149,25 +149,27 @@ class SuratPengantarApprovalInputTrip extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusapproval')->nullable();
+            $table->string('statusapprovalnama')->nullable();
         });
 
         $statusapproval = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id','text'
             )
             ->where('grp', '=', 'STATUS APPROVAL')
             ->where('subgrp', '=', 'STATUS APPROVAL')
             ->where('text', '=', 'APPROVAL')
             ->first();
 
-        DB::table($tempdefault)->insert(["statusapproval" => $statusapproval->id]);
+        DB::table($tempdefault)->insert(["statusapproval" => $statusapproval->id,"statusapprovalnama" => $statusapproval->text]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
+                'statusapprovalnama',
                 'statusapproval'
             );
 
@@ -183,9 +185,11 @@ class SuratPengantarApprovalInputTrip extends MyModel
                 'a.tglbukti',
                 'a.jumlahtrip',
                 'a.statusapproval',
+                'parameter.text as statusapprovalnama',
                 'a.user_id',
                 DB::raw("[user].[name] as [user]")
             )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'a.statusapproval', 'parameter.id')
             ->leftJoin(DB::raw("[user] with (readuncommitted)"), 'a.user_id', 'user.id')
             ->where('a.id', $id)
             ->first();
