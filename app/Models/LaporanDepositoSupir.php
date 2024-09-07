@@ -339,7 +339,7 @@ class LaporanDepositoSupir extends MyModel
             DB::raw($tempsaldo . " as a")
         )
             ->select(
-                db::raw("1000 as iddeposito"),
+                db::raw("'999' as iddeposito"),
                 'a.supir_id',
                 'a.namasupir',
                 'a.saldo',
