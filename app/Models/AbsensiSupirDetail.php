@@ -264,9 +264,9 @@ class AbsensiSupirDetail extends MyModel
                 $ricSupirQuery = DB::table('gajisupirheader')
                     ->leftJoin('gajisupirdetail', 'gajisupirheader.id', '=', 'gajisupirdetail.gajisupir_id')
                     ->leftJoin('suratpengantar', 'gajisupirdetail.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
-                    ->select('gajisupirheader.nobukti','gajisupirheader.supir_id', 'suratpengantar.tglbukti')
+                    ->select(DB::raw("min(gajisupirheader.nobukti) as nobukti"),'gajisupirheader.supir_id', 'suratpengantar.tglbukti')
                     ->where('suratpengantar.tglbukti', $header->tglbukti)
-                    ->groupBy('gajisupirheader.nobukti','gajisupirheader.supir_id', 'suratpengantar.tglbukti');
+                    ->groupBy('gajisupirheader.supir_id', 'suratpengantar.tglbukti');
                 DB::table($ricsupirtemp)->insertUsing(["nobukti","supir_id", "tgltrip"], $ricSupirQuery);               
                 
 
@@ -1154,7 +1154,7 @@ class AbsensiSupirDetail extends MyModel
             ->groupby('a.supir_id');
 
         DB::table($tempric)->insertUsing(['nobukti', 'supir_id', 'gajisupir_nobukti'], $queryric);
-
+        $tglbatas = (new AbsensiSupirHeader)->getTomorrowDate($date);
         // dd(db::table($tempdatahasil)->get());
         $query = db::table($tempdata)->from(db::raw($tempdata . " a"))
             ->select(
@@ -1181,14 +1181,14 @@ class AbsensiSupirDetail extends MyModel
                 'supirric.tgltrip as tgltrip',
                 DB::RAW("isnull(a.uangjalan,0) as uangjalan"),
                 db::raw("format(cast(isnull(b.tglbatas,
-                    (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '" .  date('Y-m-d', strtotime($date)) . " " . $batasJamEdit->text . "'  else    format(a.tglbukti,'yyyy/MM/dd')+' " . $batasJamEdit->text . "' end)
+                    (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '" .  date('Y-m-d', strtotime($tglbatas)) . " " . $batasJamEdit->text . "'  else   ' " . date('Y-m-d', strtotime($tglbatas)) . " " . $batasJamEdit->text . "' end)
                     ) as datetime),'dd-MM-yyyy HH:mm:ss') as tglbatas"),
                 db::raw("(case when cast(format(cast(isnull(b.tglbatas,
-                    (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '" .  date('Y-m-d', strtotime($date)) . " " . $batasJamEdit->text . "' else    format(a.tglbukti,'yyyy/MM/dd')+' " . $batasJamEdit->text . "' end)
+                    (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '" .  date('Y-m-d', strtotime($tglbatas)) . " " . $batasJamEdit->text . "' else   ' " . date('Y-m-d', strtotime($tglbatas)) . " " . $batasJamEdit->text . "' end)
                     ) as datetime),'yyyy/MM/dd HH:mm:ss') as datetime)>=getdate() then 1 else 0 end) 
                     as berlaku"),
                 db::raw("(case when cast(format(cast(isnull(b.tglbatas,
-                    (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '" .  date('Y-m-d', strtotime($date)) . " " . $batasJamEdit->text . "' else    format(a.tglbukti,'yyyy/MM/dd')+' " . $batasJamEdit->text . "' end)
+                    (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '" .  date('Y-m-d', strtotime($tglbatas)) . " " . $batasJamEdit->text . "' else   ' " . date('Y-m-d', strtotime($tglbatas)) . " " . $batasJamEdit->text . "' end)
                     ) as datetime),'yyyy/MM/dd HH:mm:ss') as datetime)>=getdate() then 1 else 0 end) 
                     as berlaku"),
                 db::raw("(CASE WHEN a.absen_id IN (SELECT text FROM " . $tempidabsen . ") or isnull(d.supir_id,0)<>0 THEN 'readonly' ELSE '' END) AS uangjalan_readonly"),
