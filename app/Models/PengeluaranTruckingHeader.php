@@ -2817,7 +2817,7 @@ class PengeluaranTruckingHeader extends MyModel
                         } else {
                             $nonEmptyArray = array_filter($data['keterangan']);
                             $nonEmptyArray = array_values($nonEmptyArray);
-                            $keterangan_detail[] = "$fetchFormat->keterangan periode " . $data['periode'] . " $pengeluaranTruckingHeader->nobukti";
+                            $keterangan_detail[] = $nonEmptyArray[0] ?? "$fetchFormat->keterangan periode " . $data['periode'] . " $pengeluaranTruckingHeader->nobukti";
                         }
                     } else {
                         if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'TDEK') {
