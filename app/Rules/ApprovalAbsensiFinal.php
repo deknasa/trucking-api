@@ -163,7 +163,7 @@ class ApprovalAbsensiFinal implements Rule
         // dd($tglabsensi1);
         if ($a >= 1) {
             $allowed = false;
-            $keteranganerror = $error->cekKeteranganError('BAP') ?? '';
+            $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
             $this->keterror = 'Tgl Absensi <b>' . $tglabsensi1 . '</b><br>' . $keteranganerror . ' FINAL ABSENSI <br> ' . $keterangantambahanerror;
 
         }
