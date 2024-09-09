@@ -134,7 +134,7 @@ class GajiSupirDetail extends MyModel
                 ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"), 'sp.sampai_id', 'sampai.id')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'sp.container_id', 'container.id')
                 ->leftJoin(DB::raw("agen with (readuncommitted)"), 'sp.agen_id', 'agen.id')
-                ->where('gajisupirdetail.suratpengantar_nobukti', '!=', '-')
+                ->where('gajisupirdetail.gajisupir', '!=', 0)
                 ->where('gajisupirdetail.gajisupir_id', '=', request()->gajisupir_id)
                 ->orderBy('gajisupirdetail.id');
                 
