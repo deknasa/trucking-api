@@ -7,6 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistAgen;
 use App\Rules\ExistJenisOrder;
+use App\Rules\ValidasiBiayaExtraInvoice;
 use App\Rules\ValidasiContSPInvoice;
 use App\Rules\ValidasiDetail;
 use App\Rules\ValidasiHutangList;
@@ -82,7 +83,8 @@ class StoreInvoiceHeaderRequest extends FormRequest
                     new ValidasiDetail($jumlahdetail),
                     new validasiTripInvoice(),
                     new ValidasiContSPInvoice(),
-                    new ValidasiTambahanInvoice()
+                    new ValidasiTambahanInvoice(),
+                    new ValidasiBiayaExtraInvoice()
                 ]
             ];
         } else if ($agen_id != null) {
