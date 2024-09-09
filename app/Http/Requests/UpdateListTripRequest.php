@@ -433,7 +433,7 @@ class UpdateListTripRequest extends FormRequest
             $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
             if ($trip->statuscontainer_id != 3) {
                 if ($trip->jobtrucking != '') {
-                    if ($trip->dari_id == 1 || $trip->dari_id == $idkandang) {
+                    if ($trip->dari_id != 1) {
                         $cekjobtrucking = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $trip->jobtrucking)->where('id', '<>', request()->id)->first();
                         if ($cekjobtrucking != '') {
                             $idUpahSupir = $trip->upah_id;

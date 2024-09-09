@@ -774,6 +774,15 @@ class ListTrip extends MyModel
                 goto trip;
             }
         }
+        if ($cekkota == $pelabuhan) {
+            if ($data['dari_id'] == $trip->dari_id) {
+                $agen_id = $data['agen_id'];
+                $pelanggan_id = $data['pelanggan_id'];
+                $jenisorder_id = $data['jenisorder_id'];
+                $container_id = $data['container_id'];
+                DB::update(DB::raw("UPDATE SURATPENGANTAR SET nocont='$trip->nocont',nocont2='$trip->nocont2',noseal='$trip->noseal',noseal2='$trip->noseal2', agen_id='$agen_id', pelanggan_id='$pelanggan_id',container_id='$container_id',jenisorder_id='$jenisorder_id' where jobtrucking='$trip->jobtrucking'"));
+            }
+        }
 
         if ($data['jobtrucking'] == '') {
 
