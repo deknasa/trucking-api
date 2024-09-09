@@ -93,6 +93,7 @@ class LaporanRitasiTrado extends MyModel
             'A.id',
             'A.kodetrado'
         ])
+        ->where('A.statusabsensisupir', '=', 439)
         ->where('A.statusaktif', '=', 1);
 
         DB::table($TempTRado)->insertUsing([
@@ -186,15 +187,20 @@ class LaporanRitasiTrado extends MyModel
            $table->string('jumlah',10);
         
        });
-       
+    //    (CASE WHEN ISNULL(d.kodeabsen,'')='' THEN 'L' ELSE d.kodeabsen END) 
        $select_Temprekap = DB::table('Temprekap')->from(DB::raw($tempTgltrado . " AS a"))
        ->select([
         'f.kodetrado AS nopol',
         'A.tgl',
-        DB::raw("CASE 
+        DB::raw("(CASE WHEN (CASE 
             WHEN ISNULL(C.trado_id, 0) = 0 THEN FORMAT(ISNULL(B.jumlah, 0), '#')
             ELSE d.kodeabsen 
-        END jumlah"),
+        END) = '' THEN 'L' ELSE
+        (CASE 
+            WHEN ISNULL(C.trado_id, 0) = 0 THEN FORMAT(ISNULL(B.jumlah, 0), '#')
+            ELSE d.kodeabsen 
+        END)
+          END) as jumlah"),
        ])
        ->leftJoin(DB::raw($Jumlahtriptrado . " AS b"), function ($join) {
         $join->on('A.trado_id', '=', 'B.trado_id')
