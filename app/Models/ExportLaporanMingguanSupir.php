@@ -1139,7 +1139,6 @@ class ExportLaporanMingguanSupir extends Model
                 ->orderBy('a.tglbukti')
                 ->orderBy('a.namasupir')
                 ->orderby('a.nobukti', 'asc')
-                ->where('a.nobukti', 'TRP 0067/VIII/2024')
                 ->get();
         } else {
 
