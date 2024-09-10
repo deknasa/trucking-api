@@ -43,10 +43,11 @@ class ExportLaporanMingguanSupirController extends Controller
 
         $exportlaporanmingguan = new ExportLaporanMingguanSupir();
         $export_laporanmingguan = $exportlaporanmingguan->getExport($dari, $sampai, $tradodari, $tradosampai,$jenislaporan);
-
+        // dd($export_laporanmingguan);
         foreach ($export_laporanmingguan as $data) {
             $data->tglbukti = date('d-m-Y', strtotime($data->tglbukti));
         }
+        // dd('test');
 
         // return response([
         //     'data' => $export_laporanmingguan,
@@ -824,6 +825,7 @@ class ExportLaporanMingguanSupirController extends Controller
     public function export4($data, $dari, $sampai, $tradodari_id, $tradosampai_id, $tradodari, $tradosampai)
     {
         //PRINT TO EXCEL
+        // dd('test');
         $spreadsheet = new Spreadsheet();
         $spreadsheet->getDefaultStyle()->getFont()->setSize(11);
         $sheet = $spreadsheet->getActiveSheet();
