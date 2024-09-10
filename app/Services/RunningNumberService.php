@@ -65,8 +65,11 @@ class RunningNumberService
                         $queryCheckprev = DB::table($table)->where('nobukti', $nobukticek)
                             ->where(DB::raw('month(tglbukti)'), '=', $bulan)
                             ->where(DB::raw('year(tglbukti)'), '=', $tahun)
-                            ->where('tglbukti', $tgl)
-                            ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+                            ->whereRaw("tglbukti <= '$tgl'")
+                            ->where(DB::raw('statusformat'), '=', $statusformat)
+                            ->orderby('tglbukti','desc')
+                            ->orderby('nobukti','desc')
+                            ->first();
                         if (isset($queryCheckprev)) {
                             $lastRow = $a;
                             $a = $b;
@@ -103,8 +106,11 @@ class RunningNumberService
 
                         $queryCheckprev = DB::table($table)->where('nobukti', $nobukticek)
                             ->where(DB::raw('year(tglbukti)'), '=', $tahun)
-                            ->where('tglbukti', $tgl)
-                            ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+                            ->whereRaw("tglbukti <= '$tgl'")
+                            ->where(DB::raw('statusformat'), '=', $statusformat)
+                            ->orderby('tglbukti','desc')
+                            ->orderby('nobukti','desc')
+                            ->first();
                         if (isset($queryCheckprev)) {
                             $lastRow = $a;
                             $a = $b;
@@ -126,6 +132,7 @@ class RunningNumberService
         // ->where('a.nobukti')
 
         // dd($tgl);
+
         $runningNumber = (new App)->runningNumber($text, $lastRow, $bulan, $tgl, $table);
         // dd($runningNumber);
         // $nilai = 0;
