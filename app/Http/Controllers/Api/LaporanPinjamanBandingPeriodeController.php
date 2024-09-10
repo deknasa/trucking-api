@@ -37,9 +37,8 @@ class LaporanPinjamanBandingPeriodeController extends Controller
     {
         $periode = $request->periode;
         $jenis = $request->jenis;
-        $prosesneraca = 0;
 
-        $report = LaporanPinjamanBandingPeriode::getReport($periode, $jenis, $prosesneraca);
+        $report = LaporanPinjamanBandingPeriode::getReport($periode, $jenis);
         $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
             ->select('cabang.namacabang')
             ->join("parameter", 'parameter.text', 'cabang.id')
@@ -69,8 +68,7 @@ class LaporanPinjamanBandingPeriodeController extends Controller
     {
         $periode = $request->periode;
         $jenis = $request->jenis;
-        $prosesneraca = 0;
-        $export = LaporanPinjamanBandingPeriode::getReport($periode, $jenis, $prosesneraca);
+        $export = LaporanPinjamanBandingPeriode::getReport($periode, $jenis);
 
         foreach ($export as $data) {
             $data->tanggal = date('d-m-Y', strtotime($data->tanggal));
@@ -99,11 +97,11 @@ class LaporanPinjamanBandingPeriodeController extends Controller
         $sheet->setCellValue('A1', $data[0]->judul ?? '');
         $sheet->getStyle("A1")->getFont()->setSize(11)->setBold(true);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
-        $sheet->mergeCells('A1:G1');
+        $sheet->mergeCells('A1:E1');
         $sheet->setCellValue('A2', $namacabang ?? '');
         $sheet->getStyle("A2")->getFont()->setSize(11)->setBold(true);
         $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
-        $sheet->mergeCells('A2:G2');
+        $sheet->mergeCells('A2:E2');
         $sheet->setCellValue('A3',  $data[0]->judulLaporan ?? '');
         $sheet->mergeCells('A3:B3');
         $sheet->setCellValue('A4', 'Periode: ' . date('d-M-Y', strtotime($request->periode)));
@@ -150,36 +148,26 @@ class LaporanPinjamanBandingPeriodeController extends Controller
                 'index' => 'nobukti',
             ],
             [
-                'label' => 'Nama Supir',
-                'index' => 'namasupir',
+                'label' => 'Nama Supir / Karyawan',
+                'index' => 'namasupirkaryawan',
             ],
             [
                 'label' => 'Keterangan',
                 'index' => 'keterangan',
             ],
             [
-                'label' => 'Debet',
-                'index' => 'debet',
-            ],
-            [
-                'label' => 'Kredit',
-                'index' => 'kredit',
-            ],
-            [
-                'label' => 'Saldo',
-                'index' => 'Saldo',
+                'label' => 'Nominal',
+                'index' => 'nominal',
             ],
         ];
 
         foreach ($header_columns as $detail_columns_index => $detail_column) {
             $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
         }
-        $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->applyFromArray($styleArray)->getFont()->setBold(true);
+        $sheet->getStyle("A$detail_table_header_row:E$detail_table_header_row")->applyFromArray($styleArray)->getFont()->setBold(true);
 
         // LOOPING DETAIL
-        $totalDebet = 0;
-        $totalKredit = 0;
-        $totalSaldo = 0;
+        $totalNominal = 0;
         $dataRow = $detail_table_header_row + 1;
         $previousRow = $dataRow - 1; // Initialize the previous row number
         foreach ($data as $response_index => $response_detail) {
@@ -193,20 +181,12 @@ class LaporanPinjamanBandingPeriodeController extends Controller
                 ->getNumberFormat()
                 ->setFormatCode('dd-mm-yyyy');
             $sheet->setCellValue("B$detail_start_row", $response_detail->nobukti);
-            $sheet->setCellValue("C$detail_start_row", $response_detail->namasupir);
+            $sheet->setCellValue("C$detail_start_row", $response_detail->namasupirkaryawan);
             $sheet->setCellValue("D$detail_start_row", $response_detail->keterangan);
-            $sheet->setCellValue("E$detail_start_row", $response_detail->debet);
-            $sheet->setCellValue("F$detail_start_row", $response_detail->kredit);
+            $sheet->setCellValue("E$detail_start_row", $response_detail->nominal);
 
-            if ($detail_start_row == 7) {
-                $sheet->setCellValue('G' . $detail_start_row, $response_detail->Saldo);
-            } else {
-                if ($dataRow > $detail_table_header_row + 1) {
-                    $sheet->setCellValue('G' . $dataRow, '=(G' . $previousRow . '+E' . $dataRow . ')-F' . $dataRow);
-                }
-            }
-            $sheet->getStyle("A$detail_start_row:G$detail_start_row")->applyFromArray($styleArray);
-            $sheet->getStyle("E$detail_start_row:G$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00");
+            $sheet->getStyle("A$detail_start_row:E$detail_start_row")->applyFromArray($styleArray);
+            $sheet->getStyle("E$detail_start_row:E$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00");
             $sheet->getStyle("A$detail_start_row:A$detail_start_row")->getNumberFormat()->setFormatCode('dd-mm-yyyy');
 
             // $sheet->getStyle("D$detail_start_row")->getAlignment()->setWrapText(true);
@@ -214,9 +194,7 @@ class LaporanPinjamanBandingPeriodeController extends Controller
             $previousRow = $dataRow; // Update the previous row number
 
             $dataRow++;
-            $totalKredit += $response_detail->kredit;
-            $totalDebet += $response_detail->debet;
-            $totalSaldo += $response_detail->Saldo;
+            $totalNominal += $response_detail->nominal;
             $detail_start_row++;
         }
         //total
@@ -224,37 +202,28 @@ class LaporanPinjamanBandingPeriodeController extends Controller
         $sheet->mergeCells('A' . $total_start_row . ':D' . $total_start_row);
         $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':D' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
 
-        $totalDebet = "=SUM(E7:E" . ($detail_start_row - 1) . ")";
-        $sheet->setCellValue("E$total_start_row", $totalDebet)->getStyle("E$total_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
-        $sheet->setCellValue("E$total_start_row", $totalDebet)->getStyle("E$total_start_row")->getNumberFormat()->setFormatCode("#,##0.00");
+        $totalNominal = "=SUM(E7:E" . ($detail_start_row - 1) . ")";
+        $sheet->setCellValue("E$total_start_row", $totalNominal)->getStyle("E$total_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+        $sheet->setCellValue("E$total_start_row", $totalNominal)->getStyle("E$total_start_row")->getNumberFormat()->setFormatCode("#,##0.00");
 
-        $totalKredit = "=SUM(F7:F" . ($detail_start_row - 1) . ")";
-        $sheet->setCellValue("F$total_start_row", $totalKredit)->getStyle("F$total_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
-        $sheet->setCellValue("F$total_start_row", $totalKredit)->getStyle("F$total_start_row")->getNumberFormat()->setFormatCode("#,##0.00");
-
-        $totalSaldo = "=E" . $total_start_row . "-F" . $total_start_row;
-        $sheet->setCellValue("G$total_start_row", $totalSaldo)->getStyle("G$total_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
-        $sheet->setCellValue("G$total_start_row", $totalSaldo)->getStyle("G$total_start_row")->getNumberFormat()->setFormatCode("#,##0.00");
 
         $ttd_start_row = $detail_start_row + 2;
         $sheet->setCellValue("A$ttd_start_row", 'Disetujui Oleh,');
-        $sheet->setCellValue("D$ttd_start_row", 'Diperiksa Oleh,');
-        $sheet->setCellValue("G$ttd_start_row", 'Disusun Oleh,');
+        $sheet->setCellValue("C$ttd_start_row", 'Diperiksa Oleh,');
+        $sheet->setCellValue("E$ttd_start_row", 'Disusun Oleh,');
 
         $sheet->setCellValue("A" . ($ttd_start_row + 3), '( ' . $disetujui . ' )');
-        $sheet->setCellValue("D" . ($ttd_start_row + 3), '( ' . $diperiksa . ' )');
-        $sheet->setCellValue("G" . ($ttd_start_row + 3), '(                )');
+        $sheet->setCellValue("C" . ($ttd_start_row + 3), '( ' . $diperiksa . ' )');
+        $sheet->setCellValue("E" . ($ttd_start_row + 3), '(                )');
 
         $sheet->getColumnDimension('A')->setAutoSize(true);
         $sheet->getColumnDimension('B')->setAutoSize(true);
         $sheet->getColumnDimension('C')->setAutoSize(true);
         $sheet->getColumnDimension('D')->setWidth(72);
         $sheet->getColumnDimension('E')->setAutoSize(true);
-        $sheet->getColumnDimension('F')->setAutoSize(true);
-        $sheet->getColumnDimension('G')->setAutoSize(true);
 
         $writer = new Xlsx($spreadsheet);
-        $filename = 'LAPORAN KETERANGAN PINJAMAN SUPIR' . date('dmYHis');
+        $filename = 'LAPORAN PINJAMAN BANDING PERIODE' . date('dmYHis');
         header('Content-Type: application/vnd.ms-excel');
         header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
         header('Cache-Control: max-age=0');
