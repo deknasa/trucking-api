@@ -39,6 +39,8 @@ class InvoiceExtraHeader extends MyModel
             ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoiceextraheader.statuscetak', 'cetak.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'invoiceextraheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("piutangheader as piutang with (readuncommitted)"), 'invoiceextraheader.piutang_nobukti', '=', 'piutang.nobukti')
+            ->leftJoin(DB::raw("pelunasanpiutangdetail as pelunasanpiutang with (readuncommitted)"), 'invoiceextraheader.piutang_nobukti', '=', 'pelunasanpiutang.piutang_nobukti')
+            ->leftJoin(DB::raw("pelunasanpiutangheader as pelunasanpiutangheader with (readuncommitted)"), 'pelunasanpiutangheader.nobukti', '=', 'pelunasanpiutang.nobukti')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceextraheader.agen_id', 'agen.id');
 
         if (request()->tgldari && request()->tglsampai) {
@@ -134,6 +136,7 @@ class InvoiceExtraHeader extends MyModel
             $table->string('agen')->nullable();
             $table->double('nominal')->nullable();
             $table->string('piutang_nobukti')->nullable();
+            $table->string('pelunasanpiutang_nobukti')->nullable();
             $table->string('statusapproval')->nullable();
             $table->string('userapproval', 50)->nullable();
             $table->dateTime('tglapproval')->nullable();
@@ -158,6 +161,7 @@ class InvoiceExtraHeader extends MyModel
                 "agen.namaagen as  agen",
                 "$this->table.nominal",
                 "$this->table.piutang_nobukti",
+                'pelunasanpiutang.nobukti as pelunasan_nobukti',
                 'parameter.text as statusapproval',
                 "$this->table.userapproval",
                 DB::raw('(case when (year(invoiceextraheader.tglapproval) <= 2000) then null else invoiceextraheader.tglapproval end ) as tglapproval'),
@@ -169,6 +173,8 @@ class InvoiceExtraHeader extends MyModel
                 "$this->table.updated_at"
             ) ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoiceextraheader.statusapproval', 'parameter.id')
             ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoiceextraheader.statuscetak', 'cetak.id')
+            ->leftJoin(DB::raw("pelunasanpiutangdetail as pelunasanpiutang with (readuncommitted)"), 'invoiceextraheader.piutang_nobukti', '=', 'pelunasanpiutang.piutang_nobukti')
+            ->leftJoin(DB::raw("pelunasanpiutangheader as pelunasanpiutangheader with (readuncommitted)"), 'pelunasanpiutangheader.nobukti', '=', 'pelunasanpiutang.nobukti')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceextraheader.agen_id', 'agen.id');
 
         if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
@@ -187,6 +193,7 @@ class InvoiceExtraHeader extends MyModel
             'agen',
             'nominal',
             'piutang_nobukti',
+            'pelunasanpiutang_nobukti',
             'statusapproval',
             'userapproval',
             'tglapproval',
@@ -215,6 +222,7 @@ class InvoiceExtraHeader extends MyModel
                 "$this->table.agen_id",
                 "$this->table.nominal",
                 "$this->table.piutang_nobukti",
+                'pelunasanpiutang.nobukti as pelunasan_nobukti',
                 'parameter.memo as statusapproval',
                 "$this->table.userapproval",
                 DB::raw('(case when (year(invoiceextraheader.tglapproval) <= 2000) then null else invoiceextraheader.tglapproval end ) as tglapproval'),
@@ -229,6 +237,9 @@ class InvoiceExtraHeader extends MyModel
                 "agen.namaagen as  agen",
                 db::raw("cast((format(piutang.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpiutangheader"),
                 db::raw("cast(cast(format((cast((format(piutang.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpiutangheader"),
+                db::raw("cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpelunasanpiutangheader"),
+                db::raw("cast(cast(format((cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpelunasanpiutangheader"),
+
             );
     }
 
@@ -236,6 +247,8 @@ class InvoiceExtraHeader extends MyModel
     {
         if ($this->params['sortIndex'] == 'agen') {
             return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'pelunasan_nobukti') {
+            return $query->orderBy('pelunasanpiutang.nobukti', $this->params['sortOrder']);
         } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
@@ -254,6 +267,8 @@ class InvoiceExtraHeader extends MyModel
                                 $query = $query->where('cetak.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'agen') {
                                 $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'pelunasan_nobukti') {
+                                $query = $query->where('pelunasanpiutang.nobukti', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tgljatuhtempo') {
@@ -277,6 +292,8 @@ class InvoiceExtraHeader extends MyModel
                                     $query = $query->orWhere('cetak.text', '=', $filters['data']);
                                 } else if ($filters['field'] == 'agen') {
                                     $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'pelunasan_nobukti') {
+                                    $query = $query->orwhere('pelunasanpiutang.nobukti', 'LIKE', "%$filters[data]%");   
                                 } else if ($filters['field'] == 'nominal') {
                                     $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tgljatuhtempo') {
