@@ -21,8 +21,10 @@ class CreateJobemklTable extends Migration
             $table->unsignedBigInteger('tujuan_id')->nullable();
             $table->unsignedBigInteger('container_id')->nullable();
             $table->unsignedBigInteger('jenisorder_id')->nullable();
+            $table->unsignedBigInteger('marketing_id')->nullable();
             $table->longtext('kapal')->nullable();
             $table->longtext('destination')->nullable();
+            $table->longtext('lokasibongkarmuat')->nullable();
             $table->string('nocont',50)->nullable();
             $table->string('noseal',50)->nullable();
             $table->integer('statusapprovaledit')->Length(11)->nullable();
@@ -40,6 +42,7 @@ class CreateJobemklTable extends Migration
             $table->foreign('tujuan_id', 'jobemkl_tujuan_tujuan_id_foreign')->references('id')->on('tujuan');
             $table->foreign('jenisorder_id', 'jobemkl_jenisorder_jenisorder_id_foreign')->references('id')->on('jenisorder');
             $table->foreign('shipper_id', 'jobemkl_pelanggan_pelanggan_id_foreign')->references('id')->on('pelanggan');
+            $table->foreign('marketing_id', 'jobemkl_marketing_marketing_id_foreign')->references('id')->on('marketing');
         });
     }
 
