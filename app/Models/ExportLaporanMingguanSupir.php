@@ -1007,7 +1007,6 @@ class ExportLaporanMingguanSupir extends Model
         if ($statusjenislaporan == $jenislaporan) {
 
 
-     
             $queryuangjalanrekap = db::table($tempuangjalan)->from(db::raw($tempuangjalan . " a"))
                 ->select(
                     'a.suratpengantar_nobukti',
@@ -1140,7 +1139,7 @@ class ExportLaporanMingguanSupir extends Model
                 ->orderBy('a.tglbukti')
                 ->orderBy('a.namasupir')
                 ->orderby('a.nobukti', 'asc')
-                // ->where('a.nobukti', 'TRP 0067/VIII/2024')
+                ->where('a.nobukti', 'TRP 0067/VIII/2024')
                 ->get();
         } else {
 
@@ -1259,10 +1258,7 @@ class ExportLaporanMingguanSupir extends Model
                 ->leftjoin(DB::raw($tempInvoice . " as b "), 'a.nobukti', 'b.notripawal')
                 ->leftjoin(DB::raw($tempInvoice . " as c "), 'a.jobtrucking', 'c.jobtrucking')
                 // ->leftjoin(DB::raw($tempuangjalanrekap . " as d "), db::raw("isnull(a.suratpengantarric,'')"), 'd.suratpengantar_nobukti')
-                ->leftJoin(DB::raw($tempuangjalanrekap . " as d "), function ($join)  use ($paramurutextra) {
-                    $join->on(db::raw("isnull(a.suratpengantarric,'')"), '=', 'd.suratpengantar_nobukti');
-                    $join->on('a.urutextra', '=', DB::raw($paramurutextra));
-                })
+
                 ->leftjoin(DB::raw($temptrip . " as e "), 'a.nobukti', 'e.nobukti')
                 ->leftjoin(DB::raw($tempuanglain . " as f "), 'a.nobukti', 'f.nobukti')
                 ->leftjoin(DB::raw($tempbuktikomisi . " as g "), 'a.nobukti', 'g.nobukti')
@@ -1271,14 +1267,34 @@ class ExportLaporanMingguanSupir extends Model
                 ->leftJoin(DB::raw($tempInvoicetambahanrekap . " as i "), function ($join)  use ($paramurutextra) {
                     $join->on('a.nobukti', '=', 'i.suratpengantar');
                     $join->on('a.urutextra', '=', DB::raw($paramurutextra));
+                });
+            // dd($cabang);
+            if ($cabang == 'MAKASSAR') {
+                $data=
+                $data->leftJoin(DB::raw($tempuangjalanrekap . " as d "), function ($join) {
+                    $join->on(db::raw("isnull(a.suratpengantarric,'')"), '=', 'd.suratpengantar_nobukti');
                 })
-                ->orderBy('a.nopol')
-                ->orderBy('a.tglbukti')
-                ->orderBy('a.namasupir')
-                ->orderby('a.nobukti', 'asc')
-                // ->where('a.nobukti', 'TRP 0067/VIII/2024')
-                ->get();
+                    ->orderBy('a.nopol')
+                    ->orderBy('a.tglbukti')
+                    ->orderBy('a.namasupir')
+                    ->orderby('a.nobukti', 'asc')
+                    ->get();
+            } else {
+                $data= $data->leftJoin(DB::raw($tempuangjalanrekap . " as d "), function ($join)  use ($paramurutextra) {
+                    $join->on(db::raw("isnull(a.suratpengantarric,'')"), '=', 'd.suratpengantar_nobukti');
+                    $join->on('a.urutextra', '=', DB::raw($paramurutextra));
+                })
+                    ->orderBy('a.nopol')
+                    ->orderBy('a.tglbukti')
+                    ->orderBy('a.namasupir')
+                    ->orderby('a.nobukti', 'asc')
+                    ->get();
+            }
         }
+
+
+
+
 
 
         // dd('test1');
