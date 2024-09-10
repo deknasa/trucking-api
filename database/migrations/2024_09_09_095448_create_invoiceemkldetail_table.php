@@ -18,19 +18,24 @@ class CreateInvoiceemkldetailTable extends Migration
 
         Schema::create('invoiceemkldetail', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('invoice_id')->nullable();
+            $table->unsignedBigInteger('invoiceemkl_id')->nullable();
             $table->string('nobukti', 50)->nullable();
             $table->string('jobemkl_nobukti', 50)->nullable();
+            $table->unsignedBigInteger('container_id')->nullable();
             $table->double('nominal', 15,2)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
 
             $table->foreign('invoiceemkl_id', 'invoiceemkldetail_invoiceemklheader_invoiceemkl_idforeign')->references('id')->on('invoiceemklheader')->onDelete('cascade');    
             $table->foreign('jobemkl_nobukti', 'invoiceemkldetail_jobemkl_jobemkl_nobukti_foreign')->references('nobukti')->on('jobemkl');
+            $table->foreign('container_id', 'invoiceemkldetail_container_container_id_foreign')->references('id')->on('container');
+
 
         });
 
         DB::statement("ALTER TABLE invoiceemkldetail NOCHECK CONSTRAINT invoiceemkldetail_jobemkl_jobemkl_nobukti_foreign");
+        DB::statement("ALTER TABLE invoiceemkldetail NOCHECK CONSTRAINT invoiceemkldetail_container_container_id_foreign");
+
 
     }
 
