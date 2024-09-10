@@ -42,6 +42,7 @@ class InvoiceHeader extends MyModel
                 'agen.namaagen as agen',
                 'jenisorder.keterangan as jenisorder_id',
                 'invoiceheader.piutang_nobukti',
+                'pelunasanpiutang.nobukti as pelunasan_nobukti',
                 'statusapproval.memo as statusapproval',
                 'statuscetak.memo as statuscetak',
                 'invoiceheader.userapproval',
@@ -54,8 +55,12 @@ class InvoiceHeader extends MyModel
                 'invoiceheader.updated_at',
                 db::raw("cast((format(piutang.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpiutangheader"),
                 db::raw("cast(cast(format((cast((format(piutang.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpiutangheader"),
+                db::raw("cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpelunasanpiutangheader"),
+                db::raw("cast(cast(format((cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpelunasanpiutangheader"),
             )
             ->leftJoin(DB::raw("piutangheader as piutang with (readuncommitted)"), 'invoiceheader.piutang_nobukti', '=', 'piutang.nobukti')
+            ->leftJoin(DB::raw("pelunasanpiutangdetail as pelunasanpiutang with (readuncommitted)"), 'invoiceheader.piutang_nobukti', '=', 'pelunasanpiutang.piutang_nobukti')
+            ->leftJoin(DB::raw("pelunasanpiutangheader as pelunasanpiutangheader with (readuncommitted)"), 'pelunasanpiutangheader.nobukti', '=', 'pelunasanpiutang.nobukti')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'invoiceheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'invoiceheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceheader.agen_id', 'agen.id')
@@ -178,6 +183,7 @@ class InvoiceHeader extends MyModel
                 'jenisorder.keterangan as jenisorder_id',
                 'cabang.namacabang as cabang_id',
                 $this->table.piutang_nobukti,
+                'pelunasanpiutang.nobukti as pelunasan_nobukti',
                 'statusapproval.text as statusapproval',
                 $this->table.userapproval,
                 $this->table.tglapproval,
@@ -193,6 +199,7 @@ class InvoiceHeader extends MyModel
             )
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'invoiceheader.jenisorder_id', 'jenisorder.id')
+            ->leftJoin(DB::raw("pelunasanpiutangdetail as pelunasanpiutang with (readuncommitted)"), 'invoiceheader.piutang_nobukti', '=', 'pelunasanpiutang.piutang_nobukti')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'invoiceheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'invoiceheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("cabang with (readuncommitted)"), 'invoiceheader.cabang_id', 'cabang.id');
@@ -212,6 +219,7 @@ class InvoiceHeader extends MyModel
             $table->string('jenisorder_id')->default();
             $table->string('cabang_id')->default();
             $table->string('piutang_nobukti')->default();
+            $table->string('pelunasanpiutang_nobukti')->default();
             $table->string('statusapproval')->nullable();
             $table->string('userapproval')->default();
             $table->date('tglapproval')->nullable();
@@ -236,7 +244,7 @@ class InvoiceHeader extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'nominal', 'tglterima', 'tgljatuhtempo', 'agen_id', 'jenisorder_id', 'cabang_id', 'piutang_nobukti', 'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'nominal', 'tglterima', 'tgljatuhtempo', 'agen_id', 'jenisorder_id', 'cabang_id', 'piutang_nobukti','pelunasanpiutang_nobukti', 'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -1126,7 +1134,7 @@ class InvoiceHeader extends MyModel
                 'agen.namaagen as agen_id',
                 DB::raw("(case when sp.statuslongtrip=" . $statuslongtrip->id . " then 'true' else 'false' end) as statuslongtrip"),
                 DB::raw("(case when sp.statusperalihan=" . $statusperalihan->id . " then 'true' else 'false' end) as statusperalihan"),
-                'sp.nocont as nocont',
+                db::raw("sp.nocont +(case when isnull(sp.nocont2,'')='' then '' else ','+isnull(sp.nocont2,'') end)  as nocont"),
                 DB::raw("
                 (CASE WHEN sp.statusjeniskendaraan=645 then
                 isnull(tarif.tujuan,'')+(case when isnull(sp.penyesuaian,'')='' then '' else ' ( '+isnull(sp.penyesuaian,'')+' ) '  end)
@@ -1918,6 +1926,8 @@ class InvoiceHeader extends MyModel
             return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'jenisorder_id') {
             return $query->orderBy('jenisorder.keterangan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'pelunasan_nobukti') {
+            return $query->orderBy('pelunasanpiutang.nobukti', $this->params['sortOrder']);
         } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
@@ -1938,6 +1948,8 @@ class InvoiceHeader extends MyModel
                                 $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'jenisorder_id') {
                                 $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'pelunasan_nobukti') {
+                                $query = $query->where('pelunasanpiutang.nobukti', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgljatuhtempo' || $filters['field'] == 'tglterima' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapproval') {
@@ -1964,6 +1976,8 @@ class InvoiceHeader extends MyModel
                                     $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'jenisorder_id') {
                                     $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'pelunasan_nobukti') {
+                                    $query = $query->orwhere('pelunasanpiutang.nobukti', 'LIKE', "%$filters[data]%");   
                                 } else if ($filters['field'] == 'nominal') {
                                     $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgljatuhtempo' || $filters['field'] == 'tglterima' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapproval') {
