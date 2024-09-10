@@ -7,10 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class LaporanPinjamanBandingPeriode extends Model
+class LaporanKalkulasiEmkl extends Model
 {
     use HasFactory;
-
     protected $table = '';
 
     protected $casts = [
@@ -24,7 +23,7 @@ class LaporanPinjamanBandingPeriode extends Model
         'updated_at',
     ];
 
-    public function getReport($periode, $jenis)
+    public function getReport($periode)
     {
         $periode = $periode ;
         $statusposting = $jenis;

@@ -308,6 +308,7 @@ use App\Http\Controllers\Api\LaporanHistorySupirMilikMandorController;
 use App\Http\Controllers\Api\LaporanHistoryTradoMilikMandorController;
 use App\Http\Controllers\Api\LaporanKeteranganPinjamanSupirController;
 use App\Http\Controllers\Api\LaporanPinjamanBandingPeriodeController;
+use App\Http\Controllers\Api\LaporanKalkulasiEmklController;
 use App\Http\Controllers\Api\LaporanMingguanSupirBedaMandorController;
 use App\Http\Controllers\Api\PencairanGiroPengeluaranDetailController;
 use App\Http\Controllers\Api\PencairanGiroPengeluaranHeaderController;
@@ -1774,6 +1775,9 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporanpinjamanbandingperiode/export', [LaporanPinjamanBandingPeriodeController::class, 'export'])->name('laporanpinjamanbandingperiode.export');
     Route::get('laporanpinjamanbandingperiode/report', [LaporanPinjamanBandingPeriodeController::class, 'report'])->name('laporanpinjamanbandingperiode.report');
     Route::resource('laporanpinjamanbandingperiode', LaporanPinjamanBandingPeriodeController::class);
+
+    Route::get('laporankalkulasiemkl/export', [LaporanKalkulasiEmklController::class, 'export'])->name('laporankalkulasiemkl.export');
+    Route::resource('laporankalkulasiemkl', LaporanKalkulasiEmklController::class);
 
     Route::get('laporankasharian/report', [LaporanKasHarianController::class, 'report'])->name('laporankasharian.report');
     Route::get('laporankasharian/export', [LaporanKasHarianController::class, 'export'])->name('laporankasharian.export');
