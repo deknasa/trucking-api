@@ -65,6 +65,7 @@ use App\Http\Controllers\Api\InputTripController;
 use App\Http\Controllers\Api\JenisEmklController;
 use App\Http\Controllers\Api\KartuStokController;
 use App\Http\Controllers\Api\KerusakanController;
+use App\Http\Controllers\Api\MarketingController;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ReportAllController;
 use App\Http\Controllers\Api\SpkHarianController;
@@ -86,26 +87,26 @@ use App\Http\Controllers\Api\ExpAsuransiController;
 use App\Http\Controllers\Api\HistoryTripController;
 use App\Http\Controllers\Api\JobTruckingController;
 use App\Http\Controllers\Api\LaporanStokController;
+
 use App\Http\Controllers\Api\OrderanEmklController;
-
 use App\Http\Controllers\Api\ReminderOliController;
+
 use App\Http\Controllers\Api\ReminderSpkController;
-
 use App\Http\Controllers\Api\SubKelompokController;
+
 use App\Http\Controllers\Api\TarifTangkiController;
-
 use App\Http\Controllers\Api\HutangDetailController;
+
 use App\Http\Controllers\Api\HutangHeaderController;
-
 use App\Http\Controllers\Api\OpnameDetailController;
+
 use App\Http\Controllers\Api\OpnameHeaderController;
-
 use App\Http\Controllers\Api\ReminderStokController;
+
 use App\Http\Controllers\Api\ReportNeracaController;
-
 use App\Http\Controllers\Api\SaldoUmurAkiController;
-use App\Http\Controllers\Api\TarifRincianController;
 
+use App\Http\Controllers\Api\TarifRincianController;
 use App\Http\Controllers\Api\UbahPasswordController;
 use App\Http\Controllers\CustomValidationController;
 use App\Http\Controllers\LaporanKasHarianController;
@@ -209,6 +210,7 @@ use App\Http\Controllers\Api\LaporanPemakaianBanController;
 use App\Http\Controllers\Api\PengeluaranTruckingController;
 use App\Http\Controllers\Api\LaporanArusDanaPusatController;
 use App\Http\Controllers\Api\LaporanDepositoSupirController;
+use App\Http\Controllers\Api\LaporanKalkulasiEmklController;
 use App\Http\Controllers\Api\LaporanKlaimPJTSupirController;
 use App\Http\Controllers\Api\LaporanMingguanSupirController;
 use App\Http\Controllers\Api\LaporanMutasiKasBankController;
@@ -221,6 +223,7 @@ use App\Http\Controllers\Api\PenerimaanGiroHeaderController;
 use App\Http\Controllers\Api\PenerimaanStokDetailController;
 use App\Http\Controllers\Api\PenerimaanStokHeaderController;
 use App\Http\Controllers\Api\SaldoAkunPusatDetailController;
+use App\Http\Controllers\Api\StatusGandenganTradoController;
 use App\Http\Controllers\Api\StatusGandenganTruckController;
 use App\Http\Controllers\Api\StatusOliTradoDetailController;
 use App\Http\Controllers\Api\TradoTambahanAbsensiController;
@@ -304,11 +307,10 @@ use App\Http\Controllers\Api\LapKartuHutangPerVendorDetailController;
 use App\Http\Controllers\Api\LaporanHistoryTradoMilikSupirController;
 use App\Http\Controllers\Api\LaporanKartuHutangPerSupplierController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepoController;
+use App\Http\Controllers\Api\LaporanPinjamanBandingPeriodeController;
 use App\Http\Controllers\Api\LaporanHistorySupirMilikMandorController;
 use App\Http\Controllers\Api\LaporanHistoryTradoMilikMandorController;
 use App\Http\Controllers\Api\LaporanKeteranganPinjamanSupirController;
-use App\Http\Controllers\Api\LaporanPinjamanBandingPeriodeController;
-use App\Http\Controllers\Api\LaporanKalkulasiEmklController;
 use App\Http\Controllers\Api\LaporanMingguanSupirBedaMandorController;
 use App\Http\Controllers\Api\PencairanGiroPengeluaranDetailController;
 use App\Http\Controllers\Api\PencairanGiroPengeluaranHeaderController;
@@ -319,7 +321,6 @@ use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
-use App\Http\Controllers\Api\StatusGandenganTradoController;
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
@@ -450,6 +451,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('jenisemkl', JenisEmklController::class)->whereNumber('jenisemkl');
     Route::resource('jenistrado', JenisTradoController::class)->whereNumber('jenistrado');
     Route::resource('jobemkl', JobEmklController::class)->whereNumber('jobemkl');
+    Route::resource('marketing', MarketingController::class)->whereNumber('marketing');
     Route::resource('akunpusat', AkunPusatController::class)->parameters(['akunpusat' => 'akunPusat'])->whereNumber('akunPusat');
     Route::resource('mainakunpusat', MainAkunPusatController::class)->whereNumber('mainakunpusat');
     Route::resource('error', ErrorController::class)->whereNumber('error');
@@ -548,6 +550,10 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('jenistrado/approvalaktif', [JenisTradoController::class, 'approvalaktif']);
     Route::post('jobemkl/approvalnonaktif', [JobEmklController::class, 'approvalnonaktif']);
     Route::post('jobemkl/approvalaktif', [JobEmklController::class, 'approvalaktif']);
+
+    Route::post('marketing/approvalnonaktif', [MarketingController::class, 'approvalnonaktif']);
+    Route::post('marketing/approvalaktif', [MarketingController::class, 'approvalaktif']);
+
     Route::post('kerusakan/approvalnonaktif', [KerusakanController::class, 'approvalnonaktif']);
     Route::post('kerusakan/approvalaktif', [KerusakanController::class, 'approvalaktif']);
     Route::post('mandor/approvalnonaktif', [MandorController::class, 'approvalnonaktif']);
@@ -1107,6 +1113,14 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('jobemkl/{id}/cekValidasi', [JobEmklController::class, 'cekValidasi'])->name('jobemkl.cekValidasi')->whereNumber('id');
     Route::get('jobemkl/export', [JobEmklController::class, 'export']);
     Route::get('jobemkl/report', [JobEmklController::class, 'report']);
+    
+
+    Route::get('marketing/combo', [MarketingController::class, 'combo']);
+    Route::get('marketing/field_length', [MarketingController::class, 'fieldLength']);
+    Route::get('marketing/default', [MarketingController::class, 'default']);
+    Route::post('marketing/{id}/cekValidasi', [MarketingController::class, 'cekValidasi'])->name('marketing.cekValidasi')->whereNumber('id');
+    Route::get('marketing/export', [MarketingController::class, 'export']);
+    Route::get('marketing/report', [MarketingController::class, 'report']);
 
     Route::get('akunpusat/field_length', [AkunPusatController::class, 'fieldLength']);
     Route::get('akunpusat/default', [AkunPusatController::class, 'default']);
