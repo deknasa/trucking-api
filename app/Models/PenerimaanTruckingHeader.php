@@ -617,6 +617,96 @@ class PenerimaanTruckingHeader extends MyModel
         return $temp;
     }
 
+    public function createTempBbm($nobuktiebs, $tglbukti)
+    {
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+
+        $temppenerimaanbbm = '##temppenerimaanbbm' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppenerimaanbbm, function ($table) {
+            $table->string('nobuktiebs',50)->nullable();
+            $table->string('nobukti')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+        $temppengeluaranbbm = '##temppengeluaranbbm' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppengeluaranbbm, function ($table) {
+            $table->string('nobuktiebs',50)->nullable();
+            $table->string('nobukti')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+
+
+        $querypenerimaanbbm = db::table("penerimaantruckingheader")->from(db::raw("penerimaantruckingheader a with (readuncommitted)"))
+            ->select(
+                'c.nobukti as nobuktiebs',
+                'a.nobukti',
+                db::raw("sum(b.nominal) as nominal")
+            )
+            ->join(db::raw("penerimaantruckingdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(db::raw("gajisupirbbm d with (readuncommitted)"), 'a.nobukti', 'd.penerimaantrucking_nobukti')
+            ->join(db::raw("prosesgajisupirdetail c with (readuncommitted)"), 'd.gajisupir_nobukti', 'c.gajisupir_nobukti')
+            ->whereraw("a.penerimaantrucking_id=1")
+            ->where('c.nobukti', $nobuktiebs)
+            ->where('a.tglbukti', '<=', $tglbukti)
+            ->groupby('c.nobukti')
+            ->groupby('a.nobukti');
+
+
+        $querypengeluaranbbm = db::table("pengeluarantruckingheader")->from(db::raw("pengeluarantruckingheader a with (readuncommitted)"))
+            ->select(
+                'c.nobukti as nobuktiebs',
+                db::raw("b.penerimaantruckingheader_nobukti as nobukti"),
+                db::raw("sum(b.nominal) as nominal")
+            )
+            ->join(db::raw("pengeluarantruckingdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(db::raw("penerimaantruckingheader e with (readuncommitted)"), 'b.penerimaantruckingheader_nobukti', 'e.nobukti')
+            ->join(db::raw("gajisupirbbm d with (readuncommitted)"), 'e.nobukti', 'd.penerimaantrucking_nobukti')
+            ->join(db::raw("prosesgajisupirdetail c with (readuncommitted)"), 'd.gajisupir_nobukti', 'c.gajisupir_nobukti')
+            ->whereraw("a.pengeluarantrucking_id=5")
+            ->where('c.nobukti', $nobuktiebs)
+            ->groupby('c.nobukti')
+            ->groupby('b.penerimaantruckingheader_nobukti');
+
+        DB::table($temppenerimaanbbm)->insertUsing([
+            'nobuktiebs',
+            'nobukti',
+            'nominal'
+        ], $querypenerimaanbbm);
+
+        DB::table($temppengeluaranbbm)->insertUsing([
+            'nobuktiebs',
+            'nobukti',
+            'nominal'
+        ], $querypengeluaranbbm);
+
+        // dump(db::table($temppenerimaandeposito)->get());
+        // dd(db::table($temppengeluarandeposito)->get());
+
+        $fetch = db::table($temppenerimaanbbm)->from(db::raw($temppenerimaanbbm . " a"))
+            ->select(
+                'a.nobukti',
+                db::raw("(isnull(a.nominal,0)-isnull(b.nominal,0)) as sisa")
+
+            )
+            ->leftjoin(db::raw($temppengeluaranbbm . " b"), 'a.nobukti', 'b.nobukti')
+            ->whereRaw("(isnull(a.nominal,0)-isnull(b.nominal,0))<>0")
+            ->orderBy('a.nobukti', 'asc');
+
+
+        // dd($fetch->get());
+
+        Schema::create($temp, function ($table) {
+            $table->string('nobukti');
+            $table->double('sisa', 15, 2)->nullable();
+        });
+
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'sisa'], $fetch);
+
+
+        return $temp;
+    }
 
     public function getDepositoKaryawan($karyawan_id)
     {
@@ -724,7 +814,7 @@ class PenerimaanTruckingHeader extends MyModel
         return $temp;
     }
 
-    public function getPelunasan($tgldari, $tglsampai)
+    public function getPelunasanOld($tgldari, $tglsampai)
     {
         $tempPribadi = $this->createTempPelunasan($tgldari, $tglsampai);
 
@@ -744,7 +834,52 @@ class PenerimaanTruckingHeader extends MyModel
         return $query->get();
     }
 
-    public function createTempPelunasan($tgldari, $tglsampai)
+    public function getPelunasan($tgldari, $tglsampai)
+    {
+        $tempPribadi = $this->createTempPelunasan($tgldari, $tglsampai);
+
+        $parameter = new Parameter();
+        $cabang = $parameter->cekText('CABANG', 'CABANG') ?? '1900-01-01';
+
+        if ($cabang == 'MEDAN') {
+            // dd(db::table($tempPribadi)->get());
+            $query =  DB::table($tempPribadi)
+                ->from(DB::raw($tempPribadi . " a "))
+                ->select(
+                    DB::raw("row_number() Over(Order By a.nobukti) as id"),
+                    'a.tglbukti',
+                    'a.nobukti',
+                    'a.keterangan',
+                    'a.sisa'
+                )
+                ->orderBy('a.tglbukti', 'asc')
+                ->orderBy('a.nobukti', 'asc');
+        } else {
+            $query =  DB::table('penerimaantruckingheader')
+                ->from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                ->select(
+                    DB::raw("row_number() Over(Order By penerimaantruckingheader.nobukti) as id, 
+                penerimaantruckingheader.tglbukti, 
+                penerimaantruckingheader.nobukti, 
+                $tempPribadi.keterangan, 
+                $tempPribadi.sisa")
+                )
+                ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'penerimaantruckingheader.nobukti', "$tempPribadi.nobukti")
+                ->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
+                ->whereRaw("penerimaantruckingheader.nobukti = $tempPribadi.nobukti")
+                ->where(function ($query) use ($tempPribadi) {
+                    $query->whereRaw("$tempPribadi.sisa != 0")
+                        ->orWhereRaw("$tempPribadi.sisa is null");
+                })
+                ->orderBy('penerimaantruckingheader.tglbukti', 'asc')
+                ->orderBy('penerimaantruckingheader.nobukti', 'asc');
+        }
+
+
+        return $query->get();
+    }
+
+    public function createTempPelunasanOld($tgldari, $tglsampai)
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
@@ -762,6 +897,100 @@ class PenerimaanTruckingHeader extends MyModel
         });
 
         $tes = DB::table($temp)->insertUsing(['nobukti', 'keterangan', 'sisa'], $fetch);
+
+        return $temp;
+    }
+
+    public function createTempPelunasan($tgldari, $tglsampai)
+    {
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        $parameter = new Parameter();
+        $cabang = $parameter->cekText('CABANG', 'CABANG') ?? '1900-01-01';
+
+        if ($cabang == 'MEDAN') {
+
+            $temptgl = '##temptgl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+            Schema::create($temptgl, function ($table) {
+                $table->string('nobukti');
+                $table->longText('keterangan')->nullable();
+            });
+
+            $fetch1 = DB::table('penerimaantruckingdetail')
+            ->from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+            ->select(
+                DB::raw("prosesgajisupirdetail.nobukti, 
+                'Pelunasan Hutang BBM Supir Periode '+format(min(suratpengantar.tglbukti),'dd-MM-yyyy')+' s/d ' + format(max(suratpengantar.tglbukti),'dd-MM-yyyy') as keterangan" )
+            )
+            ->Join(db::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', '=', 'penerimaantruckingheader.nobukti')
+            ->Join(db::raw("gajisupirbbm with (readuncommitted)"), 'gajisupirbbm.penerimaantrucking_nobukti', '=', 'penerimaantruckingheader.nobukti')
+            ->Join(db::raw("prosesgajisupirdetail with (readuncommitted)"), 'prosesgajisupirdetail.gajisupir_nobukti', '=', 'gajisupirbbm.gajisupir_nobukti')
+            ->Join(db::raw("prosesgajisupirheader with (readuncommitted)"), 'prosesgajisupirheader.nobukti', '=', 'prosesgajisupirdetail.nobukti')
+            ->Join(db::raw("gajisupirdetail with (readuncommitted)"), 'gajisupirdetail.nobukti', '=', 'prosesgajisupirdetail.gajisupir_nobukti')
+            ->Join(db::raw("suratpengantar with (readuncommitted)"), 'suratpengantar.nobukti', '=', 'gajisupirdetail.suratpengantar_nobukti')
+            ->leftJoin(db::raw("pengeluarantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', '=', 'pengeluarantruckingdetail.penerimaantruckingheader_nobukti ')
+            ->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
+            ->where('penerimaantruckingheader.penerimaantrucking_id', '=', 1)
+            ->groupBy('prosesgajisupirdetail.nobukti');
+
+            DB::table($temptgl)->insertUsing(['nobukti','keterangan'], $fetch1);
+
+            $fetch = DB::table('penerimaantruckingdetail')
+                ->from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                ->select(
+                    DB::raw("prosesgajisupirdetail.nobukti, 
+                MAX(prosesgajisupirheader.tglbukti) as tglbukti, 
+                    max(isnull(d.keterangan,'')) as keterangan, 
+                    sum(isnull(penerimaantruckingdetail.nominal,0)-isnull(pengeluarantruckingdetail.nominal,0)) as sisa ")
+                )
+                ->Join(db::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', '=', 'penerimaantruckingheader.nobukti')
+                ->Join(db::raw("gajisupirbbm with (readuncommitted)"), 'gajisupirbbm.penerimaantrucking_nobukti', '=', 'penerimaantruckingheader.nobukti')
+                ->Join(db::raw("prosesgajisupirdetail with (readuncommitted)"), 'prosesgajisupirdetail.gajisupir_nobukti', '=', 'gajisupirbbm.gajisupir_nobukti')
+                ->Join(db::raw("prosesgajisupirheader with (readuncommitted)"), 'prosesgajisupirheader.nobukti', '=', 'prosesgajisupirdetail.nobukti')
+                ->leftJoin(db::raw("pengeluarantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', '=', 'pengeluarantruckingdetail.penerimaantruckingheader_nobukti ')
+                ->leftJoin(db::raw($temptgl . " d "), 'prosesgajisupirheader.nobukti', '=', 'd.nobukti ')
+                ->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
+                ->where('penerimaantruckingheader.penerimaantrucking_id', '=', 1)
+                ->groupBy('prosesgajisupirdetail.nobukti');
+
+            // dd($fetch->tosql());
+            Schema::create($temp, function ($table) {
+                $table->string('nobukti');
+                $table->datetime('tglbukti');
+                $table->longText('keterangan')->nullable();
+                $table->bigInteger('sisa')->nullable();
+            });
+
+
+            DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'keterangan', 'sisa'], $fetch);
+
+            DB::delete(DB::raw("delete " . $temp . " where sisa=0"));
+        } else {
+            $fetch = DB::table('penerimaantruckingdetail')
+                ->from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                ->leftJoin('penerimaantruckingheader', 'penerimaantruckingdetail.nobukti', '=', 'penerimaantruckingheader.nobukti')
+                ->select(
+                    DB::raw("penerimaantruckingdetail.nobukti, 
+                MAX(penerimaantruckingheader.tglbukti) as tglbukti, 
+                MAX(penerimaantruckingdetail.keterangan) as keterangan, 
+                (SELECT (SUM(penerimaantruckingdetail.nominal) - COALESCE(SUM(pengeluarantruckingdetail.nominal), 0)) FROM pengeluarantruckingdetail WHERE pengeluarantruckingdetail.penerimaantruckingheader_nobukti = penerimaantruckingdetail.nobukti) AS sisa")
+                )
+                ->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
+                ->where('penerimaantruckingheader.penerimaantrucking_id', '=', 1)
+                ->groupBy('penerimaantruckingdetail.nobukti');
+
+            Schema::create($temp, function ($table) {
+                $table->string('nobukti');
+                $table->datetime('tglbukti');
+                $table->longText('keterangan')->nullable();
+                $table->bigInteger('sisa')->nullable();
+            });
+
+            DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'keterangan', 'sisa'], $fetch);
+        }
+
+
 
         return $temp;
     }
@@ -1957,7 +2186,7 @@ class PenerimaanTruckingHeader extends MyModel
                                     $firstBuktiPosting = $nobuktipengeluarantrucking;
                                 } else {
                                     if ($cabang == 'MEDAN') {
-                                        $nobuktiPosting = $nobuktiPosting  . ', '. $nobuktipengeluarantrucking . " ($keteranganpengeluarantrucking)";
+                                        $nobuktiPosting = $nobuktiPosting  . ', ' . $nobuktipengeluarantrucking . " ($keteranganpengeluarantrucking)";
                                     } else {
                                         $nobuktiPosting = $nobuktiPosting . ', ' . $nobuktipengeluarantrucking;
                                     }

@@ -71,7 +71,7 @@ class PengeluaranTruckingHeaderController extends Controller
      */
     public function store(StorePengeluaranTruckingHeaderRequest $request): JsonResponse
     {
-        // dd('test');
+        // dd($request);
         DB::beginTransaction();
         try {
             /* Store header */
@@ -726,6 +726,7 @@ class PengeluaranTruckingHeaderController extends Controller
         ]);
     }
 
+
     public function getpelunasan(Request $request)
     {
         $penerimaanTrucking = new PenerimaanTruckingHeader();
@@ -735,6 +736,7 @@ class PengeluaranTruckingHeaderController extends Controller
             'data' => $data
         ]);
     }
+
 
     public function getEditPelunasan($id, $aksi)
     {

@@ -25,6 +25,7 @@ class CreateJobemklTable extends Migration
             $table->longtext('kapal')->nullable();
             $table->longtext('destination')->nullable();
             $table->longtext('lokasibongkarmuat')->nullable();
+            $table->double('nilaiawal',15,2)->nullable();
             $table->string('nocont',50)->nullable();
             $table->string('noseal',50)->nullable();
             $table->integer('statusapprovaledit')->Length(11)->nullable();
