@@ -42,7 +42,6 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
         $getBatas = $parameter->getBatasAwalTahun();
         $tglbatasawal = $getBatas->text;
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
-
         if (!request()->pengeluarantrucking_id) {
             return ["pengeluarantrucking" => ['required']];
         }
@@ -54,6 +53,7 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             $kbbm = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
                 ->where('kodepengeluaran', "KBBM")
                 ->first();
+
 
             if (($bst->id == request()->pengeluarantrucking_id) || ($kbbm->id == request()->pengeluarantrucking_id)) {
                 return true;
