@@ -125,8 +125,8 @@ class Marketing extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] != '') {
-                            if ($filters['field'] == 'statusaktif') {
-                                $query = $query->where('parameter.text', '=', "$filters[data]");
+                            if ($filters['field'] == 'statusaktif_memo') {
+                                $query = $query->where('statusaktif.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
@@ -141,8 +141,8 @@ class Marketing extends MyModel
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] != '') {
-                                if ($filters['field'] == 'statusaktif') {
-                                    $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                                if ($filters['field'] == 'statusaktif_memo') {
+                                    $query = $query->OrwhereRaw("statusaktif.text LIKE '%". escapeLike($filters['data']) ."%' escape '|'");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                                 } else {
