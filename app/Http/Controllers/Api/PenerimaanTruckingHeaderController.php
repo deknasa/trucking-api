@@ -394,7 +394,7 @@ class PenerimaanTruckingHeaderController extends Controller
             )
             ->where('a.nobukti', $penerimaan)
             ->first()->id ?? 0;
-        if ($idpenerimaan != 0) {
+        if ($idpenerimaan != 0 && ($aksi == 'EDIT' || $aksi == 'DELETE')) {
             $validasipenerimaan = app(PenerimaanHeaderController::class)->cekvalidasi($idpenerimaan);
             $msg = json_decode(json_encode($validasipenerimaan), true)['original']['error'] ?? false;
             if ($msg == false) {

@@ -306,8 +306,17 @@ class PengeluaranHeader extends MyModel
                 'pengeluaranheader.statuskirimberkas',
                 'pengeluaranheader.userkirimberkas',
                 'pengeluaranheader.tglkirimberkas',
+                'pengeluaranheader.cabang_id',
+                'pengeluaranheader.statusreimbursement',
+                'pengeluaranheader.statusjenisbiaya',
+                'cabang.namacabang as cabang',
+                'statusreimbursement.text as statusreimbursementnama',
+                'statusjenisbiaya.text as statusjenisbiayanama'
             )
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pengeluaranheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("cabang with (readuncommitted)"), 'pengeluaranheader.cabang_id', 'cabang.id')
+            ->leftJoin(DB::raw("parameter as statusreimbursement with (readuncommitted)"), 'pengeluaranheader.statusreimbursement', 'statusreimbursement.id')
+            ->leftJoin(DB::raw("parameter as statusjenisbiaya with (readuncommitted)"), 'pengeluaranheader.statusjenisbiaya', 'statusjenisbiaya.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluaranheader.alatbayar_id', 'alatbayar.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
             ->where('pengeluaranheader.id', $id);
@@ -1227,6 +1236,7 @@ class PengeluaranHeader extends MyModel
             ->first();
 
         $alatBayarCheck = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'CHECK')->first();
+        $idreimbursement = (new Parameter())->cekId('STATUS REIMBURSE', 'STATUS REIMBURSE', 'YA');
 
         $pengeluaranHeader = new PengeluaranHeader();
 
@@ -1237,6 +1247,9 @@ class PengeluaranHeader extends MyModel
         $pengeluaranHeader->dibayarke = $data['dibayarke'] ?? '';
         $pengeluaranHeader->alatbayar_id = $data['alatbayar_id'] ?? 0;
         $pengeluaranHeader->bank_id = $data['bank_id'] ?? 0;
+        $pengeluaranHeader->statusreimbursement = $data['statusreimbursement'] ?? 0;
+        $pengeluaranHeader->cabang_id = $data['cabang_id'] ?? 0;
+        $pengeluaranHeader->statusjenisbiaya = $data['statusjenisbiaya'] ?? 0;
         $pengeluaranHeader->userapproval = $data['userapproval'] ?? '';
         $pengeluaranHeader->tglapproval = $data['tglapproval'] ?? '';
         $pengeluaranHeader->transferkeac = $data['transferkeac'] ?? '';
@@ -1362,6 +1375,35 @@ class PengeluaranHeader extends MyModel
         ];
 
         $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+
+        $statusreimbursement = $data['statusreimbursement'] ?? 0;
+        if ($statusreimbursement == $idreimbursement) {
+            $statusNonPajak = (new Parameter())->cekId('STATUS PAJAK', 'STATUS PAJAK', 'NON PAJAK');
+            $statusInvoice = (new Parameter())->cekId('STATUS INVOICE', 'STATUS INVOICE', 'TAMBAHAN');
+            $idMuatan = DB::table("jenisorder")->from(db::raw("jenisorder with (readuncommitted)"))
+                ->where('kodejenisorder', 'MUAT')->first();
+            $pelanggan = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))
+                ->where('id', $data['cabang_id'])
+                ->first()->pelanggan_id ?? '';
+            $invoiceEmklRequest = [
+                'prosesreimburse' => 1,
+                'pengeluaranheader_nobukti' => $pengeluaranHeader->nobukti,
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'pelanggan_id' => $pelanggan,
+                'jenisorder_id' => $idMuatan->id,
+                'statusinvoice' => $statusInvoice,
+                'statuspajak' => $statusNonPajak,
+                'statusppn' => 0,
+                'tgldari' => '',
+                'tglsampai' => '',
+                'statusreimbursement' => $statusreimbursement,
+                'biaya' => $data['statusjenisbiaya'],
+                'nominal' => $nominal_detail,
+                'keterangan_detail' => $keterangan_detail
+            ];
+            (new InvoiceEmklHeader())->processStore($invoiceEmklRequest);
+        }
+
         return $pengeluaranHeader;
     }
 
@@ -1386,6 +1428,7 @@ class PengeluaranHeader extends MyModel
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
         $statusKirimBerkas = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSKIRIMBERKAS')->where('text', 'BELUM KIRIM BERKAS')->first();
         $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'PENGELUARAN KAS/BANK')->first();
+        $idreimbursement = (new Parameter())->cekId('STATUS REIMBURSE', 'STATUS REIMBURSE', 'YA');
 
         if (trim($getTgl->text) == 'YA') {
             $querycek = DB::table('pengeluaranheader')->from(
@@ -1597,6 +1640,42 @@ class PengeluaranHeader extends MyModel
 
             $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
         }
+
+        $statusreimbursement = $pengeluaranHeader->statusreimbursement ?? 0;
+        if ($statusreimbursement == $idreimbursement) {
+            $statusNonPajak = (new Parameter())->cekId('STATUS PAJAK', 'STATUS PAJAK', 'NON PAJAK');
+            $statusInvoice = (new Parameter())->cekId('STATUS INVOICE', 'STATUS INVOICE', 'TAMBAHAN');
+            $idMuatan = DB::table("jenisorder")->from(db::raw("jenisorder with (readuncommitted)"))
+                ->where('kodejenisorder', 'MUAT')->first();
+            $pelanggan = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))
+                ->where('id', $data['cabang_id'])
+                ->first()->pelanggan_id ?? '';
+            $getJurnal = db::table('invoiceemklheader')->from(DB::raw("invoiceemklheader with (readuncommitted)"))->where('pengeluaranheader_nobukti', $nobuktiOld)->first();
+
+            $invoiceEmklRequest = [
+                'prosesreimburse' => 1,
+                'pengeluaranheader_nobukti' => $pengeluaranHeader->nobukti,
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'pelanggan_id' => $pelanggan,
+                'jenisorder_id' => $idMuatan->id,
+                'statusinvoice' => $statusInvoice,
+                'statuspajak' => $statusNonPajak,
+                'statusppn' => 0,
+                'tgldari' => '',
+                'tglsampai' => '',
+                'statusreimbursement' => $statusreimbursement,
+                'biaya' => $pengeluaranHeader->statusjenisbiaya,
+                'nominal' => $nominal_detail,
+                'keterangan_detail' => $keterangan_detail
+            ];
+            if (isset($getJurnal)) {
+                $newJurnal = new InvoiceEmklHeader();
+                $newJurnal = $newJurnal->find($getJurnal->id);
+                (new InvoiceEmklHeader())->processUpdate($newJurnal, $invoiceEmklRequest);
+            } else {
+                (new InvoiceEmklHeader())->processStore($invoiceEmklRequest);
+            }
+        }
         return $pengeluaranHeader;
     }
 
@@ -1633,6 +1712,13 @@ class PengeluaranHeader extends MyModel
             $jurnalumumHeader = (new JurnalUmumHeader())->processDestroy($getJurnal->id, ($postingDari == "") ? $postingDari : strtoupper('DELETE pengeluaran Header'));
         }
 
+        $idreimbursement = (new Parameter())->cekId('STATUS REIMBURSE', 'STATUS REIMBURSE', 'YA');
+        if ($pengeluaranHeader->statusreimbursement == $idreimbursement) {
+            $getJurnal = db::table('invoiceemklheader')->from(DB::raw("invoiceemklheader with (readuncommitted)"))->where('pengeluaranheader_nobukti', $pengeluaranHeader->nobukti)->first();
+            if (isset($getJurnal)) {
+                (new InvoiceEmklHeader())->processDestroy($getJurnal->id, ($postingDari == "") ? $postingDari : strtoupper('DELETE pengeluaran Header'));
+            }
+        }
         return $pengeluaranHeader;
     }
 
