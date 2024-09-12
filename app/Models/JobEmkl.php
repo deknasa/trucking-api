@@ -46,6 +46,7 @@ class JobEmkl extends MyModel
                 "jobemkl.jenisorder_id",
                 "jenisorder.keterangan as jenisorder",
                 "jobemkl.kapal",
+                "jobemkl.nominal",
                 "jobemkl.destination",
                 "jobemkl.nocont",
                 "jobemkl.noseal",
@@ -99,9 +100,13 @@ class JobEmkl extends MyModel
                 "tujuan.keterangan as tujuan",
                 "jobemkl.container_id",
                 "container.keterangan as container",
+                "jobemkl.marketing_id",
+                "marketing.kodemarketing as marketing",
                 "jobemkl.jenisorder_id",
                 "jenisorder.keterangan as jenisorder",
                 "jobemkl.kapal",
+                "jobemkl.nominal",
+                "jobemkl.lokasibongkarmuat",
                 "jobemkl.destination",
                 "jobemkl.nocont",
                 "jobemkl.noseal",
@@ -117,6 +122,7 @@ class JobEmkl extends MyModel
             ) 
             // ->whereBetween('jobemkl.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'jobemkl.container_id', '=', 'container.id')
+            ->leftJoin(DB::raw("marketing with (readuncommitted)"), 'jobemkl.marketing_id', '=', 'marketing.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'jobemkl.jenisorder_id', '=', 'jenisorder.id')
             ->leftJoin(DB::raw("tujuan with (readuncommitted)"), 'jobemkl.tujuan_id', '=', 'tujuan.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'jobemkl.shipper_id', '=', 'pelanggan.id')
@@ -147,6 +153,7 @@ class JobEmkl extends MyModel
                     "jobemkl.jenisorder_id",
                     "jenisorder.keterangan as jenisorder",
                     "jobemkl.kapal",
+                    "jobemkl.nominal",
                     "jobemkl.destination",
                     "jobemkl.nocont",
                     "jobemkl.noseal",
@@ -252,11 +259,19 @@ class JobEmkl extends MyModel
                         if ($filters['field'] != '') {
                             if ($filters['field'] == 'statusaktif') {
                                 $query = $query->where('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'shipper' ) {
+                                $query = $query->whereRaw("pelanggan.namapelanggan LIKE '%". escapeLike($filters['data']) ."%' escape '|'");
+                            } else if ($filters['field'] == 'tujuan' ) {
+                                $query = $query->whereRaw("tujuan.keterangan LIKE '%". escapeLike($filters['data']) ."%' escape '|'");
+                            } else if ($filters['field'] == 'container' ) {
+                                $query = $query->whereRaw("container.keterangan LIKE '%". escapeLike($filters['data']) ."%' escape '|'");
+                            } else if ($filters['field'] == 'jenisorder' ) {
+                                $query = $query->whereRaw("jenisorder.keterangan LIKE '%". escapeLike($filters['data']) ."%' escape '|'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
-                                // $query = $query->where('jenistrado.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->whereRaw('jenistrado' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                // $query = $query->where('jobemkl.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw('jobemkl' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                             }
                         }
                     }
@@ -265,14 +280,24 @@ class JobEmkl extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] != '') {
+                            if (!array_key_exists("field",$filters)) {
+                                // dd($filters);
+                            } else if ($filters['field'] != '') {
                                 if ($filters['field'] == 'statusaktif') {
                                     $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'shipper' ) {
+                                    $query = $query->orWhereRaw("pelanggan.namapelanggan LIKE '%". escapeLike($filters['data']) ."%' escape '|'");
+                                } else if ($filters['field'] == 'tujuan' ) {
+                                    $query = $query->orWhereRaw("tujuan.keterangan LIKE '%". escapeLike($filters['data']) ."%' escape '|'");
+                                } else if ($filters['field'] == 'container' ) {
+                                    $query = $query->orWhereRaw("container.keterangan LIKE '%". escapeLike($filters['data']) ."%' escape '|'");
+                                } else if ($filters['field'] == 'jenisorder' ) {
+                                    $query = $query->orWhereRaw("jenisorder.keterangan LIKE '%". escapeLike($filters['data']) ."%' escape '|'");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                                 } else {
-                                    // $query = $query->orWhere('jenistrado.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                    $query = $query->OrwhereRaw('jenistrado' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                    // $query = $query->orWhere('jobemkl.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw('jobemkl' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                                 }
                             }
                         }
@@ -305,9 +330,11 @@ class JobEmkl extends MyModel
        
         $jobEmkl->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $jobEmkl->shipper_id = $data['shipper_id'];
+        $jobEmkl->marketing_id = $data['marketing_id'];
         $jobEmkl->tujuan_id = $data['tujuan_id'];
         $jobEmkl->container_id = $data['container_id'];
         $jobEmkl->jenisorder_id = $data['jenisorder_id'];
+        $jobEmkl->lokasibongkarmuat = $data['lokasibongkarmuat'];
         $jobEmkl->kapal = $data['kapal'];
         $jobEmkl->destination = $data['destination'];
         $jobEmkl->nocont = $data['nocont'];
@@ -339,9 +366,11 @@ class JobEmkl extends MyModel
     public function processUpdate(JobEmkl $jobEmkl, array $data) {
         $jobEmkl->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $jobEmkl->shipper_id = $data['shipper_id'];
+        $jobEmkl->marketing_id = $data['marketing_id'];
         $jobEmkl->tujuan_id = $data['tujuan_id'];
         $jobEmkl->container_id = $data['container_id'];
         $jobEmkl->jenisorder_id = $data['jenisorder_id'];
+        $jobEmkl->lokasibongkarmuat = $data['lokasibongkarmuat'];
         $jobEmkl->kapal = $data['kapal'];
         $jobEmkl->destination = $data['destination'];
         $jobEmkl->nocont = $data['nocont'];
@@ -382,5 +411,26 @@ class JobEmkl extends MyModel
 
         return $jobEmkl;
     }
+
+    public function processNominalPrediksi(JobEmkl $jobEmkl, array $data): JobEmkl
+    {
+        $jobEmkl->nominal = $data['nominal'];
+        $jobEmkl->modifiedby = auth('api')->user()->name;
+        $jobEmkl->info = html_entity_decode(request()->info);
+        if ($jobEmkl->save()) {
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($jobEmkl->getTable()),
+                'postingdari' => 'APPROVAL AKTIF job Emkl',
+                'idtrans' => $jobEmkl->id,
+                'nobuktitrans' => $jobEmkl->id,
+                'aksi' => "Aproval Nominal Prediksi",
+                'datajson' => $jobEmkl->toArray(),
+                'modifiedby' => auth('api')->user()->user
+            ]);
+        }
+        return $jobEmkl;
+
+    }
+
 
 }
