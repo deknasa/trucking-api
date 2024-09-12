@@ -282,15 +282,13 @@ class JobEmklController extends Controller
         }
     }
 
-    public function nominalprediksi_get(Request $request)
-    {
-        $jobEmkl = new JobEmkl();
-        return response([
-            'status' => true,
-            'data' => $jobEmkl->findAll($request->jobemkl_id)
-        ]);
-    }
-    public function nominalprediksi_post(Request $request)
+
+
+    /**
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
+     */
+    public function nominalprediksi(Request $request)
     {
         DB::beginTransaction();
 
