@@ -469,6 +469,7 @@ class InvoiceHeader extends MyModel
         } else {
 
             if ($pilihanperiodeotobon == $pilihanperiode) {
+
                 $tempkepelabuhan = '##tempkepelabuhan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                 Schema::create($tempkepelabuhan, function ($table) {
                     $table->string('jobtrucking', 1000)->nullable();
@@ -710,16 +711,11 @@ class InvoiceHeader extends MyModel
                 });
                 $querygetTripasal = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
                     ->select(DB::raw("nobukti_tripasal"), 'nobukti', 'totalomset')
-                    ->whereRaw("(isnull(nobukti_tripasal,'') != '' or dari_id=1)")
+                    ->whereRaw("isnull(nobukti_tripasal,'') != ''")
                     ->where('agen_id', $request->agen_id)
                     // ->where('jenisorder_id', $request->jenisorder_id)
                     ->where('statusjeniskendaraan', $statusjeniskendaraan)
-                    // ->whereRaw("isnull(nobukti,'')='TRP 1260/VIII/2024' ")
-
                     ->whereRaw("tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'");
-
-                    // dd($querygetTripasal->get());
-
                 DB::table($temptripasal)->insertUsing([
                     'nobukti_tripasal',
                     'nobukti',
@@ -735,11 +731,9 @@ class InvoiceHeader extends MyModel
                     ->where('a.agen_id', $request->agen_id)
                     ->where('a.jenisorder_id', $request->jenisorder_id)
                     ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
-                    ->join(DB::raw("$temptripasal as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                    ->join(DB::raw("$temptripasal as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti_tripasal')
                     ->leftJoin(DB::raw("$temphasil as c with (readuncommitted)"), 'a.jobtrucking', 'c.jobtrucking')
-                    ->whereraw("a.jobtrucking='JT 0545/VIII/2024'")                    
                     ->whereRaw("isnull(c.jobtrucking,'')=''");
-                    // dd($queryTripAwalLongtrip->get());
 
                 DB::table($temphasil)->insertUsing([
                     'jobtrucking',
@@ -809,7 +803,6 @@ class InvoiceHeader extends MyModel
                     'suratpengantar_nobukti',
                 ], $queryTolakan);
 
-                // dd(db::table($temphasil)->whereraw("jobtrucking='JT 0545/VIII/2024'")->get());
                 // akhir
 
             } else {
