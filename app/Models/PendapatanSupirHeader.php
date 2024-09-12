@@ -252,6 +252,8 @@ class PendapatanSupirHeader extends MyModel
             ->Orderby('d.tglbukti', 'asc')
             ->Orderby('d.nobukti', 'asc');
 
+            // dd($querysaldopendapatan->get());
+
         DB::table($tempsaldopendapatan)->insertUsing([
             'pendapatansupir_id',
             'supir_id',
