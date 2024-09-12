@@ -12,8 +12,10 @@ use Intervention\Image\ImageManagerStatic as Image;
 
 class App
 {
-    function getFormat(string $format, int $lastRow, int $bulan, string  $tglbukti) {
-        
+    function getFormat(string $format, int $lastRow, int $bulan, string  $tglbukti, int  $tujuan = 0, int  $cabang = 0, int  $jenisbiaya = 0, int $marketing = 0)
+    {
+
+
         $totalSeparator = 0;
         $staticSeparator = '#';
         $staticSeparatorformat = '|';
@@ -79,6 +81,18 @@ class App
                 case 'R':
                     $dynamicTexts[$index] = $this->numberToRoman($bulan);
                     break;
+                case 'T':
+                    $dynamicTexts[$index] = $this->tujuan($tujuan);
+                    break;
+                case 'M':
+                    $dynamicTexts[$index] = $this->marketing($marketing);
+                    break;
+                case 'C':
+                    $dynamicTexts[$index] = $this->cabang($cabang);
+                    break;
+                case 'J':
+                    $dynamicTexts[$index] = $this->jenisbiaya($jenisbiaya);
+                    break;
                 case $this->isDateFormat($dynamicText):
                     $dynamicTexts[$index] = date($dynamicText, strtotime($tglbukti));
                     break;
@@ -91,6 +105,8 @@ class App
                     break;
             }
         }
+
+
 
         /**
          * Change back the symbol
@@ -113,7 +129,7 @@ class App
         return $result;
     }
 
-    public function runningNumber(string $format, int $lastRow, int $bulan, string  $tglbukti, string $table): string
+    public function runningNumber(string $format, int $lastRow, int $bulan, string  $tglbukti, string $table, int  $tujuan = 0, int  $cabang = 0, int  $jenisbiaya = 0, int $marketing = 0): string
     {
 
         $totalSeparator = 0;
@@ -181,6 +197,19 @@ class App
                 case 'R':
                     $dynamicTexts[$index] = $this->numberToRoman($bulan);
                     break;
+                case 'T':
+                    $dynamicTexts[$index] = $this->tujuan($tujuan);
+                    break;
+                case 'C':
+                    $dynamicTexts[$index] = $this->cabang($cabang);
+                    break;
+                case 'M':
+                    $dynamicTexts[$index] = $this->marketing($marketing);
+                    break;
+
+                case 'J':
+                    $dynamicTexts[$index] = $this->jenisbiaya($jenisbiaya);
+                    break;
                 case $this->isDateFormat($dynamicText):
                     $dynamicTexts[$index] = date($dynamicText, strtotime($tglbukti));
                     break;
@@ -228,6 +257,65 @@ class App
         // dd($result);
         return $result;
     }
+
+    function tujuan(int $tujuan): string
+    {
+        $query = db::table("tujuan")->from(db::raw("tujuan a with (readuncommitted)"))
+            ->select(
+                'a.kodetujuan'
+            )
+            ->where('a.id', $tujuan)
+            ->first();
+
+
+        $kode = $query->kodetujuan ?? '';
+
+        return $kode;
+    }
+
+    function marketing(int $marketing): string
+    {
+        $query = db::table("marketing")->from(db::raw("marketing a with (readuncommitted)"))
+            ->select(
+                'a.kodemarketing'
+            )
+            ->where('a.id', $marketing)
+            ->first();
+
+
+        $kode = $query->kodemarketing ?? '';
+
+        return $kode;
+    }
+
+    function cabang(int $cabang): string
+    {
+        $query = db::table("cabang")->from(db::raw("cabang a with (readuncommitted)"))
+            ->select(
+                'a.kodecabang'
+            )
+            ->where('a.id', $cabang)
+            ->first() ?? '';
+
+        $kode = $query->kodecabang ?? '';
+
+        return $kode;
+    }
+
+    function jenisbiaya(int $jenisbiaya): string
+    {
+        $query = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.text as jenisbiaya'
+            )
+            ->where('a.id', $jenisbiaya)
+            ->first() ?? '';
+
+        $kode = $query->jenisbiaya ?? '';
+
+        return $kode;
+    }
+
 
     function numberToRoman(int $number): string
     {
@@ -309,8 +397,18 @@ class App
     function terbilang($satuan)
     {
         $huruf = array(
-            "", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh",
-            "delapan", "sembilan", "sepuluh", "sebelas"
+            "",
+            "satu",
+            "dua",
+            "tiga",
+            "empat",
+            "lima",
+            "enam",
+            "tujuh",
+            "delapan",
+            "sembilan",
+            "sepuluh",
+            "sebelas"
         );
 
         if ($satuan < 12)

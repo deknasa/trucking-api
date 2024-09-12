@@ -37,7 +37,7 @@ class JobEmklController extends Controller
      */
     public function store(StoreJobEmklRequest $request)
     {
-        // dd($request);
+        
         DB::beginTransaction();
 
         try {
@@ -63,6 +63,7 @@ class JobEmklController extends Controller
             $jobEmkl->processStore($data, $jobEmkl);            
             if ($request->from == '') {
                 $jobEmkl->position = $this->getPosition($jobEmkl, $jobEmkl->getTable())->position;
+                // dd($jobEmkl);
                 if ($request->limit == 0) {
                     $jobEmkl->page = ceil($jobEmkl->position / (10));
                 } else {

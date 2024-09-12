@@ -194,6 +194,7 @@ class JobEmkl extends MyModel
             $table->string('jenisorder_id', 50)->nullable();
             $table->string('jenisorder', 50)->nullable();
             $table->string('kapal', 50)->nullable();
+            $table->double('nominal', 15,2)->nullable();
             $table->string('destination', 50)->nullable();
             $table->string('nocont', 50)->nullable();
             $table->string('noseal', 50)->nullable();
@@ -227,6 +228,7 @@ class JobEmkl extends MyModel
             'jenisorder_id',
             'jenisorder',
             'kapal',
+            'nominal',
             'destination',
             'nocont',
             'noseal',
@@ -240,6 +242,8 @@ class JobEmkl extends MyModel
             'created_at',
             'updated_at',
         ], $models);
+ 
+
 
 
         return  $temp;
@@ -323,15 +327,29 @@ class JobEmkl extends MyModel
 
     public function processStore(array $data, JobEmkl $jobEmkl): JobEmkl
     {
-        $fetchGrp = Parameter::where('grp', 'JOB EMKL BUKTI')->where('grp', 'JOB EMKL BUKTI')->first();
+        $jenisorder_id=$data['jenisorder_id'] ?? 0;
+        $tujuan_id=$data['tujuan_id'] ?? 0;
+        $marketing_id=$data['marketing_id'] ?? 0;
+        if ($jenisorder_id==1) {
+            $fetchGrp = Parameter::where('grp', 'JOB EMKL MUATAN')->where('grp', 'JOB EMKL MUATAN')->first();
+
+        } else {
+            $fetchGrp = Parameter::where('grp', 'JOB EMKL BONGKARAN')->where('grp', 'JOB EMKL BONGKARAN')->first();
+            $tujuan_id=0;
+            $marketing_id=0;
+
+        }
         $group = $fetchGrp->grp;
         $subGroup = $fetchGrp->subgrp;
         $statusformat = $fetchGrp->text;
+
+        // dd($tujuan_id);
+        // dd((new RunningNumberService)->get($group, $subGroup, $jobEmkl->getTable(), date('Y-m-d', strtotime($data['tglbukti'])),$tujuan_id,0,0,$marketing_id));
        
         $jobEmkl->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $jobEmkl->shipper_id = $data['shipper_id'];
         $jobEmkl->marketing_id = $data['marketing_id'];
-        $jobEmkl->tujuan_id = $data['tujuan_id'];
+        $jobEmkl->tujuan_id = $tujuan_id;
         $jobEmkl->container_id = $data['container_id'];
         $jobEmkl->jenisorder_id = $data['jenisorder_id'];
         $jobEmkl->lokasibongkarmuat = $data['lokasibongkarmuat'];
@@ -344,8 +362,7 @@ class JobEmkl extends MyModel
         $jobEmkl->info = html_entity_decode(request()->info);
         $data['sortname'] = $data['sortname'] ?? 'id';
         $data['sortorder'] = $data['sortorder'] ?? 'asc';
-        $jobEmkl->nobukti = (new RunningNumberService)->get($group, $subGroup, $jobEmkl->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
-
+        $jobEmkl->nobukti = (new RunningNumberService)->get($group, $subGroup, $jobEmkl->getTable(), date('Y-m-d', strtotime($data['tglbukti'])),$tujuan_id,0,0,$marketing_id);
         if (!$jobEmkl->save()) {
             throw new \Exception('Error storing JOB EMKL.');
         }
@@ -364,10 +381,20 @@ class JobEmkl extends MyModel
     }
 
     public function processUpdate(JobEmkl $jobEmkl, array $data) {
+        $jenisorder_id=$data['jenisorder_id'] ?? 0;
+        $tujuan_id=$data['tujuan_id'] ?? 0;
+        $marketing_id=$data['marketing_id'] ?? 0;
+        if ($jenisorder_id==1) {
+
+        } else {
+            $tujuan_id=0;
+            $marketing_id=0;
+
+        }
         $jobEmkl->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $jobEmkl->shipper_id = $data['shipper_id'];
-        $jobEmkl->marketing_id = $data['marketing_id'];
-        $jobEmkl->tujuan_id = $data['tujuan_id'];
+        $jobEmkl->marketing_id = $marketing_id;
+        $jobEmkl->tujuan_id = $tujuan_id;
         $jobEmkl->container_id = $data['container_id'];
         $jobEmkl->jenisorder_id = $data['jenisorder_id'];
         $jobEmkl->lokasibongkarmuat = $data['lokasibongkarmuat'];
