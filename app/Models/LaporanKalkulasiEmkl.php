@@ -31,6 +31,13 @@ class LaporanKalkulasiEmkl extends Model
         $idstatusposting = $parameter->cekId('STATUS POSTING', 'STATUS POSTING', 'POSTING') ?? 0;
         $penerimaanTruckingHeader = '##penerimaantruckingheader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
+        $jenisorderan=db::table("jenisorder")->from(db::raw("jenisorder a with (readuncommitted)"))
+        ->select(
+            'a.keterangan'
+        )
+        ->where('a.id',$jenis)
+        ->first()->keterangan ?? '';
+
 
         // dd(db::table($penerimaanTruckingDetailrekap)->get());
 
@@ -175,9 +182,11 @@ class LaporanKalkulasiEmkl extends Model
                 'a.destination',
                 'a.nocontseal',
                 'a.lokasibongkarmuat',   
+                db::raw("'' as penerima"),
+                db::raw("'' as voy"),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
-                DB::raw("upper('Laporan Kalkulasi Emkl')  as judulLaporan"),
+                DB::raw("upper('Job Emkl ". $jenisorderan." Bulan : ".$periode ."') as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
