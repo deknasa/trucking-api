@@ -54,6 +54,8 @@ class JobEmklController extends Controller
                 "destination" => $request->destination ?? '',
                 "nocont" => $request->nocont ?? '',
                 "noseal" => $request->noseal ?? '',
+                "marketing_id" => $request->marketing_id ?? '',
+                "lokasibongkarmuat" => $request->lokasibongkarmuat ?? '',
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
             $jobEmkl = new JobEmkl();
@@ -121,6 +123,8 @@ class JobEmklController extends Controller
                 "destination" => $request->destination ?? '',
                 "nocont" => $request->nocont ?? '',
                 "noseal" => $request->noseal ?? '',
+                "marketing_id" => $request->marketing_id ?? '',
+                "lokasibongkarmuat" => $request->lokasibongkarmuat ?? '',
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
 
             ];
@@ -275,6 +279,39 @@ class JobEmklController extends Controller
             ];
 
             return response($data);
+        }
+    }
+
+    public function nominalprediksi_get(Request $request)
+    {
+        $jobEmkl = new JobEmkl();
+        return response([
+            'status' => true,
+            'data' => $jobEmkl->findAll($request->jobemkl_id)
+        ]);
+    }
+    public function nominalprediksi_post(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                "nominal" => $request->nominal,
+            ];
+
+            $jobEmkl = new JobEmkl();
+            $jobEmkls = $jobEmkl->findOrFail($request->id);
+            $jobEmkl = $jobEmkl->processNominalPrediksi($jobEmkls, $data);
+            
+            DB::commit();
+            return response([
+                'status' => true,
+                'message' => 'Berhasil disimpan',
+                'data' => $jobEmkl
+            ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
     }
 

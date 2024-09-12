@@ -548,8 +548,10 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('toemail/approvalnonaktif', [ToEmailController::class, 'approvalnonaktif']);
     Route::post('jenistrado/approvalnonaktif', [JenisTradoController::class, 'approvalnonaktif']);
     Route::post('jenistrado/approvalaktif', [JenisTradoController::class, 'approvalaktif']);
-    Route::post('jobemkl/approvalnonaktif', [JobEmklController::class, 'approvalnonaktif']);
-    Route::post('jobemkl/approvalaktif', [JobEmklController::class, 'approvalaktif']);
+    Route::get('jobemkl/nominalprediksi', [JobEmklController::class, 'nominalprediksi_get']);
+    Route::post('jobemkl/nominalprediksi', [JobEmklController::class, 'nominalprediksi_post']);
+    // Route::post('jobemkl/approvalnonaktif', [JobEmklController::class, 'approvalnonaktif']);
+    // Route::post('jobemkl/approvalaktif', [JobEmklController::class, 'approvalaktif']);
 
     Route::post('marketing/approvalnonaktif', [MarketingController::class, 'approvalnonaktif']);
     Route::post('marketing/approvalaktif', [MarketingController::class, 'approvalaktif']);

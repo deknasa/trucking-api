@@ -28,6 +28,7 @@ class Marketing extends MyModel
         ->where('subgrp', 'JUDULAN LAPORAN')
         ->first();
 
+        $aktif = request()->aktif ?? '';
         $query = DB::table($this->table)->from(
             DB::raw("marketing with (readuncommitted)")
         );
@@ -44,6 +45,16 @@ class Marketing extends MyModel
 
         $this->sort($query);
         $this->filter($query);
+        if ($aktif == 'AKTIF') {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
+
+            $query->where('marketing.statusaktif', '=', $statusaktif->id);
+        }
         $this->paginate($query);
 
         $data = $query->get();

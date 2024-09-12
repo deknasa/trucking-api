@@ -35,6 +35,8 @@ class StoreJobEmklRequest extends FormRequest
             "container"=>"required",
             "jenisorder_id"=>"required",
             "jenisorder"=>"required",
+            "marketing_id"=>"required",
+            "marketing"=>"required",
             "kapal"=>"required",
             "destination"=>"required",
             "nocont"=>"required",

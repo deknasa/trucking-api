@@ -46,6 +46,7 @@ class JobEmkl extends MyModel
                 "jobemkl.jenisorder_id",
                 "jenisorder.keterangan as jenisorder",
                 "jobemkl.kapal",
+                "jobemkl.nominal",
                 "jobemkl.destination",
                 "jobemkl.nocont",
                 "jobemkl.noseal",
@@ -99,9 +100,13 @@ class JobEmkl extends MyModel
                 "tujuan.keterangan as tujuan",
                 "jobemkl.container_id",
                 "container.keterangan as container",
+                "jobemkl.marketing_id",
+                "marketing.kodemarketing as marketing",
                 "jobemkl.jenisorder_id",
                 "jenisorder.keterangan as jenisorder",
                 "jobemkl.kapal",
+                "jobemkl.nominal",
+                "jobemkl.lokasibongkarmuat",
                 "jobemkl.destination",
                 "jobemkl.nocont",
                 "jobemkl.noseal",
@@ -117,6 +122,7 @@ class JobEmkl extends MyModel
             ) 
             // ->whereBetween('jobemkl.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'jobemkl.container_id', '=', 'container.id')
+            ->leftJoin(DB::raw("marketing with (readuncommitted)"), 'jobemkl.marketing_id', '=', 'marketing.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'jobemkl.jenisorder_id', '=', 'jenisorder.id')
             ->leftJoin(DB::raw("tujuan with (readuncommitted)"), 'jobemkl.tujuan_id', '=', 'tujuan.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'jobemkl.shipper_id', '=', 'pelanggan.id')
@@ -147,6 +153,7 @@ class JobEmkl extends MyModel
                     "jobemkl.jenisorder_id",
                     "jenisorder.keterangan as jenisorder",
                     "jobemkl.kapal",
+                    "jobemkl.nominal",
                     "jobemkl.destination",
                     "jobemkl.nocont",
                     "jobemkl.noseal",
@@ -323,9 +330,11 @@ class JobEmkl extends MyModel
        
         $jobEmkl->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $jobEmkl->shipper_id = $data['shipper_id'];
+        $jobEmkl->marketing_id = $data['marketing_id'];
         $jobEmkl->tujuan_id = $data['tujuan_id'];
         $jobEmkl->container_id = $data['container_id'];
         $jobEmkl->jenisorder_id = $data['jenisorder_id'];
+        $jobEmkl->lokasibongkarmuat = $data['lokasibongkarmuat'];
         $jobEmkl->kapal = $data['kapal'];
         $jobEmkl->destination = $data['destination'];
         $jobEmkl->nocont = $data['nocont'];
@@ -357,9 +366,11 @@ class JobEmkl extends MyModel
     public function processUpdate(JobEmkl $jobEmkl, array $data) {
         $jobEmkl->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $jobEmkl->shipper_id = $data['shipper_id'];
+        $jobEmkl->marketing_id = $data['marketing_id'];
         $jobEmkl->tujuan_id = $data['tujuan_id'];
         $jobEmkl->container_id = $data['container_id'];
         $jobEmkl->jenisorder_id = $data['jenisorder_id'];
+        $jobEmkl->lokasibongkarmuat = $data['lokasibongkarmuat'];
         $jobEmkl->kapal = $data['kapal'];
         $jobEmkl->destination = $data['destination'];
         $jobEmkl->nocont = $data['nocont'];
@@ -400,5 +411,26 @@ class JobEmkl extends MyModel
 
         return $jobEmkl;
     }
+
+    public function processNominalPrediksi(JobEmkl $jobEmkl, array $data): JobEmkl
+    {
+        $jobEmkl->nominal = $data['nominal'];
+        $jobEmkl->modifiedby = auth('api')->user()->name;
+        $jobEmkl->info = html_entity_decode(request()->info);
+        if ($jobEmkl->save()) {
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($jobEmkl->getTable()),
+                'postingdari' => 'APPROVAL AKTIF job Emkl',
+                'idtrans' => $jobEmkl->id,
+                'nobuktitrans' => $jobEmkl->id,
+                'aksi' => "Aproval Nominal Prediksi",
+                'datajson' => $jobEmkl->toArray(),
+                'modifiedby' => auth('api')->user()->user
+            ]);
+        }
+        return $jobEmkl;
+
+    }
+
 
 }
