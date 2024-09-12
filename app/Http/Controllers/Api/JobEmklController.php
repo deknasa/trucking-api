@@ -37,6 +37,7 @@ class JobEmklController extends Controller
      */
     public function store(StoreJobEmklRequest $request)
     {
+        // dd($request);
         DB::beginTransaction();
 
         try {

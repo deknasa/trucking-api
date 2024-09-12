@@ -369,6 +369,7 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::post('printpowershell', [HutangHeaderController::class, 'printPowerShell']);
 
+    Route::resource('tujuan', TujuanController::class)->whereNumber('tujuan');
 
     Route::post('bataledit', [Controller::class, 'batalEditingBy']);
     Route::post('removeedit', [Controller::class, 'removeEditingBy']);
@@ -838,7 +839,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     
     Route::get('tujuan/export', [TujuanController::class, 'export']);
     Route::get('tujuan/report', [TujuanController::class, 'report']);
-    Route::resource('tujuan', TujuanController::class)->whereNumber('tujuan');
 
 
     Route::get('tarif/combo', [TarifController::class, 'combo']);
