@@ -7,8 +7,9 @@ use Illuminate\Support\Facades\DB;
 
 class RunningNumberService
 {
-    public function get(string $group, string $subGroup, string $table, string $tgl): string
+    public function get(string $group, string $subGroup, string $table, string $tgl, int  $tujuan = 0, int  $cabang = 0, int  $jenisbiaya = 0, int  $marketing = 0): string
     {
+        // dd($tujuan);
         $parameter = DB::table('parameter')
             ->select(
                 DB::raw(
@@ -50,7 +51,7 @@ class RunningNumberService
             $b = $lastRow;
             $c = 0;
             while ($a <= $lastRow) {
-                $nobukti = (new App)->getFormat($text, $a, $bulan, $tgl);
+                $nobukti = (new App)->getFormat($text, $a, $bulan, $tgl, $tujuan, $cabang, $jenisbiaya, $marketing);
 
                 $queryCheck = DB::table($table)->where('nobukti', $nobukti)
                     ->where(DB::raw('month(tglbukti)'), '=', $bulan)
@@ -60,15 +61,15 @@ class RunningNumberService
                 if (!isset($queryCheck)) {
                     if ($a > 1) {
                         $c = $a - 1;
-                        $nobukticek = (new App)->getFormat($text, $c, $bulan, $tgl);
+                        $nobukticek = (new App)->getFormat($text, $c, $bulan, $tgl, $tujuan, $cabang, $jenisbiaya, $marketing);
 
                         $queryCheckprev = DB::table($table)->where('nobukti', $nobukticek)
                             ->where(DB::raw('month(tglbukti)'), '=', $bulan)
                             ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                             ->whereRaw("tglbukti <= '$tgl'")
                             ->where(DB::raw('statusformat'), '=', $statusformat)
-                            ->orderby('tglbukti','desc')
-                            ->orderby('nobukti','desc')
+                            ->orderby('tglbukti', 'desc')
+                            ->orderby('nobukti', 'desc')
                             ->first();
                         if (isset($queryCheckprev)) {
                             $lastRow = $a;
@@ -93,7 +94,7 @@ class RunningNumberService
             $b = $lastRow;
             $c = 0;
             while ($a <= $lastRow) {
-                $nobukti = (new App)->getFormat($text, $a, $bulan, $tgl);
+                $nobukti = (new App)->getFormat($text, $a, $bulan, $tgl, $tujuan, $cabang, $jenisbiaya, $marketing);
 
                 $queryCheck = DB::table($table)->where('nobukti', $nobukti)
                     ->where(DB::raw('year(tglbukti)'), '=', $tahun)
@@ -102,14 +103,14 @@ class RunningNumberService
                 if (!isset($queryCheck)) {
                     if ($a > 1) {
                         $c = $a - 1;
-                        $nobukticek = (new App)->getFormat($text, $c, $bulan, $tgl);
+                        $nobukticek = (new App)->getFormat($text, $c, $bulan, $tgl, $tujuan, $cabang, $jenisbiaya, $marketing);
 
                         $queryCheckprev = DB::table($table)->where('nobukti', $nobukticek)
                             ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                             ->whereRaw("tglbukti <= '$tgl'")
                             ->where(DB::raw('statusformat'), '=', $statusformat)
-                            ->orderby('tglbukti','desc')
-                            ->orderby('nobukti','desc')
+                            ->orderby('tglbukti', 'desc')
+                            ->orderby('nobukti', 'desc')
                             ->first();
                         if (isset($queryCheckprev)) {
                             $lastRow = $a;
@@ -133,7 +134,7 @@ class RunningNumberService
 
         // dd($tgl);
 
-        $runningNumber = (new App)->runningNumber($text, $lastRow, $bulan, $tgl, $table);
+        $runningNumber = (new App)->runningNumber($text, $lastRow, $bulan, $tgl, $table, $tujuan, $cabang, $jenisbiaya, $marketing);
         // dd($runningNumber);
         // $nilai = 0;
         // $nomor = $lastRow;

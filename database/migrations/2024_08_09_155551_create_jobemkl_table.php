@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class CreateJobemklTable extends Migration
 {
@@ -46,6 +47,13 @@ class CreateJobemklTable extends Migration
             $table->foreign('shipper_id', 'jobemkl_pelanggan_pelanggan_id_foreign')->references('id')->on('pelanggan');
             $table->foreign('marketing_id', 'jobemkl_marketing_marketing_id_foreign')->references('id')->on('marketing');
         });
+
+        DB::statement("ALTER TABLE jobemkl NOCHECK CONSTRAINT jobemkl_container_container_id_foreign");
+        DB::statement("ALTER TABLE jobemkl NOCHECK CONSTRAINT jobemkl_tujuan_tujuan_id_foreign");
+        DB::statement("ALTER TABLE jobemkl NOCHECK CONSTRAINT jobemkl_jenisorder_jenisorder_id_foreign");
+        DB::statement("ALTER TABLE jobemkl NOCHECK CONSTRAINT jobemkl_pelanggan_pelanggan_id_foreign");
+        DB::statement("ALTER TABLE jobemkl NOCHECK CONSTRAINT jobemkl_marketing_marketing_id_foreign");
+
     }
 
     /**
