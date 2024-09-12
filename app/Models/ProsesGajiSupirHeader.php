@@ -3130,7 +3130,7 @@ class ProsesGajiSupirHeader extends MyModel
                     ->select(DB::raw("gajisupiruangjalan.kasgantung_nobukti,kasgantungheader.coakaskeluar,kasgantungheader.tglbukti, sum(gajisupiruangjalan.nominal) as nominal"))
                     ->join(DB::raw("kasgantungheader with (readuncommitted)"), 'gajisupiruangjalan.kasgantung_nobukti', 'kasgantungheader.nobukti')
                     ->whereRaw("gajisupiruangjalan.gajisupir_nobukti in ($allSP)")
-                    ->groupBy('gajisupiruangjalan.kasgantung_nobukti', 'kasgantungheader.coakaskeluar','kasgantungheader.tglbukti')
+                    ->groupBy('gajisupiruangjalan.kasgantung_nobukti', 'kasgantungheader.coakaskeluar', 'kasgantungheader.tglbukti')
                     ->get();
             } else {
 
@@ -3139,7 +3139,7 @@ class ProsesGajiSupirHeader extends MyModel
                     ->join(DB::raw("absensisupirheader with (readuncommitted)"), 'gajisupiruangjalan.absensisupir_nobukti', 'absensisupirheader.nobukti')
                     ->join(DB::raw("kasgantungheader with (readuncommitted)"), 'absensisupirheader.kasgantung_nobukti', 'kasgantungheader.nobukti')
                     ->whereRaw("gajisupiruangjalan.gajisupir_nobukti in ($allSP)")
-                    ->groupBy('absensisupirheader.kasgantung_nobukti', 'kasgantungheader.coakaskeluar','kasgantungheader.tglbukti')
+                    ->groupBy('absensisupirheader.kasgantung_nobukti', 'kasgantungheader.coakaskeluar', 'kasgantungheader.tglbukti')
                     ->get();
             }
             $nilaiuangjalan = 0;
@@ -3175,6 +3175,11 @@ class ProsesGajiSupirHeader extends MyModel
             }
         }
 
+        DB::update(DB::raw("update penerimaantruckingheader set prosesgajisupir_nobukti=c.nobukti from penerimaantruckingheader a 
+                            INNER JOIN gajisupirbbm b on a.nobukti=b.penerimaantrucking_nobukti 
+                            INNER JOIN prosesgajisupirdetail c on b.gajisupir_nobukti=c.gajisupir_nobukti
+                            where left(A.nobukti,3)='BBM'
+                            and c.nobukti='" . $prosesGajiSupirHeader->nobukti . "'"));
         return $prosesGajiSupirHeader;
     }
 
@@ -4045,7 +4050,7 @@ class ProsesGajiSupirHeader extends MyModel
                     ->groupBy('absensisupirheader.kasgantung_nobukti', 'kasgantungheader.coakaskeluar', 'kasgantungheader.tglbukti')
                     ->get();
             }
-            foreach ($gajiSupirUangjalan as $key => $value) {        
+            foreach ($gajiSupirUangjalan as $key => $value) {
                 $tglKgt = date('d-m-Y', strtotime($value->tglbukti));
                 $nominalUangJalan[] = $value->nominal;
                 $keteranganUangJalan[] = 'POSTING UANG JALAN ' . $prosesGajiSupirHeader->nobukti . " ($value->kasgantung_nobukti TANGGAL $tglKgt)";
@@ -4154,6 +4159,12 @@ class ProsesGajiSupirHeader extends MyModel
         $newJurnal = new JurnalUmumHeader();
         $newJurnal = $newJurnal->find($getJurnal->id);
         (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+
+        DB::update(DB::raw("update penerimaantruckingheader set prosesgajisupir_nobukti=c.nobukti from penerimaantruckingheader a 
+                            INNER JOIN gajisupirbbm b on a.nobukti=b.penerimaantrucking_nobukti 
+                            INNER JOIN prosesgajisupirdetail c on b.gajisupir_nobukti=c.gajisupir_nobukti
+                            where left(A.nobukti,3)='BBM'
+                            and c.nobukti='" . $prosesGajiSupirHeader->nobukti . "'"));        
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($prosesGajiSupirDetail->getTable()),
