@@ -10,6 +10,7 @@ use App\Http\Requests\InvoiceLunasKePusatRequest;
 
 use stdClass;
 use App\Models\Error;
+use App\Models\Parameter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
@@ -216,7 +217,7 @@ class InvoiceLunasKePusatController extends Controller
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
         $judul = $getJudul->text;
-
+        $namacabang = (new Parameter())->cekText('CABANG','CABANG');
         // dd($invoice_lunaskepusat);
 
         $bulan = $this->getBulan(substr($request->periode, 0, 2));
@@ -232,11 +233,13 @@ class InvoiceLunasKePusatController extends Controller
 
         $sheet->setCellValue('A2', 'LAPORAN INVOICE LUNAS KE PUSAT');
         $sheet->setCellValue('A3', 'PERIODE : ' . $bulan . ' - ' . $tahun);
+        $sheet->setCellValue('A4', 'CABANG : ' . $namacabang);
 
         $sheet->getStyle("A2")->getFont()->setBold(true);
         $sheet->getStyle("A3:B3")->getFont()->setBold(true);
+        $sheet->getStyle("A4:B4")->getFont()->setBold(true);
 
-        $detail_table_header_row = 5;
+        $detail_table_header_row = 6;
         $detail_start_row = $detail_table_header_row + 1;
 
         $styleArray = array(
@@ -322,8 +325,8 @@ class InvoiceLunasKePusatController extends Controller
 
 
             $sheet->getStyle("A$detail_start_row:H$detail_start_row")->applyFromArray($styleArray);
-            $sheet->getStyle("D$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->getStyle("F$detail_start_row:H$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->getStyle("D$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+            $sheet->getStyle("F$detail_start_row:H$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
             $sheet->getStyle("A$detail_start_row")->getNumberFormat()->setFormatCode('dd-mm-yyyy');
             $sheet->getStyle("E$detail_start_row")->getNumberFormat()->setFormatCode('dd-mm-yyyy');
 
@@ -334,17 +337,17 @@ class InvoiceLunasKePusatController extends Controller
         $sheet->mergeCells('A' . $detail_start_row . ':C' . $detail_start_row);
         $sheet->setCellValue("A$detail_start_row", 'Total')->getStyle('A' . $detail_start_row . ':C' . $detail_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
 
-        $sheet->setCellValue("D$detail_start_row", "=SUM(D6:D" . ($detail_start_row - 1) . ")")->getStyle("D$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
-        $sheet->setCellValue("F$detail_start_row", "=SUM(F6:F" . ($detail_start_row - 1) . ")")->getStyle("F$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+        $sheet->setCellValue("D$detail_start_row", "=SUM(D7:D" . ($detail_start_row - 1) . ")")->getStyle("D$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+        $sheet->setCellValue("F$detail_start_row", "=SUM(F7:F" . ($detail_start_row - 1) . ")")->getStyle("F$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
 
-        $sheet->setCellValue("H$detail_start_row",  "=SUM(H6:H" . ($detail_start_row - 1) . ")")->getStyle("H$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
-        $sheet->setCellValue("G$detail_start_row",  "=SUM(G6:G" . ($detail_start_row - 1) . ")")->getStyle("G$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+        $sheet->setCellValue("H$detail_start_row",  "=SUM(H7:H" . ($detail_start_row - 1) . ")")->getStyle("H$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+        $sheet->setCellValue("G$detail_start_row",  "=SUM(G7:G" . ($detail_start_row - 1) . ")")->getStyle("G$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
 
 
-        $sheet->getStyle("D$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-        $sheet->getStyle("F$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-        $sheet->getStyle("G$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-        $sheet->getStyle("H$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+        $sheet->getStyle("D$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+        $sheet->getStyle("F$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+        $sheet->getStyle("G$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+        $sheet->getStyle("H$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
 
         $sheet->getColumnDimension('A')->setWidth(12);
         $sheet->getColumnDimension('B')->setAutoSize(true);
