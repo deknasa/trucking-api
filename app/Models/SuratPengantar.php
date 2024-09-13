@@ -4652,10 +4652,11 @@ class SuratPengantar extends MyModel
 
         $query = DB::table("suratpengantar")->from(db::raw("suratpengantar as sp with (readuncommitted)"))
             ->select(
-                db::raw("sp.id, sp.nobukti as nobuktiedit,isnull(sp.jobtrucking,'') as jobtruckingedit,format(sp.tglbukti,'dd') as tglbuktiedit, sp.nosp as nospedit, sp.nocont as nocontedit, sp.nocont2 as nocont2edit, sp.noseal as nosealedit, sp.noseal2 as noseal2edit, gandengan.kodegandengan as gandenganedit, container.kodecontainer as containeredit, statuscontainer.keterangan as statuscontaineredit,jenisorder.keterangan as jenisorderedit, dari.kodekota as dariedit, sampai.kodekota as sampaiedit, sp.penyesuaian as penyesuaianedit, (dari.kodekota + '-' + sampai.kodekota + (case when isnull(sp.penyesuaian,'')!='' then ' ('+sp.penyesuaian+')' else '' end)) as tujuanedit, sp.gajisupir as boronganedit, isnull(tambahan.extra,0) as extraedit,agen.kodeagen as agenedit,(case when dari.statuspelabuhan = $statusPelabuhan then 1 else 0 end) as ispelabuhan,(case when orderantrucking.statuslangsir = $statusLangsir then 1 else 0 end) as islangsir,(case when sp.statuslongtrip = $statusLongtrip then 1 else 0 end) as islongtrip")
+                db::raw("sp.id, sp.nobukti as nobuktiedit,isnull(sp.jobtrucking,'') as jobtruckingedit,format(sp.tglbukti,'dd') as tglbuktiedit, sp.nosp as nospedit, sp.nocont as nocontedit, sp.nocont2 as nocont2edit, gandengan.kodegandengan as gandenganedit,pelanggan.namapelanggan as pelangganedit, container.kodecontainer as containeredit, statuscontainer.keterangan as statuscontaineredit,jenisorder.keterangan as jenisorderedit, dari.kodekota as dariedit, sampai.kodekota as sampaiedit, sp.penyesuaian as penyesuaianedit, (dari.kodekota + '-' + sampai.kodekota + (case when isnull(sp.penyesuaian,'')!='' then ' ('+sp.penyesuaian+')' else '' end)) as tujuanedit, sp.gajisupir as boronganedit, isnull(tambahan.extra,0) as extraedit,agen.kodeagen as agenedit,(case when dari.statuspelabuhan = $statusPelabuhan then 1 else 0 end) as ispelabuhan,(case when orderantrucking.statuslangsir = $statusLangsir then 1 else 0 end) as islangsir,(case when sp.statuslongtrip = $statusLongtrip then 1 else 0 end) as islongtrip")
             )
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'sp.container_id', 'container.id')
             ->leftJoin(DB::raw("gandengan with (readuncommitted)"), 'sp.gandengan_id', 'gandengan.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'sp.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'sp.jenisorder_id', 'jenisorder.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'sp.agen_id', 'agen.id')
@@ -4684,33 +4685,27 @@ class SuratPengantar extends MyModel
             if ($suratPengantar->dari_id == 1 || $suratPengantar->statuslongtrip == $statusLongtrip) {
                 $suratPengantar->nocont = $data['nocont'][$i];
                 $suratPengantar->nocont2 = $data['nocont2'][$i];
-                $suratPengantar->noseal = $data['noseal'][$i];
-                $suratPengantar->noseal2 = $data['noseal2'][$i];
                 $usermodif = auth('api')->user()->name;
                 if ($suratPengantar->jobtrucking != '') {
-                    DB::update(DB::raw("UPDATE SURATPENGANTAR SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2',modifiedby='$usermodif' where jobtrucking='$suratPengantar->jobtrucking'"));
+                    DB::update(DB::raw("UPDATE SURATPENGANTAR SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',modifiedby='$usermodif' where jobtrucking='$suratPengantar->jobtrucking'"));
 
-                    DB::update(DB::raw("UPDATE orderantrucking SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2',modifiedby='$usermodif' where nobukti='$suratPengantar->jobtrucking'"));
+                    DB::update(DB::raw("UPDATE orderantrucking SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',modifiedby='$usermodif' where nobukti='$suratPengantar->jobtrucking'"));
                 }
             }
             $getJob = DB::table("orderantrucking")->from(db::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $suratPengantar->jobtrucking)->where('statuslangsir', $statusLangsir)->first();
             if ($getJob != '') {
                 $suratPengantar->nocont = $data['nocont'][$i];
                 $suratPengantar->nocont2 = $data['nocont2'][$i];
-                $suratPengantar->noseal = $data['noseal'][$i];
-                $suratPengantar->noseal2 = $data['noseal2'][$i];
                 $usermodif = auth('api')->user()->name;
                 if ($suratPengantar->jobtrucking != '') {
-                    DB::update(DB::raw("UPDATE SURATPENGANTAR SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2',modifiedby='$usermodif' where jobtrucking='$suratPengantar->jobtrucking'"));
+                    DB::update(DB::raw("UPDATE SURATPENGANTAR SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',modifiedby='$usermodif' where jobtrucking='$suratPengantar->jobtrucking'"));
 
-                    DB::update(DB::raw("UPDATE orderantrucking SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2',modifiedby='$usermodif' where nobukti='$suratPengantar->jobtrucking'"));
+                    DB::update(DB::raw("UPDATE orderantrucking SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',modifiedby='$usermodif' where nobukti='$suratPengantar->jobtrucking'"));
                 }
             }
             if ($suratPengantar->jobtrucking == '') {
                 $suratPengantar->nocont = $data['nocont'][$i];
                 $suratPengantar->nocont2 = $data['nocont2'][$i];
-                $suratPengantar->noseal = $data['noseal'][$i];
-                $suratPengantar->noseal2 = $data['noseal2'][$i];
             }
             $suratPengantar->nosp = $data['nosp'][$i];
             $suratPengantar->modifiedby = auth('api')->user()->name;
