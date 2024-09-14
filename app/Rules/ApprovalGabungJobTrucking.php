@@ -47,7 +47,9 @@ class ApprovalGabungJobTrucking implements Rule
             ->first()->id ?? 1;
 
         $bjumlah = 0;
-        $batal = 0;
+        $batal=0;
+        $nocont = '';
+        $noinvoice = '';
         for ($i = 0; $i < count(request()->Id); $i++) {
             $nobukti = request()->Id[$i];
             // dd($nobukti);

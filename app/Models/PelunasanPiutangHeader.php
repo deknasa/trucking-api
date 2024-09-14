@@ -319,11 +319,11 @@ class PelunasanPiutangHeader extends MyModel
         return $data;
     }
 
-    public function getPelunasanPiutang($id, $agenid)
+    public function getPelunasanPiutang($id, $agenid, $pilihan)
     {
         $this->setRequestParameters();
 
-        $tempPiutang = $this->createTempPiutang($id, $agenid);
+        $tempPiutang = $this->createTempPiutang($id, $agenid, $pilihan);
         $tempPelunasan = $this->createTempPelunasan($id, $agenid);
 
         $temp = '##tempGet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -370,15 +370,20 @@ class PelunasanPiutangHeader extends MyModel
         return $data;
     }
 
-    public function createTempPiutang($id, $agenid)
+    public function createTempPiutang($id, $agenid, $pilihan)
     {
         $temp = '##tempPiutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
 
         $fetch = DB::table('piutangheader')->from(DB::raw("piutangheader with (readuncommitted)"))
-            ->select(DB::raw("piutangheader.nobukti,piutangheader.tglbukti,piutangheader.nominal as nominalpiutang,piutangheader.invoice_nobukti, (SELECT (piutangheader.nominal - COALESCE(SUM(pelunasanpiutangdetail.nominal),0) - COALESCE(SUM(pelunasanpiutangdetail.potongan),0) - COALESCE(SUM(pelunasanpiutangdetail.potonganpph),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
-            ->whereRaw("piutangheader.agen_id = $agenid")
-            ->groupBy('piutangheader.id', 'piutangheader.nobukti', 'piutangheader.agen_id', 'piutangheader.nominal', 'piutangheader.tglbukti', 'piutangheader.invoice_nobukti');
+            ->select(DB::raw("piutangheader.nobukti,piutangheader.tglbukti,piutangheader.nominal as nominalpiutang,piutangheader.invoice_nobukti, (SELECT (piutangheader.nominal - COALESCE(SUM(pelunasanpiutangdetail.nominal),0) - COALESCE(SUM(pelunasanpiutangdetail.potongan),0) - COALESCE(SUM(pelunasanpiutangdetail.potonganpph),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"));
+        if ($pilihan == 'agen') {
+            $fetch->whereRaw("piutangheader.agen_id = $agenid")
+                ->groupBy('piutangheader.id', 'piutangheader.nobukti', 'piutangheader.agen_id', 'piutangheader.nominal', 'piutangheader.tglbukti', 'piutangheader.invoice_nobukti');
+        } else {
+            $fetch->whereRaw("piutangheader.pelanggan_id = $agenid")
+                ->groupBy('piutangheader.id', 'piutangheader.nobukti', 'piutangheader.pelanggan_id', 'piutangheader.nominal', 'piutangheader.tglbukti', 'piutangheader.invoice_nobukti');
+        }
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
             $table->date('tglbukti')->nullable();
@@ -519,6 +524,7 @@ class PelunasanPiutangHeader extends MyModel
                 'pelunasanpiutangheader.bank_id',
                 'pelunasanpiutangheader.alatbayar_id',
                 'pelunasanpiutangheader.agen_id',
+                'pelunasanpiutangheader.pelanggan_id',
                 'pelunasanpiutangheader.statuspelunasan',
                 'pelunasanpiutangheader.penerimaan_nobukti',
                 'pelunasanpiutangheader.pengeluaran_nobukti',
@@ -532,10 +538,12 @@ class PelunasanPiutangHeader extends MyModel
                 'bank.namabank as bank',
                 'alatbayar.namaalatbayar as alatbayar',
                 'agen.namaagen as agen',
+                'pelanggan.namapelanggan as pelanggan',
             )
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pelunasanpiutangheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pelunasanpiutangheader.alatbayar_id', 'alatbayar.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'pelunasanpiutangheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pelunasanpiutangheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("notadebetfifo c with (readuncommitted)"), 'pelunasanpiutangheader.nobukti', 'c.pelunasanpiutang_nobukti')
             ->where('pelunasanpiutangheader.id', $id);
 
@@ -781,6 +789,7 @@ class PelunasanPiutangHeader extends MyModel
         $pelunasanPiutangHeader->notakreditpph_nobukti = '-';
         $pelunasanPiutangHeader->notadebet_nobukti =  '-';
         $pelunasanPiutangHeader->agen_id = $data['agen_id'];
+        $pelunasanPiutangHeader->pelanggan_id = $data['pelanggan_id'];
         $pelunasanPiutangHeader->nowarkat = $data['nowarkat'] ?? '';
         $pelunasanPiutangHeader->tglcair = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $pelunasanPiutangHeader->statusformat = $format->id;
@@ -845,6 +854,9 @@ class PelunasanPiutangHeader extends MyModel
         }
 
         $nominal = 0;
+        $nominalemkl_jurnal = [];
+        $coakreditemkl_jurnal = [];
+        $keteranganemkl_jurnal = [];
 
         for ($i = 0; $i < count($data['piutang_id']); $i++) {
             $piutang = PiutangHeader::where('nobukti', $data['piutang_nobukti'][$i])->first();
@@ -915,7 +927,64 @@ class PelunasanPiutangHeader extends MyModel
             }
 
             $nominalDetail[] = $data['bayar'][$i];
-            $coaKredit[] =  $piutang->coadebet;
+            if ($data['agen_id'] != 0) {
+                $coaKredit[] =  $piutang->coadebet;
+            } else {
+                // START INVOICE EMKL FIFO UNTUK KE JURNAL
+                $kondisi = true;
+                $nominalbayarfifo = $data['bayar'][$i] + $potongan;
+                while ($kondisi == true) {
+
+                    // CEK FIFO
+                    $cekfifo = db::table("invoiceemklfifo")->from(db::raw("invoiceemklfifo with (readuncommitted)"))
+                        ->where('nobukti', $piutang->invoice_nobukti)
+                        ->whereRaw("isnull(nominal,0) != isnull(nominalpelunasan,0)")
+                        ->whereRaw("isnull(nominal,0) > 0")
+                        ->first();
+
+                    if ($cekfifo != '') {
+                        $nominalsisa = $cekfifo->nominal - $cekfifo->nominalpelunasan;
+                        if ($nominalbayarfifo <= $nominalsisa) {
+
+                            DB::update(DB::raw("UPDATE invoiceemklfifo SET nominalpelunasan=$nominalbayarfifo where id=$cekfifo->id"));
+                            $nominalemkl_jurnal[] = $nominalbayarfifo;
+                            $coakreditemkl_jurnal[] = $cekfifo->coadebet;
+                            $keteranganemkl_jurnal[] = $data['keterangan'][$i];
+
+                            $kondisi = false;
+                        } else {
+                            $nominalbayarfifo = $nominalbayarfifo - $nominalsisa;
+                            DB::update(DB::raw("UPDATE invoiceemklfifo SET nominalpelunasan=$nominalsisa where id=$cekfifo->id"));
+
+                            $nominalemkl_jurnal[] = $nominalsisa;
+                            $coakreditemkl_jurnal[] = $cekfifo->coadebet;
+                            $keteranganemkl_jurnal[] = $data['keterangan'][$i];
+
+                            $cekfifoselisihkurang = db::table("invoiceemklfifo")->from(db::raw("invoiceemklfifo with (readuncommitted)"))
+                                ->where('jobemkl_nobukti', $cekfifo->jobemkl_nobukti)
+                                ->where('status', 'selisih')
+                                ->whereRaw("isnull(nominal,0) != isnull(nominalpelunasan,0)")
+                                ->first();
+
+                            if ($cekfifoselisihkurang != '') {
+                                DB::update(DB::raw("UPDATE invoiceemklfifo SET nominalpelunasan=$cekfifoselisihkurang->nominal where id=$cekfifoselisihkurang->id"));
+
+                                $nominalemkl_jurnal[] = $cekfifoselisihkurang->nominal;
+                                $coakreditemkl_jurnal[] = $cekfifoselisihkurang->coadebet;
+                                $keteranganemkl_jurnal[] = $data['keterangan'][$i];
+                            }
+
+                        }
+                    }
+                }
+                // END INVOICE EMKL FIFO UNTUK KE JURNAL
+                $getcoainvoice = db::table('invoiceemkldetail')->from(db::raw("invoiceemkldetail as a with (readuncommitted)"))
+                    ->select('a.coadebet')
+                    ->join(db::raw("invoiceemklheader as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                    ->where('b.piutang_nobukti', $piutang->nobukti)
+                    ->first();
+                $coaKredit[] = $getcoainvoice->coadebet;
+            }
             // dd($piutang->coadebet,$piutang->invoice_nobukti);
             $keteranganDetail[] = $data['keterangan'][$i];
             $invoiceNobukti[] = $piutang->invoice_nobukti ?? '';
@@ -991,6 +1060,13 @@ class PelunasanPiutangHeader extends MyModel
                 'pelunasanpiutang_nobukti' => $pelunasanNobukti
 
             ];
+            if($data['pelanggan_id'] != 0){
+                // JURNAL UNTUK PENERIMAAN KAS/BANK INVOICE EMKL
+                $penerimaanRequest['nominalemkl_jurnal'] = $nominalemkl_jurnal;
+                $penerimaanRequest['coakreditemkl_jurnal'] = $coakreditemkl_jurnal;
+                $penerimaanRequest['keteranganemkl_jurnal'] = $keteranganemkl_jurnal;
+                $penerimaanRequest['pelunasanemkl'] = 1;
+            }
             $penerimaanHeader = (new PenerimaanHeader())->processStore($penerimaanRequest);
             $pelunasanPiutangHeader->penerimaan_nobukti = $penerimaanHeader->nobukti;
         } else {
@@ -1313,7 +1389,17 @@ class PelunasanPiutangHeader extends MyModel
             }
             // $tglJatuhTempo[] = $pelunasanPiutangHeader->tglbukti;
             $nominalDetail[] = $data['bayar'][$i];
-            $coaKredit[] =  $piutang->coadebet;
+
+            if ($pelunasanPiutangHeader->agen_id != 0) {
+                $coaKredit[] =  $piutang->coadebet;
+            } else {
+                $getcoainvoice = db::table('invoiceemkldetail')->from(db::raw("invoiceemkldetail as a with (readuncommitted)"))
+                    ->select('a.coadebet')
+                    ->join(db::raw("invoiceemklheader as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                    ->where('b.piutang_nobukti', $piutang->nobukti)
+                    ->first();
+                $coaKredit[] = $getcoainvoice->coadebet;
+            }
             $keteranganDetail[] = $data['keterangan'][$i];
             $invoiceNobukti[] = $piutang->invoice_nobukti ?? '';
             $pelunasanNobukti[] = $pelunasanPiutangHeader->nobukti;

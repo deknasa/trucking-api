@@ -23,6 +23,11 @@ class CreateInvoiceemkldetailTable extends Migration
             $table->string('jobemkl_nobukti', 50)->nullable();
             $table->unsignedBigInteger('container_id')->nullable();
             $table->double('nominal', 15,2)->nullable();
+            $table->double('selisih', 15,2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('coadebet', 50)->nullable();
+            $table->string('coakredit', 50)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
 
@@ -30,12 +35,10 @@ class CreateInvoiceemkldetailTable extends Migration
             $table->foreign('jobemkl_nobukti', 'invoiceemkldetail_jobemkl_jobemkl_nobukti_foreign')->references('nobukti')->on('jobemkl');
             $table->foreign('container_id', 'invoiceemkldetail_container_container_id_foreign')->references('id')->on('container');
 
-
         });
 
         DB::statement("ALTER TABLE invoiceemkldetail NOCHECK CONSTRAINT invoiceemkldetail_jobemkl_jobemkl_nobukti_foreign");
         DB::statement("ALTER TABLE invoiceemkldetail NOCHECK CONSTRAINT invoiceemkldetail_container_container_id_foreign");
-
 
     }
 

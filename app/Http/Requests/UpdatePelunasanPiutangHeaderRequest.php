@@ -58,16 +58,19 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
         }
         $agen_id = $this->agen_id;
         $rulesAgen_id = [];
-        if ($agen_id != null) {
-            if ($agen_id == 0) {
+        if (request()->pelanggan == '') {
+
+            if ($agen_id != null) {
+                if ($agen_id == 0) {
+                    $rulesAgen_id = [
+                        'agen_id' => ['required', 'numeric', 'min:1', Rule::in($getDataPelunasan->agen_id)]
+                    ];
+                }
+            } else if ($agen_id == null && $this->agen != '') {
                 $rulesAgen_id = [
                     'agen_id' => ['required', 'numeric', 'min:1', Rule::in($getDataPelunasan->agen_id)]
                 ];
             }
-        } else if ($agen_id == null && $this->agen != '') {
-            $rulesAgen_id = [
-                'agen_id' => ['required', 'numeric', 'min:1', Rule::in($getDataPelunasan->agen_id)]
-            ];
         }
         $alatBayar = new AlatBayar();
         $dataAlatBayar = [];
@@ -100,27 +103,28 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
                 'nowarkat' => 'required'
             ];
         }
-       
+
         $rules = [
             'id' => new ValidasiDestroyPelunasanPiutang(),
-            'notadebet_nobukti' =>  [ new ValidasiNotaDebetPelunasan()],
+            'notadebet_nobukti' =>  [new ValidasiNotaDebetPelunasan()],
             'nobukti' => [Rule::in($getDataPelunasan->nobukti)],
             "tglbukti" => [
-                "required", 'date_format:d-m-Y',
+                "required",
+                'date_format:d-m-Y',
                 'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
             'statuspelunasan' =>  ['required', Rule::in($getDataPelunasan->statuspelunasan), new ValidasiStatusPelunasan()],
             'bank' => 'required',
             'agen' => [
-                'required',
+                "required_if:pelanggan,!=,''",
                 new ValidasiDetail($jumlahdetail),
                 new ValidasiStatusNotaDebet(),
                 new ValidasiStatusNotaKredit(),
                 new ValidasiPiutangPelunasan()
                 // new ValidasiNominalSaldo()
             ],
-            'tgljatuhtempo' => ['date_format:d-m-Y','after_or_equal:'.request()->tglbukti],
+            'tgljatuhtempo' => ['date_format:d-m-Y', 'after_or_equal:' . request()->tglbukti],
             'alatbayar' => ['required', Rule::in($dataKodeAlatBayar)],
         ];
 

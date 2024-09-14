@@ -112,12 +112,16 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
             'notadebet_nobukti' =>  [ new ValidasiNotaDebetPelunasan()],
             'statuspelunasan' =>  ['required', Rule::in($status), new ValidasiStatusPelunasan()],
             'agen' => [
-                'required',
+               "required_if:pelanggan,=,''",
                 new ValidasiDetail($jumlahdetail),
                 new ValidasiStatusNotaDebet(),
                 new ValidasiStatusNotaKredit(),
                 new ValidasiPiutangPelunasan()
                 // new ValidasiNominalSaldo()
+            ],
+            'pelanggan' => [
+                "required_if:agen,=,null",                
+                new ValidasiDetail($jumlahdetail),
             ],
             'tgljatuhtempo' => ['date_format:d-m-Y','after_or_equal:'.request()->tglbukti],
             'alatbayar' => ['required', Rule::in($dataKodeAlatBayar)]

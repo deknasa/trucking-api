@@ -32,10 +32,12 @@ class CekMaxBayarPelunasanPiutang implements Rule
         $potongan = (request()->potongan[$attribute] == '') ? 0 : request()->potongan[$attribute];
         $total = $potongan + $value;
         $piutang = new PiutangHeader();
-        $getPiutang = $piutang->getSisaPiutang($nobukti, request()->agen_id);
-        if ($getPiutang != '') {
-            if ($total > $getPiutang->sisa) {
-                return false;
+        if (request()->agen_id != '' || request()->agen_id != 0) {
+            $getPiutang = $piutang->getSisaPiutang($nobukti, request()->agen_id);
+            if ($getPiutang != '') {
+                if ($total > $getPiutang->sisa) {
+                    return false;
+                }
             }
         }
         return true;

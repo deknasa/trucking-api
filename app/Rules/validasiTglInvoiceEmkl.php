@@ -3,10 +3,9 @@
 namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
-use App\Models\PiutangHeader;
 use Illuminate\Contracts\Validation\Rule;
 
-class CekMinusSisaPelunasanPiutang implements Rule
+class validasiTglInvoiceEmkl implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,16 +26,11 @@ class CekMinusSisaPelunasanPiutang implements Rule
      */
     public function passes($attribute, $value)
     {
-        $attribute = substr($attribute, 5);
-        $nobukti = request()->piutang_nobukti[$attribute];
-        $piutang = new PiutangHeader();
-        if (request()->agen_id != '' || request()->agen_id != 0) {
-            $getPiutang = $piutang->getSisaPiutang($nobukti, request()->agen_id);
-            if ($getPiutang != '') {
-                if ($value > $getPiutang->sisa) {
-                    return false;
-                }
-            }
+        $tgldari = request()->tgldari;
+        $tglsampai = request()->tglsampai;
+
+        if(date('m', strtotime($tgldari)) != date('m', strtotime($tglsampai))){
+            return false;
         }
         return true;
     }
@@ -48,6 +42,6 @@ class CekMinusSisaPelunasanPiutang implements Rule
      */
     public function message()
     {
-        return  app(ErrorController::class)->geterror('NTLB')->keterangan . ' nominal piutang';
+        return app(ErrorController::class)->geterror('TBB')->keterangan;
     }
 }
