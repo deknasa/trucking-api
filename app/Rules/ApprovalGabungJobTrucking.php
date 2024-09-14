@@ -47,10 +47,39 @@ class ApprovalGabungJobTrucking implements Rule
             ->first()->id ?? 1;
 
         $bjumlah = 0;
-        $batal=0;
+        $batal = 0;
         for ($i = 0; $i < count(request()->Id); $i++) {
             $nobukti = request()->Id[$i];
             // dd($nobukti);
+
+            $querybulanpelabuhan = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+                ->select(
+                    db::raw("format(a.tglbukti,'MM-yyyy') as bulan")
+                )
+                ->where('a.nobukti', $nobukti)
+                ->whereraw("(a.dari_id in(" . $pelabuhancabang . ") or isnull(a.statuslongtrip,0)=65)")
+                ->first();
+
+            $querynonbulanpelabuhan = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+                ->select(
+                    db::raw("format(a.tglbukti,'MM-yyyy') as bulan")
+                )
+                ->where('a.nobukti', $nobukti)
+                ->whereraw("(a.dari_id not in(" . $pelabuhancabang . ") )")
+                ->first();
+
+            if (isset($querybulanpelabuhan)) {
+                $bulanpelabuhan = $querybulanpelabuhan->bulan ?? '';
+            }
+            if (isset($querynonbulanpelabuhan)) {
+                $bulannonpelabuhan = $querybulannonpelabuhan->bulan ?? '';
+            }
+
+
+
+
+
+
             $querypelabuhan = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
                 ->select(
                     'a.jobtrucking',
@@ -77,15 +106,15 @@ class ApprovalGabungJobTrucking implements Rule
                 $nocont = $querypelabuhan->nocont ?? '';
                 $noinvoice = $querypelabuhan->noinvoice ?? '';
                 $bjumlah = $bjumlah + 1;
-            } 
+            }
             if (isset($querynonpelabuhan)) {
-                $batal=1;
+                $batal = 1;
             }
         }
-        
-        $this->bjumlah = $bjumlah;
-        $this->nocont = $nocont;
-        $this->noinvoice = $noinvoice;
+
+        $this->bjumlah = $bjumlah ?? 0;
+        $this->nocont = $nocont ?? '';
+        $this->noinvoice = $noinvoice ?? '';
         $this->batal = $batal;
         // dd($nocont);
 
@@ -97,12 +126,12 @@ class ApprovalGabungJobTrucking implements Rule
             return false;
         }
         // dd($nocont,$batal);
-        if ($nocont == '' && $batal==0) {
+        if ($nocont == '' && $batal == 0) {
             // dd('test');
             return false;
         }
         // dd($batal);
-        if ($noinvoice != '') {
+        if ($noinvoice != ''  && $bulanpelabuhan == $bulannonpelabuhan) {
             return false;
         }
 
@@ -125,7 +154,7 @@ class ApprovalGabungJobTrucking implements Rule
             return app(ErrorController::class)->geterror('TTPL')->keterangan;
         }
         // dd($this->nocont);
-        if ($this->nocont == '' && $this->batal==0) {
+        if ($this->nocont == '' && $this->batal == 0) {
             $keterangan = 'No Container Dari Pelabuhan ' . app(ErrorController::class)->geterror('WI')->keterangan;
             return $keterangan;
         }
