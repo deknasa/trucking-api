@@ -3471,6 +3471,18 @@ class SuratPengantar extends MyModel
             $suratPengantar->jenisorder_id = $data['jenisorder_id']  ?? '';
             $suratPengantar->pelanggan_id = $data['pelanggan_id']  ?? '';
 
+            $suratPengantar->nocontold = $data['nocontold'] ?? '';
+            $suratPengantar->nocont2old =  $data['nocont2old'] ?? '';
+            $suratPengantar->nojobold =  $data['nojobold'] ?? '';
+            $suratPengantar->nojob2old = $data['nojob2old'] ?? '';
+            $suratPengantar->nosealold = $data['nosealold'] ?? '';
+            $suratPengantar->noseal2old = $data['noseal2old'] ?? '';
+            $suratPengantar->gandenganold_id = $data['gandenganold_id']  ?? '';
+            $suratPengantar->containerold_id = $data['containerold_id']  ?? '';
+            $suratPengantar->agenold_id = $data['agenold_id']  ?? '';
+            $suratPengantar->jenisorderold_id = $data['jenisorderold_id']  ?? '';
+            $suratPengantar->pelangganold_id = $data['pelangganold_id']  ?? '';
+
             if (!$suratPengantar->save()) {
                 throw new \Exception('Error edit surat pengantar.');
             }
@@ -4286,19 +4298,47 @@ class SuratPengantar extends MyModel
                             'a.id',
                             'a.tglbukti',
                             'a.jobtrucking',
-                        )
+                            'a.nocontold',
+                            'a.nosealold',
+                            'a.nojobold',
+                            'a.nocont2old',
+                            'a.noseal2old',
+                            'a.nojob2old',
+                            'a.gandenganold_id',
+                            'a.containerold_id',
+                            'a.agenold_id',
+                            'a.jenisorderold_id',
+                            'a.pelangganold_id',
+                            'a.nocont',
+                            'a.noseal',
+                            'a.nojob',
+                            'a.nocont2',
+                            'a.noseal2',
+                            'a.nojob2',
+                            'a.gandengan_id',
+                            'a.container_id',
+                            'a.agen_id',
+                            'a.jenisorder_id',
+                            'a.pelanggan_id',
+
+                            )
                         ->where('a.nobukti', $nobukti)
                         ->first();
 
                     $buktijob = $querysp->jobtrucking ?? '';
                     if ($buktijob != '') {
                         $jobtrucking = '';
-                        $nocont = '';
-                        $noseal = '';
-                        $nojob = '';
-                        $nojob2 = '';
-                        $nocont2 = '';
-                        $noseal2 = '';
+                        $nocont = $querysp->nocontold ?? '';
+                        $noseal = $querysp->nosealold ?? '';
+                        $nojob = $querysp->nojobold ?? '';
+                        $nojob2 = $querysp->nojob2old ?? '';
+                        $nocont2 = $querysp->nocont2old ?? '';
+                        $noseal2 = $querysp->noseal2old ?? '';
+                        $pelanggan_id = $querysp->pelangganold_id ?? '';
+                        $jenisorder_id = $querysp->jenisorderold_id ?? '';
+                        $agen_id = $querysp->agenold_id ?? '';
+                        $gandengan_id = $querysp->gandenganold_id ?? '';
+                        $container_id = $querysp->containerold_id ?? '';
                     }
 
                     $suratPengantar = [
@@ -4316,6 +4356,19 @@ class SuratPengantar extends MyModel
                         'agen_id' => $agen_id,
                         'jenisorder_id' => $jenisorder_id,
                         'pelanggan_id' => $pelanggan_id,
+
+                        'nojobold' =>  $querysp->nojob ?? '',
+                        'gandenganold_id' =>  $querysp->gandengan_id ?? 0,
+                        'nocontold' =>  $querysp->nocont ?? '',
+                        'nosealold' =>  $querysp->noseal ?? '',
+                        'nojob2old' =>  $querysp->nojob2 ?? '',
+                        'nocont2old' =>  $querysp->nocont2 ?? '',
+                        'noseal2old' =>  $querysp->noseal2 ?? '',
+                        'containerold_id' => $querysp->container_id ?? 0,
+                        'agenold_id' => $querysp->agen_id ?? 0,
+                        'jenisorderold_id' => $querysp->jenisorder_id ?? 0,
+                        'pelangganold_id' => $querysp->pelanggan_id ?? 0,
+
                         // 'tarif_id' => $data['tarifrincian_id'],
                         'postingdari' => 'APPROVAL GABUNG JOB TRUCKING'
                     ];

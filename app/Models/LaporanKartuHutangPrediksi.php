@@ -616,6 +616,7 @@ class LaporanKartuHutangPrediksi extends MyModel
             //     'diperiksa',
             // ], $query);
 
+            
 
         $data = $query->get();
         return $data;
