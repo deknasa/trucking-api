@@ -211,27 +211,44 @@ class PiutangHeader extends MyModel
         return $data;
     }
 
-    public function getPiutang($id)
+    public function getPiutang($id, $pilihan)
     {
         $this->setRequestParameters();
 
-        $temp = $this->createTempPiutang($id);
+        $temp = $this->createTempPiutang($id, $pilihan);
+        if ($pilihan == 'agen') {
 
-        $query = DB::table('piutangheader')
-            ->from(
-                DB::raw("piutangheader with (readuncommitted)")
-            )
-            ->select(DB::raw("row_number() Over(Order By piutangheader.id) as id,piutangheader.nobukti as nobukti,piutangheader.tglbukti as tglbukti_piutang, piutangheader.invoice_nobukti, piutangheader.nominal, piutangheader.agen_id," . $temp . ".sisa, $temp.sisa as sisaawal,
+            $query = DB::table('piutangheader')
+                ->from(
+                    DB::raw("piutangheader with (readuncommitted)")
+                )
+                ->select(DB::raw("row_number() Over(Order By piutangheader.id) as id,piutangheader.nobukti as nobukti,piutangheader.tglbukti as tglbukti_piutang, piutangheader.invoice_nobukti, piutangheader.nominal, piutangheader.agen_id," . $temp . ".sisa, $temp.sisa as sisaawal,
                 (case when isnull(c.nobukti,'')<>'' or isnull(piutangheader.postingdari,'')='INVOICE' then 'UTAMA' else 'TAMBAHAN' end) as jenisinvoice"))
-            ->leftJoin(DB::raw("$temp with (readuncommitted)"), 'piutangheader.agen_id', $temp . ".agen_id")
-            ->leftjoin(DB::raw("invoiceheader c with (readuncommitted)"), 'piutangheader.invoice_nobukti', "c.nobukti")
-            ->whereRaw("piutangheader.agen_id = $id")
-            ->whereRaw("piutangheader.nobukti = $temp.nobukti")
-            ->where(function ($query) use ($temp) {
-                $query->whereRaw("$temp.sisa != 0")
-                    ->orWhereRaw("$temp.sisa is null");
-            });
+                ->leftJoin(DB::raw("$temp with (readuncommitted)"), 'piutangheader.agen_id', $temp . ".agen_id")
+                ->leftjoin(DB::raw("invoiceheader c with (readuncommitted)"), 'piutangheader.invoice_nobukti', "c.nobukti")
+                ->whereRaw("piutangheader.agen_id = $id")
+                ->whereRaw("piutangheader.nobukti = $temp.nobukti")
+                ->where(function ($query) use ($temp) {
+                    $query->whereRaw("$temp.sisa != 0")
+                        ->orWhereRaw("$temp.sisa is null");
+                });
+        } else {
 
+            $query = DB::table('piutangheader')
+                ->from(
+                    DB::raw("piutangheader with (readuncommitted)")
+                )
+                ->select(DB::raw("row_number() Over(Order By piutangheader.id) as id,piutangheader.nobukti as nobukti,piutangheader.tglbukti as tglbukti_piutang, piutangheader.invoice_nobukti, piutangheader.nominal, piutangheader.pelanggan_id," . $temp . ".sisa, $temp.sisa as sisaawal,
+                (case when isnull(c.nobukti,'')<>'' or isnull(piutangheader.postingdari,'')='INVOICE' then 'UTAMA' else 'TAMBAHAN' end) as jenisinvoice"))
+                ->leftJoin(DB::raw("$temp with (readuncommitted)"), 'piutangheader.pelanggan_id', $temp . ".pelanggan_id")
+                ->leftjoin(DB::raw("invoiceheader c with (readuncommitted)"), 'piutangheader.invoice_nobukti', "c.nobukti")
+                ->whereRaw("piutangheader.pelanggan_id = $id")
+                ->whereRaw("piutangheader.nobukti = $temp.nobukti")
+                ->where(function ($query) use ($temp) {
+                    $query->whereRaw("$temp.sisa != 0")
+                        ->orWhereRaw("$temp.sisa is null");
+                });
+        }
         // dd($query->toSql());
 
         $data = $query->get();
@@ -240,28 +257,49 @@ class PiutangHeader extends MyModel
         return $data;
     }
 
-    public function createTempPiutang($id)
+    public function createTempPiutang($id, $pilihan)
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
+        if ($pilihan == 'agen') {
 
-        $fetch = DB::table('piutangheader')
-            ->from(
-                DB::raw("piutangheader with (readuncommitted)")
-            )
-            ->select(DB::raw("piutangheader.nobukti,piutangheader.agen_id, sum(pelunasanpiutangdetail.nominal) as nominalbayar, (SELECT (piutangheader.nominal - coalesce(SUM(pelunasanpiutangdetail.nominal),0) - coalesce(SUM(pelunasanpiutangdetail.potongan),0) - coalesce(SUM(pelunasanpiutangdetail.potonganpph),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
-            ->leftJoin(DB::raw("pelunasanpiutangdetail with (readuncommitted)"), 'pelunasanpiutangdetail.piutang_nobukti', 'piutangheader.nobukti')
-            ->whereRaw("piutangheader.agen_id = $id")
-            ->groupBy('piutangheader.nobukti', 'piutangheader.agen_id', 'piutangheader.nominal');
-        // ->get();
-        Schema::create($temp, function ($table) {
-            $table->string('nobukti');
-            $table->bigInteger('agen_id')->nullable();
-            $table->bigInteger('nominalbayar')->nullable();
-            $table->bigInteger('sisa')->nullable();
-        });
+            $fetch = DB::table('piutangheader')
+                ->from(
+                    DB::raw("piutangheader with (readuncommitted)")
+                )
+                ->select(DB::raw("piutangheader.nobukti,piutangheader.agen_id, sum(pelunasanpiutangdetail.nominal) as nominalbayar, (SELECT (piutangheader.nominal - coalesce(SUM(pelunasanpiutangdetail.nominal),0) - coalesce(SUM(pelunasanpiutangdetail.potongan),0) - coalesce(SUM(pelunasanpiutangdetail.potonganpph),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
+                ->leftJoin(DB::raw("pelunasanpiutangdetail with (readuncommitted)"), 'pelunasanpiutangdetail.piutang_nobukti', 'piutangheader.nobukti')
+                ->whereRaw("piutangheader.agen_id = $id")
+                ->groupBy('piutangheader.nobukti', 'piutangheader.agen_id', 'piutangheader.nominal');
+            // ->get();
+            Schema::create($temp, function ($table) {
+                $table->string('nobukti');
+                $table->bigInteger('agen_id')->nullable();
+                $table->bigInteger('nominalbayar')->nullable();
+                $table->bigInteger('sisa')->nullable();
+            });
 
-        $tes = DB::table($temp)->insertUsing(['nobukti', 'agen_id', 'nominalbayar', 'sisa'], $fetch);
+            $tes = DB::table($temp)->insertUsing(['nobukti', 'agen_id', 'nominalbayar', 'sisa'], $fetch);
+        } else {
+
+            $fetch = DB::table('piutangheader')
+                ->from(
+                    DB::raw("piutangheader with (readuncommitted)")
+                )
+                ->select(DB::raw("piutangheader.nobukti,piutangheader.pelanggan_id, sum(pelunasanpiutangdetail.nominal) as nominalbayar, (SELECT (piutangheader.nominal - coalesce(SUM(pelunasanpiutangdetail.nominal),0) - coalesce(SUM(pelunasanpiutangdetail.potongan),0) - coalesce(SUM(pelunasanpiutangdetail.potonganpph),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
+                ->leftJoin(DB::raw("pelunasanpiutangdetail with (readuncommitted)"), 'pelunasanpiutangdetail.piutang_nobukti', 'piutangheader.nobukti')
+                ->whereRaw("piutangheader.pelanggan_id = $id")
+                ->groupBy('piutangheader.nobukti', 'piutangheader.pelanggan_id', 'piutangheader.nominal');
+            // ->get();
+            Schema::create($temp, function ($table) {
+                $table->string('nobukti');
+                $table->bigInteger('pelanggan_id')->nullable();
+                $table->bigInteger('nominalbayar')->nullable();
+                $table->bigInteger('sisa')->nullable();
+            });
+
+            $tes = DB::table($temp)->insertUsing(['nobukti', 'pelanggan_id', 'nominalbayar', 'sisa'], $fetch);
+        }
 
 
         return $temp;
@@ -516,9 +554,9 @@ class PiutangHeader extends MyModel
             ->first();
 
         $piutangHeader = new PiutangHeader();
-        $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'])->first();
+        $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'] ?? 0)->first();
 
-        $getCoapendapatan = db::table('agen')->from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'])
+        $getCoapendapatan = db::table('agen')->from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'] ?? 0)
             ->whereraw("isnull(agen.coapendapatan,'')<>''")
             ->first();
 
@@ -547,7 +585,7 @@ class PiutangHeader extends MyModel
         $statusCetak = Parameter::from(
             DB::raw("parameter with (readuncommitted)")
         )->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
-        $getAgen = DB::table("agen")->from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'])->first();
+        $getAgen = DB::table("agen")->from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'] ?? 0)->first();
 
         $piutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $piutangHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
@@ -556,10 +594,14 @@ class PiutangHeader extends MyModel
         $piutangHeader->modifiedby = auth('api')->user()->name;
         $piutangHeader->info = html_entity_decode(request()->info);
         $piutangHeader->statusformat = $format->id;
-        $piutangHeader->agen_id = $data['agen_id'];
+        $piutangHeader->agen_id = $data['agen_id'] ?? 0;
+        $piutangHeader->pelanggan_id = $data['pelanggan_id'] ?? 0;
         if ($data['jenis'] == 'utama') {
             $piutangHeader->coadebet = $getCoa->coa;
             $piutangHeader->coakredit = $getCoa->coapendapatan;
+        } else if ($data['jenis'] == 'emklutama' || $data['jenis'] == 'emkltambahan' || $data['jenis'] == 'emklutamabedabulan') {
+            $piutangHeader->coadebet = '';
+            $piutangHeader->coakredit = '';
         } else {
             $piutangHeader->coadebet = $coa;
             $piutangHeader->coakredit = $coapendapatan;
@@ -622,6 +664,18 @@ class PiutangHeader extends MyModel
             $piutangDetails[] = $piutangDetail->toArray();
         }
 
+        if ($data['jenis'] == 'emkltambahan' || $data['jenis'] == 'emklutamabedabulan') {
+            $coadebet_detail = [];
+            $coakredit_detail = [];
+            $nominal_detail = [];
+            $keterangan_detail = [];
+            for ($i = 0; $i < count($data['nominaljurnal']); $i++) {
+                $coadebet_detail[] = $data['coadebetjurnal'][$i];
+                $coakredit_detail[] = $data['coakreditjurnal'][$i];
+                $nominal_detail[] = $data['nominaljurnal'][$i];
+                $keterangan_detail[] = $data['keteranganjurnal'][$i];
+            }
+        }
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($piutangDetail->getTable()),
             'postingdari' =>  $data['postingdari'] ?? 'ENTRY PIUTANG DETAIL',
@@ -631,20 +685,21 @@ class PiutangHeader extends MyModel
             'datajson' => $piutangDetails,
             'modifiedby' => auth('api')->user()->user,
         ]);
+        if ($data['jenis'] != 'emklutama') {
+            $jurnalRequest = [
+                'tanpaprosesnobukti' => 1,
+                'nobukti' => $piutangHeader->nobukti,
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'postingdari' => $data['postingdari'] ?? 'ENTRY PIUTANG HEADER',
+                'statusformat' => "0",
+                'coakredit_detail' => $coakredit_detail,
+                'coadebet_detail' => $coadebet_detail,
+                'nominal_detail' => $nominal_detail,
+                'keterangan_detail' => $keterangan_detail
+            ];
 
-        $jurnalRequest = [
-            'tanpaprosesnobukti' => 1,
-            'nobukti' => $piutangHeader->nobukti,
-            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-            'postingdari' => $data['postingdari'] ?? 'ENTRY PIUTANG HEADER',
-            'statusformat' => "0",
-            'coakredit_detail' => $coakredit_detail,
-            'coadebet_detail' => $coadebet_detail,
-            'nominal_detail' => $nominal_detail,
-            'keterangan_detail' => $keterangan_detail
-        ];
-
-        (new JurnalUmumHeader())->processStore($jurnalRequest);
+            (new JurnalUmumHeader())->processStore($jurnalRequest);
+        }
         return $piutangHeader;
     }
 
@@ -653,7 +708,7 @@ class PiutangHeader extends MyModel
         $proseslain = $data['proseslain'] ?? 0;
         $nobuktiOld = $piutangHeader->nobukti;
         $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'PIUTANG')->first();
-        $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'])->first();
+        $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'] ?? 0)->first();
 
         if (trim($getTgl->text) == 'YA') {
             $group = 'PIUTANG BUKTI';
@@ -691,19 +746,22 @@ class PiutangHeader extends MyModel
             ->first();
         $memo = json_decode($param->memo, true);
         $coapendapatan = $memo['JURNAL'];
-        $getAgen = DB::table("agen")->from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'])->first();
-
+        $getAgen = DB::table("agen")->from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'] ?? 0)->first();
         $piutangHeader->modifiedby = auth('api')->user()->name;
         $piutangHeader->info = html_entity_decode(request()->info);
         $piutangHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
-        $piutangHeader->agen_id = $data['agen_id'];
+        $piutangHeader->agen_id = $data['agen_id'] ?? 0;
+        $piutangHeader->pelanggan_id = $data['pelanggan_id'] ?? 0;
         $piutangHeader->invoice_nobukti = $data['invoice'] ?? '';
         if ($data['jenis'] == 'utama') {
             $piutangHeader->coadebet = $getCoa->coa;
             $piutangHeader->coakredit = $getCoa->coapendapatan;
+        } else if ($data['jenis'] == 'emklutama' || $data['jenis'] == 'emkltambahan' || $data['jenis'] == 'emklutamabedabulan') {
+            $piutangHeader->coadebet = '';
+            $piutangHeader->coakredit = '';
         } else {
             $piutangHeader->coadebet = $coa;
-            $piutangHeader->coakredit = $coapendapatan; 
+            $piutangHeader->coakredit = $coapendapatan;
             if ($getAgen != '') {
                 if ($getAgen->statusinvoiceextra == 1) {
                     $piutangHeader->coakredit = $getAgen->coapendapatan;
@@ -767,6 +825,18 @@ class PiutangHeader extends MyModel
 
             $piutangDetails[] = $piutangDetail->toArray();
         }
+        if ($data['jenis'] == 'emkltambahan' || $data['jenis'] == 'emklutamabedabulan') {
+            $coadebet_detail = [];
+            $coakredit_detail = [];
+            $nominal_detail = [];
+            $keterangan_detail = [];
+            for ($i = 0; $i < count($data['nominaljurnal']); $i++) {
+                $coadebet_detail[] = $data['coadebetjurnal'][$i];
+                $coakredit_detail[] = $data['coakreditjurnal'][$i];
+                $nominal_detail[] = $data['nominaljurnal'][$i];
+                $keterangan_detail[] = $data['keteranganjurnal'][$i];
+            }
+        }
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($piutangDetail->getTable()),
@@ -778,23 +848,25 @@ class PiutangHeader extends MyModel
             'modifiedby' => auth('api')->user()->user,
         ]);
 
-        $jurnalRequest = [
-            'tanpaprosesnobukti' => 1,
-            'nobukti' => $piutangHeader->nobukti,
-            'tglbukti' => $piutangHeader->tglbukti,
-            'postingdari' => $data['postingdari'] ?? 'EDIT PIUTANG HEADER',
-            'statusformat' => "0",
-            'coakredit_detail' => $coakredit_detail,
-            'coadebet_detail' => $coadebet_detail,
-            'nominal_detail' => $nominal_detail,
-            'keterangan_detail' => $keterangan_detail
-        ];
-        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiOld)->first();
 
-        $newJurnal = new JurnalUmumHeader();
-        $newJurnal = $newJurnal->find($getJurnal->id);
-        $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+        if ($data['jenis'] != 'emklutama') {
+            $jurnalRequest = [
+                'tanpaprosesnobukti' => 1,
+                'nobukti' => $piutangHeader->nobukti,
+                'tglbukti' => $piutangHeader->tglbukti,
+                'postingdari' => $data['postingdari'] ?? 'EDIT PIUTANG HEADER',
+                'statusformat' => "0",
+                'coakredit_detail' => $coakredit_detail,
+                'coadebet_detail' => $coadebet_detail,
+                'nominal_detail' => $nominal_detail,
+                'keterangan_detail' => $keterangan_detail
+            ];
+            $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiOld)->first();
 
+            $newJurnal = new JurnalUmumHeader();
+            $newJurnal = $newJurnal->find($getJurnal->id);
+            $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+        }
         return $piutangHeader;
     }
 
@@ -826,7 +898,9 @@ class PiutangHeader extends MyModel
             'modifiedby' => auth('api')->user()->name
         ]);
         $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $piutangHeader->nobukti)->first();
-        $jurnalumumHeader = (new JurnalUmumHeader())->processDestroy($getJurnal->id, $postingDari);
+        if (isset($getJurnal)) {
+            $jurnalumumHeader = (new JurnalUmumHeader())->processDestroy($getJurnal->id, $postingDari);
+        }
         return $piutangHeader;
     }
 

@@ -1241,8 +1241,6 @@ class SuratPengantarController extends Controller
                 'nosp' => $requestData['nosp'],
                 'nocont' => $requestData['nocont'],
                 'nocont2' => $requestData['nocont2'],
-                'noseal' => $requestData['noseal'],
-                'noseal2' => $requestData['noseal2'],
             ];
             (new SuratPengantar())->editSP($data);
 

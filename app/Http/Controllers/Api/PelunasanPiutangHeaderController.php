@@ -93,8 +93,10 @@ class PelunasanPiutangHeaderController extends Controller
                 'tglbukti' => $request->tglbukti,
                 'bank_id' => $request->bank_id,
                 'alatbayar_id' => $request->alatbayar_id,
-                'agen_id' => $request->agen_id,
+                'agen_id' => $request->agen_id ?? 0,
                 'agen' => $request->agen,
+                'pelanggan_id' => $request->pelanggan_id ?? 0,
+                'pelanggan' => $request->pelanggan,
                 'notadebet_nobukti' => $request->notadebet_nobukti,
                 'statuspelunasan' => $request->statuspelunasan,
                 'nowarkat' => $request->nowarkat,
@@ -162,10 +164,12 @@ class PelunasanPiutangHeaderController extends Controller
                 'tglbukti' => $request->tglbukti,
                 'bank_id' => $request->bank_id,
                 'alatbayar_id' => $request->alatbayar_id,
-                'agen_id' => $request->agen_id,
+                'agen_id' => $request->agen_id ?? 0,
                 'notadebet_nobukti' => $request->notadebet_nobukti,
                 'statuspelunasan' => $request->statuspelunasan,
                 'agen' => $request->agen,
+                'pelanggan_id' => $request->pelanggan_id ?? 0,
+                'pelanggan' => $request->pelanggan,
                 'nowarkat' => $request->nowarkat,
                 'tgljatuhtempo' => $request->tgljatuhtempo,
                 'piutang_id' => $request->piutang_id,
@@ -311,11 +315,11 @@ class PelunasanPiutangHeaderController extends Controller
         // }
     }
 
-    public function getpiutang($id)
+    public function getpiutang($id, $pilihan)
     {
         $piutang = new PiutangHeader();
         return response([
-            'data' => $piutang->getPiutang($id),
+            'data' => $piutang->getPiutang($id, $pilihan),
             'id' => $id,
             'attributes' => [
                 'totalRows' => $piutang->totalRows,
@@ -325,11 +329,11 @@ class PelunasanPiutangHeaderController extends Controller
     }
 
 
-    public function getPelunasanPiutang($id, $agenId)
+    public function getPelunasanPiutang($id, $agenId, $pilihan)
     {
         $pelunasanpiutang = new PelunasanPiutangHeader();
         return response([
-            'data' => $pelunasanpiutang->getPelunasanPiutang($id, $agenId),
+            'data' => $pelunasanpiutang->getPelunasanPiutang($id, $agenId, $pilihan),
             'attributes' => [
                 'totalRows' => $pelunasanpiutang->totalRows,
                 'totalPages' => $pelunasanpiutang->totalPages
@@ -337,11 +341,11 @@ class PelunasanPiutangHeaderController extends Controller
         ]);
     }
 
-    public function getDeletePelunasanPiutang($id, $agenId)
+    public function getDeletePelunasanPiutang($id, $agenId, $pilihan)
     {
         $pelunasanpiutang = new PelunasanPiutangHeader();
         return response([
-            'data' => $pelunasanpiutang->getDeletePelunasanPiutang($id, $agenId),
+            'data' => $pelunasanpiutang->getDeletePelunasanPiutang($id, $agenId, $pilihan),
             'attributes' => [
                 'totalRows' => $pelunasanpiutang->totalRows,
                 'totalPages' => $pelunasanpiutang->totalPages

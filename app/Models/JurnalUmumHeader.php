@@ -407,6 +407,7 @@ class JurnalUmumHeader extends MyModel
 
 
         $tanpaprosesnobukti = $data['tanpaprosesnobukti'] ?? 0;
+        $multikredit = $data['multikredit'] ?? 0;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
         if ($tanpaprosesnobukti == 0) {
@@ -459,43 +460,101 @@ class JurnalUmumHeader extends MyModel
         ]);
 
         $jurnalUmumDetails = [];
+        if ($multikredit == 0) {
 
-        for ($i = 0; $i < count($data['nominal_detail']); $i++) {
-            for ($x = 0; $x <= 1; $x++) {
-                if ($x == 1) {
-                    $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
-                        'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
-                        'coa' => $data['coakredit_detail'][$i],
-                        'nominal' => $data['nominal_detail'][$i] * -1,
-                        'keterangan' => $data['keterangan_detail'][$i],
-                        'baris' => $i,
-                    ]);
+            for ($i = 0; $i < count($data['nominal_detail']); $i++) {
+                for ($x = 0; $x <= 1; $x++) {
+                    if ($x == 1) {
+                        $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
+                            'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
+                            'coa' => $data['coakredit_detail'][$i],
+                            'nominal' => $data['nominal_detail'][$i] * -1,
+                            'keterangan' => $data['keterangan_detail'][$i],
+                            'baris' => $i,
+                        ]);
 
-                    if ($tanpaprosesnobukti == 0) {
-                        $coa_detail[] = $data['coakredit_detail'][$i];
-                        $nominal_detail[] = '-' . $data['nominal_detail'][$i];
-                        $keterangan_detail[] = $data['keterangan_detail'][$i];
-                        $tglbuktidetail[] = $jurnalUmumHeader->tglbukti;
-                        $baris[] = $i;
+                        if ($tanpaprosesnobukti == 0) {
+                            $coa_detail[] = $data['coakredit_detail'][$i];
+                            $nominal_detail[] = '-' . $data['nominal_detail'][$i];
+                            $keterangan_detail[] = $data['keterangan_detail'][$i];
+                            $tglbuktidetail[] = $jurnalUmumHeader->tglbukti;
+                            $baris[] = $i;
+                        }
+                    } else {
+                        $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
+                            'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
+                            'coa' => $data['coadebet_detail'][$i],
+                            'nominal' => $data['nominal_detail'][$i] * 1,
+                            'keterangan' => $data['keterangan_detail'][$i],
+                            'baris' => $i,
+                        ]);
+
+                        if ($tanpaprosesnobukti == 0) {
+                            $coa_detail[] = $data['coadebet_detail'][$i];
+                            $nominal_detail[] = $data['nominal_detail'][$i];
+                            $keterangan_detail[] = $data['keterangan_detail'][$i];
+                            $tglbuktidetail[] = $jurnalUmumHeader->tglbukti;
+                            $baris[] = $i;
+                        }
                     }
-                } else {
-                    $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
-                        'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
-                        'coa' => $data['coadebet_detail'][$i],
-                        'nominal' => $data['nominal_detail'][$i] * 1,
-                        'keterangan' => $data['keterangan_detail'][$i],
-                        'baris' => $i,
-                    ]);
-
-                    if ($tanpaprosesnobukti == 0) {
-                        $coa_detail[] = $data['coadebet_detail'][$i];
-                        $nominal_detail[] = $data['nominal_detail'][$i];
-                        $keterangan_detail[] = $data['keterangan_detail'][$i];
-                        $tglbuktidetail[] = $jurnalUmumHeader->tglbukti;
-                        $baris[] = $i;
-                    }
+                    $jurnalUmumDetails[] = $jurnalUmumDetail->toArray();
                 }
-                $jurnalUmumDetails[] = $jurnalUmumDetail->toArray();
+            }
+        } else {
+
+            for ($i = 0; $i < count($data['nominal_detail']); $i++) {
+                for ($x = 0; $x <= 2; $x++) {
+                    if ($x == 1) {
+                        $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
+                            'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
+                            'coa' => $data['coakredit_detail'][$i],
+                            'nominal' => $data['nominal_ppn'][$i] * -1,
+                            'keterangan' => $data['keterangan_detail'][$i],
+                            'baris' => $i,
+                        ]);
+
+                        if ($tanpaprosesnobukti == 0) {
+                            $coa_detail[] = $data['coakredit_detail'][$i];
+                            $nominal_detail[] = '-' . $data['nominal_detail'][$i];
+                            $keterangan_detail[] = $data['keterangan_detail'][$i];
+                            $tglbuktidetail[] = $jurnalUmumHeader->tglbukti;
+                            $baris[] = $i;
+                        }
+                    } else if ($x == 2) {
+                        $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
+                            'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
+                            'coa' => $data['coakreditextra_detail'][$i],
+                            'nominal' => $data['nominal_detail'][$i] * -1,
+                            'keterangan' => $data['keterangan_detail'][$i],
+                            'baris' => $i,
+                        ]);
+
+                        if ($tanpaprosesnobukti == 0) {
+                            $coa_detail[] = $data['coakredit_detail'][$i];
+                            $nominal_detail[] = '-' . $data['nominal_detail'][$i];
+                            $keterangan_detail[] = $data['keterangan_detail'][$i];
+                            $tglbuktidetail[] = $jurnalUmumHeader->tglbukti;
+                            $baris[] = $i;
+                        }
+                    } else {
+                        $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
+                            'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
+                            'coa' => $data['coadebet_detail'][$i],
+                            'nominal' => $data['nominal_total'][$i] * 1,
+                            'keterangan' => $data['keterangan_detail'][$i],
+                            'baris' => $i,
+                        ]);
+
+                        if ($tanpaprosesnobukti == 0) {
+                            $coa_detail[] = $data['coadebet_detail'][$i];
+                            $nominal_detail[] = $data['nominal_detail'][$i];
+                            $keterangan_detail[] = $data['keterangan_detail'][$i];
+                            $tglbuktidetail[] = $jurnalUmumHeader->tglbukti;
+                            $baris[] = $i;
+                        }
+                    }
+                    $jurnalUmumDetails[] = $jurnalUmumDetail->toArray();
+                }
             }
         }
 
@@ -532,6 +591,7 @@ class JurnalUmumHeader extends MyModel
     {
 
         $tanpaprosesnobukti = $data['tanpaprosesnobukti'] ?? 0;
+        $multikredit = $data['multikredit'] ?? 0;
         $sumNominal = 0;
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
             $sumNominal += $data['nominal_detail'][$i];
@@ -590,41 +650,98 @@ class JurnalUmumHeader extends MyModel
 
         // dd($data);
         $jurnalUmumDetails = [];
-        for ($i = 0; $i < count($data['nominal_detail']); $i++) {
-            for ($x = 0; $x <= 1; $x++) {
-                // $data['nominal_detail'][$i];
-                if ($x == 1) {
-                    $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
-                        'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
-                        'coa' => $data['coakredit_detail'][$i],
-                        'nominal' => $data['nominal_detail'][$i] * -1,
-                        'keterangan' => $data['keterangan_detail'][$i],
-                        'baris' => $i,
-                    ]);
-                    if ($tanpaprosesnobukti == 0) {
-                        $coa_detail[] = $data['coakredit_detail'][$i];
-                        $nominal_detail[] = '-' . $data['nominal_detail'][$i];
-                        $keterangan_detail[] = $data['keterangan_detail'][$i];
-                        $tglbuktidetail[] = $jurnalUmumHeader->tglbukti;
-                        $baris[] = $i;
+        if ($multikredit == 0) {
+            for ($i = 0; $i < count($data['nominal_detail']); $i++) {
+                for ($x = 0; $x <= 1; $x++) {
+                    // $data['nominal_detail'][$i];
+                    if ($x == 1) {
+                        $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
+                            'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
+                            'coa' => $data['coakredit_detail'][$i],
+                            'nominal' => $data['nominal_detail'][$i] * -1,
+                            'keterangan' => $data['keterangan_detail'][$i],
+                            'baris' => $i,
+                        ]);
+                        if ($tanpaprosesnobukti == 0) {
+                            $coa_detail[] = $data['coakredit_detail'][$i];
+                            $nominal_detail[] = '-' . $data['nominal_detail'][$i];
+                            $keterangan_detail[] = $data['keterangan_detail'][$i];
+                            $tglbuktidetail[] = $jurnalUmumHeader->tglbukti;
+                            $baris[] = $i;
+                        }
+                    } else {
+                        $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
+                            'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
+                            'coa' => $data['coadebet_detail'][$i],
+                            'nominal' => $data['nominal_detail'][$i] * 1,
+                            'keterangan' => $data['keterangan_detail'][$i],
+                            'baris' => $i,
+                        ]);
+                        if ($tanpaprosesnobukti == 0) {
+                            $coa_detail[] = $data['coadebet_detail'][$i];
+                            $nominal_detail[] = $data['nominal_detail'][$i];
+                            $keterangan_detail[] = $data['keterangan_detail'][$i];
+                            $tglbuktidetail[] = $jurnalUmumHeader->tglbukti;
+                            $baris[] = $i;
+                        }
                     }
-                } else {
-                    $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
-                        'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
-                        'coa' => $data['coadebet_detail'][$i],
-                        'nominal' => $data['nominal_detail'][$i] * 1,
-                        'keterangan' => $data['keterangan_detail'][$i],
-                        'baris' => $i,
-                    ]);
-                    if ($tanpaprosesnobukti == 0) {
-                        $coa_detail[] = $data['coadebet_detail'][$i];
-                        $nominal_detail[] = $data['nominal_detail'][$i];
-                        $keterangan_detail[] = $data['keterangan_detail'][$i];
-                        $tglbuktidetail[] = $jurnalUmumHeader->tglbukti;
-                        $baris[] = $i;
-                    }
+                    $jurnalUmumDetails[] = $jurnalUmumDetail->toArray();
                 }
-                $jurnalUmumDetails[] = $jurnalUmumDetail->toArray();
+            }
+        } else {
+            for ($i = 0; $i < count($data['nominal_detail']); $i++) {
+                for ($x = 0; $x <= 2; $x++) {
+                    if ($x == 1) {
+                        $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
+                            'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
+                            'coa' => $data['coakredit_detail'][$i],
+                            'nominal' => $data['nominal_ppn'][$i] * -1,
+                            'keterangan' => $data['keterangan_detail'][$i],
+                            'baris' => $i,
+                        ]);
+
+                        if ($tanpaprosesnobukti == 0) {
+                            $coa_detail[] = $data['coakredit_detail'][$i];
+                            $nominal_detail[] = '-' . $data['nominal_detail'][$i];
+                            $keterangan_detail[] = $data['keterangan_detail'][$i];
+                            $tglbuktidetail[] = $jurnalUmumHeader->tglbukti;
+                            $baris[] = $i;
+                        }
+                    } else if ($x == 2) {
+                        $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
+                            'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
+                            'coa' => $data['coakreditextra_detail'][$i],
+                            'nominal' => $data['nominal_detail'][$i] * -1,
+                            'keterangan' => $data['keterangan_detail'][$i],
+                            'baris' => $i,
+                        ]);
+
+                        if ($tanpaprosesnobukti == 0) {
+                            $coa_detail[] = $data['coakredit_detail'][$i];
+                            $nominal_detail[] = '-' . $data['nominal_detail'][$i];
+                            $keterangan_detail[] = $data['keterangan_detail'][$i];
+                            $tglbuktidetail[] = $jurnalUmumHeader->tglbukti;
+                            $baris[] = $i;
+                        }
+                    } else {
+                        $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
+                            'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
+                            'coa' => $data['coadebet_detail'][$i],
+                            'nominal' => $data['nominal_total'][$i] * 1,
+                            'keterangan' => $data['keterangan_detail'][$i],
+                            'baris' => $i,
+                        ]);
+
+                        if ($tanpaprosesnobukti == 0) {
+                            $coa_detail[] = $data['coadebet_detail'][$i];
+                            $nominal_detail[] = $data['nominal_detail'][$i];
+                            $keterangan_detail[] = $data['keterangan_detail'][$i];
+                            $tglbuktidetail[] = $jurnalUmumHeader->tglbukti;
+                            $baris[] = $i;
+                        }
+                    }
+                    $jurnalUmumDetails[] = $jurnalUmumDetail->toArray();
+                }
             }
         }
 

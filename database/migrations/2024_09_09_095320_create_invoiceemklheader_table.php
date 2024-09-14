@@ -21,6 +21,8 @@ class CreateInvoiceemklheaderTable extends Migration
             $table->id();
             $table->string('nobukti', 50)->unique();
             $table->date('tglbukti')->nullable();
+            $table->date('tgldari')->nullable();
+            $table->date('tglsampai')->nullable();
             $table->unsignedBigInteger('pelanggan_id')->nullable();
             $table->unsignedBigInteger('jenisorder_id')->nullable();
             $table->integer('statusinvoice')->Length(11)->nullable();
@@ -30,6 +32,7 @@ class CreateInvoiceemklheaderTable extends Migration
             $table->string('nobuktiinvoicereimbursement',100)->nullable();            
             $table->string('nobuktiinvoicenonpajak',100)->nullable();            
             $table->string('pengeluaranheader_nobukti',100)->nullable();            
+            $table->string('piutang_nobukti',100)->nullable();            
             $table->longText('keterangan')->nullable();            
             $table->longText('destination')->nullable();            
             $table->longText('kapal')->nullable();            

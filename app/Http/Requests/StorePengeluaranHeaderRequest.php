@@ -9,6 +9,7 @@ use App\Rules\ExistBank;
 use App\Rules\ExistAlatBayar;
 use App\Rules\ValidasiBankList;
 use App\Models\AlatBayar;
+use App\Models\Parameter;
 use App\Rules\ValidasiTotalDetail;
 
 class StorePengeluaranHeaderRequest extends FormRequest
@@ -30,12 +31,15 @@ class StorePengeluaranHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $idreimburse = (new Parameter())->cekId('STATUS REIMBURSE','STATUS REIMBURSE','YA');
         $rules = [
             'tglbukti' => [
                 'required','date_format:d-m-Y',
                 new DateTutupBuku(),
                 // 'before_or_equal:' . date('d-m-Y'),
             ],
+            'cabang' => "required_if:statusreimbursement,=,$idreimburse",
+            'statusjenisbiayanama' => "required_if:statusreimbursement,=,$idreimburse"
         ];
         $relatedRequests = [
             StorePengeluaranDetailRequest::class
@@ -206,6 +210,8 @@ class StorePengeluaranHeaderRequest extends FormRequest
         return [
             'nominal_detail.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
+            'cabang.required_if' => app(ErrorController::class)->geterror('WI')->keterangan,
+            'statusjenisbiayanama.required_if' => app(ErrorController::class)->geterror('WI')->keterangan,
             'tgljatuhtempo.*.date_format' => app(ErrorController::class)->geterror('DF')->keterangan
         ];
     }

@@ -440,7 +440,7 @@ class PenerimaanHeader extends MyModel
                     'penerimaanheader.updated_at',
                     'statusapproval.memo as statusapproval',
                     'statusapproval.text as statusapprovaltext',
-                    
+
                 )
 
                 ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaanheader.statusapproval', 'statusapproval.id')
@@ -1180,6 +1180,7 @@ class PenerimaanHeader extends MyModel
     public function processStore(array $data): PenerimaanHeader
     {
         $bankid = $data['bank_id'];
+        $pelunasanemkl = $data['pelunasanemkl'] ?? 0;
 
         $querysubgrppenerimaan = Bank::from(DB::raw("bank with (readuncommitted)"))
             ->select(
@@ -1283,10 +1284,19 @@ class PenerimaanHeader extends MyModel
                 'modifiedby' => auth('api')->user()->name,
             ]);
             $penerimaanDetails[] = $penerimaanDetail->toArray();
-            $coakredit_detail[] = $data['coakredit'][$i];
-            $coadebet_detail[] = $querysubgrppenerimaan->coa;
-            $nominal_detail[] = $data['nominal_detail'][$i];
-            $keterangan_detail[] = $data['keterangan_detail'][$i];
+            if ($pelunasanemkl != 0) {
+                for ($a = 0; $a < count($data['nominalemkl_jurnal']); $a++) {
+                    $coakredit_detail[] = $data['coakreditemkl_jurnal'][$a];
+                    $nominal_detail[] = $data['nominalemkl_jurnal'][$a];
+                    $coadebet_detail[] = $querysubgrppenerimaan->coa;
+                    $keterangan_detail[] = $data['keteranganemkl_jurnal'][$a];
+                }
+            } else {
+                $coakredit_detail[] = $data['coakredit'][$i];
+                $nominal_detail[] = $data['nominal_detail'][$i];
+                $coadebet_detail[] = $querysubgrppenerimaan->coa;
+                $keterangan_detail[] = $data['keterangan_detail'][$i];
+            }
         }
 
         $penerimaanDetailLogTrail = (new LogTrail())->processStore([

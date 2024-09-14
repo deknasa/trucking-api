@@ -34,33 +34,36 @@ class ValidasiPiutangPelunasan implements Rule
         $empty = 0;
         $different = 0;
         $listTrip = '';
-        if ($dataPiutang != '') {
+        if ($agen_id != '' || $agen_id != 0) {
 
-            for ($i = 0; $i < count($dataPiutang); $i++) {
-                $cekPiutangExist = DB::table("piutangheader")->from(DB::raw("piutangheader with (readuncommitted)"))
-                    ->where('nobukti', $dataPiutang[$i])->first();
-                if ($cekPiutangExist == '') {
-                    $empty++;
-                    if ($listTrip == '') {
-                        $listTrip = $dataPiutang[$i];
+            if ($dataPiutang != '') {
+
+                for ($i = 0; $i < count($dataPiutang); $i++) {
+                    $cekPiutangExist = DB::table("piutangheader")->from(DB::raw("piutangheader with (readuncommitted)"))
+                        ->where('nobukti', $dataPiutang[$i])->first();
+                    if ($cekPiutangExist == '') {
+                        $empty++;
+                        if ($listTrip == '') {
+                            $listTrip = $dataPiutang[$i];
+                        } else {
+                            $listTrip = $listTrip . ', ' . $dataPiutang[$i];
+                        }
                     } else {
-                        $listTrip = $listTrip . ', ' . $dataPiutang[$i];
-                    }
-                } else {
-                    if ($cekPiutangExist->agen_id != $agen_id) {
-                        $different++;
+                        if ($cekPiutangExist->agen_id != $agen_id) {
+                            $different++;
+                        }
                     }
                 }
             }
-        }
-        $this->trip = $listTrip;
-        if ($empty > 0) {
-            $this->keterangan = app(ErrorController::class)->geterror('DTA')->keterangan . ' (' . $this->trip . ')';
-            return false;
-        }
-        if ($different > 0) {
-            $this->keterangan = 'DATA CUSTOMER PIUTANG ' . app(ErrorController::class)->geterror('TSD')->keterangan . ' CUSTOMER TERPILIH';
-            return false;
+            $this->trip = $listTrip;
+            if ($empty > 0) {
+                $this->keterangan = app(ErrorController::class)->geterror('DTA')->keterangan . ' (' . $this->trip . ')';
+                return false;
+            }
+            if ($different > 0) {
+                $this->keterangan = 'DATA CUSTOMER PIUTANG ' . app(ErrorController::class)->geterror('TSD')->keterangan . ' CUSTOMER TERPILIH';
+                return false;
+            }
         }
         return true;
     }
