@@ -75,6 +75,7 @@ use App\Http\Controllers\Api\UpahSupirController;
 use App\Http\Controllers\Api\AbsenTradoController;
 use App\Http\Controllers\Api\DataRitasiController;
 use App\Http\Controllers\Api\JenisOrderController;
+use App\Http\Controllers\Api\BiayaEmklController;
 use App\Http\Controllers\Api\JenisTradoController;
 use App\Http\Controllers\Api\LogAbsensiController;
 use App\Http\Controllers\Api\MandorTripController;
@@ -406,6 +407,7 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::resource('customer', CustomerController::class)->whereNumber('customer');
     Route::resource('jenisorder', JenisOrderController::class)->whereNumber('jenisorder');
+    Route::resource('biayaemkl', BiayaEmklController::class)->whereNumber('biayaemkl');
     Route::resource('statuscontainer', StatusContainerController::class)->parameters(['statuscontainer' => 'statusContainer'])->whereNumber('statusContainer');
     Route::resource('container', ContainerController::class)->whereNumber('container');
     Route::resource('triptangki', TripTangkiController::class)->whereNumber('triptangki');
@@ -694,6 +696,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('penerima/approvalaktif', [PenerimaController::class, 'approvalaktif']);
     Route::post('jenisorder/approvalnonaktif', [JenisOrderController::class, 'approvalnonaktif']);
     Route::post('jenisorder/approvalaktif', [JenisOrderController::class, 'approvalaktif']);
+    Route::post('biayaemkl/approvalnonaktif', [BiayaEmklController::class, 'approvalnonaktif']);
+    Route::post('biayaemkl/approvalaktif', [BiayaEmklController::class, 'approvalaktif']);
     Route::post('absentrado/approvalnonaktif', [AbsenTradoController::class, 'approvalnonaktif']);
     Route::post('absentrado/approvalaktif', [AbsenTradoController::class, 'approvalaktif']);
     Route::get('supir/approvalsupirtanpa', [SupirController::class, 'approvalSupirTanpa']);
@@ -1105,6 +1109,14 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('jenisorder/{id}/cekValidasi', [JenisOrderController::class, 'cekValidasi'])->name('jenisorder.cekValidasi')->whereNumber('id');
     Route::get('jenisorder/export', [JenisOrderController::class, 'export']);
     Route::get('jenisorder/report', [JenisOrderController::class, 'report']);
+
+    Route::get('biayaemkl/combo', [BiayaEmklController::class, 'combo']);
+    Route::get('biayaemkl/field_length', [BiayaEmklController::class, 'fieldLength']);
+    Route::get('biayaemkl/default', [BiayaEmklController::class, 'default']);
+    Route::post('biayaemkl/{id}/cekValidasi', [BiayaEmklController::class, 'cekValidasi'])->name('biayaemkl.cekValidasi')->whereNumber('id');
+    Route::get('biayaemkl/export', [BiayaEmklController::class, 'export']);
+    Route::get('biayaemkl/report', [BiayaEmklController::class, 'report']);
+
 
     Route::get('jenistrado/combo', [JenisTradoController::class, 'combo']);
     Route::get('jenistrado/field_length', [JenisTradoController::class, 'fieldLength']);
