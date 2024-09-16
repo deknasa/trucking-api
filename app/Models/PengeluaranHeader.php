@@ -1324,6 +1324,21 @@ class PengeluaranHeader extends MyModel
                 'modifiedby' => auth('api')->user()->name,
             ]);
 
+            $keteranganjob=$data['keteranganjob'][$i] ?? '';
+       
+            if ($keteranganjob!='') {
+
+   
+                $pengeluaranDetailRincianJob = (new PengeluaranDetailRincianJob())->processStore($pengeluaranHeader, [
+                    'pengeluaran_id' => $pengeluaranHeader->id,
+                    'pengeluarandetail_id' => $pengeluaranDetail->id,
+                    'nobukti' => $pengeluaranHeader->nobukti,
+                    'keteranganjob' =>  $keteranganjob,
+                    'modifiedby' => auth('api')->user()->name,
+                ]);
+    
+            }
+            // dd('test');
             $pengeluaranDetails[] = $pengeluaranDetail->toArray();
             $coadebet_detail[] =  $data['coadebet'][$i];
             // $coakredit_detail[] = ($data['coakredit']) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa;
@@ -1500,6 +1515,7 @@ class PengeluaranHeader extends MyModel
         // $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranHeader->nobukti)->lockForUpdate()->delete();
         /*DELETE EXISTING Pengeluaran*/
         $pengeluaranDetail = PengeluaranDetail::where('pengeluaran_id', $pengeluaranHeader->id)->lockForUpdate()->delete();
+        $pengeluaranDetailRincianJob = PengeluaranDetailRincianJob::where('pengeluaran_id', $pengeluaranHeader->id)->lockForUpdate()->delete();
         $alatabayargiro = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
             ->select(
                 'a.text',
@@ -1560,6 +1576,22 @@ class PengeluaranHeader extends MyModel
                 'bank' => $data['bank_detail'][$i] ?? '',
                 'modifiedby' => auth('api')->user()->name,
             ]);
+
+            $keteranganjob=$data['keteranganjob'][$i] ?? '';
+       
+            if ($keteranganjob!='') {
+
+   
+                $pengeluaranDetailRincianJob = (new PengeluaranDetailRincianJob())->processStore($pengeluaranHeader, [
+                    'pengeluaran_id' => $pengeluaranHeader->id,
+                    'pengeluarandetail_id' => $pengeluaranDetail->id,
+                    'nobukti' => $pengeluaranHeader->nobukti,
+                    'keteranganjob' =>  $keteranganjob,
+                    'modifiedby' => auth('api')->user()->name,
+                ]);
+    
+            }
+
             $pengeluaranDetails[] = $pengeluaranDetail->toArray();
             $coadebet_detail[] =  $data['coadebet'][$i];
             // $coakredit_detail[] = $coaKredit; //($data['coakredit']) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa;
