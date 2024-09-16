@@ -82,6 +82,7 @@ class PengeluaranHeaderController extends Controller
     public function store(StorePengeluaranHeaderRequest $request)
     {
 
+        // dd('test');
         DB::beginTransaction();
 
         try {
@@ -111,6 +112,7 @@ class PengeluaranHeaderController extends Controller
                 // "coakredit"=>$request->coakredit,
                 "keterangan_detail" => $request->keterangan_detail,
                 "noinvoice" => $request->noinvoice,
+                "keteranganjob" => $request->ketranganJob,
                 "bank_detail" => $request->bank_detail,
                 "manual" => true,
             ]);
@@ -184,6 +186,7 @@ class PengeluaranHeaderController extends Controller
                 "coadebet" => $request->coadebet,
                 // "coakredit"=>$request->coakredit,
                 "keterangan_detail" => $request->keterangan_detail,
+                "keteranganjob" => $request->ketranganJob,
                 "noinvoice" => $request->noinvoice,
                 "bank_detail" => $request->bank_detail,
                 "manual" => true,
