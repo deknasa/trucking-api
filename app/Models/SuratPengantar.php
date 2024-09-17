@@ -1233,7 +1233,7 @@ class SuratPengantar extends MyModel
                 ->groupby('a.nobukti');
 
             DB::table($temporderantrucking)->insert([
-                'nobukti' => 0,
+                'nobukti' => '',
                 'tglbukti' => '1900/1/1',
             ]);
 
@@ -1259,7 +1259,7 @@ class SuratPengantar extends MyModel
                 ->Groupby('a.nobukti');
 
             DB::table($tempgajisupirheader)->insert([
-                'nobukti' => 0,
+                'nobukti' => '',
                 'tglbukti' => '1900/1/1',
             ]);
 
@@ -1285,7 +1285,7 @@ class SuratPengantar extends MyModel
                 ->Groupby('a.nobukti');
 
             DB::table($tempinvoiceheader)->insert([
-                'nobukti' => 0,
+                'nobukti' => '',
                 'tglbukti' => '1900/1/1',
             ]);
 
