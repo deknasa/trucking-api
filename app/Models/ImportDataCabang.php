@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Schema;
+use App\Services\RunningNumberService;
+use Illuminate\Database\Schema\Blueprint;
 
 class ImportDataCabang extends Model
 {
@@ -62,11 +65,35 @@ class ImportDataCabang extends Model
                 WHERE (isnull(b.cabang_id,0)=" . $cabang->id . " or isnull(b.cabang_id,0)=0)  and b.tglbukti>='" . $periode1 . "'"));
     
             } else {
+                $querybedabulan=db::table("JurnalUmumPusatheader")->from(db::raw("JurnalUmumPusatheader a with (readuncommitted)"))
+                ->select(
+                    'a.nobukti'
+                )
+                ->join(db::raw("jurnalumumpusatdetail b with (readuncommitted)"),'a.nobukti','b.nobukti')
+                ->whereRaw("isnull(a.cabang_id,0)=" . $cabang->id . " and a.tglbukti>='" . $periode1 . "'")
+                ->whereRaw("format(a.tglbukti,'MM-yyyy')<>format(b.tglbukti,'MM-yyyy')")
+                ->groupby('a.nobukti');
+
+                
+
+         $temp = '##tempbukti' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temp, function (Blueprint $table) {
+            $table->string('nobukti', 50)->nullable();
+        });
+
+        DB::table($temp)->insertUsing(['nobukti'], $querybedabulan);
+
+        // dd(db::table($temp)->get());
+
+
                 DB::delete(DB::raw("delete  JurnalUmumPusatdetail from JurnalUmumPusatdetail as a inner join JurnalUmumPusatHeader b on a.nobukti=b.nobukti 
-                WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and b.tglbukti>='" . $periode1 . "'"));
+                WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and a.tglbukti>='" . $periode1 . "'"));
+
+
     
                 DB::delete(DB::raw("delete  JurnalUmumPusatheader from JurnalUmumPusatheader as b 
-                WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and b.tglbukti>='" . $periode1 . "'"));
+                left outer join ". $temp ." c on b.nobukti=c.nobukti
+                WHERE isnull(c.nobukti,'')='' and isnull(b.cabang_id,0)=" . $cabang->id . " and b.tglbukti>='" . $periode1 . "'"));
     
             }
         }
@@ -171,7 +198,8 @@ class ImportDataCabang extends Model
                         $jurnalUmumPusatDetail = new JurnalUmumPusatDetail();
                         $jurnalUmumPusatDetail->jurnalumumpusat_id = $jurnalRequest[$item['header_id']]->id;
                         $jurnalUmumPusatDetail->nobukti = $jurnalRequest[$item['header_id']]->nobukti;
-                        $jurnalUmumPusatDetail->tglbukti = $jurnalRequest[$item['header_id']]->tglbukti;
+                        // $jurnalUmumPusatDetail->tglbukti = $jurnalRequest[$item['header_id']]->tglbukti;
+                        $jurnalUmumPusatDetail->tglbukti = $item['detail_tglbukti'];
                         $jurnalUmumPusatDetail->coa = $item['detail_coa'];
                         $jurnalUmumPusatDetail->coamain = $item['detail_coamain'];
                         $jurnalUmumPusatDetail->nominal = $item['detail_nominal'];
@@ -186,43 +214,62 @@ class ImportDataCabang extends Model
                         }
                     }
                 } else {
-                    if (!array_key_exists($item['header_id'], $jurnalRequest)) {
-                        $jurnalUmumPusat = new JurnalUmumPusatHeader();
-                        $jurnalUmumPusat->nobukti = $item['header_nobukti'] . '-' . $singkatan;
-                        $jurnalUmumPusat->tglbukti = $item['header_tglbukti'];
-                        $jurnalUmumPusat->keterangan = $item['header_keterangan'];
-                        $jurnalUmumPusat->postingdari = $item['header_postingdari'];
-                        $jurnalUmumPusat->statusapproval = $item['header_statusapproval'];
-                        $jurnalUmumPusat->userapproval = $item['header_userapproval'];
-                        $jurnalUmumPusat->tglapproval = $item['header_tglapproval'];
-                        $jurnalUmumPusat->statusformat = $item['header_statusformat'];
-                        $jurnalUmumPusat->info = $item['header_info'];
-                        $jurnalUmumPusat->modifiedby = $item['header_modifiedby'];
-                        $jurnalUmumPusat->created_at = $item['header_created_at'];
-                        $jurnalUmumPusat->updated_at = $item['header_updated_at'];
-                        $jurnalUmumPusat->cabang_id = $data['cabang'];
-                        $jurnalUmumPusat->cabang = $cabang->namacabang ?? '';
-
-
-                        if (!$jurnalUmumPusat->save()) {
-                            throw new \Exception("Error storing jurnal umum pusat header.");
+                    $nobuktiada=$item['header_nobukti'] . '-' . $singkatan;
+                    $querycek=db::table($temp)->from(db::raw($temp . " a"))
+                    ->select(
+                        'a.nobukti',
+                        'b.id',
+                    )
+                    ->join(db::raw("jurnalumumpusatheader b with (readuncommitted)"),'a.nobukti','b.nobukti')
+                    ->where('a.nobukti',$nobuktiada)
+                    ->first();
+                    if (!isset($querycek)) {
+                        if (!array_key_exists($item['header_id'], $jurnalRequest)) {
+                            $jurnalUmumPusat = new JurnalUmumPusatHeader();
+                            $jurnalUmumPusat->nobukti = $item['header_nobukti'] . '-' . $singkatan;
+                            $jurnalUmumPusat->tglbukti = $item['header_tglbukti'];
+                            $jurnalUmumPusat->keterangan = $item['header_keterangan'];
+                            $jurnalUmumPusat->postingdari = $item['header_postingdari'];
+                            $jurnalUmumPusat->statusapproval = $item['header_statusapproval'];
+                            $jurnalUmumPusat->userapproval = $item['header_userapproval'];
+                            $jurnalUmumPusat->tglapproval = $item['header_tglapproval'];
+                            $jurnalUmumPusat->statusformat = $item['header_statusformat'];
+                            $jurnalUmumPusat->info = $item['header_info'];
+                            $jurnalUmumPusat->modifiedby = $item['header_modifiedby'];
+                            $jurnalUmumPusat->created_at = $item['header_created_at'];
+                            $jurnalUmumPusat->updated_at = $item['header_updated_at'];
+                            $jurnalUmumPusat->cabang_id = $data['cabang'];
+                            $jurnalUmumPusat->cabang = $cabang->namacabang ?? '';
+    
+    
+                            if (!$jurnalUmumPusat->save()) {
+                                throw new \Exception("Error storing jurnal umum pusat header.");
+                            }
+                            $jurnalRequest[$item['header_id']] = $jurnalUmumPusat;
+                            $idheader=$jurnalRequest[$item['header_id']]->id;
+                            $nobuktiheader=$jurnalRequest[$item['header_id']]->nobukti;
+                            $jurnalUmumPusatHeaderLogTrail = (new LogTrail())->processStore([
+                                'namatabel' => strtoupper($jurnalUmumPusat->getTable()),
+                                'postingdari' => 'ENTRY JURNAL UMUM PUSAT HEADER',
+                                'idtrans' => $jurnalUmumPusat->id,
+                                'nobuktitrans' => $jurnalUmumPusat->nobukti,
+                                'aksi' => 'ENTRY',
+                                'datajson' => $jurnalUmumPusat->toArray(),
+                                'modifiedby' => auth('api')->user()->user
+                            ]);
                         }
-                        $jurnalRequest[$item['header_id']] = $jurnalUmumPusat;
-                        $jurnalUmumPusatHeaderLogTrail = (new LogTrail())->processStore([
-                            'namatabel' => strtoupper($jurnalUmumPusat->getTable()),
-                            'postingdari' => 'ENTRY JURNAL UMUM PUSAT HEADER',
-                            'idtrans' => $jurnalUmumPusat->id,
-                            'nobuktitrans' => $jurnalUmumPusat->nobukti,
-                            'aksi' => 'ENTRY',
-                            'datajson' => $jurnalUmumPusat->toArray(),
-                            'modifiedby' => auth('api')->user()->user
-                        ]);
+                        
+                    } else {
+                        $idheader=$querycek->id ?? 0 ;
+                        $nobuktiheader=$querycek->nobukti ?? '' ;
                     }
+            
                     // Menambahkan detail ke dalam entri header yang sesuai
                     $jurnalUmumPusatDetail = new JurnalUmumPusatDetail();
-                    $jurnalUmumPusatDetail->jurnalumumpusat_id = $jurnalRequest[$item['header_id']]->id;
-                    $jurnalUmumPusatDetail->nobukti = $jurnalRequest[$item['header_id']]->nobukti;
-                    $jurnalUmumPusatDetail->tglbukti = $jurnalRequest[$item['header_id']]->tglbukti;
+                    $jurnalUmumPusatDetail->jurnalumumpusat_id = $idheader;
+                    $jurnalUmumPusatDetail->nobukti = $nobuktiheader;
+                    // $jurnalUmumPusatDetail->tglbukti = $jurnalRequest[$item['header_id']]->tglbukti;
+                    $jurnalUmumPusatDetail->tglbukti = $item['detail_tglbukti'];
                     $jurnalUmumPusatDetail->coa = $item['detail_coa'];
                     $jurnalUmumPusatDetail->coamain = $item['detail_coamain'];
                     $jurnalUmumPusatDetail->nominal = $item['detail_nominal'];
