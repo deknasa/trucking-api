@@ -1544,7 +1544,7 @@ class SuratPengantar extends MyModel
                 'tglbatasapprovalbiayaextra',
             ], $query);
 
-            $tempsuratpengantar=$tempsuratpengantarlist;
+            $tempsuratpengantar = $tempsuratpengantarlist;
             // dd($tempsuratpengantarlist);
         } else {
             // dd($class,$user);
@@ -1560,7 +1560,7 @@ class SuratPengantar extends MyModel
 
             $tempsuratpengantar = $querydata->namatabel;
         }
-     
+
         $query = db::table($tempsuratpengantar)->from(db::raw($tempsuratpengantar  . " suratpengantar "))
             ->select(
                 'suratpengantar.id',
@@ -1632,12 +1632,12 @@ class SuratPengantar extends MyModel
                 'suratpengantar.userapprovalbiayaextra',
                 'suratpengantar.tglapprovalbiayaextra',
                 'suratpengantar.tglbatasapprovalbiayaextra',
-         
+
 
             )
             ->join(db::raw("suratpengantar c with (readuncommitted)"), 'suratpengantar.nobukti', 'c.nobukti');
 
-// dd($query->get());
+        // dd($query->get());
         if (request()->tgldari) {
             $query->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
@@ -1690,7 +1690,7 @@ class SuratPengantar extends MyModel
             $jobtruckingtrip = $queryutama->jobtrucking;
             $statuslongtrip = $queryutama->statuslongtrip;
             $sampai_id = $queryutama->sampai_id;
-           
+
 
             // dd($pelanggan_idtrip, $penyesuaiantrip, $container_idtrip, $gandengan_idtrip, $agen_idtrip, $jenisorder_idtrip, $tarif_idtrip);
 
@@ -2230,7 +2230,7 @@ class SuratPengantar extends MyModel
                 }
             }
         }
-  
+
         if ($from == 'tripinap') {
 
             if ($tglabsensi != '') {
@@ -3330,7 +3330,7 @@ class SuratPengantar extends MyModel
 
         $this->paginate($query);
 
-    
+
         $data = $query->get();
 
         return $data;
@@ -3536,7 +3536,7 @@ class SuratPengantar extends MyModel
         // } else if ($this->params['sortIndex'] == 'ketextra' || $this->params['sortIndex'] == 'biayaextra' || $this->params['sortIndex'] == 'biayatagih' || $this->params['sortIndex'] == 'ketextratagih') {
         //     return $query->orderBy('suratpengantarbiayatambahan.' . $this->params['sortIndex'], $this->params['sortOrder']);
         // } else {
-            return $query->orderBy('suratpengantar.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        return $query->orderBy('suratpengantar.' . $this->params['sortIndex'], $this->params['sortOrder']);
         // }
     }
 
@@ -3547,57 +3547,57 @@ class SuratPengantar extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] != '') {
-                        //     if ($filters['field'] == 'pelanggan_id') {
-                        //         $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                        //     } else if ($filters['field'] == 'dari_id') {
-                        //         $query = $query->where('kotadari.kodekota', 'LIKE', "%$filters[data]%");
-                        //     } else if ($filters['field'] == 'sampai_id') {
-                        //         $query = $query->where('kotasampai.kodekota', 'LIKE', "%$filters[data]%");
-                        //     } else if ($filters['field'] == 'statuscontainer_id') {
-                        //         $query = $query->where('statuscontainer.keterangan', 'LIKE', "%$filters[data]%");
-                        //     } else if ($filters['field'] == 'container_id') {
-                        //         $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
-                        //     } else if ($filters['field'] == 'trado_id') {
-                        //         $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
-                        //     } else if ($filters['field'] == 'supir_id') {
-                        //         $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
-                        //     } else if ($filters['field'] == 'agen_id') {
-                        //         $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
-                        //     } else if ($filters['field'] == 'gandengan_id') {
-                        //         $query = $query->where('gandengan.keterangan', 'LIKE', "%$filters[data]%");
-                        //     } else if ($filters['field'] == 'jenisorder_id') {
-                        //         $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
-                        //     } else if ($filters['field'] == 'tarif_id') {
-                        //         $query = $query->where('tarif.tujuan', 'LIKE', "%$filters[data]%");
-                        //     } else if ($filters['field'] == 'mandortrado_id') {
-                        //         $query = $query->where('mandortrado.namamandor', 'LIKE', "%$filters[data]%");
-                        //     } else if ($filters['field'] == 'mandorsupir_id') {
-                        //         $query = $query->where('mandorsupir.namamandor', 'LIKE', "%$filters[data]%");
-                        //     } else if ($filters['field'] == 'ketextra' || $filters['field'] == 'ketextratagih') {
-                        //         $query = $query->where('suratpengantarbiayatambahan.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        //     } else if ($filters['field'] == 'statuslongtrip') {
-                        //         $query = $query->where('statuslongtrip.text', '=', "$filters[data]");
-                        //     } else if ($filters['field'] == 'statusperalihan') {
-                        //         $query = $query->where('statusperalihan.text', '=', "$filters[data]");
-                        //     } else if ($filters['field'] == 'statusritasiomset') {
-                        //         $query = $query->where('statusritasiomset.text', '=', "$filters[data]");
-                        //     } else if ($filters['field'] == 'statusgudangsama') {
-                        //         $query = $query->where('statusgudangsama.text', '=', "$filters[data]");
-                        //     } else if ($filters['field'] == 'statustolakan') {
-                        //         $query = $query->where('statustolakan.text', '=', "$filters[data]");
-                        //     } else if ($filters['field'] == 'statusbatalmuat') {
-                        //         $query = $query->where('statusbatalmuat.text', '=', "$filters[data]");
-                        //     } else if ($filters['field'] == 'statusgajisupir') {
-                        //         $query = $query->where('statusgajisupir.text', '=', "$filters[data]");
-                        //     } else if ($filters['field'] == 'statusinvoice') {
-                        //         $query = $query->where('statusinvoice.text', '=', "$filters[data]");
-                        //     } else if ($filters['field'] == 'statusapprovaleditsuratpengantar') {
-                        //         $query = $query->where('statusapprovaleditsuratpengantar.text', '=', "$filters[data]");
-                        //     } else if ($filters['field'] == 'statusapprovalbiayaextra') {
-                        //         $query = $query->where('statusapprovalbiayaextra.text', '=', "$filters[data]");
-                        //     } else if ($filters['field'] == 'statusapprovalbiayatitipanemkl') {
-                        //         $query = $query->where('statusapprovalbiayatitipanemkl.text', '=', "$filters[data]");
-                             if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak' || $filters['field'] == 'omset' || $filters['field'] == 'nominalperalihan' || $filters['field'] == 'totalomset') {
+                            //     if ($filters['field'] == 'pelanggan_id') {
+                            //         $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                            //     } else if ($filters['field'] == 'dari_id') {
+                            //         $query = $query->where('kotadari.kodekota', 'LIKE', "%$filters[data]%");
+                            //     } else if ($filters['field'] == 'sampai_id') {
+                            //         $query = $query->where('kotasampai.kodekota', 'LIKE', "%$filters[data]%");
+                            //     } else if ($filters['field'] == 'statuscontainer_id') {
+                            //         $query = $query->where('statuscontainer.keterangan', 'LIKE', "%$filters[data]%");
+                            //     } else if ($filters['field'] == 'container_id') {
+                            //         $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
+                            //     } else if ($filters['field'] == 'trado_id') {
+                            //         $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                            //     } else if ($filters['field'] == 'supir_id') {
+                            //         $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            //     } else if ($filters['field'] == 'agen_id') {
+                            //         $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
+                            //     } else if ($filters['field'] == 'gandengan_id') {
+                            //         $query = $query->where('gandengan.keterangan', 'LIKE', "%$filters[data]%");
+                            //     } else if ($filters['field'] == 'jenisorder_id') {
+                            //         $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
+                            //     } else if ($filters['field'] == 'tarif_id') {
+                            //         $query = $query->where('tarif.tujuan', 'LIKE', "%$filters[data]%");
+                            //     } else if ($filters['field'] == 'mandortrado_id') {
+                            //         $query = $query->where('mandortrado.namamandor', 'LIKE', "%$filters[data]%");
+                            //     } else if ($filters['field'] == 'mandorsupir_id') {
+                            //         $query = $query->where('mandorsupir.namamandor', 'LIKE', "%$filters[data]%");
+                            //     } else if ($filters['field'] == 'ketextra' || $filters['field'] == 'ketextratagih') {
+                            //         $query = $query->where('suratpengantarbiayatambahan.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            //     } else if ($filters['field'] == 'statuslongtrip') {
+                            //         $query = $query->where('statuslongtrip.text', '=', "$filters[data]");
+                            //     } else if ($filters['field'] == 'statusperalihan') {
+                            //         $query = $query->where('statusperalihan.text', '=', "$filters[data]");
+                            //     } else if ($filters['field'] == 'statusritasiomset') {
+                            //         $query = $query->where('statusritasiomset.text', '=', "$filters[data]");
+                            //     } else if ($filters['field'] == 'statusgudangsama') {
+                            //         $query = $query->where('statusgudangsama.text', '=', "$filters[data]");
+                            //     } else if ($filters['field'] == 'statustolakan') {
+                            //         $query = $query->where('statustolakan.text', '=', "$filters[data]");
+                            //     } else if ($filters['field'] == 'statusbatalmuat') {
+                            //         $query = $query->where('statusbatalmuat.text', '=', "$filters[data]");
+                            //     } else if ($filters['field'] == 'statusgajisupir') {
+                            //         $query = $query->where('statusgajisupir.text', '=', "$filters[data]");
+                            //     } else if ($filters['field'] == 'statusinvoice') {
+                            //         $query = $query->where('statusinvoice.text', '=', "$filters[data]");
+                            //     } else if ($filters['field'] == 'statusapprovaleditsuratpengantar') {
+                            //         $query = $query->where('statusapprovaleditsuratpengantar.text', '=', "$filters[data]");
+                            //     } else if ($filters['field'] == 'statusapprovalbiayaextra') {
+                            //         $query = $query->where('statusapprovalbiayaextra.text', '=', "$filters[data]");
+                            //     } else if ($filters['field'] == 'statusapprovalbiayatitipanemkl') {
+                            //         $query = $query->where('statusapprovalbiayatitipanemkl.text', '=', "$filters[data]");
+                            if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak' || $filters['field'] == 'omset' || $filters['field'] == 'nominalperalihan' || $filters['field'] == 'totalomset') {
                                 $query = $query->whereRaw("format(suratpengantar." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'biayaextra' || $filters['field'] == 'biayatagih') {
                                 $query = $query->whereRaw("format(suratpengantarbiayatambahan." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
@@ -3667,7 +3667,7 @@ class SuratPengantar extends MyModel
                                 //     $query = $query->orWhere('statusapprovalbiayaextra.text', '=', "$filters[data]");
                                 // } else if ($filters['field'] == 'statusapprovalbiayatitipanemkl') {
                                 //     $query = $query->orWhere('statusapprovalbiayatitipanemkl.text', '=', "$filters[data]");
-                                 if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak' || $filters['field'] == 'omset' || $filters['field'] == 'nominalperalihan' || $filters['field'] == 'totalomset') {
+                                if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak' || $filters['field'] == 'omset' || $filters['field'] == 'nominalperalihan' || $filters['field'] == 'totalomset') {
                                     $query = $query->orWhereRaw("format(suratpengantar." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'biayaextra' || $filters['field'] == 'biayatagih') {
                                     $query = $query->orWhereRaw("format(suratpengantarbiayatambahan." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
@@ -4050,13 +4050,13 @@ class SuratPengantar extends MyModel
             $trado = Trado::find($data['trado_id']);
             $supir = Supir::find($data['supir_id']);
             $edittripmandor = $data['edittripmandor'] ?? 0;
-            if ($orderanTrucking == '') {
-                $container = $data['container_id'];
-                $pelanggan = $data['pelanggan_id'];
-            } else {
-                $container = $orderanTrucking->container_id;
-                $pelanggan = $orderanTrucking->pelanggan_id;
-            }
+            // if ($orderanTrucking == '') {
+            $container = $data['container_id'] ?? $orderanTrucking->container_id;
+            $pelanggan = $data['pelanggan_id'] ?? $orderanTrucking->pelanggan_id;
+            // } else {
+            //     $container = $orderanTrucking->container_id;
+            //     $pelanggan = $orderanTrucking->pelanggan_id;
+            // }
 
             $data['upahtangki_id'] = 0;
             $data['tariftangki_id'] = 0;
@@ -4138,9 +4138,9 @@ class SuratPengantar extends MyModel
             $suratPengantar->statuslongtrip = $data['statuslongtrip'];
             $suratPengantar->omset = $tarifNominal;
             $suratPengantar->gajisupir = $data['gajisupir'];
-            $suratPengantar->agen_id = $orderanTrucking->agen_id ?? $data['agen_id'];
+            $suratPengantar->agen_id = $data['agen_id'] ?? $orderanTrucking->agen_id;
             $suratPengantar->penyesuaian = $data['penyesuaian'];
-            $suratPengantar->jenisorder_id = $orderanTrucking->jenisorder_id ?? $data['jenisorder_id'];
+            $suratPengantar->jenisorder_id = $data['jenisorder_id'] ?? $orderanTrucking->jenisorder_id;
             $suratPengantar->statusperalihan = $data['statusperalihan'];
             $suratPengantar->statusupahzona = $data['statusupahzona'];
             $suratPengantar->statuskandang = $data['statuskandang'];
@@ -4275,21 +4275,21 @@ class SuratPengantar extends MyModel
             }
 
             $jobmanual = (new Parameter())->cekText('JOB TRUCKING MANUAL', 'JOB TRUCKING MANUAL') ?? 'TIDAK';
-            if ($jobmanual == 'YA') {
+            // if ($jobmanual == 'YA') {
 
-                $suratPengantar->nocont = $data['nocont'] ?? '';
-                $suratPengantar->nocont2 = $data['nocont2'] ?? '';
+            $suratPengantar->nocont = $data['nocont'] ?? '';
+            $suratPengantar->nocont2 = $data['nocont2'] ?? '';
 
-                $suratPengantar->noseal = $data['noseal'] ?? '';
-                $suratPengantar->noseal2 = $data['noseal2'] ?? '';
-                $suratPengantar->save();
-                if ($suratPengantar->jobtrucking != '') {
+            $suratPengantar->noseal = $data['noseal'] ?? '';
+            $suratPengantar->noseal2 = $data['noseal2'] ?? '';
+            $suratPengantar->save();
+            if ($suratPengantar->jobtrucking != '') {
 
-                    DB::update(DB::raw("UPDATE SURATPENGANTAR SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2',agen_id='$suratPengantar->agen_id',jenisorder_id='$suratPengantar->jenisorder_id',pelanggan_id='$suratPengantar->pelanggan_id',container_id='$suratPengantar->container_id',gandengan_id='$suratPengantar->gandengan_id' where jobtrucking='$suratPengantar->jobtrucking'"));
+                DB::update(DB::raw("UPDATE SURATPENGANTAR SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2',agen_id='$suratPengantar->agen_id',jenisorder_id='$suratPengantar->jenisorder_id',pelanggan_id='$suratPengantar->pelanggan_id',container_id='$suratPengantar->container_id',gandengan_id='$suratPengantar->gandengan_id' where jobtrucking='$suratPengantar->jobtrucking'"));
 
-                    DB::update(DB::raw("UPDATE orderantrucking SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2',agen_id='$suratPengantar->agen_id',jenisorder_id='$suratPengantar->jenisorder_id',pelanggan_id='$suratPengantar->pelanggan_id',container_id='$suratPengantar->container_id',gandengan_id='$suratPengantar->gandengan_id' where nobukti='$suratPengantar->jobtrucking'"));
-                }
+                DB::update(DB::raw("UPDATE orderantrucking SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2',agen_id='$suratPengantar->agen_id',jenisorder_id='$suratPengantar->jenisorder_id',pelanggan_id='$suratPengantar->pelanggan_id',container_id='$suratPengantar->container_id',gandengan_id='$suratPengantar->gandengan_id' where nobukti='$suratPengantar->jobtrucking'"));
             }
+            // }
         } else {
             if ($suratPengantar->statusjeniskendaraan == $jenisTangki->id) {
 

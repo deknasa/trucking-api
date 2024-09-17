@@ -259,11 +259,11 @@ class ListTrip extends MyModel
                             $kondisi = true;
                             $batasHari += 1;
                         }
-                        if (strtolower($todayIsSunday) != 'sunday' && strtolower($tomorrowIsSunday) != 'sunday') {
-                            if ($batasHari > 1) {
-                                $batasHari -= 1;
-                            }
-                        }
+                        // if (strtolower($todayIsSunday) != 'sunday' && strtolower($tomorrowIsSunday) != 'sunday') {
+                        //     if ($batasHari > 1) {
+                        //         $batasHari -= 1;
+                        //     }
+                        // }
                     } else {
                         $batasHari += 1;
                     }
