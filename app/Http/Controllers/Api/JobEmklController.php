@@ -297,6 +297,7 @@ class JobEmklController extends Controller
         try {
             $data = [
                 "nominal" => $request->nominal,
+                "keteranganBiaya" => $request->keteranganBiaya,
             ];
 
             $jobEmkl = new JobEmkl();

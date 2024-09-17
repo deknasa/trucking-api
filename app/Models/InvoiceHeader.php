@@ -726,7 +726,7 @@ class InvoiceHeader extends MyModel
                     ->select(
                         'a.jobtrucking',
                         db::raw("(isnull(a.totalomset,0) + isnull(b.totalomset,0)) as nominal"),
-                        db::raw("a.nobukti as suratpengantar_nobukti")
+                        db::raw("b.nobukti as suratpengantar_nobukti")
                     )
                     ->where('a.agen_id', $request->agen_id)
                     ->where('a.jenisorder_id', $request->jenisorder_id)

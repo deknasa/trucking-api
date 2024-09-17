@@ -119,6 +119,15 @@ class JobEmkl extends MyModel
                 "jobemkl.editing_by",
                 "jobemkl.created_at",
                 "jobemkl.updated_at",
+                db::raw("
+                 (SELECT b.kodebiayaemkl as biaya_emkl,
+                        format(nominal,'#0.00') as nominal_biaya,
+                        keterangan as keterangan_biaya
+                    from jobemklrincianbiaya a 
+                        inner join biayaemkl b on a.biayaemkl_id=b.id
+                        where a.nobukti=jobemkl.nobukti 
+                    FOR JSON PATH) as keteranganBiaya
+                "),
             ) 
             // ->whereBetween('jobemkl.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'jobemkl.container_id', '=', 'container.id')
@@ -445,6 +454,21 @@ class JobEmkl extends MyModel
         $jobEmkl->modifiedby = auth('api')->user()->name;
         $jobEmkl->info = html_entity_decode(request()->info);
         if ($jobEmkl->save()) {
+
+            $keteranganbiaya=$data['keteranganBiaya'] ?? '';
+       
+            if ($keteranganbiaya!='') {
+
+   
+                $jobemklrincianbiaya = (new JobEmklRincianBiaya())->processStore($jobEmkl, [
+                    'jobemkl_id' => $jobEmkl->id,
+                    'nobukti' => $jobEmkl->nobukti,
+                    'keteranganbiaya' =>  $keteranganbiaya,
+                    'modifiedby' => auth('api')->user()->name,
+                ]);
+    
+            }
+
             (new LogTrail())->processStore([
                 'namatabel' => strtoupper($jobEmkl->getTable()),
                 'postingdari' => 'APPROVAL AKTIF job Emkl',
