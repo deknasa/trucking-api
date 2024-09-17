@@ -1694,6 +1694,7 @@ class SuratPengantar extends MyModel
 
             // dd($pelanggan_idtrip, $penyesuaiantrip, $container_idtrip, $gandengan_idtrip, $agen_idtrip, $jenisorder_idtrip, $tarif_idtrip);
 
+            // dd($nobuktitrip);
 
             if ($statuslongtrip == 65) {
                 $query->whereRaw("(isnull(c.pelanggan_id,0)=" . $pelanggan_idtrip);
@@ -1703,13 +1704,23 @@ class SuratPengantar extends MyModel
                 $query->whereRaw("isnull(c.jenisorder_id,0)=" . $jenisorder_idtrip);
                 $query->whereRaw("isnull(c.dari_id,0)=" . $sampai_id . ")  or ( c.nobukti='" . $nobuktitrip . "')");
             } else {
-                $query->whereRaw("isnull(c.pelanggan_id,0)=" . $pelanggan_idtrip);
+
+                $tripasal=db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+                ->select(
+                    'a.nobukti_tripasal'
+                )
+                ->where('a.nobukti',$nobuktitrip)
+                ->first()->nobukti_tripasal ?? '';
+                // dd($tripasal);
+                $query->whereRaw("(isnull(c.pelanggan_id,0)=" . $pelanggan_idtrip);
                 $query->whereRaw("isnull(c.penyesuaian,'')='" . $penyesuaiantrip . "'");
                 $query->whereRaw("isnull(c.container_id,0)=" . $container_idtrip);
                 $query->whereRaw("isnull(c.gandengan_id,0)=" . $gandengan_idtrip);
                 $query->whereRaw("isnull(c.agen_id,0)=" . $agen_idtrip);
-                $query->whereRaw("isnull(c.jenisorder_id,0)=" . $jenisorder_idtrip);
-                $query->whereRaw("isnull(c.tarif_id,0)=" . $tarif_idtrip);
+                $query->whereRaw("isnull(c.jenisorder_id,0)=" . $jenisorder_idtrip. ") ");
+                $query->whereRaw("(isnull(c.tarif_id,0)=" . $tarif_idtrip." or (c.nobukti='" . $tripasal . "' and isnull(c.nobukti_tripasal,'')<>'' ))");
+                // $query->OrwhereRaw("c.nobukti_tripasal='" . $nobuktitrip . "'");
+// dd($query->tosql());
             }
             // dd($query->get());
 
