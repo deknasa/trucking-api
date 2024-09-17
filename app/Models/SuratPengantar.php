@@ -1344,7 +1344,7 @@ class SuratPengantar extends MyModel
                 $table->longtext('userapprovaleditsuratpengantar')->nullable();
                 $table->longtext('userapprovalbiayatitipanemkl')->nullable();
                 $table->date('tglapprovaleditsuratpengantar')->nullable();
-                $table->date('tglbataseditsuratpengantar')->nullable();
+                $table->dateTime('tglbataseditsuratpengantar')->nullable();
                 $table->date('tglapprovalbiayatitipanemkl')->nullable();
                 $table->longtext('modifiedby')->nullable();
                 $table->datetime('created_at')->nullable();
@@ -1832,13 +1832,13 @@ class SuratPengantar extends MyModel
                 $trado_id = request()->trado_id ?? 0;
                 $supir_id = request()->supir_id ?? 0;
                 $query->leftjoin(db::raw($tempTripAsal . " a"), 'suratpengantar.nobukti', 'a.nobukti_tripasal')
-                    ->whereRaw("suratpengantar.jenisorder_id in (2,3)")
-                    ->where('suratpengantar.container_id', $container_id)
-                    ->where('suratpengantar.agen_id', $agen_id)
-                    ->where('suratpengantar.upah_id', $upah_id)
-                    ->where('suratpengantar.trado_id', $trado_id)
+                    ->whereRaw("c.jenisorder_id in (2,3)")
+                    ->where('c.container_id', $container_id)
+                    ->where('c.agen_id', $agen_id)
+                    ->where('c.upah_id', $upah_id)
+                    ->where('c.trado_id', $trado_id)
                     ->whereRaw("isnull(a.nobukti_tripasal,'')=''")
-                    ->where('suratpengantar.pelanggan_id', $pelanggan_id);
+                    ->where('c.pelanggan_id', $pelanggan_id);
             }
         }
         if ($isGudangSama == 'false') {
@@ -1999,8 +1999,8 @@ class SuratPengantar extends MyModel
                     }
                     $query
                         ->join(db::raw($tempJobKandang . " a"), 'suratpengantar.nobukti', 'a.nobukti')
-                        ->where('suratpengantar.statuscontainer_id', '!=', 3)
-                        ->where('suratpengantar.gandengan_id', $gandengan_id);
+                        ->where('c.statuscontainer_id', '!=', 3)
+                        ->where('c.gandengan_id', $gandengan_id);
                 } else {
                     bukankandang:
                     $idtrip = request()->idTrip ?? 0;
@@ -2077,10 +2077,10 @@ class SuratPengantar extends MyModel
                         ->join(db::raw($tempLongtripFinal . " jobfinal"), 'suratpengantar.jobtrucking', 'jobfinal.jobtrucking')
                         ->leftjoin(db::raw($tempTripAsal . " a"), 'suratpengantar.nobukti', 'a.nobukti_tripasal')
                         ->whereRaw("isnull(a.nobukti_tripasal,'')=''")
-                        ->where('suratpengantar.jenisorder_id', $jenisorder_id)
-                        ->where('suratpengantar.agen_id', $agen_id)
-                        ->where('suratpengantar.statuscontainer_id', '!=', 3)
-                        ->where('suratpengantar.container_id', $container_id);
+                        ->where('c.jenisorder_id', $jenisorder_id)
+                        ->where('c.agen_id', $agen_id)
+                        ->where('c.statuscontainer_id', '!=', 3)
+                        ->where('c.container_id', $container_id);
 
                     if ($idtrip != 0) {
                         $query->where('suratpengantar.id', '<>', $idtrip);
@@ -2231,11 +2231,11 @@ class SuratPengantar extends MyModel
                     ->leftjoin(db::raw($tempTripAsal . " a"), 'suratpengantar.nobukti', 'a.nobukti_tripasal')
                     ->whereRaw("isnull(a.nobukti_tripasal,'')=''")
                     ->whereRaw("isnull(jobfinal.jobtrucking,'')!='' ")
-                    ->where('suratpengantar.sampai_id', '!=', 1)
-                    ->where('suratpengantar.agen_id', $agen_id)
-                    ->where('suratpengantar.statuscontainer_id', '!=', 3)
-                    ->where('suratpengantar.container_id', $container_id)
-                    ->where('suratpengantar.statusgandengan', $idTinggalGandengan);
+                    ->where('c.sampai_id', '!=', 1)
+                    ->where('c.agen_id', $agen_id)
+                    ->where('c.statuscontainer_id', '!=', 3)
+                    ->where('c.container_id', $container_id)
+                    ->where('c.statusgandengan', $idTinggalGandengan);
                 if ($idtrip != 0) {
                     $query->where('suratpengantar.id', '<>', $idtrip);
                 }
@@ -2248,10 +2248,10 @@ class SuratPengantar extends MyModel
                 $query->where('suratpengantar.tglbukti', date('Y-m-d', strtotime($tglabsensi)));
             }
             if ($supir_id != '') {
-                $query->where('suratpengantar.supir_id', $supir_id);
+                $query->where('c.supir_id', $supir_id);
             }
             if ($trado_id != '') {
-                $query->where('suratpengantar.trado_id', $trado_id);
+                $query->where('c.trado_id', $trado_id);
             }
         }
 
@@ -3395,7 +3395,7 @@ class SuratPengantar extends MyModel
             $table->string('userapprovaleditsuratpengantar')->nullable();
             $table->string('userapprovalbiayatitipanemkl')->nullable();
             $table->date('tglapprovaleditsuratpengantar')->nullable();
-            $table->date('tglbataseditsuratpengantar')->nullable();
+            $table->dateTime('tglbataseditsuratpengantar')->nullable();
             $table->date('tglapprovalbiayatitipanemkl')->nullable();
             $table->string('gajisupir_nobukti')->nullable();
             $table->string('prosesgajisupir_nobukti')->nullable();
