@@ -496,7 +496,7 @@ class AbsensiSupirApprovalHeader extends MyModel
             ];
             $absensiSupirProses = (new AbsensiSupirApprovalProses())->processStore($absensiSupirApprovalHeader,$absensiApprovalPorsess);
         }else{
-            $bank = DB::table('bank')->where('coa', $memoKredit['JURNAL'])->first();
+            $bank = DB::table('bank')->where('coa', $memoKredit['JURNAL'])->where('statusaktif','1')->first();
             $kasGantungDetail = DB::table('kasgantungdetail')->where('nobukti', $data['kasgantung_nobukti'])->get();
             foreach ($kasGantungDetail as $detail) {
                 $nominalKasGantung[] = $detail->nominal;
