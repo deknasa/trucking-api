@@ -32,6 +32,7 @@ class MandorAbsensiSupir extends MyModel
         $date = date('Y-m-d', strtotime($date));
 
         // update trado jadi non aktif jika 
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
 
 
 
@@ -542,9 +543,11 @@ class MandorAbsensiSupir extends MyModel
                 'a.tglberlakumiliksupir',
                 'a.modifiedby'
             )
-            ->leftJoin(DB::raw($tempTradoSemalam . ' as b'), 'a.kodetrado', '=', 'b.kodetrado')
-            ->whereRaw("isnull(a.tglberlakumilikmandor,'1900/1/1')<='" . $date . "'")
-            ->where('a.statusaktif', $statusaktif->id);
+            ->leftJoin(DB::raw($tempTradoSemalam . ' as b'), 'a.kodetrado', '=', 'b.kodetrado');
+            if($cabang == 'SURABAYA'){
+                $queryTrado->whereRaw("isnull(a.tglberlakumilikmandor,'1900/1/1')<='" . $date . "'");
+            }
+            $queryTrado->where('a.statusaktif', $statusaktif->id);
 
             // dd(DB::table($tempTradoSemalam)->get(),$queryTrado->get());            
 
@@ -575,9 +578,11 @@ class MandorAbsensiSupir extends MyModel
                 'a.modifiedby',
             )
             ->join(db::raw("approvaltradogambar b with (readuncommitted)"), 'a.kodetrado', 'b.kodetrado')
-            ->join(db::raw("approvaltradoketerangan c with (readuncommitted)"), 'a.kodetrado', 'c.kodetrado')
-            ->whereRaw("isnull(a.tglberlakumilikmandor,'1900/1/1')<='" . $date . "'")
-            ->where('b.tglbatas','>=', $date)
+            ->join(db::raw("approvaltradoketerangan c with (readuncommitted)"), 'a.kodetrado', 'c.kodetrado');
+            if($cabang == 'SURABAYA'){
+                $queryNonAktifTrado->whereRaw("isnull(a.tglberlakumilikmandor,'1900/1/1')<='" . $date . "'");
+            }
+            $queryNonAktifTrado->where('b.tglbatas','>=', $date)
             ->where('a.statusaktif','<>', $statusaktif->id);
             // dd( $queryNonAktifTrado->get());
 
