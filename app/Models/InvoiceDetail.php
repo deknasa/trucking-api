@@ -150,6 +150,7 @@ class InvoiceDetail extends MyModel
                     )
                     ->join(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id')
                     ->join(DB::raw($tempsprekap . " c"), 'suratpengantar.jobtrucking', 'c.jobtrucking')
+                    ->whereRaw("isnull(suratpengantarbiayatambahan.nominaltagih,0)!=0")
                     ->groupby('c.jobtrucking');
 
                 DB::table($tempomsettambahanrinci)->insertUsing(['jobtrucking', 'keterangan', 'nominal'], $fetch);
