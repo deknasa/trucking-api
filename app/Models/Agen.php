@@ -174,6 +174,7 @@ class Agen extends MyModel
 
         $aktif = request()->aktif ?? '';
         $invoice = request()->invoice ?? '';
+        $from = request()->from ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -228,6 +229,12 @@ class Agen extends MyModel
 
         if ($invoice == 'UTAMA') {
             $query->whereRaw("(isnull(agen.coa,'')<>'' or isnull(agen.coapendapatan,'')<>'' ) ");
+        }
+        if($from == 'inputtrip'){
+            $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
+            if($cabang == 'MEDAN'){
+                $query->whereRaw("agen.coa = '01.03.01.02'");
+            }
         }
 
         // dd($query->toSql());
