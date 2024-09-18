@@ -134,7 +134,7 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
             $kelompok = DB::table('kelompok')->select('id')->where('kelompok.kodekelompok', 'AKI')->first();
             if ($stok) {
                 $kolom = request()->detail_vulkanisirke[0];
-                $batas = 3;
+                $batas = 2;
                 if ($stok->kelompok_id == $kelompok->id) {
                     $kolom = request()->jlhhari;
                     $batas = 730;
