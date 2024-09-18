@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\validasiKomisiSupirUpahSupir;
 
 class UpdateUpahSupirRincianRequest extends FormRequest
 {
@@ -34,7 +35,7 @@ class UpdateUpahSupirRincianRequest extends FormRequest
             'statuscontainer_id.*' => 'required',
             'nominalsupir.*' => ['required','numeric','min:0','max:'. (new ParameterController)->getparamid('BATAS NILAI UPAH','BATAS NILAI UPAH')->text],
             'nominalkenek.*' => ['required','numeric','min:0','max:'. (new ParameterController)->getparamid('BATAS NILAI UPAH KERNEK','BATAS NILAI UPAH KERNEK')->text],
-            'nominalkomisi.*' => ['required','numeric','min:0','max:'. (new ParameterController)->getparamid('BATAS NILAI UPAH KOMISI','BATAS NILAI UPAH KOMISI')->text],
+            'nominalkomisi.*' => ['required','numeric',new validasiKomisiSupirUpahSupir(),'max:'. (new ParameterController)->getparamid('BATAS NILAI UPAH KOMISI','BATAS NILAI UPAH KOMISI')->text],
             'nominaltol.*' => ['required','numeric','min:0','max:'. (new ParameterController)->getparamid('BATAS NILAI TOL','BATAS NILAI TOL')->text],
             'liter.*' => ['required','numeric','min:0','max:'. (new ParameterController)->getparamid('BATAS NILAI LITER','BATAS NILAI LITER')->text],
         ];

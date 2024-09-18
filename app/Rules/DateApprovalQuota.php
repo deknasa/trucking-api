@@ -3,6 +3,7 @@
 namespace App\Rules;
 
 use App\Models\HariLibur;
+use App\Models\Parameter;
 use Illuminate\Contracts\Validation\Rule;
 use App\Models\SuratPengantarApprovalInputTrip;
 use App\Models\SuratPengantar;
@@ -31,6 +32,8 @@ class DateApprovalQuota implements Rule
 
     public function passes($attribute, $value)
     {
+        
+        $cekTanpaBatas = (new Parameter())->cekText('TANPA BATAS TRIP', 'TANPA BATAS TRIP');
         $date = date('Y-m-d', strtotime($value));
         $today = date('Y-m-d', strtotime("today"));
         $getDay = date('l', strtotime(request()->tglbukti . '+1 days'));
@@ -100,6 +103,11 @@ class DateApprovalQuota implements Rule
         // } else {
         //     $allowed = false;
         // }
+
+        $idtrip = request()->id ?? 0;
+        if($idtrip != 0 && $cekTanpaBatas == 'YA'){
+            return true;
+        }
         if ($bukaAbsensi) {
 
             // GET APPROVAL INPUTTRIP
