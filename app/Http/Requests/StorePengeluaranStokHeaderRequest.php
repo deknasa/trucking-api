@@ -133,7 +133,7 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
                 if ($stok) {
                     $statusKlaim = ($stok->approvalklaim == $statusApproval->id);
                     $kolom = request()->detail_vulkanisirke[0];
-                    $batas = 2;
+                    $batas = 3;
                     if ($stok->kelompok_id == $kelompok->id) {
                         $kolom = request()->jlhhari;
                         $batas = 730;
