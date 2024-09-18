@@ -52,6 +52,7 @@ class InvoiceEmklHeaderController extends Controller
      */
     public function store(StoreInvoiceEmklHeaderRequest $request): JsonResponse
     {
+        // dd('test');
         DB::beginTransaction();
 
         try {

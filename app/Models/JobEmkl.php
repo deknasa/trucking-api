@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class JobEmkl extends MyModel
 {
     use HasFactory;
-    
+
     protected $table = 'jobemkl';
 
     protected $guarded = [
@@ -58,7 +58,7 @@ class JobEmkl extends MyModel
                 "jobemkl.modifiedby",
                 "jobemkl.editing_by",
                 "jobemkl.created_at",
-                "jobemkl.updated_at", 
+                "jobemkl.updated_at",
                 DB::raw("'Laporan Job EMKL' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
@@ -85,7 +85,7 @@ class JobEmkl extends MyModel
         return $data;
     }
 
-    public function findAll($id) 
+    public function findAll($id)
     {
         $this->setRequestParameters();
 
@@ -121,14 +121,14 @@ class JobEmkl extends MyModel
                 "jobemkl.updated_at",
                 db::raw("
                  (SELECT b.kodebiayaemkl as biaya_emkl,
-                        format(nominal,'#0.00') as nominal_biaya,
-                        keterangan as keterangan_biaya
+                        format(a.nominal,'#0.00') as nominal_biaya,
+                        a.keterangan as keterangan_biaya
                     from jobemklrincianbiaya a 
                         inner join biayaemkl b on a.biayaemkl_id=b.id
                         where a.nobukti=jobemkl.nobukti 
                     FOR JSON PATH) as keteranganBiaya
                 "),
-            ) 
+            )
             // ->whereBetween('jobemkl.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'jobemkl.container_id', '=', 'container.id')
             ->leftJoin(DB::raw("marketing with (readuncommitted)"), 'jobemkl.marketing_id', '=', 'marketing.id')
@@ -143,39 +143,39 @@ class JobEmkl extends MyModel
         return $data;
     }
 
-    
+
     public function selectColumns($query)
     {
         return $query->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
             ->select(
-                    "jobemkl.id",
-                    "jobemkl.nobukti",
-                    "jobemkl.tglbukti",
-                    "jobemkl.shipper_id",
-                    "pelanggan.namapelanggan as shipper",
-                    "jobemkl.tujuan_id",
-                    "tujuan.keterangan as tujuan",
-                    "jobemkl.container_id",
-                    "container.keterangan as container",
-                    "jobemkl.jenisorder_id",
-                    "jenisorder.keterangan as jenisorder",
-                    "jobemkl.kapal",
-                    "jobemkl.nominal",
-                    "jobemkl.destination",
-                    "jobemkl.nocont",
-                    "jobemkl.noseal",
-                    "jobemkl.statusapprovaledit",
-                    "jobemkl.tglapprovaledit",
-                    "jobemkl.userapprovaledit",
-                    "jobemkl.tglbataseditjobemkl",
-                    "jobemkl.statusformat",
-                    "jobemkl.modifiedby",
-                    "jobemkl.editing_by",
-                    "jobemkl.created_at",
-                    "jobemkl.updated_at",
-                
+                "jobemkl.id",
+                "jobemkl.nobukti",
+                "jobemkl.tglbukti",
+                "jobemkl.shipper_id",
+                "pelanggan.namapelanggan as shipper",
+                "jobemkl.tujuan_id",
+                "tujuan.keterangan as tujuan",
+                "jobemkl.container_id",
+                "container.keterangan as container",
+                "jobemkl.jenisorder_id",
+                "jenisorder.keterangan as jenisorder",
+                "jobemkl.kapal",
+                "jobemkl.nominal",
+                "jobemkl.destination",
+                "jobemkl.nocont",
+                "jobemkl.noseal",
+                "jobemkl.statusapprovaledit",
+                "jobemkl.tglapprovaledit",
+                "jobemkl.userapprovaledit",
+                "jobemkl.tglbataseditjobemkl",
+                "jobemkl.statusformat",
+                "jobemkl.modifiedby",
+                "jobemkl.editing_by",
+                "jobemkl.created_at",
+                "jobemkl.updated_at",
+
             )
             ->whereBetween('jobemkl.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'jobemkl.container_id', '=', 'container.id')
@@ -203,7 +203,7 @@ class JobEmkl extends MyModel
             $table->string('jenisorder_id', 50)->nullable();
             $table->string('jenisorder', 50)->nullable();
             $table->string('kapal', 50)->nullable();
-            $table->double('nominal', 15,2)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
             $table->string('destination', 50)->nullable();
             $table->string('nocont', 50)->nullable();
             $table->string('noseal', 50)->nullable();
@@ -251,7 +251,7 @@ class JobEmkl extends MyModel
             'created_at',
             'updated_at',
         ], $models);
- 
+
 
 
 
@@ -272,14 +272,14 @@ class JobEmkl extends MyModel
                         if ($filters['field'] != '') {
                             if ($filters['field'] == 'statusaktif') {
                                 $query = $query->where('parameter.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'shipper' ) {
-                                $query = $query->whereRaw("pelanggan.namapelanggan LIKE '%". escapeLike($filters['data']) ."%' escape '|'");
-                            } else if ($filters['field'] == 'tujuan' ) {
-                                $query = $query->whereRaw("tujuan.keterangan LIKE '%". escapeLike($filters['data']) ."%' escape '|'");
-                            } else if ($filters['field'] == 'container' ) {
-                                $query = $query->whereRaw("container.keterangan LIKE '%". escapeLike($filters['data']) ."%' escape '|'");
-                            } else if ($filters['field'] == 'jenisorder' ) {
-                                $query = $query->whereRaw("jenisorder.keterangan LIKE '%". escapeLike($filters['data']) ."%' escape '|'");
+                            } else if ($filters['field'] == 'shipper') {
+                                $query = $query->whereRaw("pelanggan.namapelanggan LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            } else if ($filters['field'] == 'tujuan') {
+                                $query = $query->whereRaw("tujuan.keterangan LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            } else if ($filters['field'] == 'container') {
+                                $query = $query->whereRaw("container.keterangan LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            } else if ($filters['field'] == 'jenisorder') {
+                                $query = $query->whereRaw("jenisorder.keterangan LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
@@ -293,19 +293,19 @@ class JobEmkl extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if (!array_key_exists("field",$filters)) {
+                            if (!array_key_exists("field", $filters)) {
                                 // dd($filters);
                             } else if ($filters['field'] != '') {
                                 if ($filters['field'] == 'statusaktif') {
                                     $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                                } else if ($filters['field'] == 'shipper' ) {
-                                    $query = $query->orWhereRaw("pelanggan.namapelanggan LIKE '%". escapeLike($filters['data']) ."%' escape '|'");
-                                } else if ($filters['field'] == 'tujuan' ) {
-                                    $query = $query->orWhereRaw("tujuan.keterangan LIKE '%". escapeLike($filters['data']) ."%' escape '|'");
-                                } else if ($filters['field'] == 'container' ) {
-                                    $query = $query->orWhereRaw("container.keterangan LIKE '%". escapeLike($filters['data']) ."%' escape '|'");
-                                } else if ($filters['field'] == 'jenisorder' ) {
-                                    $query = $query->orWhereRaw("jenisorder.keterangan LIKE '%". escapeLike($filters['data']) ."%' escape '|'");
+                                } else if ($filters['field'] == 'shipper') {
+                                    $query = $query->orWhereRaw("pelanggan.namapelanggan LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                } else if ($filters['field'] == 'tujuan') {
+                                    $query = $query->orWhereRaw("tujuan.keterangan LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                } else if ($filters['field'] == 'container') {
+                                    $query = $query->orWhereRaw("container.keterangan LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                } else if ($filters['field'] == 'jenisorder') {
+                                    $query = $query->orWhereRaw("jenisorder.keterangan LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                                 } else {
@@ -336,17 +336,15 @@ class JobEmkl extends MyModel
 
     public function processStore(array $data, JobEmkl $jobEmkl): JobEmkl
     {
-        $jenisorder_id=$data['jenisorder_id'] ?? 0;
-        $tujuan_id=$data['tujuan_id'] ?? 0;
-        $marketing_id=$data['marketing_id'] ?? 0;
-        if ($jenisorder_id==1) {
+        $jenisorder_id = $data['jenisorder_id'] ?? 0;
+        $tujuan_id = $data['tujuan_id'] ?? 0;
+        $marketing_id = $data['marketing_id'] ?? 0;
+        if ($jenisorder_id == 1) {
             $fetchGrp = Parameter::where('grp', 'JOB EMKL MUATAN')->where('grp', 'JOB EMKL MUATAN')->first();
-
         } else {
             $fetchGrp = Parameter::where('grp', 'JOB EMKL BONGKARAN')->where('grp', 'JOB EMKL BONGKARAN')->first();
-            $tujuan_id=0;
-            $marketing_id=0;
-
+            $tujuan_id = 0;
+            $marketing_id = 0;
         }
         $group = $fetchGrp->grp;
         $subGroup = $fetchGrp->subgrp;
@@ -354,7 +352,7 @@ class JobEmkl extends MyModel
 
         // dd($tujuan_id);
         // dd((new RunningNumberService)->get($group, $subGroup, $jobEmkl->getTable(), date('Y-m-d', strtotime($data['tglbukti'])),$tujuan_id,0,0,$marketing_id));
-       
+
         $jobEmkl->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $jobEmkl->shipper_id = $data['shipper_id'];
         $jobEmkl->marketing_id = $data['marketing_id'];
@@ -371,7 +369,7 @@ class JobEmkl extends MyModel
         $jobEmkl->info = html_entity_decode(request()->info);
         $data['sortname'] = $data['sortname'] ?? 'id';
         $data['sortorder'] = $data['sortorder'] ?? 'asc';
-        $jobEmkl->nobukti = (new RunningNumberService)->get($group, $subGroup, $jobEmkl->getTable(), date('Y-m-d', strtotime($data['tglbukti'])),$tujuan_id,0,0,$marketing_id);
+        $jobEmkl->nobukti = (new RunningNumberService)->get($group, $subGroup, $jobEmkl->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), $tujuan_id, 0, 0, $marketing_id);
         if (!$jobEmkl->save()) {
             throw new \Exception('Error storing JOB EMKL.');
         }
@@ -389,16 +387,15 @@ class JobEmkl extends MyModel
         return $jobEmkl;
     }
 
-    public function processUpdate(JobEmkl $jobEmkl, array $data) {
-        $jenisorder_id=$data['jenisorder_id'] ?? 0;
-        $tujuan_id=$data['tujuan_id'] ?? 0;
-        $marketing_id=$data['marketing_id'] ?? 0;
-        if ($jenisorder_id==1) {
-
+    public function processUpdate(JobEmkl $jobEmkl, array $data)
+    {
+        $jenisorder_id = $data['jenisorder_id'] ?? 0;
+        $tujuan_id = $data['tujuan_id'] ?? 0;
+        $marketing_id = $data['marketing_id'] ?? 0;
+        if ($jenisorder_id == 1) {
         } else {
-            $tujuan_id=0;
-            $marketing_id=0;
-
+            $tujuan_id = 0;
+            $marketing_id = 0;
         }
         $jobEmkl->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $jobEmkl->shipper_id = $data['shipper_id'];
@@ -450,23 +447,84 @@ class JobEmkl extends MyModel
 
     public function processNominalPrediksi(JobEmkl $jobEmkl, array $data): JobEmkl
     {
+        // dd($jobEmkl);
         $jobEmkl->nominal = $data['nominal'];
         $jobEmkl->modifiedby = auth('api')->user()->name;
         $jobEmkl->info = html_entity_decode(request()->info);
         if ($jobEmkl->save()) {
 
-            $keteranganbiaya=$data['keteranganBiaya'] ?? '';
-       
-            if ($keteranganbiaya!='') {
+            $keteranganbiaya = $data['keteranganBiaya'] ?? '';
 
-   
+            if ($keteranganbiaya != '') {
+
+
                 $jobemklrincianbiaya = (new JobEmklRincianBiaya())->processStore($jobEmkl, [
                     'jobemkl_id' => $jobEmkl->id,
                     'nobukti' => $jobEmkl->nobukti,
                     'keteranganbiaya' =>  $keteranganbiaya,
                     'modifiedby' => auth('api')->user()->name,
                 ]);
-    
+            } else {
+                $paramcoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL INVOICE MUATAN UTAMA')
+                    ->where('subgrp', 'DEBET')
+                    ->where('text', 'DEBET')
+                    ->first();
+                $memocoa = json_decode($paramcoa->memo, true);
+                $coadebet = $memocoa['JURNAL'];
+
+                $param = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL INVOICE MUATAN UTAMA')
+                    ->where('subgrp', 'KREDIT')
+                    ->where('text', 'KREDIT')
+                    ->first();
+                $memo = json_decode($param->memo, true);
+                $coakredit = $memo['JURNAL'];
+
+                $paramppn = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL INVOICE MUATAN UTAMA')
+                    ->where('subgrp', 'KREDIT PPN')
+                    ->where('text', 'KREDIT PPN')
+                    ->first();
+                $memo = json_decode($paramppn->memo, true);
+                $coakreditppn = $memo['JURNAL'];
+
+                $statusPPN = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUS PPN')->where('default', 'YA')->first();                
+
+                $coadebet_detail[] = $coadebet;
+                $coakredit_detail[] = $coakreditppn;
+                $coakreditextra_detail[] = $coakredit;
+                $nominal_detail[] = $data['nominal'];
+                $keterangan_detail[] =    'Nominal Prediksi '.$jobEmkl->nobukti ;
+                if ($statusPPN->text == 'PPN 1.1%') {
+                    $nominalppn = round($data['nominal'] * 0.011);
+                } else {
+                    $nominalppn = round($data['nominal'] * 0.11);
+                }
+                $nominal_ppn[] = $nominalppn;
+                $nominal_total[] = $data['nominal'] + $nominalppn;
+                $jurnalRequest = [
+                    'tanpaprosesnobukti' => 1,
+                    'multikredit' => 1,
+                    'nobukti' => $jobEmkl->nobukti,
+                    'tglbukti' => date('Y-m-d', strtotime($jobEmkl->tglbukti)),
+                    'postingdari' => 'ENTRY INVOICE EMKL',
+                    'statusformat' => "0",
+                    'coakredit_detail' => $coakredit_detail,
+                    'coadebet_detail' => $coadebet_detail,
+                    'coakreditextra_detail' => $coakreditextra_detail,
+                    'nominal_detail' => $nominal_detail,
+                    'nominal_ppn' => $nominal_ppn,
+                    'nominal_total' => $nominal_total,
+                    'keterangan_detail' => $keterangan_detail
+                ];
+                $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $jobEmkl->nobukti)->first();
+                if ($getJurnal != '') {
+
+                    $newJurnal = new JurnalUmumHeader();
+                    $newJurnal = $newJurnal->find($getJurnal->id);
+                    (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+                } else {
+                    (new JurnalUmumHeader())->processStore($jurnalRequest);
+                }
             }
 
             (new LogTrail())->processStore([
@@ -480,8 +538,5 @@ class JobEmkl extends MyModel
             ]);
         }
         return $jobEmkl;
-
     }
-
-
 }
