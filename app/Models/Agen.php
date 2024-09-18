@@ -232,8 +232,8 @@ class Agen extends MyModel
         }
         if($from == 'inputtrip'){
             $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
-            if($cabang == 'MEDAN'){
-                $query->whereRaw("agen.coa = '01.03.01.02'");
+            if($cabang == 'MEDAN'){                
+                $query->whereRaw("agen.coa != '01.08.01.06'");
             }
         }
 
