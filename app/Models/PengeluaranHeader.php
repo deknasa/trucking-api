@@ -1372,6 +1372,7 @@ class PengeluaranHeader extends MyModel
         ]);
 
 
+
         /*STORE JURNAL*/
         $jurnalRequest = [
             'tanpaprosesnobukti' => 1,
