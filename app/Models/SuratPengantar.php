@@ -53,12 +53,16 @@ class SuratPengantar extends MyModel
 
     public function isEditAble($id)
     {
-        $query = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->select('tglbataseditsuratpengantar as tglbatasedit')
-            ->where('id', $id)
-            ->first();
-        if (date('Y-m-d H:i:s', strtotime($query->tglbatasedit)) < date('Y-m-d H:i:s')) {
-            return false;
+        $cekTanpaBatas = (new Parameter())->cekText('TANPA BATAS TRIP', 'TANPA BATAS TRIP');
+        if ($cekTanpaBatas == 'TIDAK') {
+
+            $query = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
+                ->select('tglbataseditsuratpengantar as tglbatasedit')
+                ->where('id', $id)
+                ->first();
+            if (date('Y-m-d H:i:s', strtotime($query->tglbatasedit)) < date('Y-m-d H:i:s')) {
+                return false;
+            }
         }
         // if ($query->tglbatasedit == $approval->id) return true;
         return true;
@@ -1705,22 +1709,22 @@ class SuratPengantar extends MyModel
                 $query->whereRaw("isnull(c.dari_id,0)=" . $sampai_id . ")  or ( c.nobukti='" . $nobuktitrip . "')");
             } else {
 
-                $tripasal=db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
-                ->select(
-                    'a.nobukti_tripasal'
-                )
-                ->where('a.nobukti',$nobuktitrip)
-                ->first()->nobukti_tripasal ?? '';
+                $tripasal = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+                    ->select(
+                        'a.nobukti_tripasal'
+                    )
+                    ->where('a.nobukti', $nobuktitrip)
+                    ->first()->nobukti_tripasal ?? '';
                 // dd($tripasal);
                 $query->whereRaw("(isnull(c.pelanggan_id,0)=" . $pelanggan_idtrip);
                 $query->whereRaw("isnull(c.penyesuaian,'')='" . $penyesuaiantrip . "'");
                 $query->whereRaw("isnull(c.container_id,0)=" . $container_idtrip);
                 $query->whereRaw("isnull(c.gandengan_id,0)=" . $gandengan_idtrip);
                 $query->whereRaw("isnull(c.agen_id,0)=" . $agen_idtrip);
-                $query->whereRaw("isnull(c.jenisorder_id,0)=" . $jenisorder_idtrip. ") ");
-                $query->whereRaw("(isnull(c.tarif_id,0)=" . $tarif_idtrip." or (c.nobukti='" . $tripasal . "' and isnull(c.nobukti_tripasal,'')<>'' ))");
+                $query->whereRaw("isnull(c.jenisorder_id,0)=" . $jenisorder_idtrip . ") ");
+                $query->whereRaw("(isnull(c.tarif_id,0)=" . $tarif_idtrip . " or (c.nobukti='" . $tripasal . "' and isnull(c.nobukti_tripasal,'')<>'' ))");
                 // $query->OrwhereRaw("c.nobukti_tripasal='" . $nobuktitrip . "'");
-// dd($query->tosql());
+                // dd($query->tosql());
             }
             // dd($query->get());
 

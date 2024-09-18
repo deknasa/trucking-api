@@ -3,6 +3,7 @@
 namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -14,6 +15,7 @@ class ValidasiGajiKenekSP implements Rule
      * @return void
      */
     public $gaji;
+    public $keterangan;
     public function __construct($gaji)
     {
         $this->gaji = $gaji;
@@ -38,15 +40,31 @@ class ValidasiGajiKenekSP implements Rule
             if ($this->gaji == 'gajikenek') {
 
                 if ($value > $cekGajiKenek->nominalkenek) {
+                    $this->keterangan = 'nominal ' . app(ErrorController::class)->geterror('HBSD')->keterangan . ' data di master';
                     return false;
                 }
             }
 
-            
+
             if ($this->gaji == 'gajisupir') {
 
                 if ($value > $cekGajiKenek->nominalsupir) {
+                    $this->keterangan = 'nominal ' . app(ErrorController::class)->geterror('HBSD')->keterangan . ' data di master';
                     return false;
+                }
+            }
+            if ($this->gaji == 'komisisupir') {
+                $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
+                if ($cabang == 'MEDAN') {
+                    if ($value <= 0) {
+                        $this->keterangan = 'nominal ' . app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan;
+                        return false;
+                    }
+                    if ($value != $cekGajiKenek->nominalkomisi) {
+
+                        $this->keterangan = 'nominal ' . app(ErrorController::class)->geterror('HSD')->keterangan . ' data di master';
+                        return false;
+                    }
                 }
             }
         }
@@ -61,6 +79,6 @@ class ValidasiGajiKenekSP implements Rule
      */
     public function message()
     {
-        return 'nominal ' . app(ErrorController::class)->geterror('HBSD')->keterangan . ' data di master';
+        return $this->keterangan;
     }
 }
