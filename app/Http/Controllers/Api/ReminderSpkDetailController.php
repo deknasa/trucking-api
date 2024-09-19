@@ -56,8 +56,8 @@ class ReminderSpkDetailController extends Controller
         $diperiksa = $data[0]->diperiksa ?? '';
 
         foreach ($data as $row) {
-            $gudang_header = $row['gudang_header'];
-            $stok_header = $row['stok_header'];
+            $gudang_header = $row->gudang_header;
+            $stok_header = $row->stok_header;
             $groupedData[$gudang_header][$stok_header][] = $row;
         }
 
@@ -68,7 +68,7 @@ class ReminderSpkDetailController extends Controller
         // dd($data[0]['judul']);
 
         $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
-        $sheet->setCellValue('A1', $data[0]['judul']);
+        $sheet->setCellValue('A1', $data[0]->judul);
         $sheet->setCellValue('A2', 'REMINDER SPK');
         $sheet->getStyle("A1")->getFont()->setSize(11)->setBold(true);
         $sheet->getStyle("A2")->getFont()->setBold(true);
@@ -210,19 +210,19 @@ class ReminderSpkDetailController extends Controller
                     $sheet->getStyle("A$groupHeaderRow:$lastColumn$groupHeaderRow")->applyFromArray($styleArray)->getFont()->setBold(true);
                 }
                 $groupHeaderRow++;
-                $tglbukti = ($row[0]['tglbukti_header'] != null) ? Date::PHPToExcel(date('Y-m-d', strtotime($row[0]['tglbukti_header']))) : '';
-                $sheet->setCellValue("B$groupHeaderRow", $row[0]['nobukti_header']);
+                $tglbukti = ($row[0]->tglbukti_header != null) ? Date::PHPToExcel(date('Y-m-d', strtotime($row[0]->tglbukti_header))) : '';
+                $sheet->setCellValue("B$groupHeaderRow", $row[0]->nobukti_header);
                 $sheet->setCellValue("C$groupHeaderRow", $tglbukti);
-                $sheet->setCellValue("D$groupHeaderRow", $row[0]['gudang_header']);
-                $sheet->setCellValue("E$groupHeaderRow", $row[0]['stok_header']);
-                $sheet->setCellValue("F$groupHeaderRow", $row[0]['satuan_header']);
-                $sheet->setCellValue("G$groupHeaderRow", $row[0]['qty_header'])->getStyle("G$groupHeaderRow")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-                $sheet->setCellValue("H$groupHeaderRow", $row[0]['hargasatuan_header'])->getStyle("H$groupHeaderRow")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-                $sheet->setCellValue("I$groupHeaderRow", $row[0]['total_header'])->getStyle("I$groupHeaderRow")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-                $sheet->setCellValue("J$groupHeaderRow", $row[0]['persentasediscount_header'])->getStyle("J$groupHeaderRow")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-                $sheet->setCellValue("K$groupHeaderRow", $row[0]['nominaldiscount_header'])->getStyle("K$groupHeaderRow")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                $sheet->setCellValue("D$groupHeaderRow", $row[0]->gudang_header);
+                $sheet->setCellValue("E$groupHeaderRow", $row[0]->stok_header);
+                $sheet->setCellValue("F$groupHeaderRow", $row[0]->satuan_header);
+                $sheet->setCellValue("G$groupHeaderRow", $row[0]->qty_header)->getStyle("G$groupHeaderRow")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                $sheet->setCellValue("H$groupHeaderRow", $row[0]->hargasatuan_header)->getStyle("H$groupHeaderRow")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                $sheet->setCellValue("I$groupHeaderRow", $row[0]->total_header)->getStyle("I$groupHeaderRow")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                $sheet->setCellValue("J$groupHeaderRow", $row[0]->persentasediscount_header)->getStyle("J$groupHeaderRow")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                $sheet->setCellValue("K$groupHeaderRow", $row[0]->nominaldiscount_header)->getStyle("K$groupHeaderRow")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
                 $sheet->setCellValue("L$groupHeaderRow", "=I$groupHeaderRow-K$groupHeaderRow")->getStyle("L$groupHeaderRow")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-                $sheet->setCellValue("M$groupHeaderRow", $row[0]['keterangan_header']);
+                $sheet->setCellValue("M$groupHeaderRow", $row[0]->keterangan_header);
 
                 $sheet->getStyle("C$groupHeaderRow")->getNumberFormat()->setFormatCode('dd-mm-yyyy');
                 $sheet->getStyle("A$groupHeaderRow:M$groupHeaderRow")->applyFromArray($styleArray)->getFont()->setBold(true);
@@ -241,20 +241,20 @@ class ReminderSpkDetailController extends Controller
                 $no = 1;
                 foreach ($row as $response_detail) {
 
-                    $tglbukti = ($response_detail['tglbukti'] != null) ? Date::PHPToExcel(date('Y-m-d', strtotime($response_detail['tglbukti']))) : '';
+                    $tglbukti = ($response_detail->tglbukti != null) ? Date::PHPToExcel(date('Y-m-d', strtotime($response_detail->tglbukti))) : '';
                     $sheet->setCellValue("A$detail_start_row", $no++);
-                    $sheet->setCellValue("B$detail_start_row", $response_detail['nobukti']);
+                    $sheet->setCellValue("B$detail_start_row", $response_detail->nobukti);
                     $sheet->setCellValue("C$detail_start_row", $tglbukti);
-                    $sheet->setCellValue("D$detail_start_row", $response_detail['gudang']);
-                    $sheet->setCellValue("E$detail_start_row", $response_detail['namastok']);
-                    $sheet->setCellValue("F$detail_start_row", $response_detail['satuan']);
-                    $sheet->setCellValue("G$detail_start_row", $response_detail['qty']);
-                    $sheet->setCellValue("H$detail_start_row", $response_detail['hargasatuan']);
-                    $sheet->setCellValue("I$detail_start_row", $response_detail['total']);
-                    $sheet->setCellValue("J$detail_start_row", $response_detail['persentasediscount']);
-                    $sheet->setCellValue("K$detail_start_row", $response_detail['nominaldiscount']);
+                    $sheet->setCellValue("D$detail_start_row", $response_detail->gudang);
+                    $sheet->setCellValue("E$detail_start_row", $response_detail->namastok);
+                    $sheet->setCellValue("F$detail_start_row", $response_detail->satuan);
+                    $sheet->setCellValue("G$detail_start_row", $response_detail->qty);
+                    $sheet->setCellValue("H$detail_start_row", $response_detail->hargasatuan);
+                    $sheet->setCellValue("I$detail_start_row", $response_detail->total);
+                    $sheet->setCellValue("J$detail_start_row", $response_detail->persentasediscount);
+                    $sheet->setCellValue("K$detail_start_row", $response_detail->nominaldiscount);
                     $sheet->setCellValue("L$detail_start_row", "=I$detail_start_row-K$detail_start_row");
-                    $sheet->setCellValue("M$detail_start_row", $response_detail['keterangan']);
+                    $sheet->setCellValue("M$detail_start_row", $response_detail->keterangan);
 
 
                     $sheet->getStyle("C$detail_start_row")->getNumberFormat()->setFormatCode('dd-mm-yyyy');
