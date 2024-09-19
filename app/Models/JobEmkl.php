@@ -461,6 +461,7 @@ class JobEmkl extends MyModel
                 $jobemklrincianbiaya = (new JobEmklRincianBiaya())->processStore($jobEmkl, [
                     'jobemkl_id' => $jobEmkl->id,
                     'nobukti' => $jobEmkl->nobukti,
+                    'tglbukti' => $jobEmkl->tglbukti,
                     'keteranganbiaya' =>  $keteranganbiaya,
                     'modifiedby' => auth('api')->user()->name,
                 ]);
