@@ -32,9 +32,9 @@ class validasiNobuktiTripasalPulangLongtrip implements Rule
                 $cekQuery = DB::table("suratpengantar")->from(db::raw("suratpengantar with (readuncommitted)"))
                     ->where('jobtrucking', request()->jobtrucking)
                     ->where('id', '!=', request()->id)
-                    ->where('dari_id', 1)
+                    ->where('statuslongtrip', 65)
                     ->first();
-                if($cekQuery == ''){
+                if($cekQuery != '' && $value == ''){
                     return false;
                 }
             }
