@@ -634,7 +634,7 @@ class OrderanTrucking extends MyModel
             'jobtrucking',
             'sampai_id'
         ],  $queryJobtruckingAwal);
-        
+
         $tempJobFinal = '##tempJobFinal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempJobFinal, function ($table) {
             $table->string('jobtrucking', 50)->nullable();
@@ -649,7 +649,7 @@ class OrderanTrucking extends MyModel
             'jobtrucking',
             'sampai_id'
         ],  $queryJobTruckingFinal);
-        
+
         $queryJobTruckingFinal = DB::table($tempLongTrip)->from(db::raw("$tempLongTrip as A"))
             ->select('A.jobtrucking', 'A.sampai_id')
             ->leftjoin(db::raw($tempAkhir . " as B"), 'A.jobtrucking', 'B.jobtrucking')
@@ -2067,7 +2067,7 @@ class OrderanTrucking extends MyModel
                             }
                         }
                     });
-                    
+
                     break;
                 default:
 
@@ -2152,6 +2152,7 @@ class OrderanTrucking extends MyModel
             ->where('subgrp', 'STATUS APPROVAL')
             ->where('text', 'NON APPROVAL')
             ->first();
+        $isTanpaJob = (new Parameter())->cekText('ORDERAN TRUCKING TANPA JOB', 'ORDERAN TRUCKING TANPA JOB');
 
         $orderanTrucking->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $orderanTrucking->container_id = $data['container_id'];
@@ -2177,6 +2178,9 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->statusjeniskendaraan = $data['statusjeniskendaraan'];
         $orderanTrucking->statusformat = $format->id;
 
+        if ($isTanpaJob == 'YA') {
+            $orderanTrucking->statusapprovaltanpajob = 3;
+        }
         // $tarifrincian = TarifRincian::find($data['tarifrincian_id']);
         $orderanTrucking->nominal = 0 ?? '';
         $orderanTrucking->nobukti = (new RunningNumberService)->get($group, $subGroup, $orderanTrucking->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
