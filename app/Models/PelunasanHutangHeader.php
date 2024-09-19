@@ -86,7 +86,8 @@ class PelunasanHutangHeader extends MyModel
                 'bank.namabank as bank_id',
                 'supplier.namasupplier as supplier_id',
                 'alatbayar.namaalatbayar as alatbayar_id',
-                'PelunasanHutangheader.tglcair',
+                'PelunasanHutangheader.tglcair',                
+                'PelunasanHutangheader.bank_id as pengeluaranbank_id',
                 db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
                 db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
 
