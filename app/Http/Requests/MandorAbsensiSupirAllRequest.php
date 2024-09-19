@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Rules\DateAllowedAbsenMandor;
 use App\Rules\AbsensiSupirRICUangJalanRule;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\MandorAbsensiSupirDuplicateSupir;
 use App\Rules\MandorAbsensiSupirEditSupirValidasiTrado;
 use App\Rules\MandorAbsensiSupirInputSupirValidasiTrado;
 
@@ -58,8 +59,20 @@ class MandorAbsensiSupirAllRequest extends FormRequest
         // Dapatkan kunci data yang dikirim
         $keys = array_keys($data);
 
+        $supirIds = [];
+        $duplicates = [];
+        
+        foreach ($data as $key=>$item) {
+            if ($item['supir_id']!="") {
+                if (in_array($item['supir_id'], $supirIds)) {
+                    $duplicates[] = $item['supir_id']; // Menyimpan supir_id yang duplikat
+                } else {
+                    $supirIds[] = $item['supir_id']; // Menambahkan supir_id ke daftar
+                }
+            }
+        }
         // Tentukan aturan validasi untuk setiap kunci data
-        $validaasismass = collect($keys)->mapWithKeys(function ($key) use ($data) {
+        $validaasismass = collect($keys)->mapWithKeys(function ($key) use ($data,$duplicates) {
             // dd($data[$key]['absen_id']);
 
             $query = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
@@ -134,7 +147,7 @@ class MandorAbsensiSupirAllRequest extends FormRequest
                 ];
                 // dd($this->input("$key.kodetrado"));
                 $rulesBeda = [
-                    "$key.namasupir" => ['required', new MandorAbsensiSupirEditSupirValidasiTrado($data[$key]['trado_id'], $data[$key]['supir_id']),new AbsensiSupirRICUangJalanRule($data[$key])],
+                    "$key.namasupir" => ['required', new MandorAbsensiSupirDuplicateSupir($data[$key]['supir_id'],$duplicates), new MandorAbsensiSupirEditSupirValidasiTrado($data[$key]['trado_id'], $data[$key]['supir_id']),new AbsensiSupirRICUangJalanRule($data[$key])],
                     "$key.supir_id" => ['required', new MandorAbsensiSupirEditSupirValidasiTrado($data[$key]['trado_id'], $data[$key]['supir_id'])],
                     
                 ];
