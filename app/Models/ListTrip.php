@@ -1232,11 +1232,17 @@ class ListTrip extends MyModel
                 if ($trip->container_id != $data['container_id'] || $trip->statuscontainer_id != $data['statuscontainer_id']) {
                     $nominalspr = $nominalSupir;
                     $nominalkenek = $upahsupirRincian->nominalkenek;
-                    $nominalkomisi = $trip->komisisupir;
+                    $nominalkomisi = $upahsupirRincian->nominalkomisi;
                 } else {
-                    $nominalspr = $nominalSupir;
-                    $nominalkenek = $trip->gajikenek;
-                    $nominalkomisi = $trip->komisisupir;
+                    if($trip->upah_id != $data['upah_id']){
+                        $nominalspr = $nominalSupir;
+                        $nominalkenek = $upahsupirRincian->nominalkenek;
+                        $nominalkomisi = $upahsupirRincian->nominalkomisi;
+                    } else {
+                        $nominalspr = $nominalSupir;
+                        $nominalkenek = $trip->gajikenek;
+                        $nominalkomisi = $trip->komisisupir;
+                    }
                 }
             }
         } else {

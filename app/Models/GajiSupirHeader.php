@@ -2902,6 +2902,8 @@ class GajiSupirHeader extends MyModel
         ], $querytemptrip);
 
         $jumlahTrip = DB::table($temptrip)->get();
+
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
         foreach ($jumlahTrip as $row) {
             // URUT EXTRA
             $tempurutan = '##tempurutan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -2911,16 +2913,29 @@ class GajiSupirHeader extends MyModel
                 $table->string('suratpengantar_nobukti', 50)->nullable();
                 $table->bigInteger('furut')->nullable();
             });
-            $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
-                ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,
-                /*ROW_NUMBER() OVER(PARTITION BY b.suratpengantar_nobukti ORDER BY b.suratpengantar_nobukti, c.nobukti, a.biayaextrasupir_nobukti) */
-                row_number() Over( partition by b.suratpengantar_nobukti Order By b.suratpengantar_nobukti,c.tglbukti,c.nobukti,a.nourut )               
-                as furut"))
 
-                ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
-                ->join(db::raw("$temptrip as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.suratpengantar_nobukti')
-                ->where('a.suratpengantar_nobukti', $row->suratpengantar_nobukti);
+            if ($cabang == 'MEDAN') {
+                $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
+                    ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,
+                        /*ROW_NUMBER() OVER(PARTITION BY b.suratpengantar_nobukti ORDER BY b.suratpengantar_nobukti, c.nobukti, a.biayaextrasupir_nobukti) */
+                        row_number() Over( partition by b.suratpengantar_nobukti Order By b.suratpengantar_nobukti,c.tglbukti,c.nobukti, a.ritasi_nobukti,a.nourut )               
+                        as furut"))
 
+                    ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+                    ->join(db::raw("$temptrip as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.suratpengantar_nobukti')
+                    ->where('a.suratpengantar_nobukti', $row->suratpengantar_nobukti);
+            } else {
+
+                $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
+                    ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,
+                    /*ROW_NUMBER() OVER(PARTITION BY b.suratpengantar_nobukti ORDER BY b.suratpengantar_nobukti, c.nobukti, a.biayaextrasupir_nobukti) */
+                    row_number() Over( partition by b.suratpengantar_nobukti Order By b.suratpengantar_nobukti,c.tglbukti,c.nobukti,a.nourut )               
+                    as furut"))
+
+                    ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+                    ->join(db::raw("$temptrip as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.suratpengantar_nobukti')
+                    ->where('a.suratpengantar_nobukti', $row->suratpengantar_nobukti);
+            }
             DB::table($tempurutan)->insertUsing([
                 'id',
                 'nobukti',
@@ -3334,6 +3349,7 @@ class GajiSupirHeader extends MyModel
         ], $querytemptrip);
 
         $jumlahTrip = DB::table($temptrip)->get();
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
         foreach ($jumlahTrip as $row) {
             // URUT EXTRA
             $tempurutan = '##tempurutan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -3343,16 +3359,25 @@ class GajiSupirHeader extends MyModel
                 $table->string('suratpengantar_nobukti', 50)->nullable();
                 $table->bigInteger('furut')->nullable();
             });
-
-            $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
-                ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,
+            if ($cabang == 'MEDAN') {
+                $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
+                    ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,
+                    /*ROW_NUMBER() OVER(PARTITION BY b.suratpengantar_nobukti ORDER BY b.suratpengantar_nobukti, c.nobukti, a.biayaextrasupir_nobukti) */
+                    row_number() Over( partition by b.suratpengantar_nobukti Order By b.suratpengantar_nobukti,c.tglbukti,c.nobukti, a.ritasi_nobukti,a.nourut )     
+                    as furut"))
+                    ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+                    ->join(db::raw("$temptrip as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.suratpengantar_nobukti')
+                    ->where('a.suratpengantar_nobukti', $row->suratpengantar_nobukti);
+            } else {
+                $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
+                    ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,
                 /*ROW_NUMBER() OVER(PARTITION BY b.suratpengantar_nobukti ORDER BY b.suratpengantar_nobukti, c.nobukti, a.biayaextrasupir_nobukti) */
                 row_number() Over( partition by b.suratpengantar_nobukti Order By b.suratpengantar_nobukti,c.tglbukti,c.nobukti,a.nourut )     
                 as furut"))
-                ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
-                ->join(db::raw("$temptrip as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.suratpengantar_nobukti')
-                ->where('a.suratpengantar_nobukti', $row->suratpengantar_nobukti);
-
+                    ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+                    ->join(db::raw("$temptrip as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.suratpengantar_nobukti')
+                    ->where('a.suratpengantar_nobukti', $row->suratpengantar_nobukti);
+            }
             DB::table($tempurutan)->insertUsing([
                 'id',
                 'nobukti',
