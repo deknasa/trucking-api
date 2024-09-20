@@ -74,6 +74,7 @@ class InvoiceEmklHeaderController extends Controller
                 'nominal' => $requestData['nominal'],
                 'nojobemkl' => $requestData['nojobemkl'],
                 'keterangan_detail' => $requestData['keterangan_detail'],
+                "keterangan_biaya" => $requestData['keterangan_biaya'],      
             ];
             $invoiceEmklHeader = (new InvoiceEmklHeader())->processStore($data);
             $invoiceEmklHeader->position = $this->getPosition($invoiceEmklHeader, $invoiceEmklHeader->getTable())->position;
@@ -134,6 +135,7 @@ class InvoiceEmklHeaderController extends Controller
                 'nominal' => $requestData['nominal'],
                 'nojobemkl' => $requestData['nojobemkl'],
                 'keterangan_detail' => $requestData['keterangan_detail'],
+                "keterangan_biaya" => $requestData['keterangan_biaya'],      
             ];
             $invoiceEmklHeader = (new InvoiceEmklHeader())->processUpdate($invoiceemklheader, $data);
             $invoiceEmklHeader->position = $this->getPosition($invoiceEmklHeader, $invoiceEmklHeader->getTable())->position;
