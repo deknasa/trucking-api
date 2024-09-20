@@ -19,8 +19,14 @@ class ExportLaporanMingguanSupir extends Model
         $parameter = new Parameter();
         $statusjenislaporan =  $parameter->cekId('JENIS RINCIAN MINGGUAN', 'JENIS RINCIAN MINGGUAN', 'NORMAL') ?? 0;
         $cabang =  $parameter->cekText('CABANG', 'CABANG') ?? 0;
-        if ($cabang != 'MAKASSAR') {
-            $jenislaporan = $parameter->cekId('JENIS RINCIAN MINGGUAN', 'JENIS RINCIAN MINGGUAN', 'DETAIL') ?? 0;
+        if ($cabang == 'MEDAN') {
+            $jenislaporan = $parameter->cekId('JENIS RINCIAN MINGGUAN', 'JENIS RINCIAN MINGGUAN', 'NORMAL') ?? 0;
+        } else {
+            if ($cabang != 'MAKASSAR') {
+                $jenislaporan = $parameter->cekId('JENIS RINCIAN MINGGUAN', 'JENIS RINCIAN MINGGUAN', 'DETAIL') ?? 0;
+            }
+                
+    
         }
 
 
@@ -1147,6 +1153,31 @@ class ExportLaporanMingguanSupir extends Model
             'keterangan',
         ], $querylist);
 
+        // 
+        $tempritasirekap = '##tempritasirekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempritasirekap, function ($table) {
+            $table->string('nobukti', 100)->nullable();
+            $table->double('gajiritasi', 15, 2)->nullable();
+            $table->longtext('ketritasi')->nullable();
+        });
+
+
+        $querylist = db::table('gajisupirdetail')->from(db::raw("gajisupirdetail a with (readuncommitted)"))
+            ->select(
+                'a.suratpengantar_nobukti as nobukti',
+                db::raw("sum(a.gajiritasi) as gajiritasi"),
+                db::raw("STRING_AGG(cast(trim(m.statusritasi) as nvarchar(max)), ', ') as ketritasi"),
+            )
+            ->join(db::raw($tempData . " b "),'a.suratpengantar_nobukti','b.nobukti')
+            ->join(DB::raw("$tempritasi as m with (readuncommitted) "), 'a.ritasi_nobukti', 'm.nobukti')
+            ->groupBY('a.suratpengantar_nobukti');
+
+        DB::table($tempritasirekap)->insertUsing([
+            'nobukti',
+            'gajiritasi',
+            'ketritasi',
+        ], $querylist);
+
 
         // dd(db::table($tempuangjalanrekap)->get());
 
@@ -1173,6 +1204,7 @@ class ExportLaporanMingguanSupir extends Model
             ], $queryuangjalanrekap);
 
 
+            // dd(db::table($tempritasirekap)->whereraw("nobukti='TRP 0227/VIII/2024'")->get());
 
             $data =  DB::table($tempData)->from(
                 DB::raw($tempData . " as a")
@@ -1228,9 +1260,9 @@ class ExportLaporanMingguanSupir extends Model
                     DB::raw("isnull(f.tolsupir,0) as tolsupir"),
                     DB::raw("0 as uangbon"),
                     DB::raw("isnull(A.pengeluarannobuktiebs,'') as nobuktikbtebs2"),
-                    DB::raw("isnull(a.gajiritasi,0) as ritasi"),
+                    DB::raw("isnull(j.gajiritasi,0) as ritasi"),
                     DB::raw("0 as extrabbm"),
-                    DB::raw("isnull(a.ketritasi,'') as ketritasi"),
+                    DB::raw("isnull(j.ketritasi,'') as ketritasi"),
                     // DB::raw("(case when a.urutextra=1 then
                     //     (case when isnull(a.urutric,0)=1 then isnull(d.nominaluangjalan,0) else 0 end) else 0 end) as uangjalan"),
                     // DB::raw("(case when a.urutextra=1 then
@@ -1284,6 +1316,7 @@ class ExportLaporanMingguanSupir extends Model
                 ->leftjoin(DB::raw($tempbuktikomisi . " as g "), 'a.nobukti', 'g.nobukti')
                 ->leftjoin(DB::raw($temprekapketeranganlain . " as h "), 'a.nobukti', 'h.nobukti')
                 ->leftjoin(DB::raw($tempInvoicetambahanrekap . " as i "), 'a.nobukti', 'i.suratpengantar')
+                ->leftjoin(DB::raw($tempritasirekap . " as j "), 'a.nobukti', 'j.nobukti')
                 ->orderBy('a.nopol')
                 ->orderBy('a.tglbukti')
                 ->orderBy('a.namasupir')
