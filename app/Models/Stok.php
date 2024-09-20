@@ -1676,7 +1676,6 @@ class Stok extends MyModel
         // $stok = new stok();
         $stok->keterangan = $data['keterangan'];
         $stok->namastok = $data['namastok'];
-        $stok->namaterpusat = $data['namaterpusat'];
         $stok->statusaktif = $data['statusaktif'];
         $stok->kelompok_id = $data['kelompok_id'];
         $stok->subkelompok_id = $data['subkelompok_id'];
@@ -1736,8 +1735,6 @@ class Stok extends MyModel
 
         $stok->keterangan = $data['keterangan'];
         $stok->namastok = $data['namastok'];
-        $stok->namaterpusat = $data['namaterpusat'];
-        $stok->namaterpusat = $data['namaterpusat'];
         $stok->statusaktif = $data['statusaktif'];
         $stok->kelompok_id = $data['kelompok_id'];
         $stok->subkelompok_id = $data['subkelompok_id'];
