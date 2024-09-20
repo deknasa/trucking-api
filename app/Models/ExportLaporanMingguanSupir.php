@@ -18,6 +18,10 @@ class ExportLaporanMingguanSupir extends Model
 
         $parameter = new Parameter();
         $statusjenislaporan =  $parameter->cekId('JENIS RINCIAN MINGGUAN', 'JENIS RINCIAN MINGGUAN', 'NORMAL') ?? 0;
+        $cabang =  $parameter->cekText('CABANG', 'CABANG') ?? 0;
+        if ($cabang != 'MAKASSAR') {
+            $jenislaporan = $parameter->cekId('JENIS RINCIAN MINGGUAN', 'JENIS RINCIAN MINGGUAN', 'DETAIL') ?? 0;
+        }
 
 
         if ($tradodari == 0) {
@@ -151,7 +155,7 @@ class ExportLaporanMingguanSupir extends Model
                 $queryTempdata = DB::table("suratpengantar")->from(
                     DB::raw("suratpengantar as c with (readuncommitted)")
                 )
-    
+
                     ->select(
                         'c.nobukti',
                         'c.tglbukti',
@@ -194,7 +198,7 @@ class ExportLaporanMingguanSupir extends Model
                         // 'b.keteranganbiayaextrasupir as biayaextrasupir_keterangan',
                         db::raw("isnull(b.urutextra,1) as urutextra"),
                         db::raw("(trim(c.nobukti)+trim(a.nobukti)) as suratpengantarric")
-    
+
                     )
                     ->leftjoin(DB::raw("gajisupirdetail as b with (readuncommitted) "), 'c.nobukti', 'b.suratpengantar_nobukti')
                     ->leftjoin(DB::raw("gajisupirheader as a with (readuncommitted) "), 'b.nobukti', 'a.nobukti')
@@ -224,7 +228,7 @@ class ExportLaporanMingguanSupir extends Model
                 $queryTempdata = DB::table("gajisupirheader")->from(
                     DB::raw("gajisupirheader as a with (readuncommitted)")
                 )
-    
+
                     ->select(
                         'c.nobukti',
                         'c.tglbukti',
@@ -267,7 +271,7 @@ class ExportLaporanMingguanSupir extends Model
                         // 'b.keteranganbiayaextrasupir as biayaextrasupir_keterangan',
                         'b.urutextra',
                         db::raw("(trim(c.nobukti)+trim(a.nobukti)) as suratpengantarric")
-    
+
                     )
                     ->join(DB::raw("gajisupirdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
                     ->join(DB::raw("suratpengantar as c with (readuncommitted) "), 'b.suratpengantar_nobukti', 'c.nobukti')
@@ -294,9 +298,6 @@ class ExportLaporanMingguanSupir extends Model
                     ->orderBy("c.tglbukti", "asc")
                     ->orderBy("c.nobukti", "asc");
             }
-
-            
-           
         } else {
 
 
@@ -304,7 +305,7 @@ class ExportLaporanMingguanSupir extends Model
                 $queryTempdata = DB::table("suratpengantar")->from(
                     DB::raw("suratpengantar as c with (readuncommitted)")
                 )
-    
+
                     ->select(
                         'c.nobukti',
                         'c.tglbukti',
@@ -347,7 +348,7 @@ class ExportLaporanMingguanSupir extends Model
                         // 'b.keteranganbiayaextrasupir as biayaextrasupir_keterangan',
                         db::raw("isnull(b.urutextra,1) as urutextra"),
                         db::raw("(trim(c.nobukti)+trim(a.nobukti)) as suratpengantarric")
-    
+
                     )
                     ->leftjoin(DB::raw("gajisupirdetail as b with (readuncommitted) "), 'c.nobukti', 'b.suratpengantar_nobukti')
                     ->leftjoin(DB::raw("gajisupirheader as a with (readuncommitted) "), 'b.nobukti', 'a.nobukti')
@@ -373,7 +374,7 @@ class ExportLaporanMingguanSupir extends Model
                 $queryTempdata = DB::table("gajisupirheader")->from(
                     DB::raw("gajisupirheader as a with (readuncommitted)")
                 )
-    
+
                     ->select(
                         'c.nobukti',
                         'c.tglbukti',
@@ -416,7 +417,7 @@ class ExportLaporanMingguanSupir extends Model
                         // 'b.keteranganbiayaextrasupir as biayaextrasupir_keterangan',
                         'b.urutextra',
                         db::raw("(trim(c.nobukti)+trim(a.nobukti)) as suratpengantarric")
-    
+
                     )
                     ->join(DB::raw("gajisupirdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
                     ->join(DB::raw("suratpengantar as c with (readuncommitted) "), 'b.suratpengantar_nobukti', 'c.nobukti')
@@ -439,7 +440,6 @@ class ExportLaporanMingguanSupir extends Model
                     ->orderBy("c.tglbukti", "asc")
                     ->orderBy("c.nobukti", "asc");
             }
-
         }
 
 
@@ -525,7 +525,7 @@ class ExportLaporanMingguanSupir extends Model
 
 
 
- 
+
         $param1 = 1;
         if ($cabang == 'MAKASSAR') {
             $querytempuangjalan = DB::table("gajisupirheader")->from(
@@ -1418,17 +1418,17 @@ class ExportLaporanMingguanSupir extends Model
                 });
             // dd($cabang);
             if ($cabang == 'MAKASSAR') {
-                $data=
-                $data->leftJoin(DB::raw($tempuangjalanrekap . " as d "), function ($join) {
-                    $join->on(db::raw("isnull(a.suratpengantarric,'')"), '=', 'd.suratpengantar_nobukti');
-                })
+                $data =
+                    $data->leftJoin(DB::raw($tempuangjalanrekap . " as d "), function ($join) {
+                        $join->on(db::raw("isnull(a.suratpengantarric,'')"), '=', 'd.suratpengantar_nobukti');
+                    })
                     ->orderBy('a.nopol')
                     ->orderBy('a.tglbukti')
                     ->orderBy('a.namasupir')
                     ->orderby('a.nobukti', 'asc')
                     ->get();
             } else {
-                $data= $data->leftJoin(DB::raw($tempuangjalanrekap . " as d "), function ($join)  use ($paramurutextra) {
+                $data = $data->leftJoin(DB::raw($tempuangjalanrekap . " as d "), function ($join)  use ($paramurutextra) {
                     $join->on(db::raw("isnull(a.suratpengantarric,'')"), '=', 'd.suratpengantar_nobukti');
                     $join->on('a.urutextra', '=', DB::raw($paramurutextra));
                 })
