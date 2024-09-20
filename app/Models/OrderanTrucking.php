@@ -816,13 +816,15 @@ class OrderanTrucking extends MyModel
     }
     public function getagentas($id)
     {
+
+        $getParameter = (new Parameter())->cekText('ORDERAN EMKL REPLICATION', 'ORDERAN EMKL REPLICATION');
         $data = DB::table('agen')
             ->from(DB::raw("agen with (readuncommitted)"))
             ->select(
                 // DB::raw("(case when jenisemkl.kodejenisemkl='TAS' then 1 else 0 end)  as statustas")
                 DB::raw("(case when parameter.text='TAS' then 1 else 0 end)  as statustas"),
                 'parameter.text as text',
-
+                DB::raw("'" . $getParameter . "' as isreplication"),
             )
             // ->join('jenisemkl', 'jenisemkl.id', 'agen.jenisemkl')
             ->join(DB::raw("parameter with (readuncommitted)"), 'agen.statustas', '=', 'parameter.id')
@@ -938,6 +940,8 @@ class OrderanTrucking extends MyModel
                 'orderantrucking.nojobemkl2',
                 'orderantrucking.nocont2',
                 'orderantrucking.noseal2',
+                'orderantrucking.nospempty',
+                'orderantrucking.nospfull',
                 'orderantrucking.statuslangsir',
                 'orderantrucking.gandengan_id',
                 'gandengan.keterangan as gandengan',
@@ -2229,6 +2233,11 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->statusapprovaledit = $defaultapproval->id;
         $orderanTrucking->editing_by = '';
         $orderanTrucking->editing_at = null;
+        if (!$inputtripmandor) {
+            $orderanTrucking->nospempty = $data['nospempty'] ?? '';
+            $orderanTrucking->nospfull = $data['nospfull'] ?? '';
+            $orderanTrucking->kapal = $data['kapal'] ?? '';
+        }
 
         $orderanTrucking->modifiedby = auth('api')->user()->name;
         $orderanTrucking->info = html_entity_decode(request()->info);
@@ -2250,14 +2259,23 @@ class OrderanTrucking extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
         if (!$inputtripmandor) {
-
+            $statuscontainerEmpty = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'EMPTY')->first()->id;
             $get = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
-                ->select('id', 'tglbukti', 'nominalperalihan', 'qtyton', 'nojob', 'nocont', 'noseal', 'nojob2', 'nocont2', 'noseal2', 'pelanggan_id', 'agen_id', 'jenisorder_id', 'container_id')
+                ->select('id', 'tglbukti', 'nominalperalihan', 'qtyton', 'nojob', 'nocont', 'noseal', 'nojob2', 'nocont2', 'noseal2', 'pelanggan_id', 'agen_id', 'jenisorder_id', 'container_id', 'statuscontainer_id')
                 ->where('jobtrucking', $orderanTrucking->nobukti)->get();
 
+            $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
             $datadetail = json_decode($get, true);
             if (count($datadetail) > 0) {
                 foreach ($datadetail as $item) {
+                    $nosp = '';
+                    if ($cabang == 'MEDAN') {
+                        if ($item['statuscontainer_id'] == $statuscontainerEmpty) {
+                            $nosp = $data['nospempty'];
+                        } else {
+                            $nosp = $data['nospfull'];
+                        }
+                    }
                     $suratPengantar = [
                         'proseslain' => '1',
                         'jobtrucking' => $orderanTrucking->nobukti,
@@ -2271,6 +2289,7 @@ class OrderanTrucking extends MyModel
                         'noseal2' =>  $data['noseal2'] ?? '',
                         'container_id' => $data['container_id'],
                         'agen_id' => $data['agen_id'],
+                        'nosp' => $nosp,
                         'jenisorder_id' => $data['jenisorder_id'],
                         'pelanggan_id' => $data['pelanggan_id'],
                         // 'tarif_id' => $data['tarifrincian_id'],

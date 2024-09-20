@@ -4008,6 +4008,7 @@ class SuratPengantar extends MyModel
             ->whereraw("b.tglbukti='" . date('Y-m-d', strtotime($data['tglbukti'])) . "'")
             ->first();
 
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
         $jenisTangki = DB::table('parameter')->from(
             DB::raw("parameter as a with (readuncommitted)")
         )
@@ -4304,6 +4305,17 @@ class SuratPengantar extends MyModel
 
                 DB::update(DB::raw("UPDATE orderantrucking SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2',agen_id='$suratPengantar->agen_id',jenisorder_id='$suratPengantar->jenisorder_id',pelanggan_id='$suratPengantar->pelanggan_id',container_id='$suratPengantar->container_id',gandengan_id='$suratPengantar->gandengan_id' where nobukti='$suratPengantar->jobtrucking'"));
             }
+            if ($cabang == 'MEDAN') {
+                if ($suratPengantar->jobtrucking != '') {
+                    $statuscontainerEmpty = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'EMPTY')->first()->id;
+                    
+                    if($suratPengantar->statuscontainer_id == $statuscontainerEmpty){
+                        DB::update(DB::raw("UPDATE orderantrucking SET nospempty='$suratPengantar->nosp' where nobukti='$suratPengantar->jobtrucking'"));
+                    } else {
+                        DB::update(DB::raw("UPDATE orderantrucking SET nospfull='$suratPengantar->nosp' where nobukti='$suratPengantar->jobtrucking'"));
+                    }
+                }
+            }
             // }
         } else {
             if ($suratPengantar->statusjeniskendaraan == $jenisTangki->id) {
@@ -4491,6 +4503,9 @@ class SuratPengantar extends MyModel
                         $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
                         $suratPengantar->gajisupir = $upahsupirRincian->nominalsupir;
                     }
+                }
+                if ($cabang == 'MEDAN') {
+                    $suratPengantar->nosp = $data['nosp'];
                 }
 
                 $suratPengantar->pelanggan_id = $data['pelanggan_id'];
