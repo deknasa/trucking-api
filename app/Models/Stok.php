@@ -125,7 +125,7 @@ class Stok extends MyModel
                 'a.id as stok_id'
             )
             ->join(db::raw("subkelompok b with (readuncommitted)"),'a.subkelompok_id','b.id')
-            ->whereraw("(case when isnull(b.kelompokpindahgudang_id,0)=0 then b.kelompok_id else  isnull(b.kelompokpindahgudang_id,0) end)=". $KelompokId_stok);
+            ->whereraw("(case when isnull(b.kelompokpindahgudang_id,0)=0 then a.kelompok_id else  isnull(b.kelompokpindahgudang_id,0) end)=". $KelompokId_stok);
 
              
             // dd($querysubkelompok->get());
