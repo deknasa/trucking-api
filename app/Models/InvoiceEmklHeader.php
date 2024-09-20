@@ -326,14 +326,24 @@ class InvoiceEmklHeader extends MyModel
             $table->string('noseal', 1000)->nullable();
             $table->string('namapelanggan', 1000)->nullable();
         });
-        $queryhasil = DB::table('jobemkl')->from(
-            db::raw("jobemkl a with (readuncommitted)")
-        )
-            ->select(db::raw("a.nobukti as nojobemkl, a.tglbukti as tgljobemkl, a.nocont, a.noseal, b.namapelanggan"))
-            ->leftJoin(db::raw("pelanggan as b with (readuncommitted)"), 'a.shipper_id', 'b.id')
-            ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
-            ->where('a.shipper_id', $request->pelanggan_id)
-            ->where('a.jenisorder_id', $request->jenisorder_id);
+        if ($request->jenisorder_id == 1) {
+            $queryhasil = DB::table('jobemkl')->from(
+                db::raw("jobemkl a with (readuncommitted)")
+            )
+                ->select(db::raw("a.nobukti as nojobemkl, a.tglbukti as tgljobemkl, a.nocont, a.noseal, b.namapelanggan"))
+                ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
+                ->where('a.jenisorder_id', $request->jenisorder_id);
+        } else {
+            $queryhasil = DB::table('jobemkl')->from(
+                db::raw("jobemkl a with (readuncommitted)")
+            )
+                ->select(db::raw("a.nobukti as nojobemkl, a.tglbukti as tgljobemkl, a.nocont, a.noseal, b.namapelanggan"))
+                ->leftJoin(db::raw("pelanggan as b with (readuncommitted)"), 'a.shipper_id', 'b.id')
+                ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
+                ->where('a.shipper_id', $request->pelanggan_id)
+                ->where('a.jenisorder_id', $request->jenisorder_id);
+        }
+
 
         DB::table($temphasil)->insertUsing([
             'nojobemkl',
@@ -425,20 +435,24 @@ class InvoiceEmklHeader extends MyModel
 
         // dd(db::table($tempdatahasil)->get());
         if ($edit == true) {
+
             $tempdatainvoice = '##tempdatainvoice' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempdatainvoice, function ($table) {
                 $table->longText('jobemkl_nobukti')->nullable();
+                $table->Integer('id')->nullable();
             });
 
             $queryinvoice = db::table("invoiceemklheader")->from(db::raw("invoiceemklheader a with (readuncommitted)"))
                 ->select(
-                    'b.jobemkl_nobukti'
+                    'b.jobemkl_nobukti',
+                    'b.id'
                 )
                 ->join(db::raw("invoiceemkldetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
                 ->where('a.id', $id);
 
             DB::table($tempdatainvoice)->insertUsing([
                 'jobemkl_nobukti',
+                'id',
             ], $queryinvoice);
 
             $query = DB::table($tempdatahasil)->from(
@@ -453,7 +467,16 @@ class InvoiceEmklHeader extends MyModel
                     'a.noseal',
                     'a.namapelanggan',
                     'a.nominal',
-                    'a.keterangan_detail'
+                    'a.keterangan_detail',
+                    db::raw("
+                    (SELECT b1.kodebiayaemkl as biaya_emkl,
+                           format(a1.nominal,'#0.00') as nominal_biaya,
+                           a1.keterangan as keterangan_biaya
+                       from invoiceemkldetailrincianbiaya a1 
+                           inner join biayaemkl b1 on a1.biayaemkl_id=b1.id
+                           where a1.invoiceemkldetail_id=b.id 
+                       FOR JSON PATH) as keterangan_biaya
+                   "),
                 )
                 ->join(db::raw($tempdatainvoice . " b "), 'a.nojobemkl', 'b.jobemkl_nobukti')
                 ->orderBy("a.tgljobemkl");
@@ -470,7 +493,10 @@ class InvoiceEmklHeader extends MyModel
                     'a.noseal',
                     'a.namapelanggan',
                     'a.nominal',
-                    'a.keterangan_detail'
+                    'a.keterangan_detail',
+                    db::raw("
+                    '' as keterangan_biaya
+                   "),
 
                 )
                 // ->where('a.nocont', '!=', '')
@@ -741,6 +767,8 @@ class InvoiceEmklHeader extends MyModel
         $keteranganjurnal = [];
         for ($i = 0; $i < count($data['nominal']); $i++) {
 
+
+
             $status = [];
             $nominalfifo = [];
             $coadebetfifo = [];
@@ -801,6 +829,9 @@ class InvoiceEmklHeader extends MyModel
                 }
             }
 
+            // 
+
+            // 
             $nojobemkl = ($prosesReimburse == 0) ? $jobemkl->nobukti : '';
             if ($data['statusinvoice'] != $statusInvoice->id) {
                 $nominaljurnal[] = $data['nominal'][$i];
@@ -813,7 +844,10 @@ class InvoiceEmklHeader extends MyModel
                     $keteranganjurnal[] =  $invoiceHeader->nobuktiinvoicereimbursement . ' ' . $data['keterangan_detail'][$i];
                 }
                 $status[] = 'normal';
-                $nominalfifo[] = $data['nominal'][$i];
+                if ($data['jenisorder_id'] != 2) {
+                    $nominalfifo[] = $data['nominal'][$i];
+                }
+
                 $coadebetfifo[] = $coadebet;
             }
 
@@ -827,6 +861,35 @@ class InvoiceEmklHeader extends MyModel
                 'selisih' => $selisih,
                 'keterangan' => $invoiceHeader->nobukti . ' ' . $nojobemkl . ' ' . $data['keterangan_detail'][$i],
             ]);
+            $keterangan_biaya = $data['keterangan_biaya'][$i] ?? '';
+            if ($keterangan_biaya != '') {
+
+
+                $invoiceEmklDetailRincianBiaya = (new InvoiceEmklDetailRincianBiaya())->processStore([
+                    'invoiceemkl_id' => $invoiceHeader->id,
+                    'invoiceemkldetail_id' => $invoiceDetail->id,
+                    'keteranganbiaya' =>  $keterangan_biaya,
+                    'nobukti' =>   $invoiceHeader->nobukti,
+                    'tglbukti' =>  $data['tglbukti'],
+                    'modifiedby' => auth('api')->user()->name,
+                ]);
+            }
+            if ($data['jenisorder_id'] == 2) {
+                $querydetailjob = db::table("invoiceemkldetailrincianbiaya")->from(db::raw("invoiceemkldetailrincianbiaya a with (readuncommitted)"))
+                    ->select(
+                        db::raw("sum(a.nominal) as nominal")
+                    )
+                    ->join(db::raw("invoiceemkldetail b with (readuncommitted)"), 'a.invoiceemkldetail_id', 'b.id')
+                    ->join(db::raw("invoiceemklheader c with (readuncommitted)"), 'b.invoiceemkl_id', 'c.id')
+                    ->where('c.nobukti', $invoiceHeader->nobukti)
+                    ->where('b.id', $invoiceDetail->id)
+                    ->first();
+                $nominalfifo[] = $querydetailjob->nominal ?? 0;
+                $nominaldetail = $querydetailjob->nominal ?? 0;
+
+                db::update("update invoiceemkldetail set nominal=" . $nominaldetail . " where id=" . $invoiceDetail->id . " and nobukti='" . $invoiceHeader->nobukti . "'");
+            }
+
             $nojob_emkl = ($jobemkl != '') ? $jobemkl->nobukti : '';
             for ($a = 0; $a < count($nominalfifo); $a++) {
 
@@ -1267,7 +1330,9 @@ class InvoiceEmklHeader extends MyModel
 
                 if ($data['statusinvoice'] == $statusInvoice->id && date('m', strtotime($data['tglbukti'])) == date('m', strtotime($data['tgldari']))) {
                     $status[] = 'normal';
-                    $nominalfifo[] = $data['nominal'][$i];
+                    if ($data['jenisorder_id'] != 2) {
+                        $nominalfifo[] = $data['nominal'][$i];
+                    }
                     $coadebetfifo[] = $coadebet;
                 }
             }
@@ -1293,6 +1358,35 @@ class InvoiceEmklHeader extends MyModel
                 'selisih' => $selisih,
                 'keterangan' => $data['keterangan_detail'][$i] ?? $invoiceHeader->nobukti . ' ' . $jobemkl->nobukti,
             ]);
+            $keterangan_biaya = $data['keterangan_biaya'][$i] ?? '';
+            if ($keterangan_biaya != '') {
+
+
+                $invoiceEmklDetailRincianBiaya = (new InvoiceEmklDetailRincianBiaya())->processStore([
+                    'invoiceemkl_id' => $invoiceHeader->id,
+                    'invoiceemkldetail_id' => $invoiceDetail->id,
+                    'keteranganbiaya' =>  $keterangan_biaya,
+                    'nobukti' =>   $invoiceHeader->nobukti,
+                    'tglbukti' =>  $data['tglbukti'],
+                    'modifiedby' => auth('api')->user()->name,
+                ]);
+            }
+            if ($data['jenisorder_id'] == 2) {
+                $querydetailjob = db::table("invoiceemkldetailrincianbiaya")->from(db::raw("invoiceemkldetailrincianbiaya a with (readuncommitted)"))
+                    ->select(
+                        db::raw("sum(a.nominal) as nominal")
+                    )
+                    ->join(db::raw("invoiceemkldetail b with (readuncommitted)"), 'a.invoiceemkldetail_id', 'b.id')
+                    ->join(db::raw("invoiceemklheader c with (readuncommitted)"), 'b.invoiceemkl_id', 'c.id')
+                    ->where('c.nobukti', $invoiceHeader->nobukti)
+                    ->where('b.id', $invoiceDetail->id)
+                    ->first();
+                $nominalfifo[] = $querydetailjob->nominal ?? 0;
+                $nominaldetail = $querydetailjob->nominal ?? 0;
+                db::update("update invoiceemkldetail set nominal=" . $nominaldetail . " where id=" . $invoiceDetail->id . " and nobukti='" . $invoiceHeader->nobukti . "'");
+            }
+
+
             $nojob_emkl = ($jobemkl != '') ? $jobemkl->nobukti : '';
             for ($a = 0; $a < count($nominalfifo); $a++) {
 
