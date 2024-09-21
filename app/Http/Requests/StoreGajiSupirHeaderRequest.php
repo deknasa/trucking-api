@@ -11,6 +11,7 @@ use App\Rules\DateTutupBuku;
 use App\Rules\ExistSupir;
 use App\Rules\validasiContSPGajiSupir;
 use App\Rules\validasiJenisKendaraanRIC;
+use App\Rules\validasiKomisiGajiSupir;
 use App\Rules\validasiPemutihanSupirRIC;
 use App\Rules\ValidasiPinjamanGajiSupir;
 use App\Rules\ValidasiStatusContGajiSupir;
@@ -55,20 +56,23 @@ class StoreGajiSupirHeaderRequest extends FormRequest
 
         $rules = [
             //
-            'supir' => ['required', new ValidasiTripGajiSupir(), new validasiContSPGajiSupir(), new ValidasiTambahanGajiSupir(), new ValidasiStatusContGajiSupir(), new validasiPemutihanSupirRIC(), new validasiTripTangkiRIC(), new ValidasiPinjamanGajiSupir()],
+            'supir' => ['required', new ValidasiTripGajiSupir(), new validasiContSPGajiSupir(), new ValidasiTambahanGajiSupir(), new ValidasiStatusContGajiSupir(), new validasiPemutihanSupirRIC(), new validasiTripTangkiRIC(), new ValidasiPinjamanGajiSupir(), new validasiKomisiGajiSupir()],
             'tgldari' => [
-                'required', 'date_format:d-m-Y',
+                'required',
+                'date_format:d-m-Y',
                 'before:' . $tglbatasakhir,
                 'after_or_equal:' . $tglbatasawal,
                 new CekPendapatanKeRic()
             ],
             'tglsampai' => [
-                'required', 'date_format:d-m-Y',
+                'required',
+                'date_format:d-m-Y',
                 'before:' . $tglbatasakhir,
                 'after_or_equal:' . $this->tgldari
             ],
             'tglbukti' => [
-                'required', 'date_format:d-m-Y',
+                'required',
+                'date_format:d-m-Y',
                 new DateTutupBuku(),
                 'before_or_equal:' . date('d-m-Y')
             ],
