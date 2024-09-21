@@ -214,6 +214,7 @@ class InvoiceDetail extends MyModel
                 $this->table . '.nominal as omset',
                 DB::raw("({$this->table}.nominalextra + {$this->table}.nominalretribusi) as extra"),
                 $this->table . '.total as jumlah',
+                $this->table . '.kapal',
             )
                 ->where($this->table . '.invoice_id', '=', request()->invoice_id)
                 ->leftJoin(DB::raw($tempsprekap . " as suratpengantar"), $this->table . '.orderantrucking_nobukti', 'suratpengantar.jobtrucking')
@@ -328,6 +329,7 @@ class InvoiceDetail extends MyModel
         $invoiceDetail->nominalretribusi = $data['nominalretribusi'];
         $invoiceDetail->total = $data['total'];
         $invoiceDetail->keterangan = $data['keterangan'];
+        $invoiceDetail->kapal = $data['kapal'];
         $invoiceDetail->orderantrucking_nobukti = $data['orderantrucking_nobukti'];
         $invoiceDetail->suratpengantar_nobukti = $data['suratpengantar_nobukti'];
         $invoiceDetail->modifiedby = auth('api')->user()->name;

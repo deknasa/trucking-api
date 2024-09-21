@@ -178,6 +178,7 @@ class InvoiceHeader extends MyModel
             ->select(
                 'invoiceheader.*',
                 'agen.namaagen as agen',
+                'agen.coa',
                 'jenisorder.keterangan as jenisorder'
             )
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceheader.agen_id', 'agen.id')
@@ -1158,6 +1159,7 @@ class InvoiceHeader extends MyModel
             $table->LongText('nospempty')->nullable();
             $table->LongText('nospfullempty')->nullable();
             $table->LongText('keteranganbiaya')->nullable();
+            $table->LongText('kapal')->nullable();
         });
 
 
@@ -1190,6 +1192,7 @@ class InvoiceHeader extends MyModel
                 DB::raw("isnull(e.nospempty,'') as nospempty"),
                 DB::raw("isnull(e.nospfullempty,'') as nospfullempty"),
                 'c.keterangan as keteranganbiaya',
+                DB::raw("isnull(a.kapal, '') as kapal")
 
             )
             ->leftjoin(DB::raw($temphasil . " a1"), 'a.orderantrucking_nobukti', 'a1.jobtrucking')
@@ -1226,6 +1229,7 @@ class InvoiceHeader extends MyModel
             'nospempty',
             'nospfullempty',
             'keteranganbiaya',
+            'kapal'
         ], $query2);
 
         // dd($query2->get());
@@ -1343,6 +1347,7 @@ class InvoiceHeader extends MyModel
                     'a.nospempty',
                     'a.nospfullempty',
                     'a.keteranganbiaya',
+                    'a.kapal',
 
                 )
                 ->join(db::raw($tempdatainvoice . " b "), 'a.jobtrucking', 'b.jobtrucking')
@@ -1373,6 +1378,7 @@ class InvoiceHeader extends MyModel
                     'a.nospempty',
                     'a.nospfullempty',
                     'a.keteranganbiaya',
+                    'a.kapal',
 
                 )
                 // ->where('a.nocont', '!=', '')
@@ -2154,6 +2160,7 @@ class InvoiceHeader extends MyModel
                 'nominalretribusi' => $data['nominalretribusi'][$i],
                 'total' => $data['omset'][$i] + $data['nominalretribusi'][$i] + $data['nominalextra'][$i],
                 'keterangan' => $data['keterangan'][$i] ?? '',
+                'kapal' => $data['kapal'][$i] ?? '',
                 'orderantrucking_nobukti' => $SP->jobtrucking,
                 'suratpengantar_nobukti' => $allSP
             ]);
@@ -2287,6 +2294,7 @@ class InvoiceHeader extends MyModel
                 'nominalretribusi' => $data['nominalretribusi'][$i],
                 'total' => $data['omset'][$i] + $data['nominalretribusi'][$i] + $data['nominalextra'][$i],
                 'keterangan' => $data['keterangan'][$i] ?? '',
+                'kapal' => $data['kapal'][$i] ?? '',
                 'orderantrucking_nobukti' => $SP->jobtrucking,
                 'suratpengantar_nobukti' => $allSP
             ]);
@@ -2383,6 +2391,7 @@ class InvoiceHeader extends MyModel
             ->where('grp', 'JUDULAN LAPORAN')
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
 
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
@@ -2395,6 +2404,7 @@ class InvoiceHeader extends MyModel
                 'invoiceheader.tglterima',
                 'invoiceheader.tgljatuhtempo',
                 'agen.namaagen as agen',
+                'agen.coa',
                 'jenisorder.keterangan as jenisorder_id',
                 'invoiceheader.piutang_nobukti',
                 'statusapproval.memo as statusapproval',
@@ -2402,6 +2412,7 @@ class InvoiceHeader extends MyModel
                 'statuscetak.id as  statuscetak_id',
                 DB::raw("'Bukti Invoice' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'" . $cabang . "' as cabang"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
