@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StoreAbsensiSupirDetailRequest;
+use App\Models\Parameter;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 
@@ -102,6 +103,11 @@ class AbsensiSupirDetailController extends Controller
                 $isAdmin = auth()->user()->isAdmin();
                 if (!$isAdmin) {
                     if ($isMandor) {
+
+                        $cekTanpaBatas = (new Parameter())->cekText('TANPA BATAS TRIP', 'TANPA BATAS TRIP');
+                        if($cekTanpaBatas == 'YA'){
+                            goto selesai;
+                        }
                         $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JAMBATASINPUTTRIP')->where('subgrp', 'JAMBATASINPUTTRIP')->first();
                         $getBatasHari = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATASHARIINPUTTRIP')->where('subgrp', 'BATASHARIINPUTTRIP')->first()->text;
                         $kondisi = true;
@@ -109,29 +115,29 @@ class AbsensiSupirDetailController extends Controller
                         $tanggal = date('Y-m-d', strtotime($tglbukti));
                         // if ($getBatasHari != 0) {
 
-                            while ($kondisi) {
-                                $cekHarilibur = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))
-                                    ->where('tgl', $tanggal)
-                                    ->first();
+                        while ($kondisi) {
+                            $cekHarilibur = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))
+                                ->where('tgl', $tanggal)
+                                ->first();
 
-                                $todayIsSunday = date('l', strtotime($tanggal));
-                                $tomorrowIsSunday = date('l', strtotime($tanggal . "+1 days"));
-                                if ($cekHarilibur == '') {
-                                    $kondisi = false;
-                                    $allowed = true;
-                                    if (strtolower($todayIsSunday) == 'sunday') {
-                                        $kondisi = true;
-                                        $batasHari += 1;
-                                    }
-                                    if (strtolower($tomorrowIsSunday) == 'sunday') {
-                                        $kondisi = true;
-                                        $batasHari += 1;
-                                    }
-                                } else {
+                            $todayIsSunday = date('l', strtotime($tanggal));
+                            $tomorrowIsSunday = date('l', strtotime($tanggal . "+1 days"));
+                            if ($cekHarilibur == '') {
+                                $kondisi = false;
+                                $allowed = true;
+                                if (strtolower($todayIsSunday) == 'sunday') {
+                                    $kondisi = true;
                                     $batasHari += 1;
                                 }
-                                $tanggal = date('Y-m-d', strtotime($tglbukti . "+$batasHari days"));
+                                if (strtolower($tomorrowIsSunday) == 'sunday') {
+                                    $kondisi = true;
+                                    $batasHari += 1;
+                                }
+                            } else {
+                                $batasHari += 1;
                             }
+                            $tanggal = date('Y-m-d', strtotime($tglbukti . "+$batasHari days"));
+                        }
                         // } else {
                         //     $tanggal = date('Y-m-d', strtotime($tglbukti . "+$getBatasHari days"));
                         // }
