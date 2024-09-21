@@ -25,23 +25,42 @@ class StoreJobEmklRequest extends FormRequest
     public function rules()
     {
         
-        return [
-            "tglbukti"=>"required",
-            "shipper_id"=>"required",
-            "shipper"=>"required",
-            "tujuan_id"=>"required",
-            "tujuan"=>"required",
-            "container_id"=>"required",
-            "container"=>"required",
-            "jenisorder_id"=>"required",
-            "jenisorder"=>"required",
-            "marketing_id"=>"required",
-            "marketing"=>"required",
-            "kapal"=>"required",
-            "destination"=>"required",
-            "nocont"=>"required",
-            "noseal"=>"required",
-        ];
+        $jenisorder_id=request()->jenisorder_id ?? 0;
+        if ($jenisorder_id==1) {
+            return [
+                "tglbukti"=>"required",
+                "shipper_id"=>"required",
+                "shipper"=>"required",
+                "tujuan_id"=>"required",
+                "tujuan"=>"required",
+                "container_id"=>"required",
+                "container"=>"required",
+                "jenisorder_id"=>"required",
+                "jenisorder"=>"required",
+                "marketing_id"=>"required",
+                "marketing"=>"required",
+                "kapal"=>"required",
+                "destination"=>"required",
+                "nocont"=>"required",
+                "noseal"=>"required",
+            ];
+        } else {
+            return [
+                "tglbukti"=>"required",
+                "shipper_id"=>"required",
+                "shipper"=>"required",
+                "tujuan_id"=>"required",
+                "tujuan"=>"required",
+                "container_id"=>"required",
+                "container"=>"required",
+                "jenisorder_id"=>"required",
+                "jenisorder"=>"required",
+                "kapal"=>"required",
+                "nocont"=>"required",
+                "noseal"=>"required",
+            ];
+        }
+
     }
 
     public function attributes()

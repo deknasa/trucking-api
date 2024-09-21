@@ -46,6 +46,7 @@ class JobEmkl extends MyModel
                 "jobemkl.jenisorder_id",
                 "jenisorder.keterangan as jenisorder",
                 "jobemkl.kapal",
+                "jobemkl.voy",
                 "jobemkl.nominal",
                 "jobemkl.destination",
                 "jobemkl.nocont",
@@ -105,6 +106,7 @@ class JobEmkl extends MyModel
                 "jobemkl.jenisorder_id",
                 "jenisorder.keterangan as jenisorder",
                 "jobemkl.kapal",
+                "jobemkl.voy",
                 "jobemkl.nominal",
                 "jobemkl.lokasibongkarmuat",
                 "jobemkl.destination",
@@ -162,6 +164,7 @@ class JobEmkl extends MyModel
                 "jobemkl.jenisorder_id",
                 "jenisorder.keterangan as jenisorder",
                 "jobemkl.kapal",
+                "jobemkl.voy",
                 "jobemkl.nominal",
                 "jobemkl.destination",
                 "jobemkl.nocont",
@@ -203,6 +206,7 @@ class JobEmkl extends MyModel
             $table->string('jenisorder_id', 50)->nullable();
             $table->string('jenisorder', 50)->nullable();
             $table->string('kapal', 50)->nullable();
+            $table->longtext('voy')->nullable();
             $table->double('nominal', 15, 2)->nullable();
             $table->string('destination', 50)->nullable();
             $table->string('nocont', 50)->nullable();
@@ -237,6 +241,7 @@ class JobEmkl extends MyModel
             'jenisorder_id',
             'jenisorder',
             'kapal',
+            'voy',
             'nominal',
             'destination',
             'nocont',
@@ -336,6 +341,7 @@ class JobEmkl extends MyModel
 
     public function processStore(array $data, JobEmkl $jobEmkl): JobEmkl
     {
+        // dd($data['tujuan_id']);
         $jenisorder_id = $data['jenisorder_id'] ?? 0;
         $tujuan_id = $data['tujuan_id'] ?? 0;
         $marketing_id = $data['marketing_id'] ?? 0;
@@ -343,7 +349,6 @@ class JobEmkl extends MyModel
             $fetchGrp = Parameter::where('grp', 'JOB EMKL MUATAN')->where('grp', 'JOB EMKL MUATAN')->first();
         } else {
             $fetchGrp = Parameter::where('grp', 'JOB EMKL BONGKARAN')->where('grp', 'JOB EMKL BONGKARAN')->first();
-            $tujuan_id = 0;
             $marketing_id = 0;
         }
         $group = $fetchGrp->grp;
@@ -353,6 +358,7 @@ class JobEmkl extends MyModel
         // dd($tujuan_id);
         // dd((new RunningNumberService)->get($group, $subGroup, $jobEmkl->getTable(), date('Y-m-d', strtotime($data['tglbukti'])),$tujuan_id,0,0,$marketing_id));
 
+        // dd($tujuan_id);
         $jobEmkl->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $jobEmkl->shipper_id = $data['shipper_id'];
         $jobEmkl->marketing_id = $data['marketing_id'];
@@ -361,6 +367,7 @@ class JobEmkl extends MyModel
         $jobEmkl->jenisorder_id = $data['jenisorder_id'];
         $jobEmkl->lokasibongkarmuat = $data['lokasibongkarmuat'];
         $jobEmkl->kapal = $data['kapal'];
+        $jobEmkl->voy = $data['voy'];
         $jobEmkl->destination = $data['destination'];
         $jobEmkl->nocont = $data['nocont'];
         $jobEmkl->noseal = $data['noseal'];
@@ -370,6 +377,7 @@ class JobEmkl extends MyModel
         $data['sortname'] = $data['sortname'] ?? 'id';
         $data['sortorder'] = $data['sortorder'] ?? 'asc';
         $jobEmkl->nobukti = (new RunningNumberService)->get($group, $subGroup, $jobEmkl->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), $tujuan_id, 0, 0, $marketing_id);
+
         if (!$jobEmkl->save()) {
             throw new \Exception('Error storing JOB EMKL.');
         }
@@ -405,6 +413,7 @@ class JobEmkl extends MyModel
         $jobEmkl->jenisorder_id = $data['jenisorder_id'];
         $jobEmkl->lokasibongkarmuat = $data['lokasibongkarmuat'];
         $jobEmkl->kapal = $data['kapal'];
+        $jobEmkl->voy = $data['voy'];
         $jobEmkl->destination = $data['destination'];
         $jobEmkl->nocont = $data['nocont'];
         $jobEmkl->noseal = $data['noseal'];
@@ -488,13 +497,13 @@ class JobEmkl extends MyModel
                 $coakreditppn = $memo['JURNAL'];
 
                 $statusPPN = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', 'STATUS PPN')->where('default', 'YA')->first();                
+                    ->where('grp', 'STATUS PPN')->where('default', 'YA')->first();
 
                 $coadebet_detail[] = $coadebet;
                 $coakredit_detail[] = $coakreditppn;
                 $coakreditextra_detail[] = $coakredit;
                 $nominal_detail[] = $data['nominal'];
-                $keterangan_detail[] =    'Nominal Prediksi '.$jobEmkl->nobukti ;
+                $keterangan_detail[] =    'Nominal Prediksi ' . $jobEmkl->nobukti;
                 if ($statusPPN->text == 'PPN 1.1%') {
                     $nominalppn = round($data['nominal'] * 0.011);
                 } else {
