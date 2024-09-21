@@ -559,6 +559,13 @@ class InvoiceEmklHeader extends MyModel
             ->where('subgrp', $subGroup)
             ->first();
 
+        $group = 'INVOICE BONGKARAN';
+        $subGroup = 'INVOICE BONGKARAN';
+        $formatinvoicetambahan = DB::table('parameter')
+            ->where('grp', $group)
+            ->where('subgrp', $subGroup)
+            ->first();
+
 
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
@@ -575,10 +582,19 @@ class InvoiceEmklHeader extends MyModel
         $statusReimbursement = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS REIMBURSE')->where('text', 'TIDAK')->first();
 
+        $jenisorder_id = $data['jenisorder_id'] ?? 0;
+        $tujuan_id = $data['tujuan_id'] ?? 0;
+        $cabang_id = $data['cabang_id'] ?? 0;
+        $parameter = new Parameter();
+        $cabang_id = $parameter->cekText('ID CABANG', 'ID CABANG') ?? 0;
+
+
+
         $invoiceHeader = new InvoiceEmklHeader();
         $invoiceHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $invoiceHeader->pelanggan_id = $data['pelanggan_id'];
         $invoiceHeader->jenisorder_id = $data['jenisorder_id'];
+        $invoiceHeader->tujuan_id = $data['tujuan_id'];
         $invoiceHeader->statusinvoice = $data['statusinvoice'];
         $invoiceHeader->statuspajak = $data['statuspajak'];
         $invoiceHeader->statusppn = $data['statusppn'] ?? $statusPPN->id;
@@ -596,6 +612,11 @@ class InvoiceEmklHeader extends MyModel
         $invoiceHeader->info = html_entity_decode(request()->info);
         $invoiceHeader->statusformat = $format->id;
         $invoiceHeader->statusformatreimbursement = $data['statusreimbursement'] ?? $statusReimbursement->id;
+        if ($jenisorder_id == 2) {
+            $invoiceHeader->statusformatinvoicetambahan = $formatinvoicetambahan->id;
+            $invoiceHeader->nobuktiinvoicetambahan = (new RunningNumberService)->get($group, $subGroup, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), $tujuan_id, $cabang_id, 0, 0);
+        }
+        // (string $group, string $subGroup, string $table, string $tgl, int  $tujuan = 0, int  $cabang = 0, int  $jenisbiaya = 0, int  $marketing = 0): string
         $invoiceHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if ($prosesReimburse != 0) {
@@ -1110,6 +1131,7 @@ class InvoiceEmklHeader extends MyModel
         $invoiceHeader->keterangan = $data['keterangan'] ?? '';
         $invoiceHeader->destination = $data['destination'] ?? '';
         $invoiceHeader->kapal = $data['kapal'] ?? '';
+        $invoiceHeader->tujuan_id = $data['tujuan_id'];
         $invoiceHeader->tgldari = ($data['tgldari'] != '') ? date('Y-m-d', strtotime($data['tgldari'])) : null;
         $invoiceHeader->tglsampai = ($data['tglsampai'] != '') ? date('Y-m-d', strtotime($data['tglsampai'])) : null;
         $invoiceHeader->modifiedby = auth('api')->user()->name;

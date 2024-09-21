@@ -39,11 +39,59 @@ class RunningNumberService
         $type = $parameter->type;
 
         if ($type == 'RESET BULAN') {
-            $lastRow = DB::table($table)
-                ->where(DB::raw('month(tglbukti)'), '=', $bulan)
-                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
-                ->where(DB::raw('statusformat'), '=', $statusformat)
-                ->lockForUpdate()->count();
+
+            if ($tujuan != 0  &&  $marketing != 0) {
+
+                $lastRow = DB::table($table)
+                    ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                    ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                    ->where(DB::raw('marketing_id'), '=', $marketing)
+                    ->where(DB::raw('statusformat'), '=', $statusformat)
+                    ->lockForUpdate()->count();
+            } else if ($tujuan != 0 &&  $jenisbiaya != 0 &&  $marketing != 0) {
+                $lastRow = DB::table($table)
+                    ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                    ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                    ->where(DB::raw('marketing_id'), '=', $marketing)
+                    ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
+                    ->where(DB::raw('statusformat'), '=', $statusformat)
+                    ->lockForUpdate()->count();
+            } else if ($tujuan != 0 &&  $cabang != 0) {
+
+                $lastRow = DB::table($table)
+                    ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                    ->where(DB::raw('cabang_id'), '=', $cabang)
+                    ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                    ->where(DB::raw('statusformat'), '=', $statusformat)
+                    ->lockForUpdate()->count();
+            } else if ($tujuan != 0 &&  $jenisbiaya != 0) {
+                $lastRow = DB::table($table)
+                    ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                    ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                    ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
+                    ->where(DB::raw('statusformat'), '=', $statusformat)
+                    ->lockForUpdate()->count();
+            } else if ($tujuan != 0) {
+
+                $lastRow = DB::table($table)
+                    ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                    ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                    ->where(DB::raw('statusformat'), '=', $statusformat)
+                    ->lockForUpdate()->count();
+            } else {
+                $lastRow = DB::table($table)
+                    ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                    ->where(DB::raw('statusformat'), '=', $statusformat)
+                    ->lockForUpdate()->count();
+            }
+
+
 
 
             // perubahan
@@ -53,7 +101,29 @@ class RunningNumberService
             while ($a <= $lastRow) {
                 $nobukti = (new App)->getFormat($text, $a, $bulan, $tgl, $tujuan, $cabang, $jenisbiaya, $marketing);
 
-                if ($tujuan != 0 &&  $jenisbiaya != 0) {
+                if ($tujuan != 0  &&  $marketing != 0) {
+                    $queryCheck = DB::table($table)->where('nobukti', $nobukti)
+                        ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                        ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                        ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                        ->where(DB::raw('marketing_id'), '=', $marketing)
+                        ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+                } else if ($tujuan != 0 &&  $jenisbiaya != 0 &&  $marketing != 0) {
+                    $queryCheck = DB::table($table)->where('nobukti', $nobukti)
+                        ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                        ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                        ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                        ->where(DB::raw('marketing_id'), '=', $marketing)
+                        ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
+                        ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+                } else if ($tujuan != 0 &&  $cabang != 0) {
+                    $queryCheck = DB::table($table)->where('nobukti', $nobukti)
+                        ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                        ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                        ->where(DB::raw('cabang_id'), '=', $cabang)
+                        ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                        ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+                } else if ($tujuan != 0 &&  $jenisbiaya != 0) {
                     $queryCheck = DB::table($table)->where('nobukti', $nobukti)
                         ->where(DB::raw('month(tglbukti)'), '=', $bulan)
                         ->where(DB::raw('year(tglbukti)'), '=', $tahun)
@@ -78,7 +148,41 @@ class RunningNumberService
                     if ($a > 1) {
                         $c = $a - 1;
                         $nobukticek = (new App)->getFormat($text, $c, $bulan, $tgl, $tujuan, $cabang, $jenisbiaya, $marketing);
-                        if ($tujuan != 0 &&  $jenisbiaya != 0) {
+                        if ($tujuan != 0  &&  $marketing != 0) {
+                            $queryCheckprev = DB::table($table)->where('nobukti', $nobukticek)
+                                ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                                ->whereRaw("tglbukti <= '$tgl'")
+                                ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                                ->where(DB::raw('marketing_id'), '=', $marketing)
+                                ->where(DB::raw('statusformat'), '=', $statusformat)
+                                ->orderby('tglbukti', 'desc')
+                                ->orderby('nobukti', 'desc')
+                                ->first();
+                        } else if ($tujuan != 0 &&  $jenisbiaya != 0 &&  $marketing != 0) {
+                            $queryCheckprev = DB::table($table)->where('nobukti', $nobukticek)
+                                ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                                ->whereRaw("tglbukti <= '$tgl'")
+                                ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                                ->where(DB::raw('marketing_id'), '=', $marketing)
+                                ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
+                                ->where(DB::raw('statusformat'), '=', $statusformat)
+                                ->orderby('tglbukti', 'desc')
+                                ->orderby('nobukti', 'desc')
+                                ->first();
+                        } else if ($tujuan != 0 &&  $cabang != 0) {
+                            $queryCheckprev = DB::table($table)->where('nobukti', $nobukticek)
+                                ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                                ->whereRaw("tglbukti <= '$tgl'")
+                                ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                                ->where(DB::raw('cabang_id'), '=', $cabang)
+                                ->where(DB::raw('statusformat'), '=', $statusformat)
+                                ->orderby('tglbukti', 'desc')
+                                ->orderby('nobukti', 'desc')
+                                ->first();
+                        } else if ($tujuan != 0 &&  $jenisbiaya != 0) {
                             $queryCheckprev = DB::table($table)->where('nobukti', $nobukticek)
                                 ->where(DB::raw('month(tglbukti)'), '=', $bulan)
                                 ->where(DB::raw('year(tglbukti)'), '=', $tahun)
@@ -125,16 +229,118 @@ class RunningNumberService
         }
 
         if ($type == 'RESET TAHUN') {
-            $lastRow = DB::table($table)
-                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
-                ->where(DB::raw('statusformat'), '=', $statusformat)
-                ->lockForUpdate()->count();
+            // $lastRow = DB::table($table)
+            //     ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+            //     ->where(DB::raw('statusformat'), '=', $statusformat)
+            //     ->lockForUpdate()->count();
+
+            if ($tujuan != 0  &&  $marketing != 0) {
+
+                $lastRow = DB::table($table)
+                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                    ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                    ->where(DB::raw('marketing_id'), '=', $marketing)
+                    ->where(DB::raw('statusformat'), '=', $statusformat)
+                    ->lockForUpdate()->count();
+            } else if ($tujuan != 0 &&  $jenisbiaya != 0 &&  $marketing != 0) {
+                $lastRow = DB::table($table)
+                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                    ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                    ->where(DB::raw('marketing_id'), '=', $marketing)
+                    ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
+                    ->where(DB::raw('statusformat'), '=', $statusformat)
+                    ->lockForUpdate()->count();
+            } else if ($tujuan != 0 &&  $cabang != 0) {
+
+                $lastRow = DB::table($table)
+                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                    ->where(DB::raw('cabang_id'), '=', $cabang)
+                    ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                    ->where(DB::raw('statusformat'), '=', $statusformat)
+                    ->lockForUpdate()->count();
+            } else if ($tujuan != 0 &&  $jenisbiaya != 0) {
+                $lastRow = DB::table($table)
+                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                    ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                    ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
+                    ->where(DB::raw('statusformat'), '=', $statusformat)
+                    ->lockForUpdate()->count();
+            } else if ($tujuan != 0) {
+
+                $lastRow = DB::table($table)
+                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                    ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                    ->where(DB::raw('statusformat'), '=', $statusformat)
+                    ->lockForUpdate()->count();
+            } else {
+                $lastRow = DB::table($table)
+                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                    ->where(DB::raw('statusformat'), '=', $statusformat)
+                    ->lockForUpdate()->count();
+            }
+
+
+                if ($tujuan != 0 &&  $jenisbiaya != 0 &&  $marketing != 0) {
+                    $queryCheck = DB::table($table)->where('nobukti', $nobukti)
+                        ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                        ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                        ->where(DB::raw('marketing_id'), '=', $marketing)
+                        ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
+                        ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+                } else if ($tujuan != 0 &&  $marketing != 0) {
+                    $queryCheck = DB::table($table)->where('nobukti', $nobukti)
+                        ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                        ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                        ->where(DB::raw('marketing_id'), '=', $marketing)
+                        ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+                } else if ($tujuan != 0 &&  $cabang != 0) {
+                    $queryCheck = DB::table($table)->where('nobukti', $nobukti)
+                        ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                        ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                        ->where(DB::raw('cabang_id'), '=', $cabang)
+                        ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+                } else if ($tujuan != 0 &&  $jenisbiaya != 0) {
+                    $queryCheck = DB::table($table)->where('nobukti', $nobukti)
+                        ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                        ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                        ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
+                        ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+                } else if ($tujuan != 0) {
+                    $queryCheck = DB::table($table)->where('nobukti', $nobukti)
+                        ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                        ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                        ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+                } else {
+                    $queryCheck = DB::table($table)->where('nobukti', $nobukti)
+                        ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                        ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+                }
+
             $a = 0;
             $b = $lastRow;
             $c = 0;
             while ($a <= $lastRow) {
                 $nobukti = (new App)->getFormat($text, $a, $bulan, $tgl, $tujuan, $cabang, $jenisbiaya, $marketing);
-                if ($tujuan != 0 &&  $jenisbiaya != 0) {
+                if ($tujuan != 0 &&  $jenisbiaya != 0 &&  $marketing != 0) {
+                    $queryCheck = DB::table($table)->where('nobukti', $nobukti)
+                        ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                        ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                        ->where(DB::raw('marketing_id'), '=', $marketing)
+                        ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
+                        ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+                } else if ($tujuan != 0 &&  $marketing != 0) {
+                    $queryCheck = DB::table($table)->where('nobukti', $nobukti)
+                        ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                        ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                        ->where(DB::raw('marketing_id'), '=', $marketing)
+                        ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+                } else if ($tujuan != 0 &&  $cabang != 0) {
+                    $queryCheck = DB::table($table)->where('nobukti', $nobukti)
+                        ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                        ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                        ->where(DB::raw('cabang_id'), '=', $cabang)
+                        ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+                } else if ($tujuan != 0 &&  $jenisbiaya != 0) {
                     $queryCheck = DB::table($table)->where('nobukti', $nobukti)
                         ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                         ->where(DB::raw('tujuan_id'), '=', $tujuan)
@@ -155,7 +361,38 @@ class RunningNumberService
                     if ($a > 1) {
                         $c = $a - 1;
                         $nobukticek = (new App)->getFormat($text, $c, $bulan, $tgl, $tujuan, $cabang, $jenisbiaya, $marketing);
-                        if ($tujuan != 0 &&  $jenisbiaya != 0) {
+                        if ($tujuan != 0 &&    $marketing != 0) {
+                            $queryCheckprev = DB::table($table)->where('nobukti', $nobukticek)
+                                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                                ->whereRaw("tglbukti <= '$tgl'")
+                                ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                                ->where(DB::raw('marketing_id'), '=', $marketing)
+                                ->where(DB::raw('statusformat'), '=', $statusformat)
+                                ->orderby('tglbukti', 'desc')
+                                ->orderby('nobukti', 'desc')
+                                ->first();
+                        } else if ($tujuan != 0 &&  $jenisbiaya != 0 &&  $marketing != 0) {
+                            $queryCheckprev = DB::table($table)->where('nobukti', $nobukticek)
+                                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                                ->whereRaw("tglbukti <= '$tgl'")
+                                ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                                ->where(DB::raw('marketing_id'), '=', $marketing)
+                                ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
+                                ->where(DB::raw('statusformat'), '=', $statusformat)
+                                ->orderby('tglbukti', 'desc')
+                                ->orderby('nobukti', 'desc')
+                                ->first();
+                        } else if ($tujuan != 0 &&  $cabang != 0) {
+                            $queryCheckprev = DB::table($table)->where('nobukti', $nobukticek)
+                                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                                ->whereRaw("tglbukti <= '$tgl'")
+                                ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                                ->where(DB::raw('cabang_id'), '=', $cabang)
+                                ->where(DB::raw('statusformat'), '=', $statusformat)
+                                ->orderby('tglbukti', 'desc')
+                                ->orderby('nobukti', 'desc')
+                                ->first();
+                        } else if ($tujuan != 0 &&  $jenisbiaya != 0) {
                             $queryCheckprev = DB::table($table)->where('nobukti', $nobukticek)
                                 ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                                 ->whereRaw("tglbukti <= '$tgl'")
