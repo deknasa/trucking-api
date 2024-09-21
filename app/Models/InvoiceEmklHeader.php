@@ -1665,6 +1665,7 @@ class InvoiceEmklHeader extends MyModel
                 'jenisorder.keterangan as jenisorder',
                 'statuspajak.text as statuspajak',
                 'statusformatreimbursement.text as statusformatreimbursement',
+                'statusinvoice.text as statusinvoice',
                 'statuscetak.memo as statuscetak',
                 'statuscetak.id as  statuscetak_id',
                 DB::raw("(case when statusformatreimbursement.text = 'YA' then 'INVOICE REIMBURSEMENT' else 'KWITANSI / INVOICE' end) as judulLaporan"),
@@ -1679,6 +1680,7 @@ class InvoiceEmklHeader extends MyModel
             ->leftJoin(DB::raw("parameter as statusformatreimbursement with (readuncommitted)"), 'invoiceemklheader.statusformatreimbursement', 'statusformatreimbursement.id')
             ->leftJoin(DB::raw("parameter as statusppn with (readuncommitted)"), 'invoiceemklheader.statusppn', 'statusppn.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'invoiceemklheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statusinvoice with (readuncommitted)"), 'invoiceemklheader.statusinvoice', 'statusinvoice.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'invoiceemklheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'invoiceemklheader.jenisorder_id', 'jenisorder.id');
 
