@@ -65,7 +65,8 @@ class UpdateOrderanTruckingRequest extends FormRequest
             $rules = [
                 'id' => [new DateAllowedOrderanTrucking(), new ValidasiDestroyOrderanTrucking()],
                 'tglbukti' => [
-                    'required', 'date_format:d-m-Y',
+                    'required',
+                    'date_format:d-m-Y',
                     new DateTutupBuku(),
                     'before_or_equal:' . date('d-m-Y'),
                     Rule::in(date('d-m-Y', strtotime($query->tglbukti))),
@@ -235,10 +236,15 @@ class UpdateOrderanTruckingRequest extends FormRequest
 
             $this->queryimport = $queryimport;
             $requiredSeal = Rule::requiredIf(function () {
+                $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
                 if ($this->jenisorder_id == $this->queryimport->text) {
                     return false;
                 } else {
-                    return true;
+                    if ($cabang != 'MEDAN') {
+                        return true;
+                    }else{
+                        return false;
+                    }
                 }
             });
             if ($this->container_id == $queryukuran->text) {
@@ -267,7 +273,8 @@ class UpdateOrderanTruckingRequest extends FormRequest
             $rules = [
                 'id' => [new DateAllowedOrderanTrucking(), new ValidasiDestroyOrderanTrucking()],
                 'tglbukti' => [
-                    'required', 'date_format:d-m-Y',
+                    'required',
+                    'date_format:d-m-Y',
                     new DateTutupBuku(),
                     'before_or_equal:' . date('d-m-Y'),
                     Rule::in(date('d-m-Y', strtotime($query->tglbukti))),
