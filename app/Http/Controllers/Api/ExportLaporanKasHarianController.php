@@ -267,11 +267,11 @@ class ExportLaporanKasHarianController extends Controller
 
                         // Apply number format to debet, kredit, and saldo columns
                         if ($index == 'debet' || $index == 'kredit' || $index == 'saldo') {
-                            if ($value == 0) {
-                                $sheet->getStyle($alphabets[$columnIndex] . $dataRow)->getNumberFormat()->setFormatCode(";-0;;@");
-                            } else {
-                                $sheet->getStyle($alphabets[$columnIndex] . $dataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-                            }
+                            // if ($value == 0) {
+                            //     $sheet->getStyle($alphabets[$columnIndex] . $dataRow)->getNumberFormat()->setFormatCode(";-0;;@");
+                            // } else {
+                                $sheet->getStyle($alphabets[$columnIndex] . $dataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+                            // }
 
 
                             // $sheet->getStyle($alphabets[$columnIndex] . $dataRow)->getNumberFormat()->applyFromArray($boldStyle);
@@ -419,11 +419,11 @@ class ExportLaporanKasHarianController extends Controller
                     }
                     // Apply number format to debet, kredit, and saldo columns
                     if ($index == 'debet' || $index == 'kredit' || $index == 'saldo') {
-                        if ($value == 0) {
-                            $rekapSheet->getStyle($alphabets[$rekapColumnIndex] . $rekapDataRow)->getNumberFormat()->setFormatCode(";-0;;@");
-                        } else {
-                            $rekapSheet->getStyle($alphabets[$rekapColumnIndex] . $rekapDataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-                        }
+                        // if ($value == 0) {
+                        //     $rekapSheet->getStyle($alphabets[$rekapColumnIndex] . $rekapDataRow)->getNumberFormat()->setFormatCode(";-0;;@");
+                        // } else {
+                            $rekapSheet->getStyle($alphabets[$rekapColumnIndex] . $rekapDataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+                        // }
                     }
 
                     // Apply date format to tgl column
@@ -548,11 +548,11 @@ class ExportLaporanKasHarianController extends Controller
                     }
                     // Apply number format to debet, kredit, and saldo columns
                     if ($index == 'debet' || $index == 'kredit' || $index == 'saldo') {
-                        if ($value == 0) {
-                            $rekap01Sheet->getStyle($alphabets[$rekap01ColumnIndex] . $rekap01DataRow)->getNumberFormat()->setFormatCode(";-0;;@");
-                        } else {
-                            $rekap01Sheet->getStyle($alphabets[$rekap01ColumnIndex] . $rekap01DataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-                        }
+                        // if ($value == 0) {
+                        //     $rekap01Sheet->getStyle($alphabets[$rekap01ColumnIndex] . $rekap01DataRow)->getNumberFormat()->setFormatCode(";-0;;@");
+                        // } else {
+                            $rekap01Sheet->getStyle($alphabets[$rekap01ColumnIndex] . $rekap01DataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+                        // }
                     }
                     // Apply date format to tgl column
                     if ($index == 'tgl') {
@@ -649,11 +649,11 @@ class ExportLaporanKasHarianController extends Controller
                 $rekapPerkiraanSheet->setCellValue($alphabets[$rekapPerkiraanColumnIndex] . $rekapPerkiraanDataRow, $row->nominaldebet);
                 $rekapPerkiraanSheet->getColumnDimension($alphabets[$rekapPerkiraanColumnIndex])->setAutoSize(true);
                 // $rekapPerkiraanSheet->getStyle($alphabets[$rekapPerkiraanColumnIndex] . $rekapPerkiraanDataRow)->applyFromArray($borderStyle);
-                if ($row->nominaldebet == 0) {
-                    $rekapPerkiraanSheet->getStyle($alphabets[$rekapPerkiraanColumnIndex] . $rekapPerkiraanDataRow)->getNumberFormat()->setFormatCode(";-0;;@");
-                } else {
-                    $rekapPerkiraanSheet->getStyle($alphabets[$rekapPerkiraanColumnIndex] . $rekapPerkiraanDataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-                }
+                // if ($row->nominaldebet == 0) {
+                //     $rekapPerkiraanSheet->getStyle($alphabets[$rekapPerkiraanColumnIndex] . $rekapPerkiraanDataRow)->getNumberFormat()->setFormatCode(";-0;;@");
+                // } else {
+                    $rekapPerkiraanSheet->getStyle($alphabets[$rekapPerkiraanColumnIndex] . $rekapPerkiraanDataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+                // }
 
                 $rekapPerkiraanColumnIndex++;
 
@@ -669,7 +669,7 @@ class ExportLaporanKasHarianController extends Controller
                 if ($row->nominalkredit == 0) {
                     $rekapPerkiraanSheet->getStyle($alphabets[$rekapPerkiraanColumnIndex] . $rekapPerkiraanDataRow)->getNumberFormat()->setFormatCode(";-0;;@");
                 } else {
-                    $rekapPerkiraanSheet->getStyle($alphabets[$rekapPerkiraanColumnIndex] . $rekapPerkiraanDataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $rekapPerkiraanSheet->getStyle($alphabets[$rekapPerkiraanColumnIndex] . $rekapPerkiraanDataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
                 }
                 $rekapPerkiraanColumnIndex++;
 
@@ -713,7 +713,7 @@ class ExportLaporanKasHarianController extends Controller
             $rekapPerkiraanSheet->setCellValue('E' . $rekapPerkiraanDataRow, "=(C" . ($rekapPerkiraanDataRow - 2) . "-E" . ($rekapPerkiraanDataRow - 2) . ")");
             // $rekapPerkiraanSheet->getStyle('E' . $rekapPerkiraanDataRow)->applyFromArray($borderStyle);
             $rekapPerkiraanSheet->getStyle('E' . $rekapPerkiraanDataRow)->applyFromArray($boldStyle);
-            $rekapPerkiraanSheet->getStyle('E' . $rekapPerkiraanDataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $rekapPerkiraanSheet->getStyle('E' . $rekapPerkiraanDataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
             $rekapPerkiraanDataRow++;
             $rekapPerkiraanDataRow++;
             $rekapPerkiraanDataRow++;
