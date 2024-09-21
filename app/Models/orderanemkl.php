@@ -86,6 +86,7 @@ class OrderanEmkl extends MyModel
                 $table->string('nospempty', 1000)->nullable();
                 $table->string('nospfull', 1000)->nullable();
                 $table->string('jenisorderan', 1000)->nullable();
+                $table->string('kapal', 1000)->nullable();
                 $table->longtext('pelanggan')->nullable();
                 $table->integer('fidcontainer')->nullable();
                 $table->longtext('fasalmuatan')->nullable();
@@ -101,6 +102,7 @@ class OrderanEmkl extends MyModel
                 $table->string('nospempty', 1000)->nullable();
                 $table->string('nospfull', 1000)->nullable();
                 $table->string('jenisorderan', 100)->nullable();
+                $table->string('kapal', 100)->nullable();
                 $table->string('pelanggan', 100)->nullable();
                 $table->integer('fidcontainer')->nullable();
                 $table->string('fasalmuatan', 100)->nullable();
@@ -115,6 +117,7 @@ class OrderanEmkl extends MyModel
                         'c.FNoSP as nospempty',
                         'c.FNoSpFull as nospfull',
                         DB::raw("'MUATAN' AS jenisorderan"),
+                        DB::raw("'' AS kapal"),
                         'b.fnshipper as pelanggan',
                         'orderan.fidcontainer as fidcontainer',
                         DB::raw("'' as fasalmuatan")
@@ -130,6 +133,7 @@ class OrderanEmkl extends MyModel
                     'nospempty',
                     'nospfull',
                     'jenisorderan',
+                    'kapal',
                     'pelanggan',
                     'fidcontainer',
                     'fasalmuatan',
@@ -146,6 +150,7 @@ class OrderanEmkl extends MyModel
                         'orderan.FNoSpEmpty as nospempty',
                         'orderan.FNoSpFull as nospfull',
                         DB::raw("'BONGKARAN' AS jenisorderan"),
+                        DB::raw("'' AS kapal"),
                         'orderan.fshipper as pelanggan',
                         'orderan.fidukurancontainer as fidcontainer',
                         DB::raw("'' as fasalmuatan")
@@ -160,6 +165,7 @@ class OrderanEmkl extends MyModel
                     'nospempty',
                     'nospfull',
                     'jenisorderan',
+                    'kapal',
                     'pelanggan',
                     'fidcontainer',
                     'fasalmuatan',
@@ -175,6 +181,7 @@ class OrderanEmkl extends MyModel
                         'orderan.fnocont as nocont',
                         'orderan.fnoseal as noseal',
                         DB::raw("'MUATAN' AS jenisorderan"),
+                        DB::raw("'' AS kapal"),
                         'b.fnshipper as pelanggan',
                         'orderan.fidcontainer as fidcontainer',
                         DB::raw("isnull(orderan.fasalmuatan,'') as fasalmuatan")
@@ -192,6 +199,7 @@ class OrderanEmkl extends MyModel
                     'nocont',
                     'noseal',
                     'jenisorderan',
+                    'kapal',
                     'pelanggan',
                     'fidcontainer',
                     'fasalmuatan',
@@ -208,6 +216,7 @@ class OrderanEmkl extends MyModel
                         'orderan.FSPEmpty as nospempty',
                         'orderan.FSPFull as nospfull',
                         DB::raw("'IMPORT' AS jenisorderan"),
+                        DB::raw("'' AS kapal"),
                         'b.fnshipper as pelanggan',
                         'orderan.fidcontainer as fidcontainer',
                         DB::raw("'' as fasalmuatan")
@@ -224,6 +233,7 @@ class OrderanEmkl extends MyModel
                     'nospempty',
                     'nospfull',
                     'jenisorderan',
+                    'kapal',
                     'pelanggan',
                     'fidcontainer',
                     'fasalmuatan',
@@ -240,6 +250,7 @@ class OrderanEmkl extends MyModel
                         'orderan.fnosp as nospempty',
                         'orderan.fnospfull as nospfull',
                         DB::raw("'EXPORT' AS jenisorderan"),
+                        DB::raw("'' AS kapal"),
                         'b.fnshipper as pelanggan',
                         'orderan.fidcontainer as fidcontainer',
                         DB::raw("'' as fasalmuatan")
@@ -255,6 +266,7 @@ class OrderanEmkl extends MyModel
                     'nospempty',
                     'nospfull',
                     'jenisorderan',
+                    'kapal',
                     'pelanggan',
                     'fidcontainer',
                     'fasalmuatan',
@@ -297,6 +309,7 @@ class OrderanEmkl extends MyModel
                     'nospempty',
                     'nospfull',
                     'jenisorderan',
+                    'kapal',
                     'pelanggan',
                     'fidcontainer',
                     'fasalmuatan',
@@ -309,6 +322,7 @@ class OrderanEmkl extends MyModel
                 'nospempty',
                 'nospfull',
                 'jenisorderan',
+                'kapal',
                 'pelanggan',
                 'fidcontainer',
                 'fasalmuatan',
@@ -339,6 +353,7 @@ class OrderanEmkl extends MyModel
                 'orderan.nospempty',
                 'orderan.nospfull',
                 'orderan.jenisorderan',
+                'orderan.kapal',
                 'orderan.pelanggan',
                 'orderan.fasalmuatan',
             );
@@ -375,7 +390,11 @@ class OrderanEmkl extends MyModel
 
     public function getjob($job)
     {
-        $query = db::connection('sqlsrvemkl')->table('tpreorderanmuatan')
+        
+        $getParameter = (new Parameter())->cekText('ORDERAN EMKL REPLICATION', 'ORDERAN EMKL REPLICATION');
+        $koneksi = ($getParameter == 'YA') ? 'sqlsrv' : 'sqlsrvemkl';
+
+        $query = db::connection($koneksi)->table('tpreorderanmuatan')
             ->from(DB::raw("tpreorderanmuatan as orderan with (readuncommitted)"))
             ->select('orderan.ftgl as tgl')
             ->where('orderan.fntrans', '=', $job)
@@ -386,7 +405,7 @@ class OrderanEmkl extends MyModel
             goto selesai;
         }
 
-        $query = db::connection('sqlsrvemkl')->table('torderanbongkaran')
+        $query = db::connection($koneksi)->table('torderanbongkaran')
             ->from(DB::raw("torderanbongkaran as orderan with (readuncommitted)"))
             ->select('orderan.ftglproses as tgl')
             ->where('orderan.fntrans', '=', $job)
@@ -397,7 +416,7 @@ class OrderanEmkl extends MyModel
             goto selesai;
         }
 
-        $query = db::connection('sqlsrvemkl')->table('torderanexport')
+        $query = db::connection($koneksi)->table('torderanexport')
             ->from(DB::raw("torderanexport as orderan with (readuncommitted)"))
             ->select('orderan.ftgl as tgl')
             ->where('orderan.fntrans', '=', $job)
@@ -408,7 +427,7 @@ class OrderanEmkl extends MyModel
             goto selesai;
         }
 
-        $query = db::connection('sqlsrvemkl')->table('torderanimport')
+        $query = db::connection($koneksi)->table('torderanimport')
             ->from(DB::raw("torderanimport as orderan with (readuncommitted)"))
             // ->select(DB::raw("cast(format(orderan.ftgl,'yyyy-MM-dd') as date) as tgl"))
             ->select('orderan.ftgl as tgl')
