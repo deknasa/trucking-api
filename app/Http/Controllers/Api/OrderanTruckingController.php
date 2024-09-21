@@ -335,7 +335,6 @@ class OrderanTruckingController extends Controller
                 'noseal' => $request->noseal,
                 'nospempty' => $request->nospempty ?? '',
                 'nospfull' => $request->nospfull ?? '',
-                'kapal' => $request->kapal ?? '',
                 'nojobemkl2' => $request->nojobemkl2,
                 'nocont2' => $request->nocont2,
                 'noseal2' => $request->noseal2,

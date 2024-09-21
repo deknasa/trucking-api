@@ -2236,7 +2236,6 @@ class OrderanTrucking extends MyModel
         if (!$inputtripmandor) {
             $orderanTrucking->nospempty = $data['nospempty'] ?? '';
             $orderanTrucking->nospfull = $data['nospfull'] ?? '';
-            $orderanTrucking->kapal = $data['kapal'] ?? '';
         }
 
         $orderanTrucking->modifiedby = auth('api')->user()->name;
