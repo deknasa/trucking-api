@@ -296,10 +296,12 @@ class InvoiceEmklHeader extends MyModel
             ->select(
                 'invoiceemklheader.*',
                 'pelanggan.namapelanggan as pelanggan',
-                'jenisorder.keterangan as jenisorder'
+                'jenisorder.keterangan as jenisorder',
+                'tujuan.keterangan as tujuan'
             )
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'invoiceemklheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'invoiceemklheader.jenisorder_id', 'jenisorder.id')
+            ->leftJoin(DB::raw("tujuan with (readuncommitted)"), 'invoiceemklheader.tujuan_id', 'tujuan.id')
             ->where('invoiceemklheader.id', $id);
         $data = $query->first();
         return $data;
@@ -310,12 +312,14 @@ class InvoiceEmklHeader extends MyModel
     {
 
         $statusjeniskendaraan = request()->statusjeniskendaraan;
+        $parambukti=request()->nobukti ?? '';
         $invoiceUtamaId = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
             ->select('a.id')
-            ->where('a.grp', '=', 'STATUS INVOICE')
+            ->where('a.grp', '=', 'STATUS INVOICE EMKL')
             ->where('a.text', '=', 'UTAMA')
             ->first();
 
+            
         $statusinvoice = $request->statusinvoice ?? 0;
 
         $temphasil = '##temphasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -325,23 +329,63 @@ class InvoiceEmklHeader extends MyModel
             $table->string('nocont', 1000)->nullable();
             $table->string('noseal', 1000)->nullable();
             $table->string('namapelanggan', 1000)->nullable();
+            $table->double('nominal', 15,2)->nullable();
+            $table->longtext('keteranganbiaya')->nullable();
+
         });
         if ($request->jenisorder_id == 1) {
             $queryhasil = DB::table('jobemkl')->from(
                 db::raw("jobemkl a with (readuncommitted)")
             )
-                ->select(db::raw("a.nobukti as nojobemkl, a.tglbukti as tgljobemkl, a.nocont, a.noseal, b.namapelanggan"))
+                ->select(db::raw("a.nobukti as nojobemkl, a.tglbukti as tgljobemkl, a.nocont, a.noseal, b.namapelanggan,a.nominal,'' as ketaranganbiaya"))
                 ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
                 ->where('a.jenisorder_id', $request->jenisorder_id);
         } else {
-            $queryhasil = DB::table('jobemkl')->from(
-                db::raw("jobemkl a with (readuncommitted)")
-            )
-                ->select(db::raw("a.nobukti as nojobemkl, a.tglbukti as tgljobemkl, a.nocont, a.noseal, b.namapelanggan"))
-                ->leftJoin(db::raw("pelanggan as b with (readuncommitted)"), 'a.shipper_id', 'b.id')
-                ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
-                ->where('a.shipper_id', $request->pelanggan_id)
-                ->where('a.jenisorder_id', $request->jenisorder_id);
+            if ($statusinvoice == $invoiceUtamaId) {
+                $queryhasil = DB::table('jobemkl')->from(
+                    db::raw("jobemkl a with (readuncommitted)")
+                )
+                    ->select(
+                            db::raw("a.nobukti as nojobemkl, a.tglbukti as tgljobemkl, a.nocont, a.noseal, b.namapelanggan,a.nominal"),
+                            db::raw("
+                                (SELECT b1.kodebiayaemkl as biaya_emkl,
+                                    format(a1.nominal,'#0.00') as nominal_biaya,
+                                    a1.keterangan as keterangan_biaya
+                                from jobemklrincianbiaya a1 
+                                    inner join biayaemkl b1 on a1.biayaemkl_id=b1.id
+                                    where a1.nobukti=a.nobukti 
+                                FOR JSON PATH) as keteranganbiaya
+    
+                           "),
+    
+                    )
+                    ->leftJoin(db::raw("pelanggan as b with (readuncommitted)"), 'a.shipper_id', 'b.id')
+                    ->leftJoin(db::raw("invoiceemkldetail as d with (readuncommitted)"), 'a.nobukti', 'd.jobemkl_nobukti')
+                    // ->leftJoin(db::raw("invoiceemkldetail d with (readuncommitted)"), function ($join)  use ($parambukti) {
+                    //     $join->on('jobemkl.nobukti', '=', 'd.jobemkl_nobukti');
+                    //     $join->on('d.nobukti', '!=', DB::raw($parambukti));
+                    // })                    
+                    ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
+                    ->where('a.tujuan_id', $request->tujuan_id)
+                    ->where('a.jenisorder_id', $request->jenisorder_id)
+                    ->whereraw("isnull(d.nobukti,'')=''");
+    
+            } else {
+                $queryhasil = DB::table('jobemkl')->from(
+                    db::raw("jobemkl a with (readuncommitted)")
+                )
+                    ->select(
+                            db::raw("a.nobukti as nojobemkl, a.tglbukti as tgljobemkl, a.nocont, a.noseal, b.namapelanggan"),
+                            db::raw("0 as nominal"),
+                            db::raw("'' as keteranganbiaya"),
+    
+                    )
+                    ->leftJoin(db::raw("pelanggan as b with (readuncommitted)"), 'a.shipper_id', 'b.id')
+                    ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
+                    ->where('a.tujuan_id', $request->tujuan_id)
+                    ->where('a.jenisorder_id', $request->jenisorder_id);
+            }
+
         }
 
 
@@ -351,6 +395,8 @@ class InvoiceEmklHeader extends MyModel
             'nocont',
             'noseal',
             'namapelanggan',
+            'nominal',
+            'keteranganbiaya',
         ], $queryhasil);
 
         $tempdatahasil = '##tempdatahasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -363,6 +409,7 @@ class InvoiceEmklHeader extends MyModel
             $table->LongText('namapelanggan')->nullable();
             $table->Double('nominal', 15, 2)->nullable();
             $table->LongText('keterangan_detail')->nullable();
+            $table->LongText('keterangan_biaya')->nullable();
         });
 
 
@@ -401,20 +448,24 @@ class InvoiceEmklHeader extends MyModel
 
         // dd($query2->get());
 
-        $query2 = DB::table($temphasil)->from(
-            DB::raw($temphasil . " as a")
-        )
-            ->select(
-                DB::raw("null as idinvoice"),
-                'a.nojobemkl',
-                'a.tgljobemkl',
-                'a.nocont',
-                'a.noseal',
-                'a.namapelanggan',
-                DB::raw("0 as nominal"),
-                DB::raw("'' as keterangan_detail")
+        
+            $query2 = DB::table($temphasil)->from(
+                DB::raw($temphasil . " as a")
             )
-            ->leftJoin(DB::raw("invoiceemkldetail f with (readuncommitted)"), 'a.nojobemkl', 'f.jobemkl_nobukti');
+                ->select(
+                    DB::raw("null as idinvoice"),
+                    'a.nojobemkl',
+                    'a.tgljobemkl',
+                    'a.nocont',
+                    'a.noseal',
+                    'a.namapelanggan',
+                    DB::raw("a.nominal as nominal"),
+                    DB::raw("'' as keterangan_detail"),
+                    DB::raw("a.keteranganbiaya as keterangan_biaya")
+                )
+                ->leftJoin(DB::raw("invoiceemkldetail f with (readuncommitted)"), 'a.nojobemkl', 'f.jobemkl_nobukti');
+    
+        
         if ($statusinvoice == $invoiceUtamaId->id || $edit == true) {
             $query2->whereRaw("isnull(f.jobemkl_nobukti,'')=''");
         }
@@ -429,7 +480,8 @@ class InvoiceEmklHeader extends MyModel
             'noseal',
             'namapelanggan',
             'nominal',
-            'keterangan_detail'
+            'keterangan_detail',
+            'keterangan_biaya'
         ], $query2);
 
 
@@ -494,10 +546,7 @@ class InvoiceEmklHeader extends MyModel
                     'a.namapelanggan',
                     'a.nominal',
                     'a.keterangan_detail',
-                    db::raw("
-                    '' as keterangan_biaya
-                   "),
-
+                    'a.keterangan_biaya',
                 )
                 // ->where('a.nocont', '!=', '')
                 ->orderBy("a.tgljobemkl");
@@ -559,11 +608,11 @@ class InvoiceEmklHeader extends MyModel
             ->where('subgrp', $subGroup)
             ->first();
 
-        $group = 'INVOICE BONGKARAN';
-        $subGroup = 'INVOICE BONGKARAN';
+        $groupinvoicebongkaran = 'INVOICE BONGKARAN';
+        $subGroupinvoicebongkaran = 'INVOICE BONGKARAN';
         $formatinvoicetambahan = DB::table('parameter')
-            ->where('grp', $group)
-            ->where('subgrp', $subGroup)
+            ->where('grp', $groupinvoicebongkaran)
+            ->where('subgrp', $subGroupinvoicebongkaran)
             ->first();
 
 
@@ -576,7 +625,7 @@ class InvoiceEmklHeader extends MyModel
         $statusNonPajak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS PAJAK')->where('text', 'NON PAJAK')->first();
         $statusInvoice = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-            ->where('grp', 'STATUS INVOICE')->where('text', 'UTAMA')->first();
+            ->where('grp', 'STATUS INVOICE EMKL')->where('text', 'UTAMA')->first();
         $idMuatan = DB::table("jenisorder")->from(db::raw("jenisorder with (readuncommitted)"))
             ->where('kodejenisorder', 'MUAT')->first();
         $statusReimbursement = Parameter::from(DB::raw("parameter with (readuncommitted)"))
@@ -612,12 +661,12 @@ class InvoiceEmklHeader extends MyModel
         $invoiceHeader->info = html_entity_decode(request()->info);
         $invoiceHeader->statusformat = $format->id;
         $invoiceHeader->statusformatreimbursement = $data['statusreimbursement'] ?? $statusReimbursement->id;
+        $invoiceHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         if ($jenisorder_id == 2) {
             $invoiceHeader->statusformatinvoicetambahan = $formatinvoicetambahan->id;
-            $invoiceHeader->nobuktiinvoicetambahan = (new RunningNumberService)->get($group, $subGroup, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), $tujuan_id, $cabang_id, 0, 0);
+            $invoiceHeader->nobuktiinvoicetambahan = (new RunningNumberService)->get($groupinvoicebongkaran, $subGroupinvoicebongkaran, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), $tujuan_id, $cabang_id, 0, 0,'nobuktiinvoicetambahan');
         }
         // (string $group, string $subGroup, string $table, string $tgl, int  $tujuan = 0, int  $cabang = 0, int  $jenisbiaya = 0, int  $marketing = 0): string
-        $invoiceHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if ($prosesReimburse != 0) {
 
@@ -917,9 +966,9 @@ class InvoiceEmklHeader extends MyModel
                 $invoiceDetail = (new InvoiceEmklFifo())->processStore([
                     'nobukti' => $invoiceHeader->nobukti,
                     'jobemkl_nobukti' => $nojob_emkl,
-                    'status' => $status[$a],
-                    'nominal' => $nominalfifo[$a],
-                    'coadebet' => $coadebetfifo[$a],
+                    'status' => $status[$a] ?? '',
+                    'nominal' => $nominalfifo[$a] ?? 0,
+                    'coadebet' => $coadebetfifo[$a] ?? '',
                     'nominalpelunasan' => 0
                 ]);
             }
@@ -1118,7 +1167,7 @@ class InvoiceEmklHeader extends MyModel
         $prosesReimburse = $data['prosesreimburse'] ?? 0;
 
         $statusInvoice = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-            ->where('grp', 'STATUS INVOICE')->where('text', 'UTAMA')->first();
+            ->where('grp', 'STATUS INVOICE EMKL')->where('text', 'UTAMA')->first();
         $statusPPN = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS PPN')->where('default', 'YA')->first();
         $idMuatan = DB::table("jenisorder")->from(db::raw("jenisorder with (readuncommitted)"))
@@ -1653,12 +1702,18 @@ class InvoiceEmklHeader extends MyModel
         $getBank = (new Parameter())->cekText('FOOTER INVOICE EMKL', 'BANK');
         $getAn = (new Parameter())->cekText('FOOTER INVOICE EMKL', 'PERUSAHAAN');
         $getLokasi = (new Parameter())->cekText('FOOTER INVOICE EMKL', 'LOKASI');
+        $getAdmin1 = (new Parameter())->cekText('FOOTER INVOICE EMKL', 'ADMIN1');
+        $getAdmin2 = (new Parameter())->cekText('FOOTER INVOICE EMKL', 'ADMIN2');
+        $getkota = (new Parameter())->cekText('FOOTER INVOICE EMKL', 'KOTA');
 
         $query = DB::table($this->table)->from(DB::raw("invoiceemklheader with (readuncommitted)"))
             ->select(
                 'invoiceemklheader.id',
                 'invoiceemklheader.nobukti',
-                DB::raw("
+                'invoiceemklheader.nobuktiinvoicetambahan',
+                'invoiceemklheader.nobuktiinvoicereimbursement',
+                'invoiceemklheader.nobuktiinvoicepajak',
+                DB::raw("'".$getkota.",'+
                 format(invoiceemklheader.tglbukti,'dd ')+
                 (case when month(invoiceemklheader.tglbukti)=1 then 'JANUARI'
                       when month(invoiceemklheader.tglbukti)=2 then 'FEBRUARI'
@@ -1684,16 +1739,20 @@ class InvoiceEmklHeader extends MyModel
                 'invoiceemklheader.nominalppn',
                 db::raw("isnull(nominalppn,0) as nominalppn"),
                 'pelanggan.namapelanggan as pelanggan',
+                'tujuan.keterangan as tujuan',
                 'jenisorder.keterangan as jenisorder',
                 'statuspajak.text as statuspajak',
                 'statusformatreimbursement.text as statusformatreimbursement',
                 'statusinvoice.text as statusinvoice',
                 'statuscetak.memo as statuscetak',
                 'statuscetak.id as  statuscetak_id',
-                DB::raw("(case when statusformatreimbursement.text = 'YA' then 'INVOICE REIMBURSEMENT' else 'KWITANSI / INVOICE' end) as judulLaporan"),
+                DB::raw("(case when statusformatreimbursement.text = 'YA' then 'INVOICE REIMBURSEMENT' else 
+                    (case when invoiceemklheader.jenisorder_id=1 then 'KWITANSI / INVOICE' else 'INVOICE TAGIHAN' end) end) as judulLaporan"),
                 DB::raw("'" . $getBank . "' as footerbank"),
                 DB::raw("'" . $getAn . "' as footerperusahaan"),
                 DB::raw("'" . $getLokasi . "' as footerlokasi"),
+                DB::raw("'" . $getAdmin1 . "' as admin1"),
+                DB::raw("'" . $getAdmin2 . "' as admin2"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
@@ -1704,6 +1763,7 @@ class InvoiceEmklHeader extends MyModel
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'invoiceemklheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusinvoice with (readuncommitted)"), 'invoiceemklheader.statusinvoice', 'statusinvoice.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'invoiceemklheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("tujuan with (readuncommitted)"), 'invoiceemklheader.tujuan_id', 'tujuan.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'invoiceemklheader.jenisorder_id', 'jenisorder.id');
 
         $data = $query->first();
