@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class RunningNumberService
 {
-    public function get(string $group, string $subGroup, string $table, string $tgl, int  $tujuan = 0, int  $cabang = 0, int  $jenisbiaya = 0, int  $marketing = 0): string
+    public function get(string $group, string $subGroup, string $table, string $tgl, int  $tujuan = 0, int  $cabang = 0, int  $jenisbiaya = 0, int  $marketing = 0,string $fieldnobukti='nobukti'): string
     {
         // dd($tujuan);
         $parameter = DB::table('parameter')
@@ -39,58 +39,86 @@ class RunningNumberService
         $type = $parameter->type;
 
         if ($type == 'RESET BULAN') {
+            $urut=0;
+            // dd($statusformat);
+            $format = (new App)->getFormat($text, $urut, $bulan, $tgl, $tujuan, $cabang, $jenisbiaya, $marketing,$statusformat);
+            $nobukti=$format[0]['nobukti'];
+            $formatangka=$format[0]['formatangka'];
+            $find=db::select("select charindex('".$formatangka."','" .  $nobukti."') as findangka ")[0]->findangka;
+            // dd($find);
 
             if ($tujuan != 0  &&  $marketing != 0) {
-
+            // dd("substring(nobukti,".$find.",len('".$formatangka."'))");
                 $lastRow = DB::table($table)
+                    ->select(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."')) as urut" ))
                     ->where(DB::raw('month(tglbukti)'), '=', $bulan)
                     ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                     ->where(DB::raw('tujuan_id'), '=', $tujuan)
                     ->where(DB::raw('marketing_id'), '=', $marketing)
                     ->where(DB::raw('statusformat'), '=', $statusformat)
-                    ->lockForUpdate()->count();
+                    ->orderby(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."'))"),'desc')
+                     ->lockForUpdate()->first()->urut ?? 0;
+                    //  dd($lastRow->tosql());
+                    // ->lockForUpdate()->count();
             } else if ($tujuan != 0 &&  $jenisbiaya != 0 &&  $marketing != 0) {
                 $lastRow = DB::table($table)
-                    ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                ->select(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."')) as urut" ))
+                ->where(DB::raw('month(tglbukti)'), '=', $bulan)
                     ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                     ->where(DB::raw('tujuan_id'), '=', $tujuan)
                     ->where(DB::raw('marketing_id'), '=', $marketing)
                     ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
                     ->where(DB::raw('statusformat'), '=', $statusformat)
-                    ->lockForUpdate()->count();
+                    ->orderby(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."'))"),'desc')
+                     ->lockForUpdate()->first()->urut ?? 0;
+                    // ->lockForUpdate()->count();
             } else if ($tujuan != 0 &&  $cabang != 0) {
 
                 $lastRow = DB::table($table)
-                    ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                ->select(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."')) as urut" ))
+                ->where(DB::raw('month(tglbukti)'), '=', $bulan)
                     ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                     ->where(DB::raw('cabang_id'), '=', $cabang)
                     ->where(DB::raw('tujuan_id'), '=', $tujuan)
                     ->where(DB::raw('statusformat'), '=', $statusformat)
-                    ->lockForUpdate()->count();
+                    ->orderby(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."'))"),'desc')
+                     ->lockForUpdate()->first()->urut ?? 0;
+                    // ->lockForUpdate()->count();
             } else if ($tujuan != 0 &&  $jenisbiaya != 0) {
                 $lastRow = DB::table($table)
-                    ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                ->select(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."')) as urut" ))
+                ->where(DB::raw('month(tglbukti)'), '=', $bulan)
                     ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                     ->where(DB::raw('tujuan_id'), '=', $tujuan)
                     ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
                     ->where(DB::raw('statusformat'), '=', $statusformat)
-                    ->lockForUpdate()->count();
+                    ->orderby(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."'))"),'desc')
+                     ->lockForUpdate()->first()->urut ?? 0;
+                    // ->lockForUpdate()->count();
             } else if ($tujuan != 0) {
 
                 $lastRow = DB::table($table)
-                    ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                ->select(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."')) as urut" ))
+                ->where(DB::raw('month(tglbukti)'), '=', $bulan)
                     ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                     ->where(DB::raw('tujuan_id'), '=', $tujuan)
                     ->where(DB::raw('statusformat'), '=', $statusformat)
-                    ->lockForUpdate()->count();
+                    ->orderby(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."'))"),'desc')
+                     ->lockForUpdate()->first()->urut ?? 0;
+
+                    // ->lockForUpdate()->count();
             } else {
                 $lastRow = DB::table($table)
-                    ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                ->select(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."')) as urut" ))
+                ->where(DB::raw('month(tglbukti)'), '=', $bulan)
                     ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                     ->where(DB::raw('statusformat'), '=', $statusformat)
-                    ->lockForUpdate()->count();
-            }
+                    ->orderby(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."'))"),'desc')
+                    ->lockForUpdate()->first()->urut ?? 0;
 
+                    // ->lockForUpdate()->count();
+            }
+            // dd($lastRow);
 
 
 
@@ -233,50 +261,73 @@ class RunningNumberService
             //     ->where(DB::raw('year(tglbukti)'), '=', $tahun)
             //     ->where(DB::raw('statusformat'), '=', $statusformat)
             //     ->lockForUpdate()->count();
-
+            $urut=0;
+            $format = (new App)->getFormat($text, $urut, $bulan, $tgl, $tujuan, $cabang, $jenisbiaya, $marketing,$statusformat);
+            $nobukti=$format[0]['nobukti'];
+            $formatangka=$format[0]['formatangka'];
+            $find=db::select("select charindex('".$formatangka."','" .  $nobukti."') as findangka ")[0]->findangka;
             if ($tujuan != 0  &&  $marketing != 0) {
 
                 $lastRow = DB::table($table)
-                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                ->select(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."')) as urut" ))
+                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                     ->where(DB::raw('tujuan_id'), '=', $tujuan)
                     ->where(DB::raw('marketing_id'), '=', $marketing)
                     ->where(DB::raw('statusformat'), '=', $statusformat)
-                    ->lockForUpdate()->count();
+                    ->orderby(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."'))"),'desc')
+                    ->lockForUpdate()->first()->urut ?? 0;
+                       // ->lockForUpdate()->count();
             } else if ($tujuan != 0 &&  $jenisbiaya != 0 &&  $marketing != 0) {
                 $lastRow = DB::table($table)
-                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                ->select(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."')) as urut" ))
+                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                     ->where(DB::raw('tujuan_id'), '=', $tujuan)
                     ->where(DB::raw('marketing_id'), '=', $marketing)
                     ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
                     ->where(DB::raw('statusformat'), '=', $statusformat)
-                    ->lockForUpdate()->count();
+                    ->orderby(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."'))"),'desc')
+                    ->lockForUpdate()->first()->urut ?? 0;
+                     // ->lockForUpdate()->count();
             } else if ($tujuan != 0 &&  $cabang != 0) {
 
                 $lastRow = DB::table($table)
-                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                ->select(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."')) as urut" ))
+                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                     ->where(DB::raw('cabang_id'), '=', $cabang)
                     ->where(DB::raw('tujuan_id'), '=', $tujuan)
                     ->where(DB::raw('statusformat'), '=', $statusformat)
-                    ->lockForUpdate()->count();
+                    ->orderby(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."'))"),'desc')
+                    ->lockForUpdate()->first()->urut ?? 0;
+                    // ->lockForUpdate()->count();
+
             } else if ($tujuan != 0 &&  $jenisbiaya != 0) {
                 $lastRow = DB::table($table)
-                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                ->select(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."')) as urut" ))
+                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                     ->where(DB::raw('tujuan_id'), '=', $tujuan)
                     ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
                     ->where(DB::raw('statusformat'), '=', $statusformat)
-                    ->lockForUpdate()->count();
+                    ->orderby(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."'))"),'desc')
+                    ->lockForUpdate()->first()->urut ?? 0;
+                    // ->lockForUpdate()->count();
             } else if ($tujuan != 0) {
 
                 $lastRow = DB::table($table)
-                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                ->select(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."')) as urut" ))
+                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                     ->where(DB::raw('tujuan_id'), '=', $tujuan)
                     ->where(DB::raw('statusformat'), '=', $statusformat)
-                    ->lockForUpdate()->count();
+                    ->orderby(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."'))"),'desc')
+                    ->lockForUpdate()->first()->urut ?? 0;                    
+                    // ->lockForUpdate()->count();
             } else {
                 $lastRow = DB::table($table)
-                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                ->select(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."')) as urut" ))
+                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                     ->where(DB::raw('statusformat'), '=', $statusformat)
-                    ->lockForUpdate()->count();
+                    ->orderby(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."'))"),'desc')
+                    ->lockForUpdate()->first()->urut ?? 0;                    
+                    // ->lockForUpdate()->count();
             }
 
 
@@ -433,9 +484,18 @@ class RunningNumberService
             }
         }
         if ($type == '') {
+            $urut=0;
+            $format = (new App)->getFormat($text, $urut, $bulan, $tgl, $tujuan, $cabang, $jenisbiaya, $marketing,$statusformat);
+            $nobukti=$format[0]['nobukti'];
+            $formatangka=$format[0]['formatangka'];
+            $find=db::select("select charindex('".$formatangka."','" .  $nobukti."') as findangka ")[0]->findangka;
+
             $lastRow = DB::table($table)
-                ->where(DB::raw('statusformat'), '=', $statusformat)
-                ->lockForUpdate()->count();
+            ->select(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."')) as urut" ))
+            ->where(DB::raw('statusformat'), '=', $statusformat)
+                ->orderby(db::raw("substring($fieldnobukti,".$find.",len('".$formatangka."'))"),'desc')
+                ->lockForUpdate()->first()->urut ?? 0;                     
+                // ->lockForUpdate()->count();
         }
         // $sqlcek=db::table($table)->from($table . " a with (readuncommitted)")
         // ->select ('a.nobukti')

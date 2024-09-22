@@ -77,6 +77,7 @@ class InvoiceEmklHeaderController extends Controller
                 'keterangan_detail' => $requestData['keterangan_detail'],
                 "keterangan_biaya" => $requestData['keterangan_biaya'],      
             ];
+            // dd($data);
             $invoiceEmklHeader = (new InvoiceEmklHeader())->processStore($data);
             $invoiceEmklHeader->position = $this->getPosition($invoiceEmklHeader, $invoiceEmklHeader->getTable())->position;
             if ($request->limit == 0) {

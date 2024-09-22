@@ -456,16 +456,17 @@ class JobEmkl extends MyModel
 
     public function processNominalPrediksi(JobEmkl $jobEmkl, array $data): JobEmkl
     {
-        // dd($jobEmkl);
+        // dd($data['nominal']);
         $jobEmkl->nominal = $data['nominal'];
         $jobEmkl->modifiedby = auth('api')->user()->name;
         $jobEmkl->info = html_entity_decode(request()->info);
+
         if ($jobEmkl->save()) {
 
             $keteranganbiaya = $data['keteranganBiaya'] ?? '';
 
             if ($keteranganbiaya != '') {
-
+                JobEmklRincianBiaya::where('nobukti', $jobEmkl->nobukti)->delete();
 
                 $jobemklrincianbiaya = (new JobEmklRincianBiaya())->processStore($jobEmkl, [
                     'jobemkl_id' => $jobEmkl->id,
@@ -474,6 +475,19 @@ class JobEmkl extends MyModel
                     'keteranganbiaya' =>  $keteranganbiaya,
                     'modifiedby' => auth('api')->user()->name,
                 ]);
+                $querydetailjob = db::table("jobemklrincianbiaya")->from(db::raw("jobemklrincianbiaya a with (readuncommitted)"))
+                ->select(
+                    db::raw("sum(a.nominal) as nominal")
+                )
+                ->join(db::raw("jobemkl c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+                ->where('c.nobukti', $jobEmkl->nobukti)
+                ->first();
+                // dd($querydetailjob);
+                
+            $nominaldetail = $querydetailjob->nominal ?? 0;
+
+                db::update("update jobemkl set nominal=" . $nominaldetail . " where  nobukti='" . $jobEmkl->nobukti . "'");
+
             } else {
                 $paramcoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL INVOICE MUATAN UTAMA')
                     ->where('subgrp', 'DEBET')
