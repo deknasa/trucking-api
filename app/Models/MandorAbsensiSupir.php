@@ -1244,7 +1244,7 @@ class MandorAbsensiSupir extends MyModel
             ->where('grp','ID CABANG')
             ->where('subgrp','ID CABANG')
             ->first();
-        if (in_array($query->text, ['5','2'])) {//MAKASSAR,MEDAN
+        if (in_array($query->text, ['5','2','6'])) {//MAKASSAR,MEDAN,BITUNG
             return true;
         }
         
