@@ -30,6 +30,9 @@ class JobEmkl extends MyModel
             ->where('grp', 'JUDULAN LAPORAN')
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
+
+        $jenisorder_id = request()->jenisorder_id ?? '';
+
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " as jobemkl")
         )
@@ -72,6 +75,10 @@ class JobEmkl extends MyModel
             // ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jobemkl.statuslangsir', '=', 'parameter.id')
             // ->leftJoin(DB::raw("parameter AS param2 with (readuncommitted)"), 'jobemkl.statusperalihan', '=', 'param2.id')
             ->leftJoin(DB::raw("parameter AS param3 with (readuncommitted)"), 'jobemkl.statusapprovaledit', '=', 'param3.id');
+        
+        if ($jenisorder_id != '') {
+            $query->where('jobemkl.jenisorder_id',$jenisorder_id);
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
