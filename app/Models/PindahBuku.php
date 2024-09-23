@@ -206,7 +206,7 @@ class PindahBuku extends MyModel
             $table->string('nowarkat', 1000)->nullable();
             $table->date('tgljatuhtempo')->nullable();
             $table->float('nominal')->nullable();
-            $table->string('keterangan')->nullable();
+            $table->longText('keterangan')->nullable();
             $table->string('statuscetak', 1000)->nullable();
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();

@@ -4680,7 +4680,80 @@ class SuratPengantar extends MyModel
             ->leftJoin('mandor as mandortrado', 'suratpengantar.mandortrado_id', 'mandortrado.id')
             ->leftJoin('mandor as mandorsupir', 'suratpengantar.mandorsupir_id', 'mandorsupir.id')
             ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id');
+        $tempsuratpengantar = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsuratpengantar, function ($table) {
+            $table->integer('id')->nullable();
+            $table->string('jobtrucking', 50)->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->string('nosp', 50)->nullable();
+            $table->date('tglsp')->nullable();
+            $table->string('nojob', 50)->nullable();
+            $table->longText('pelanggan_id')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->longText('dari_id')->nullable();
+            $table->longText('sampai_id')->nullable();
+            $table->longText('penyesuaian')->nullable();
+            $table->decimal('gajisupir', 15, 2)->nullable();
+            $table->decimal('totalomset', 15, 2)->nullable();
+            $table->decimal('jarak', 15, 2)->nullable();
+            $table->longText('agen_id')->nullable();
+            $table->longText('jenisorder_id')->nullable();
+            $table->longText('container_id')->nullable();
+            $table->string('nocont', 50)->nullable();
+            $table->string('noseal', 50)->nullable();
+            $table->string('statuscontainer_id')->nullable();
+            $table->string('gudang')->nullable();
+            $table->string('trado_id')->nullable();
+            $table->string('supir_id')->nullable();
+            $table->string('gandengan_id')->nullable();
+            $table->longText('statuslongtrip')->nullable();
+            $table->longText('statusperalihan')->nullable();
+            $table->longText('statusritasiomset')->nullable();
+            $table->longText('tarif_id')->nullable();
+            $table->longText('mandortrado_id')->nullable();
+            $table->longText('mandorsupir_id')->nullable();
+            $table->longText('tglcetak')->nullable();
+            $table->longText('usercetak')->nullable();
+        });
 
+        DB::table($tempsuratpengantar)->insertUsing([
+            'id',
+            'jobtrucking',
+            'nobukti',
+            'tglbukti',
+            'nosp',
+            'tglsp',
+            'nojob',
+            'pelanggan_id',
+            'keterangan',
+            'dari_id',
+            'sampai_id',
+            'penyesuaian',
+            'gajisupir',
+            'totalomset',
+            'jarak',
+            'agen_id',
+            'jenisorder_id',
+            'container_id',
+            'nocont',
+            'noseal',
+            'statuscontainer_id',
+            'gudang',
+            'trado_id',
+            'supir_id',
+            'gandengan_id',
+            'statuslongtrip',
+            'statusperalihan',
+            'statusritasiomset',
+            'tarif_id',
+            'mandortrado_id',
+            'mandorsupir_id',
+            'tglcetak',
+            'usercetak'
+        ], $query);
+
+        $query = DB::table($tempsuratpengantar)->from(db::raw("$tempsuratpengantar as suratpengantar with (readuncommitted)"));
         $this->filter($query);
         $data = $query->get();
         $allData = [
