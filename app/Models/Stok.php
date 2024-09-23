@@ -389,16 +389,16 @@ class Stok extends MyModel
                 ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id")
                 ->Join(db::raw($tempbukti . " c12"), "stok.id", "c12.stok_id");
 
-                if (($from == "pengeluaranstok") ||($from == "penerimaanstok")) {
-                    $query->where(function ($query) {
-                        $query->where('stok.jenistrado_id', '!=', 0)
-                              ->where('stok.kelompok_id', '!=', 0)
-                              ->where('stok.kategori_id', '!=', 0)
-                              ->where('stok.subkelompok_id', '!=', 0)
-                              ->where('stok.merk_id', '!=', 0)
-                              ->where('stok.satuan_id', '!=', 0);
-                    });
-                }
+                // if (($from == "pengeluaranstok") ||($from == "penerimaanstok")) {
+                //     $query->where(function ($query) {
+                //         $query->where('stok.jenistrado_id', '!=', 0)
+                //               ->where('stok.kelompok_id', '!=', 0)
+                //               ->where('stok.kategori_id', '!=', 0)
+                //               ->where('stok.subkelompok_id', '!=', 0)
+                //               ->where('stok.merk_id', '!=', 0)
+                //               ->where('stok.satuan_id', '!=', 0);
+                //     });
+                // }
                 
             } else {
                 $query = DB::table($this->table)->select(
@@ -461,16 +461,16 @@ class Stok extends MyModel
                     ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id")
                     ->Join(db::raw($tempbukti . " c12"), "stok.id", "c12.stok_id");
 
-                    if (($from == "pengeluaranstok") ||($from == "penerimaanstok")) {
-                        $query->where(function ($query) {
-                            $query->where('stok.jenistrado_id', '!=', 0)
-                                  ->where('stok.kelompok_id', '!=', 0)
-                                  ->where('stok.kategori_id', '!=', 0)
-                                  ->where('stok.subkelompok_id', '!=', 0)
-                                  ->where('stok.merk_id', '!=', 0)
-                                  ->where('stok.satuan_id', '!=', 0);
-                        });
-                    }
+                    // if (($from == "pengeluaranstok") ||($from == "penerimaanstok")) {
+                    //     $query->where(function ($query) {
+                    //         $query->where('stok.jenistrado_id', '!=', 0)
+                    //               ->where('stok.kelompok_id', '!=', 0)
+                    //               ->where('stok.kategori_id', '!=', 0)
+                    //               ->where('stok.subkelompok_id', '!=', 0)
+                    //               ->where('stok.merk_id', '!=', 0)
+                    //               ->where('stok.satuan_id', '!=', 0);
+                    //     });
+                    // }
             }
             DB::table($temtabel)->insertUsing([
                 'id',
