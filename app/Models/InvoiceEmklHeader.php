@@ -599,7 +599,7 @@ class InvoiceEmklHeader extends MyModel
     public function processStore(array $data): InvoiceEmklHeader
     {
         $prosesReimburse = $data['prosesreimburse'] ?? 0;
-
+        $jenisbiaya=$data['statusjenisbiaya'] ?? 0;
 
         $group = 'INVOICE BUKTI';
         $subGroup = 'INVOICE BUKTI';
@@ -651,7 +651,7 @@ class InvoiceEmklHeader extends MyModel
         $invoiceHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $invoiceHeader->pelanggan_id = $data['pelanggan_id'];
         $invoiceHeader->jenisorder_id = $data['jenisorder_id'];
-        $invoiceHeader->tujuan_id = $data['tujuan_id'];
+        $invoiceHeader->tujuan_id = $tujuan_id;
         $invoiceHeader->statusinvoice = $data['statusinvoice'];
         $invoiceHeader->statuspajak = $data['statuspajak'];
         $invoiceHeader->statusppn = $data['statusppn'] ?? $statusPPN->id;
@@ -694,7 +694,15 @@ class InvoiceEmklHeader extends MyModel
                 ->where('grp', $group)
                 ->where('subgrp', $subGroup)
                 ->first();
-            $invoiceHeader->nobuktiinvoicereimbursement = (new RunningNumberService)->get($group, $subGroup, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+                $invoiceHeader->statusformatreimbursement = $format->id;
+                $cabang_id = $data['cabang_id'] ?? 0;
+
+                $parameter = new Parameter();
+
+                $cabang_id = $parameter->cekText('ID CABANG', 'ID CABANG') ?? '1900-01-01';
+
+                $invoiceHeader->nobuktiinvoicereimbursement = (new RunningNumberService)->get($group, $subGroup, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), $tujuan_id, $cabang_id,$jenisbiaya, 0, 'nobuktiinvoicereimbursement');
+                // dd($invoiceHeader->nobuktiinvoicereimbursement);
             $invoiceHeader->pengeluaranheader_nobukti = $data['pengeluaranheader_nobukti'];
         }
         if ($data['statuspajak'] == $statusNonPajak->id) {
@@ -1183,7 +1191,7 @@ class InvoiceEmklHeader extends MyModel
 
     public function processUpdate(InvoiceEmklHeader $invoiceHeader, array $data): InvoiceEmklHeader
     {
-
+        // DD('TEST');
         $prosesReimburse = $data['prosesreimburse'] ?? 0;
 
         $statusInvoice = Parameter::from(DB::raw("parameter with (readuncommitted)"))
@@ -1358,6 +1366,7 @@ class InvoiceEmklHeader extends MyModel
                 $coakreditdetail = $memo['JURNAL'];
             }
         }
+ 
         $total = 0;
         $nojobs = '';
         $nominaljurnal = [];
@@ -1484,9 +1493,9 @@ class InvoiceEmklHeader extends MyModel
                 $invoiceDetail = (new InvoiceEmklFifo())->processStore([
                     'nobukti' => $invoiceHeader->nobukti,
                     'jobemkl_nobukti' => $nojob_emkl,
-                    'status' => $status[$a],
+                    'status' => $status[$a] ?? '',
                     'nominal' => $nominalfifo[$a],
-                    'coadebet' => $coadebetfifo[$a],
+                    'coadebet' => $coadebetfifo[$a] ?? '',
                     'nominalpelunasan' => 0
                 ]);
             }
