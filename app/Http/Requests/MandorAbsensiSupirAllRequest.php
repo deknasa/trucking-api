@@ -147,8 +147,8 @@ class MandorAbsensiSupirAllRequest extends FormRequest
                 ];
                 // dd($this->input("$key.kodetrado"));
                 $rulesBeda = [
-                    "$key.namasupir" => ['required', new MandorAbsensiSupirDuplicateSupir($data[$key]['supir_id'],$duplicates), new MandorAbsensiSupirEditSupirValidasiTrado($data[$key]['trado_id'], $data[$key]['supir_id']),new AbsensiSupirRICUangJalanRule($data[$key])],
-                    "$key.supir_id" => ['required', new MandorAbsensiSupirEditSupirValidasiTrado($data[$key]['trado_id'], $data[$key]['supir_id'])],
+                    "$key.namasupir" => ['required', new MandorAbsensiSupirDuplicateSupir($data[$key]['supir_id'],$duplicates), new MandorAbsensiSupirEditSupirValidasiTrado($data[$key]['trado_id'], $data[$key]['supir_id'], $data[$key]['tglbukti']),new AbsensiSupirRICUangJalanRule($data[$key])],
+                    "$key.supir_id" => ['required', new MandorAbsensiSupirEditSupirValidasiTrado($data[$key]['trado_id'], $data[$key]['supir_id'], $data[$key]['tglbukti'])],
                     
                 ];
             }
