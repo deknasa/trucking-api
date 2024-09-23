@@ -61,7 +61,7 @@ class OrderanTruckingValidasijob2040 implements Rule
             if ($getOrderan->statusapprovaltanpajob == 3 && $currentDate <  date('Y-m-d H:i:s', strtotime($getOrderan->tglbatastanpajoborderantrucking))) {
                 $nilai = true;
             } else {
-                if($cabang != 'MEDAN'){
+                if($cabang != 'MEDAN' && $cabang != 'BITUNG'){
                     $nilai = false;
                 }else{
                     $nilai = true;
