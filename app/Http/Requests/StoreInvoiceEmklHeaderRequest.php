@@ -49,9 +49,9 @@ class StoreInvoiceEmklHeaderRequest extends FormRequest
                 'destination' => [
                     'required', 
                 ],
-                'nobuktiinvoicepajak' => [
-                    new validasiNoInvoicePajakEmkl()
-                ],
+                // 'nobuktiinvoicepajak' => [
+                //     new validasiNoInvoicePajakEmkl()
+                // ],
                 'tglbukti' => [
                     'required', 'date_format:d-m-Y',
                     new DateTutupBuku(),
