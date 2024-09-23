@@ -185,6 +185,7 @@ class Agen extends MyModel
                 'parameter.memo as statusaktif',
                 'agen.namaperusahaan',
                 'agen.alamat',
+                'agen.coa',
                 'agen.notelp',
                 'agen.contactperson',
                 'agen.top',

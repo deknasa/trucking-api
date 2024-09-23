@@ -30,11 +30,17 @@ class validasiJenisOrderInvoiceEmkl implements Rule
         ->where('grp', 'STATUS PAJAK')->where('text', 'NON PAJAK')->first();
         $isMuatan = DB::table('jenisorder')->from(DB::raw("jenisorder with (readuncommitted)"))
         ->where('kodejenisorder','MUAT')->first();
-        if(request()->statuspajak == $statusNonPajak->id && request()->jenisorder_id == $isMuatan->id){
-            return false;
-        } 
-        if(request()->statuspajak != $statusNonPajak->id && request()->jenisorder_id != $isMuatan->id){
-            return false;
+        $isBongkaran = DB::table('jenisorder')->from(DB::raw("jenisorder with (readuncommitted)"))
+        ->where('kodejenisorder','BKR')->first();
+        $jenisorder_id=request()->jenisorder_id ?? 0;
+        if ($jenisorder_id==1) {
+            if(request()->statuspajak == $statusNonPajak->id && request()->jenisorder_id == $isMuatan->id){
+                return false;
+            } 
+            if(request()->statuspajak != $statusNonPajak->id && request()->jenisorder_id != $isMuatan->id){
+                return false;
+            } 
+    
         } 
 
         return true;
