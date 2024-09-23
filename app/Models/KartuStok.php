@@ -1037,8 +1037,8 @@ class KartuStok extends MyModel
                 )->orderBy('a.id', 'desc')
                 ->first();
 
-            $stokdari = $querystokdari->id;
-            $stoksampai = $querystoksampai->id;
+            $stokdari = $querystokdari->id ?? 0;
+            $stoksampai = $querystoksampai->id ?? 0;
         }
 
         if ($filter == '' || $filter == '0') {
