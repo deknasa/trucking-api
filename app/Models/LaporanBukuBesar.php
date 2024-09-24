@@ -40,7 +40,9 @@ class LaporanBukuBesar extends MyModel
         // dd('test');
 
         // cek saldo awal
-        $tglsaldo = '2023-10-01';
+        $parameter = new Parameter();
+        $tglsaldo = $parameter->cekText('SALDO', 'SALDO') ?? '1900-01-01';
+        // $tglsaldo = '2023-10-01';
         $awalsaldo = date('Y-m-d', strtotime($tglsaldo));
 
         $tutupbuku = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
