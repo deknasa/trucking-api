@@ -49,6 +49,12 @@ class UpdateInvoiceEmklHeaderRequest extends FormRequest
                 'tglsampai' => [
                     'required', 'date_format:d-m-Y', new validasiTglInvoiceEmkl()
                 ],
+                'kapal' => [
+                    'required', 
+                ],
+                'destination' => [
+                    'required', 
+                ],
     
             ];
         } else {
@@ -57,12 +63,6 @@ class UpdateInvoiceEmklHeaderRequest extends FormRequest
                     'required', 
                 ],
                 'statuspajak' => [
-                    'required', 
-                ],
-                'kapal' => [
-                    'required', 
-                ],
-                'destination' => [
                     'required', 
                 ],
                 // 'nobuktiinvoicepajak' => [

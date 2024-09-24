@@ -862,10 +862,12 @@ class PiutangHeader extends MyModel
                 'keterangan_detail' => $keterangan_detail
             ];
             $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiOld)->first();
+            if ($getJurnal != '') {
 
-            $newJurnal = new JurnalUmumHeader();
-            $newJurnal = $newJurnal->find($getJurnal->id);
-            $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+                $newJurnal = new JurnalUmumHeader();
+                $newJurnal = $newJurnal->find($getJurnal->id);
+                $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+            }
         }
         return $piutangHeader;
     }

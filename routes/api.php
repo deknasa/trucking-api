@@ -373,6 +373,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('printpowershell', [HutangHeaderController::class, 'printPowerShell']);
 
     Route::resource('tujuan', TujuanController::class)->whereNumber('tujuan');
+    Route::get('invoiceheader/field_length', [InvoiceHeaderController::class, 'fieldLength']);
 
     Route::post('bataledit', [Controller::class, 'batalEditingBy']);
     Route::post('removeedit', [Controller::class, 'removeEditingBy']);
@@ -1581,7 +1582,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('invoiceheader/{id}/printreport', [InvoiceHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('invoiceheader/grid', [InvoiceHeaderController::class, 'grid']);
-    Route::get('invoiceheader/field_length', [InvoiceHeaderController::class, 'fieldLength']);
     Route::get('invoiceheader/{id}/getEdit', [InvoiceHeaderController::class, 'getEdit'])->whereNumber('id');
     Route::get('invoiceheader/{id}/getAllEdit', [InvoiceHeaderController::class, 'getAllEdit'])->whereNumber('id');
     Route::get('invoiceheader/getSP', [InvoiceHeaderController::class, 'getSP']);

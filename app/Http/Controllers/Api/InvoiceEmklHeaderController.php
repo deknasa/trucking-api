@@ -249,7 +249,7 @@ class InvoiceEmklHeaderController extends Controller
 
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $cekdata['keterangan'],
                 'kodeerror' => $cekdata['kodeerror'],
                 'statuspesan' => 'warning',
             ];

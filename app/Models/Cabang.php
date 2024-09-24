@@ -25,6 +25,7 @@ class Cabang extends MyModel
 
         $aktif = request()->aktif ?? '';
         $transferCoa = request()->transferCoa ?? '';
+        $emkl = request()->emkl ?? '';
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
@@ -67,7 +68,9 @@ class Cabang extends MyModel
         if ($transferCoa != '') {
             $query->where('cabang.kodecabang', '!=', 'PST');
         }
-
+        if($emkl=='emkl'){
+            $query->whereRaw("isnull(cabang.pelanggan_id,0) != 0");
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
