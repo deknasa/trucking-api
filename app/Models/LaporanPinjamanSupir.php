@@ -246,7 +246,7 @@ class LaporanPinjamanSupir extends MyModel
         // ->get();
 
         // dd($queryhistory);        
-
+// dd($jenis);
         if ($jenis == 0) {
             $queryrekapdata = DB::table('penerimaantruckingheader')->from(
                 DB::raw("penerimaantruckingheader a with (readuncommitted) ")
@@ -290,18 +290,20 @@ class LaporanPinjamanSupir extends MyModel
                 )
                 ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
                 ->join(DB::raw("pengeluarantruckingheader as e with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'e.nobukti')
-                ->join(DB::raw("supir as f with (readuncommitted) "), 'b.supir_id', 'f.id')
+                ->leftjoin(DB::raw("supir as f with (readuncommitted) "), 'b.supir_id', 'f.id')
                 // ->Join(DB::raw("penerimaanheader as g with (readuncommitted)"), 'a.penerimaan_nobukti', 'g.nobukti')
 
                 ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
                 ->whereRaw("a.tglbukti='" . date('Y/m/d', strtotime($sampai)) . "'")
                 ->where('e.statusposting', '=', $jenis)
-
+                // ->where('b.pengeluarantruckingheader_nobukti','PJT 0008/VI/2018')
                 ->OrderBy('f.namasupir', 'asc')
                 ->OrderBy('a.tglbukti', 'asc')
                 ->OrderBy('a.nobukti', 'asc');
+
             // ->whereraw('e.nobukti','PJT 0005/VI/2024');
             // dd($queryrekapdata->tosql
+            // dd( $queryrekapdata->get());
         }
 
 
@@ -475,6 +477,8 @@ class LaporanPinjamanSupir extends MyModel
                 db::raw("'" . $diperiksa . "' as diperiksa"),
             )
             ->leftjoin(DB::raw("pengeluarantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+            // ->where('a.nobukti','PJT 0008/VI/2018')
+            
 
             ->OrderBy('a.id', 'asc');
 
