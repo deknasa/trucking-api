@@ -55,6 +55,11 @@ class GandenganController extends Controller
     }
     public function cekValidasi($id)
     {
+        $aksi = request()->aksi ?? '';
+        if( $aksi == 'VIEW'||$aksi == 'ADD'){
+            $cekdata['kondisi'] = false;
+        }
+        
         $gandengan = new Gandengan();
         $cekdata = $gandengan->cekvalidasihapus($id);
         $dataMaster = $gandengan->where('id',$id)->first();
@@ -62,7 +67,6 @@ class GandenganController extends Controller
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
         $useredit = $dataMaster->editing_by ?? '';
-        $aksi = request()->aksi ?? '';
 
         if( $aksi == 'EDIT'){
             $cekdata['kondisi'] = false;
