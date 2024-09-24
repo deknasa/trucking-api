@@ -27,6 +27,7 @@ class LaporanHutangGiro extends MyModel
     
     public function getReport($periode)
     {
+        // dd($periode);
         $getJudul = DB::table('parameter')
         ->select('text')
         ->where('grp', 'JUDULAN LAPORAN')
@@ -114,6 +115,7 @@ class LaporanHutangGiro extends MyModel
              ->whereNull('b.nobukti');
     })
     ->join('pengeluarandetail AS c', 'a.nobukti', '=', 'c.nobukti')
+    ->whereRaw("a.tglbukti<='".$periode."'")
     ->whereNull('b.nobukti')
     ->where('a.alatbayar_id', $alatbayar);
 
