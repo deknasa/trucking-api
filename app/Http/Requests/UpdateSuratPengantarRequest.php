@@ -33,6 +33,7 @@ use App\Rules\ValidasiJenisOrderGudangsama;
 use App\Rules\ValidasiJenisOrderLongtrip;
 use App\Rules\ValidasiKotaUpahZona;
 use App\Rules\ValidasiLongtripGudangsama;
+use App\Rules\validasiNobuktiTripasalPulangLongtrip;
 use App\Rules\validasiNominalUpahSupirTangkiTrip;
 use App\Rules\ValidasiPelangganTripGudangSama;
 use App\Rules\ValidasiReminderOli;
@@ -772,7 +773,7 @@ class UpdateSuratPengantarRequest extends FormRequest
                 'nobukti' => [
                     Rule::in($query->nobukti),
                 ],
-                "nobukti_tripasal" => $ruleTripAsal,
+                "nobukti_tripasal" => [$ruleTripAsal, new validasiNobuktiTripasalPulangLongtrip()],
                 // "lokasibongkarmuat" => "required",
                 'statuslongtrip' => ['required', Rule::in($statuslongtrip), new validasiStatusContainerLongtrip()],
                 'statusperalihan' => ['required', Rule::in($statusperalihan)],
@@ -781,7 +782,12 @@ class UpdateSuratPengantarRequest extends FormRequest
                 'nosp' => 'required',
                 'upah' => ['required', new ExistNominalUpahSupir(), new ValidasiTripGudangSama($dataTripAsal)],
                 'gajisupir' => new ValidasiGajiKenekSP('gajisupir'),
-                'gajikenek' => new ValidasiGajiKenekSP('gajikenek')
+                'gajikenek' => new ValidasiGajiKenekSP('gajikenek'),
+                'komisisupir' => new ValidasiGajiKenekSP('komisisupir'),
+                'pelanggan' => 'required',
+                'agen' => 'required',
+                'jenisorder' => 'required',
+                'container' => 'required',
             ];
 
             $rulesStatusPeralihan = [];

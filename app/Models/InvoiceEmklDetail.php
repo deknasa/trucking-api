@@ -31,8 +31,14 @@ class InvoiceEmklDetail extends MyModel
 
         if (isset(request()->forReport) && request()->forReport) {
             $getinfoinvoice = DB::table("invoiceemklheader")->from(db::raw("invoiceemklheader as a with (readuncommitted)"))
-                ->select(db::raw("a.pengeluaranheader_nobukti,statusformatreimbursement.text as statusreimbursement"))
+                ->select(
+                    db::raw("a.pengeluaranheader_nobukti,statusformatreimbursement.text as statusreimbursement"),
+                    'a.jenisorder_id',
+                    db::raw("statusinvoice.text as statusinvoice"),
+
+                )
                 ->join(DB::raw("parameter as statusformatreimbursement with (readuncommitted)"), 'a.statusformatreimbursement', 'statusformatreimbursement.id')
+                ->leftjoin(DB::raw("parameter as statusinvoice with (readuncommitted)"), 'a.statusinvoice', 'statusinvoice.id')
                 ->where('a.id', request()->invoiceemkl_id)
                 ->first();
             if ($getinfoinvoice->statusreimbursement == 'YA') {
@@ -41,9 +47,86 @@ class InvoiceEmklDetail extends MyModel
                     ->where('nobukti', $getinfoinvoice->pengeluaranheader_nobukti)
                     ->orderBy('id', 'asc');
             } else {
-                $query->select(db::raw("STRING_AGG(b.nocont +' / '+b.noseal, ', ') as keterangan, sum(invoiceemkldetail.nominal) as nominal,sum(invoiceemkldetail.nominal)*0.011 as ppn,  sum(invoiceemkldetail.nominal) + sum(invoiceemkldetail.nominal)*0.011 as total"))
-                    ->join(db::raw("jobemkl as b with (readuncommitted)"), 'invoiceemkldetail.jobemkl_nobukti', 'b.nobukti')
-                    ->where('invoiceemkldetail.invoiceemkl_id', request()->invoiceemkl_id);
+                if ($getinfoinvoice->jenisorder_id == 1) {
+                    $query->select(db::raw("STRING_AGG(b.nocont +' / '+b.noseal, ', ') as keterangan, sum(invoiceemkldetail.nominal) as nominal,sum(invoiceemkldetail.nominal)*0.011 as ppn,  sum(invoiceemkldetail.nominal) + sum(invoiceemkldetail.nominal)*0.011 as total"))
+                        ->join(db::raw("jobemkl as b with (readuncommitted)"), 'invoiceemkldetail.jobemkl_nobukti', 'b.nobukti')
+                        ->where('invoiceemkldetail.invoiceemkl_id', request()->invoiceemkl_id);
+                } else {
+                    $parameter = new Parameter();
+                    $paramdoor = $parameter->cekText('BIAYA EMKL', 'DOORING') ?? 0;
+                    $paramkawal = $parameter->cekText('BIAYA EMKL', 'KAWAL') ?? 0;
+                    $paramburuh = $parameter->cekText('BIAYA EMKL', 'BURUH') ?? 0;
+                    $paramcleaning = $parameter->cekText('BIAYA EMKL', 'CLEANING') ?? 0;
+                    $paramdokumen = $parameter->cekText('BIAYA EMKL', 'DOKUMEN') ?? 0;
+                    $paramlain = $parameter->cekText('BIAYA EMKL', 'LAIN') ?? 0;
+                    if ($getinfoinvoice->statusinvoice == 'UTAMA') {
+        
+
+                        $query->select(
+                            db::raw("b.nocont +' / '+b.noseal as keterangan"),
+                            db::raw("b.lokasibongkarmuat as lokasi"),
+                            db::raw("isnull(door.nominal,0) as biayadoor"),
+                            db::raw("isnull(dokumen.nominal,0) as biayado"),
+                            db::raw("isnull(kawal.nominal,0) as uangkawal"),
+                            db::raw("isnull(buruh.nominal,0) as uangburuh"),
+                            db::raw("isnull(cleaning.nominal,0) as biayacleaning"),
+                            db::raw("isnull(lain.nominal,0) as biayalain"),
+                            db::raw("isnull(lain.keterangan,'') as keteranganbiayalain"),
+                            db::raw("invoiceemkldetail.nominal as nominal"),
+                        )
+                            ->join(db::raw("jobemkl as b with (readuncommitted)"), 'invoiceemkldetail.jobemkl_nobukti', 'b.nobukti')
+                            // ->join(db::raw("invoiceemkldetailrincianbiaya as c with (readuncommitted)"), 'invoiceemkldetail.id', 'c.id')
+                            ->leftJoin(db::raw("invoiceemkldetailrincianbiaya door with (readuncommitted)"), function ($join)  use ($paramdoor) {
+                                $join->on('invoiceemkldetail.nobukti', '=', 'door.nobukti');
+                                $join->on('invoiceemkldetail.id', '=', 'door.invoiceemkldetail_id');
+                                $join->on('door.biayaemkl_id', '=', DB::raw($paramdoor));
+                            })                            
+                            ->leftJoin(db::raw("invoiceemkldetailrincianbiaya kawal with (readuncommitted)"), function ($join)  use ($paramkawal) {
+                                $join->on('invoiceemkldetail.nobukti', '=', 'kawal.nobukti');
+                                $join->on('invoiceemkldetail.id', '=', 'kawal.invoiceemkldetail_id');
+                                $join->on('kawal.biayaemkl_id', '=', DB::raw($paramkawal));
+                            })                            
+                            ->leftJoin(db::raw("invoiceemkldetailrincianbiaya buruh with (readuncommitted)"), function ($join)  use ($paramburuh) {
+                                $join->on('invoiceemkldetail.nobukti', '=', 'buruh.nobukti');
+                                $join->on('invoiceemkldetail.id', '=', 'buruh.invoiceemkldetail_id');
+                                $join->on('buruh.biayaemkl_id', '=', DB::raw($paramburuh));
+                            })                            
+                            ->leftJoin(db::raw("invoiceemkldetailrincianbiaya cleaning with (readuncommitted)"), function ($join)  use ($paramcleaning) {
+                                $join->on('invoiceemkldetail.nobukti', '=', 'cleaning.nobukti');
+                                $join->on('invoiceemkldetail.id', '=', 'cleaning.invoiceemkldetail_id');
+                                $join->on('cleaning.biayaemkl_id', '=', DB::raw($paramcleaning));
+                            })                            
+                            ->leftJoin(db::raw("invoiceemkldetailrincianbiaya dokumen with (readuncommitted)"), function ($join)  use ($paramdokumen) {
+                                $join->on('invoiceemkldetail.nobukti', '=', 'dokumen.nobukti');
+                                $join->on('invoiceemkldetail.id', '=', 'dokumen.invoiceemkldetail_id');
+                                $join->on('dokumen.biayaemkl_id', '=', DB::raw($paramdokumen));
+                            })                              
+                            ->leftJoin(db::raw("invoiceemkldetailrincianbiaya lain with (readuncommitted)"), function ($join)  use ($paramlain) {
+                                $join->on('invoiceemkldetail.nobukti', '=', 'lain.nobukti');
+                                $join->on('invoiceemkldetail.id', '=', 'lain.invoiceemkldetail_id');
+                                $join->on('lain.biayaemkl_id', '=', DB::raw($paramlain));
+                            })                              
+
+                            ->where('invoiceemkldetail.invoiceemkl_id', request()->invoiceemkl_id);
+                    } else {
+                        // dd('test');
+                        $query->select(
+                            db::raw("b.nocont +' / '+b.noseal as keterangan"),
+                            db::raw("b.lokasibongkarmuat as lokasi"),
+                            db::raw("isnull(lain.nominal,0) as biayalain"),
+                            db::raw("isnull(lain.keterangan,'') as keteranganbiayalain"),
+                            db::raw("invoiceemkldetail.nominal as nominal"),
+                        )
+                            ->join(db::raw("jobemkl as b with (readuncommitted)"), 'invoiceemkldetail.jobemkl_nobukti', 'b.nobukti')
+                            // ->join(db::raw("invoiceemkldetailrincianbiaya as c with (readuncommitted)"), 'invoiceemkldetail.id', 'c.id')
+                            ->leftJoin(db::raw("invoiceemkldetailrincianbiaya lain with (readuncommitted)"), function ($join)  use ($paramlain) {
+                                $join->on('invoiceemkldetail.nobukti', '=', 'lain.nobukti');
+                                $join->on('invoiceemkldetail.id', '=', 'lain.invoiceemkldetail_id');
+                                $join->on('lain.biayaemkl_id', '=', DB::raw($paramlain));
+                            })                               
+                            ->where('invoiceemkldetail.invoiceemkl_id', request()->invoiceemkl_id);
+                    }
+                }
             }
         } else {
             $query->select(

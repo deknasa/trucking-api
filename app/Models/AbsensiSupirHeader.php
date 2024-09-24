@@ -78,31 +78,32 @@ class AbsensiSupirHeader extends MyModel
             ->where('a.subgrp', 'STATUS APPROVAL')
             ->where('a.text', 'NON APPROVAL')
             ->first()->memo ?? '';
-        
-        $petik ='"';
-        $url = config('app.url_fe').'kasgantungheader';
+
+        $petik = '"';
+        $url = config('app.url_fe') . 'kasgantungheader';
 
         $absensisupirproses = DB::table("absensisupirproses")
             ->from(DB::raw("absensisupirproses with (readuncommitted)"))
             ->select(
-                DB::raw("
+                DB::raw(
+                    "
                 absensisupirproses.absensi_id,
                 absensisupirproses.nobukti,
                 STRING_AGG(cast(absensisupirproses.kasgantung_nobukti  as nvarchar(max)), ', ') as kasgantung_nobukti,
-                STRING_AGG(cast('<a href=$petik".$url."?tgldari='+(format(absensisupirheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(absensisupirheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+absensisupirproses.kasgantung_nobukti+'$petik class=$petik link-color $petik target=$petik _blank $petik title=$petik '+absensisupirproses.kasgantung_nobukti+' $petik>'+absensisupirproses.kasgantung_nobukti+'</a>'  as nvarchar(max)), ',') as url"
-                ))
-            ->join(DB::raw("absensisupirheader with (readuncommitted)"),'absensisupirproses.absensi_id','absensisupirheader.id')    
-            ->groupBy("absensisupirproses.absensi_id","absensisupirproses.nobukti");
+                STRING_AGG(cast('<a href=$petik" . $url . "?tgldari='+(format(absensisupirheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(absensisupirheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+absensisupirproses.kasgantung_nobukti+'$petik class=$petik link-color $petik target=$petik _blank $petik title=$petik '+absensisupirproses.kasgantung_nobukti+' $petik>'+absensisupirproses.kasgantung_nobukti+'</a>'  as nvarchar(max)), ',') as url"
+                )
+            )
+            ->join(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirproses.absensi_id', 'absensisupirheader.id')
+            ->groupBy("absensisupirproses.absensi_id", "absensisupirproses.nobukti");
 
-            $tempurl = '##tempurl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($tempurl, function ($table) {
-                $table->bigInteger('id')->nullable();
-                $table->string('nobukti', 50)->nullable();
-                $table->longText('kasgantung_nobukti')->nullable();
-                $table->longText('url')->nullable();
-
-            }); 
-            DB::table($tempurl)->insertUsing(['id','nobukti', 'kasgantung_nobukti','url'], $absensisupirproses);
+        $tempurl = '##tempurl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempurl, function ($table) {
+            $table->bigInteger('id')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->longText('kasgantung_nobukti')->nullable();
+            $table->longText('url')->nullable();
+        });
+        DB::table($tempurl)->insertUsing(['id', 'nobukti', 'kasgantung_nobukti', 'url'], $absensisupirproses);
         $query = DB::table($this->table)->from(DB::raw("absensisupirheader with (readuncommitted)"))
             ->select(
                 'absensisupirheader.id',
@@ -173,7 +174,7 @@ class AbsensiSupirHeader extends MyModel
             // ->whereRaw("isnull(a.absen_id,0)=0")
             // ->whereRaw("isnull(c.nobukti,'')=''")
             // ->whereRaw("isnull(b.nobukti,'')='ABS 0002/V/2024'");
-    
+
             // dd($querybelumlengkap->get());
 
             $querybelumlengkap = db::table("absensisupirdetail")->from(db::raw("absensisupirdetail a with (readuncommitted)"))
@@ -198,16 +199,16 @@ class AbsensiSupirHeader extends MyModel
             // dd(db::table($tempbelumlengkap)->get());
             $query->leftjoin(db::raw($tempbelumlengkap . " as tempbelumlengkap"), 'absensisupirheader.nobukti', 'tempbelumlengkap.nobukti')
                 ->whereraw("isnull(tempbelumlengkap.nobukti,'')=''");
-            
+
             $absensisupir = '##absensisupir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($absensisupir, function ($table) {
                 $table->string('nobukti', 50)->nullable();
             });
             $queryabsensisupir = db::table("absensisupirheader")->from(db::raw("absensisupirheader a with (readuncommitted)"))
-            ->select('a.nobukti as nobukti')
-            ->leftjoin(db::raw("absensisupirapprovalheader b with (readuncommitted)"), 'a.nobukti', 'b.absensisupir_nobukti')
-            ->whereraw("isnull(b.absensisupir_nobukti,'')=''");
-            
+                ->select('a.nobukti as nobukti')
+                ->leftjoin(db::raw("absensisupirapprovalheader b with (readuncommitted)"), 'a.nobukti', 'b.absensisupir_nobukti')
+                ->whereraw("isnull(b.absensisupir_nobukti,'')=''");
+
             DB::table($absensisupir)->insertUsing([
                 'nobukti',
             ],  $queryabsensisupir);
@@ -1163,7 +1164,7 @@ class AbsensiSupirHeader extends MyModel
                 ];
                 $absensiSupirProses = (new AbsensiSupirProses())->processStore($absensiSupir, $absensiPorsess);
             } else {
-                $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->first();
+                $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->where('statusaktif', 1)->first();
 
                 $kasGantungRequest = [
                     "tglbukti" => $data['tglbukti'],
@@ -1345,7 +1346,7 @@ class AbsensiSupirHeader extends MyModel
                 ];
                 $absensiSupirProses = (new AbsensiSupirProses())->processStore($absensiSupir, $absensiPorsess);
             } else {
-                $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->first();
+                $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->where('statusaktif', 1)->first();
                 $kasGantungRequest = [
                     "tglbukti" => $data['tglbukti'],
                     "penerima" => null,

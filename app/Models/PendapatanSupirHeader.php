@@ -143,6 +143,7 @@ class PendapatanSupirHeader extends MyModel
 
             )
             ->where('tipe', '=', 'KAS')
+            ->where('statusaktif', 1)
             ->first();
 
 
@@ -1218,7 +1219,9 @@ class PendapatanSupirHeader extends MyModel
         $tglJatuhTempo[] = $data['tglbukti'];
         $nominalDetailPengeluaran[] = $totalPengeluaran;
         $coaDebetPengeluaran[] = $memoDebet['JURNAL'];
-        $keteranganDetailPengeluaran[] = "$parameterKeterangan->text " . $data['tgldari'] . " s/d " . $data['tglsampai'];
+        
+        $namasupir = db::table('supir')->from(db::raw("supir with (readuncommitted)"))->where('id', $pendapatanSupirHeader->supir_id)->first()->namasupir ?? '';
+        $keteranganDetailPengeluaran[] = "$parameterKeterangan->text $namasupir " . $data['tgldari'] . " s/d " . $data['tglsampai'];
         if ($data['bank_id'] != '') {
 
             if ($data['bank_id'] == 1) {
@@ -1399,7 +1402,9 @@ class PendapatanSupirHeader extends MyModel
         $tglJatuhTempo[] = $pendapatanSupirHeader->tglbukti;
         $nominalDetailPengeluaran[] = $totalPengeluaran;
         $coaDebetPengeluaran[] = $memoDebet['JURNAL'];
-        $keteranganDetailPengeluaran[] = "$parameterKeterangan->text " . $data['tgldari'] . " s/d " . $data['tglsampai'];
+        $namasupir = db::table('supir')->from(db::raw("supir with (readuncommitted)"))->where('id', $pendapatanSupirHeader->supir_id)->first()->namasupir ?? '';
+        
+        $keteranganDetailPengeluaran[] = "$parameterKeterangan->text $namasupir " . $data['tgldari'] . " s/d " . $data['tglsampai'];
 
         $cekBank = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'BANK')
             ->first();

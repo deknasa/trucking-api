@@ -92,6 +92,7 @@ class InvoiceHeaderController extends Controller
                 'nominalextra' => $requestData['nominalextra'],
                 'omset' => $requestData['omset'],
                 'keterangan' => $requestData['keterangan'],
+                'kapal' => $requestData['kapal'],
                 'agen' => $request->agen,
                 'jenisorder' => $request->jenisorder
             ];
@@ -156,6 +157,7 @@ class InvoiceHeaderController extends Controller
                 'nominalextra' => $requestData['nominalextra'],
                 'omset' => $requestData['omset'],
                 'keterangan' => $requestData['keterangan'],
+                'kapal' => $requestData['kapal'],
                 'agen' => $request->agen,
                 'jenisorder' => $request->jenisorder
             ];
@@ -746,7 +748,13 @@ class InvoiceHeaderController extends Controller
                     'index' => 'keterangan'
                 ]
             ];
-
+            if($invoice_Header->cabang == 'MEDAN' && $invoice_Header->coa=='01.03.02.01'){
+                $detail_columns[] =
+                [
+                    'label' => 'KAPAL',
+                    'index' => 'kapal'
+                ];
+            }
             //LOOPING HEADER       
             foreach ($header_columns as $header_column) {
                 $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
@@ -780,17 +788,22 @@ class InvoiceHeaderController extends Controller
             ];
 
             // $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF1F456E');
-            $sheet->getStyle("A$detail_table_header_row:M$detail_table_header_row")->applyFromArray($styleArray);
-
+            if($invoice_Header->cabang == 'MEDAN' && $invoice_Header->coa=='01.03.02.01'){
+                $sheet->getStyle("A$detail_table_header_row:N$detail_table_header_row")->applyFromArray($styleArray)->getFont()->setBold(true);                
+                $sheet->getStyle("A$detail_table_header_row:N$detail_table_header_row")->getAlignment()->setHorizontal('center');
+            }else{
+                $sheet->getStyle("A$detail_table_header_row:M$detail_table_header_row")->applyFromArray($styleArray)->getFont()->setBold(true);
+                $sheet->getStyle("A$detail_table_header_row:M$detail_table_header_row")->getAlignment()->setHorizontal('center');
+            }
             // LOOPING DETAIL
             $jumlah = 0;
             foreach ($invoice_Detail as $response_index => $response_detail) {
 
-                foreach ($detail_columns as $detail_columns_index => $detail_column) {
-                    $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : $response_index + 1);
-                    $sheet->getStyle("A$detail_table_header_row:M$detail_table_header_row")->getFont()->setBold(true);
-                    $sheet->getStyle("A$detail_table_header_row:M$detail_table_header_row")->getAlignment()->setHorizontal('center');
-                }
+                // foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                //     $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : $response_index + 1);
+                //     $sheet->getStyle("A$detail_table_header_row:M$detail_table_header_row")->getFont()->setBold(true);
+                //     $sheet->getStyle("A$detail_table_header_row:M$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                // }
 
                 $tglSp = ($response_detail->tglsp != null) ? Date::PHPToExcel(date('Y-m-d', strtotime($response_detail->tglsp))) : '';
 
@@ -809,8 +822,14 @@ class InvoiceHeaderController extends Controller
                 $sheet->setCellValue("M$detail_start_row", $response_detail->keterangan);
 
                 $sheet->getColumnDimension('M')->setWidth(30);
+                
+                if($invoice_Header->cabang == 'MEDAN' && $invoice_Header->coa=='01.03.02.01'){
+                    $sheet->setCellValue("N$detail_start_row", $response_detail->kapal);
+                    $sheet->getStyle("A$detail_start_row:N$detail_start_row")->applyFromArray($styleArray);
+                }else{
+                    $sheet->getStyle("A$detail_start_row:M$detail_start_row")->applyFromArray($styleArray);
+                }
 
-                $sheet->getStyle("A$detail_start_row:M$detail_start_row")->applyFromArray($styleArray);
                 $sheet->getStyle("B$detail_start_row")->getNumberFormat()->setFormatCode('dd-mm-yyyy');
                 $sheet->getStyle("J$detail_start_row:L$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
                 $detail_start_row++;
@@ -835,6 +854,7 @@ class InvoiceHeaderController extends Controller
             $sheet->getColumnDimension('J')->setAutoSize(true);
             $sheet->getColumnDimension('K')->setAutoSize(true);
             $sheet->getColumnDimension('L')->setAutoSize(true);
+            $sheet->getColumnDimension('N')->setAutoSize(true);
 
             $writer = new Xlsx($spreadsheet);
             $filename = 'Laporan Invoice ' . date('dmYHis');

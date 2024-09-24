@@ -12,7 +12,7 @@ use Intervention\Image\ImageManagerStatic as Image;
 
 class App
 {
-    function getFormat(string $format, int $lastRow, int $bulan, string  $tglbukti, int  $tujuan = 0, int  $cabang = 0, int  $jenisbiaya = 0, int $marketing = 0)
+    function getFormat(string $format, int $lastRow, int $bulan, string  $tglbukti, int  $tujuan = 0, int  $cabang = 0, int  $jenisbiaya = 0, int $marketing = 0, int $statusformat = 0)
     {
 
 
@@ -76,6 +76,7 @@ class App
          * Change dynamic text format
          */
         // dd($tglbukti);
+        $formatangka='';
         foreach ($dynamicTexts as $index => $dynamicText) {
             switch (str_replace(' ', '', $dynamicText)) {
                 case 'R':
@@ -98,7 +99,14 @@ class App
                     break;
                 case is_numeric($dynamicText):
                     $dynamicText = str_replace(' ', '', $dynamicText);
-                    $dynamicTexts[$index] = sprintf('%0' . strlen($dynamicText) . 'd', $lastRow + 1);
+                    if ($statusformat!=0) {
+                        $dynamicTexts[$index] =$dynamicText;
+                        $formatangka=$formatangka.$dynamicText;
+                    } else {
+                        $dynamicTexts[$index] = sprintf('%0' . strlen($dynamicText) . 'd', $lastRow + 1);
+               
+                    }
+                    
                     break;
                 default:
                     # code...
@@ -124,10 +132,22 @@ class App
                 $dynamicIterator++;
             }
         }
-
-        $result = join($separatedResults);
+        if ($statusformat!=0) {
+            $nobukti = join($separatedResults);
+            $format=$formatangka;
+            $result = [
+                [
+                    'nobukti' => $nobukti,
+                    'formatangka' => $format,
+                ], 
+            ];
+           
+        } else {
+            $result = join($separatedResults);
+        }
         return $result;
     }
+    
 
     public function runningNumber(string $format, int $lastRow, int $bulan, string  $tglbukti, string $table, int  $tujuan = 0, int  $cabang = 0, int  $jenisbiaya = 0, int $marketing = 0): string
     {

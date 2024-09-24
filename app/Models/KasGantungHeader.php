@@ -142,6 +142,7 @@ class KasGantungHeader extends MyModel
 
             )
             ->where('tipe', '=', 'KAS')
+            ->where('statusaktif', 1)
             ->first();
 
         DB::table($tempdefault)->insert(
@@ -581,7 +582,7 @@ class KasGantungHeader extends MyModel
             $tglJatuhTempo[] = $data['tglbukti'];
             $coaKredit[] = $data['coakredit'][$i] ?? $coakaskeluar;
             $coaDebet[] = $data['coadebet'][$i] ?? $memo['JURNAL'];
-            $keterangan_detail[] = $data['keterangan_detail'][$i];
+            $keterangan_detail[] = "($kasgantungHeader->nobukti) " . $data['keterangan_detail'][$i];
             $nominal[] = $data['nominal'][$i];
         }
         $prosesLain = $data['proseslain'] ?? '';
@@ -738,7 +739,7 @@ class KasGantungHeader extends MyModel
             $tglJatuhTempo[] = $data['tglbukti'];
             $coaKredit[] = $data['coakredit'][$i] ?? $coakaskeluar;
             $coaDebet[] = $data['coadebet'][$i] ?? $memo['JURNAL'];
-            $keterangan_detail[] = $data['keterangan_detail'][$i];
+            $keterangan_detail[] = "($kasgantungHeader->nobukti) " . $data['keterangan_detail'][$i];
             $nominal[] = $data['nominal'][$i];
 
             $total += $data['nominal'][$i];

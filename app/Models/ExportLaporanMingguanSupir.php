@@ -18,6 +18,16 @@ class ExportLaporanMingguanSupir extends Model
 
         $parameter = new Parameter();
         $statusjenislaporan =  $parameter->cekId('JENIS RINCIAN MINGGUAN', 'JENIS RINCIAN MINGGUAN', 'NORMAL') ?? 0;
+        $cabang =  $parameter->cekText('CABANG', 'CABANG') ?? 0;
+        if ($cabang == 'MEDAN') {
+            $jenislaporan = $parameter->cekId('JENIS RINCIAN MINGGUAN', 'JENIS RINCIAN MINGGUAN', 'NORMAL') ?? 0;
+        } else {
+            if ($cabang != 'MAKASSAR') {
+                $jenislaporan = $parameter->cekId('JENIS RINCIAN MINGGUAN', 'JENIS RINCIAN MINGGUAN', 'DETAIL') ?? 0;
+            }
+                
+    
+        }
 
 
         if ($tradodari == 0) {
@@ -113,7 +123,8 @@ class ExportLaporanMingguanSupir extends Model
 
         // dd($statusjenislaporan,$jenislaporan);
 
-
+        $parameter = new Parameter();
+        $cabang = $parameter->cekText('CABANG', 'CABANG') ?? 0;
         if ($statusjenislaporan == $jenislaporan) {
 
             $tempDataextra = '##tempDataextra' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -146,150 +157,295 @@ class ExportLaporanMingguanSupir extends Model
                 'biayaextrasupir_keterangan',
             ], $queryextra);
 
-
-            $queryTempdata = DB::table("gajisupirheader")->from(
-                DB::raw("gajisupirheader as a with (readuncommitted)")
-            )
-
-                ->select(
-                    'c.nobukti',
-                    'c.tglbukti',
-                    'd.kodetrado as nopol',
-                    'gandengan.keterangan as gandengan',
-                    'e.namasupir',
-                    DB::raw("ltrim(rtrim(isnull(f.kodekota ,'')))+'-'+ltrim(rtrim(isnull(g.kodekota,''))) +
-                    (case when isnull(c.penyesuaian,'')<>'' then ' ( '+isnull(c.penyesuaian,'')+' )' else '' end)
-                    as rute"),
-                    DB::raw("isnull(h.kodecontainer,'') as qty"),
-                    DB::raw("isnull(i.namapelanggan,'') as lokasimuat"),
-                    // DB::raw("ltrim(rtrim(isnull(c.nocont,'')))+' / '+ltrim(rtrim(isnull(c.noseal,''))) as nocontseal"),
-                    DB::raw("ltrim(rtrim(isnull(c.nocont,'')))+ (case when c.container_id=3 then ','+c.nocont2 else '' end) + (case when isnull(c.noseal,'')!='' then ' / '+ltrim(rtrim(isnull(c.noseal,''))) else '' end) as nocontseal"),
-                    DB::raw("isnull(j.namaagen,'') as emkl"),
-                    DB::raw("(case when c.statuscontainer_id =$fullId then c.nosp else '' end) as spfull"),
-                    DB::raw("(case when c.statuscontainer_id =$emptyId then c.nosp else '' end) as spempty"),
-                    DB::raw("(case when c.statuscontainer_id =$fullEmptyId then c.nosp else '' end) as spfullempty"),
-                    DB::raw("isnull(C.jobtrucking,'') as jobtrucking"),
-                    // db::raw("(case when b.urutextra=1 then isnull(c.gajisupir,0) else 0 end) as gajisupir"),
-                    db::raw("b.gajisupir as gajisupir"),
-                    DB::raw("isnull(k.nobukti,'') as nobuktiebs"),
-                    DB::raw("isnull(A.nobukti,'') as nobuktiric"),
-                    DB::raw("isnull(l.pengeluaran_nobukti,'') as pengeluarannobuktiebs"),
-                    DB::raw("isnull(b.komisisupir,0) as komisisupir"),
-                    DB::raw("isnull(b.gajikenek,0) as gajikenek"),
-                    DB::raw("isnull(b.voucher,0) as voucher"),
-                    DB::raw("isnull(b.novoucher,'') as novoucher"),
-                    DB::raw("isnull(b.gajiritasi,0) as gajiritasi"),
-                    DB::raw("isnull(m.statusritasi,'') as ketritasi"),
-                    // db::raw("row_number() Over( partition by a.nobukti Order By c.nobukti,c.tglbukti) as urutric"),
-                    db::raw("b.nourut as urutric"),
-                    DB::raw("isnull(c.omset,0) as omset"),
-                    DB::raw("isnull(b.biayatambahan,0) as biayatambahan"),
-                    DB::raw("isnull(b.keteranganbiayatambahan,'') as keteranganbiayatambahan"),
-                    db::raw("isnull(p.biayaextrasupir_nobukti,'') as biayaextrasupir_nobukti"),
-                    db::raw("isnull(p.biayaextrasupir_nominal,0) as biayaextrasupir_nominal"),
-                    db::raw("isnull(p.biayaextrasupir_keterangan,'') as biayaextrasupir_keterangan"),
-                    // 'b.biayaextrasupir_nobukti',
-                    // DB::raw("isnull(b.nominalbiayaextrasupir,0) as biayaextrasupir_nominal"),
-                    // 'b.keteranganbiayaextrasupir as biayaextrasupir_keterangan',
-                    'b.urutextra',
-                    db::raw("(trim(c.nobukti)+trim(a.nobukti)) as suratpengantarric")
-
+            if ($cabang == 'MEDAN') {
+                $queryTempdata = DB::table("suratpengantar")->from(
+                    DB::raw("suratpengantar as c with (readuncommitted)")
                 )
-                ->join(DB::raw("gajisupirdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
-                ->join(DB::raw("suratpengantar as c with (readuncommitted) "), 'b.suratpengantar_nobukti', 'c.nobukti')
-                ->leftjoin(DB::raw("gandengan with (readuncommitted) "), 'c.gandengan_id', 'gandengan.id')
-                ->leftjoin(DB::raw("trado as d with (readuncommitted) "), 'c.trado_id', 'd.id')
-                ->leftjoin(DB::raw("supir as e with (readuncommitted) "), 'c.supir_id', 'e.id')
-                ->leftjoin(DB::raw("kota as f with (readuncommitted) "), 'c.dari_id', 'f.id')
-                ->leftjoin(DB::raw("kota as g with (readuncommitted) "), 'c.sampai_id', 'g.id')
-                ->leftjoin(DB::raw("container as h with (readuncommitted) "), 'c.container_id', 'h.id')
-                ->leftjoin(DB::raw("pelanggan as i with (readuncommitted) "), 'c.pelanggan_id', 'i.id')
-                ->leftjoin(DB::raw("agen as j with (readuncommitted) "), 'c.agen_id', 'j.id')
-                ->leftjoin(DB::raw("prosesgajisupirdetail as k with (readuncommitted) "), 'a.nobukti', 'k.gajisupir_nobukti')
-                ->leftjoin(DB::raw("prosesgajisupirheader as l with (readuncommitted) "), 'k.nobukti', 'l.nobukti')
-                ->leftjoin(DB::raw("$tempritasi as m with (readuncommitted) "), 'b.ritasi_nobukti', 'm.nobukti')
-                // ->leftjoin(DB::raw("dataritasi as n with (readuncommitted) "), 'm.dataritasi_id', 'n.id')
-                // ->leftjoin(DB::raw("parameter as o with (readuncommitted) "), 'n.statusritasi', 'o.id')
-                ->leftjoin(DB::raw($tempDataextra . " as p with (readuncommitted) "), 'c.nobukti', 'p.nobukti')
-                ->whereRaw("(c.tglbukti >= '$dari' and c.tglbukti <= '$sampai')")
-                ->whereraw("(c.trado_id>=$tradodari")
-                ->whereraw("c.trado_id<=$tradosampai)")
-                ->where('b.urutextra', 1)
-                ->orderBy("d.kodetrado", "asc")
-                ->orderBy("e.namasupir", "asc")
-                ->orderBy("c.tglbukti", "asc")
-                ->orderBy("c.nobukti", "asc");
+
+                    ->select(
+                        'c.nobukti',
+                        'c.tglbukti',
+                        'd.kodetrado as nopol',
+                        'gandengan.keterangan as gandengan',
+                        'e.namasupir',
+                        DB::raw("ltrim(rtrim(isnull(f.kodekota ,'')))+'-'+ltrim(rtrim(isnull(g.kodekota,''))) +
+                        (case when isnull(c.penyesuaian,'')<>'' then ' ( '+isnull(c.penyesuaian,'')+' )' else '' end)
+                        as rute"),
+                        DB::raw("isnull(h.kodecontainer,'') as qty"),
+                        DB::raw("isnull(i.namapelanggan,'') as lokasimuat"),
+                        // DB::raw("ltrim(rtrim(isnull(c.nocont,'')))+' / '+ltrim(rtrim(isnull(c.noseal,''))) as nocontseal"),
+                        DB::raw("ltrim(rtrim(isnull(c.nocont,'')))+ (case when c.container_id=3 then ','+c.nocont2 else '' end) + (case when isnull(c.noseal,'')!='' then ' / '+ltrim(rtrim(isnull(c.noseal,''))) else '' end) as nocontseal"),
+                        DB::raw("isnull(j.namaagen,'') as emkl"),
+                        DB::raw("(case when c.statuscontainer_id =$fullId then c.nosp else '' end) as spfull"),
+                        DB::raw("(case when c.statuscontainer_id =$emptyId then c.nosp else '' end) as spempty"),
+                        DB::raw("(case when c.statuscontainer_id =$fullEmptyId then c.nosp else '' end) as spfullempty"),
+                        DB::raw("isnull(C.jobtrucking,'') as jobtrucking"),
+                        // db::raw("(case when b.urutextra=1 then isnull(c.gajisupir,0) else 0 end) as gajisupir"),
+                        db::raw("isnull(b.gajisupir,0) as gajisupir"),
+                        DB::raw("isnull(k.nobukti,'') as nobuktiebs"),
+                        DB::raw("isnull(A.nobukti,'') as nobuktiric"),
+                        DB::raw("isnull(l.pengeluaran_nobukti,'') as pengeluarannobuktiebs"),
+                        DB::raw("isnull(b.komisisupir,0) as komisisupir"),
+                        DB::raw("isnull(b.gajikenek,0) as gajikenek"),
+                        DB::raw("isnull(b.voucher,0) as voucher"),
+                        DB::raw("isnull(b.novoucher,'') as novoucher"),
+                        DB::raw("isnull(b.gajiritasi,0) as gajiritasi"),
+                        DB::raw("isnull(m.statusritasi,'') as ketritasi"),
+                        // db::raw("row_number() Over( partition by a.nobukti Order By c.nobukti,c.tglbukti) as urutric"),
+                        db::raw("b.nourut as urutric"),
+                        DB::raw("isnull(c.omset,0) as omset"),
+                        DB::raw("isnull(b.biayatambahan,0) as biayatambahan"),
+                        DB::raw("isnull(b.keteranganbiayatambahan,'') as keteranganbiayatambahan"),
+                        db::raw("isnull(p.biayaextrasupir_nobukti,'') as biayaextrasupir_nobukti"),
+                        db::raw("isnull(p.biayaextrasupir_nominal,0) as biayaextrasupir_nominal"),
+                        db::raw("isnull(p.biayaextrasupir_keterangan,'') as biayaextrasupir_keterangan"),
+                        // 'b.biayaextrasupir_nobukti',
+                        // DB::raw("isnull(b.nominalbiayaextrasupir,0) as biayaextrasupir_nominal"),
+                        // 'b.keteranganbiayaextrasupir as biayaextrasupir_keterangan',
+                        db::raw("isnull(b.urutextra,1) as urutextra"),
+                        db::raw("(trim(c.nobukti)+trim(a.nobukti)) as suratpengantarric")
+
+                    )
+                    ->leftjoin(DB::raw("gajisupirdetail as b with (readuncommitted) "), 'c.nobukti', 'b.suratpengantar_nobukti')
+                    ->leftjoin(DB::raw("gajisupirheader as a with (readuncommitted) "), 'b.nobukti', 'a.nobukti')
+                    ->leftjoin(DB::raw("gandengan with (readuncommitted) "), 'c.gandengan_id', 'gandengan.id')
+                    ->leftjoin(DB::raw("trado as d with (readuncommitted) "), 'c.trado_id', 'd.id')
+                    ->leftjoin(DB::raw("supir as e with (readuncommitted) "), 'c.supir_id', 'e.id')
+                    ->leftjoin(DB::raw("kota as f with (readuncommitted) "), 'c.dari_id', 'f.id')
+                    ->leftjoin(DB::raw("kota as g with (readuncommitted) "), 'c.sampai_id', 'g.id')
+                    ->leftjoin(DB::raw("container as h with (readuncommitted) "), 'c.container_id', 'h.id')
+                    ->leftjoin(DB::raw("pelanggan as i with (readuncommitted) "), 'c.pelanggan_id', 'i.id')
+                    ->leftjoin(DB::raw("agen as j with (readuncommitted) "), 'c.agen_id', 'j.id')
+                    ->leftjoin(DB::raw("prosesgajisupirdetail as k with (readuncommitted) "), 'a.nobukti', 'k.gajisupir_nobukti')
+                    ->leftjoin(DB::raw("prosesgajisupirheader as l with (readuncommitted) "), 'k.nobukti', 'l.nobukti')
+                    ->leftjoin(DB::raw("$tempritasi as m with (readuncommitted) "), 'b.ritasi_nobukti', 'm.nobukti')
+                    // ->leftjoin(DB::raw("dataritasi as n with (readuncommitted) "), 'm.dataritasi_id', 'n.id')
+                    // ->leftjoin(DB::raw("parameter as o with (readuncommitted) "), 'n.statusritasi', 'o.id')
+                    ->leftjoin(DB::raw($tempDataextra . " as p with (readuncommitted) "), 'c.nobukti', 'p.nobukti')
+                    ->whereRaw("(c.tglbukti >= '$dari' and c.tglbukti <= '$sampai')")
+                    ->whereraw("(c.trado_id>=$tradodari")
+                    ->whereraw("c.trado_id<=$tradosampai)")
+                    ->whereraw("isnull(b.urutextra,1)=1")
+                    ->orderBy("d.kodetrado", "asc")
+                    ->orderBy("e.namasupir", "asc")
+                    ->orderBy("c.tglbukti", "asc")
+                    ->orderBy("c.nobukti", "asc");
+            } else {
+                $queryTempdata = DB::table("gajisupirheader")->from(
+                    DB::raw("gajisupirheader as a with (readuncommitted)")
+                )
+
+                    ->select(
+                        'c.nobukti',
+                        'c.tglbukti',
+                        'd.kodetrado as nopol',
+                        'gandengan.keterangan as gandengan',
+                        'e.namasupir',
+                        DB::raw("ltrim(rtrim(isnull(f.kodekota ,'')))+'-'+ltrim(rtrim(isnull(g.kodekota,''))) +
+                        (case when isnull(c.penyesuaian,'')<>'' then ' ( '+isnull(c.penyesuaian,'')+' )' else '' end)
+                        as rute"),
+                        DB::raw("isnull(h.kodecontainer,'') as qty"),
+                        DB::raw("isnull(i.namapelanggan,'') as lokasimuat"),
+                        // DB::raw("ltrim(rtrim(isnull(c.nocont,'')))+' / '+ltrim(rtrim(isnull(c.noseal,''))) as nocontseal"),
+                        DB::raw("ltrim(rtrim(isnull(c.nocont,'')))+ (case when c.container_id=3 then ','+c.nocont2 else '' end) + (case when isnull(c.noseal,'')!='' then ' / '+ltrim(rtrim(isnull(c.noseal,''))) else '' end) as nocontseal"),
+                        DB::raw("isnull(j.namaagen,'') as emkl"),
+                        DB::raw("(case when c.statuscontainer_id =$fullId then c.nosp else '' end) as spfull"),
+                        DB::raw("(case when c.statuscontainer_id =$emptyId then c.nosp else '' end) as spempty"),
+                        DB::raw("(case when c.statuscontainer_id =$fullEmptyId then c.nosp else '' end) as spfullempty"),
+                        DB::raw("isnull(C.jobtrucking,'') as jobtrucking"),
+                        // db::raw("(case when b.urutextra=1 then isnull(c.gajisupir,0) else 0 end) as gajisupir"),
+                        db::raw("b.gajisupir as gajisupir"),
+                        DB::raw("isnull(k.nobukti,'') as nobuktiebs"),
+                        DB::raw("isnull(A.nobukti,'') as nobuktiric"),
+                        DB::raw("isnull(l.pengeluaran_nobukti,'') as pengeluarannobuktiebs"),
+                        DB::raw("isnull(b.komisisupir,0) as komisisupir"),
+                        DB::raw("isnull(b.gajikenek,0) as gajikenek"),
+                        DB::raw("isnull(b.voucher,0) as voucher"),
+                        DB::raw("isnull(b.novoucher,'') as novoucher"),
+                        DB::raw("isnull(b.gajiritasi,0) as gajiritasi"),
+                        DB::raw("isnull(m.statusritasi,'') as ketritasi"),
+                        // db::raw("row_number() Over( partition by a.nobukti Order By c.nobukti,c.tglbukti) as urutric"),
+                        db::raw("b.nourut as urutric"),
+                        DB::raw("isnull(c.omset,0) as omset"),
+                        DB::raw("isnull(b.biayatambahan,0) as biayatambahan"),
+                        DB::raw("isnull(b.keteranganbiayatambahan,'') as keteranganbiayatambahan"),
+                        db::raw("isnull(p.biayaextrasupir_nobukti,'') as biayaextrasupir_nobukti"),
+                        db::raw("isnull(p.biayaextrasupir_nominal,0) as biayaextrasupir_nominal"),
+                        db::raw("isnull(p.biayaextrasupir_keterangan,'') as biayaextrasupir_keterangan"),
+                        // 'b.biayaextrasupir_nobukti',
+                        // DB::raw("isnull(b.nominalbiayaextrasupir,0) as biayaextrasupir_nominal"),
+                        // 'b.keteranganbiayaextrasupir as biayaextrasupir_keterangan',
+                        'b.urutextra',
+                        db::raw("(trim(c.nobukti)+trim(a.nobukti)) as suratpengantarric")
+
+                    )
+                    ->join(DB::raw("gajisupirdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+                    ->join(DB::raw("suratpengantar as c with (readuncommitted) "), 'b.suratpengantar_nobukti', 'c.nobukti')
+                    ->leftjoin(DB::raw("gandengan with (readuncommitted) "), 'c.gandengan_id', 'gandengan.id')
+                    ->leftjoin(DB::raw("trado as d with (readuncommitted) "), 'c.trado_id', 'd.id')
+                    ->leftjoin(DB::raw("supir as e with (readuncommitted) "), 'c.supir_id', 'e.id')
+                    ->leftjoin(DB::raw("kota as f with (readuncommitted) "), 'c.dari_id', 'f.id')
+                    ->leftjoin(DB::raw("kota as g with (readuncommitted) "), 'c.sampai_id', 'g.id')
+                    ->leftjoin(DB::raw("container as h with (readuncommitted) "), 'c.container_id', 'h.id')
+                    ->leftjoin(DB::raw("pelanggan as i with (readuncommitted) "), 'c.pelanggan_id', 'i.id')
+                    ->leftjoin(DB::raw("agen as j with (readuncommitted) "), 'c.agen_id', 'j.id')
+                    ->leftjoin(DB::raw("prosesgajisupirdetail as k with (readuncommitted) "), 'a.nobukti', 'k.gajisupir_nobukti')
+                    ->leftjoin(DB::raw("prosesgajisupirheader as l with (readuncommitted) "), 'k.nobukti', 'l.nobukti')
+                    ->leftjoin(DB::raw("$tempritasi as m with (readuncommitted) "), 'b.ritasi_nobukti', 'm.nobukti')
+                    // ->leftjoin(DB::raw("dataritasi as n with (readuncommitted) "), 'm.dataritasi_id', 'n.id')
+                    // ->leftjoin(DB::raw("parameter as o with (readuncommitted) "), 'n.statusritasi', 'o.id')
+                    ->leftjoin(DB::raw($tempDataextra . " as p with (readuncommitted) "), 'c.nobukti', 'p.nobukti')
+                    ->whereRaw("(c.tglbukti >= '$dari' and c.tglbukti <= '$sampai')")
+                    ->whereraw("(c.trado_id>=$tradodari")
+                    ->whereraw("c.trado_id<=$tradosampai)")
+                    ->where('b.urutextra', 1)
+                    ->orderBy("d.kodetrado", "asc")
+                    ->orderBy("e.namasupir", "asc")
+                    ->orderBy("c.tglbukti", "asc")
+                    ->orderBy("c.nobukti", "asc");
+            }
         } else {
 
 
-            $queryTempdata = DB::table("gajisupirheader")->from(
-                DB::raw("gajisupirheader as a with (readuncommitted)")
-            )
-
-                ->select(
-                    'c.nobukti',
-                    'c.tglbukti',
-                    'd.kodetrado as nopol',
-                    'gandengan.keterangan as gandengan',
-                    'e.namasupir',
-                    DB::raw("ltrim(rtrim(isnull(f.kodekota ,'')))+'-'+ltrim(rtrim(isnull(g.kodekota,''))) +
-                    (case when isnull(c.penyesuaian,'')<>'' then ' ( '+isnull(c.penyesuaian,'')+' )' else '' end)
-                    as rute"),
-                    DB::raw("isnull(h.kodecontainer,'') as qty"),
-                    DB::raw("isnull(i.namapelanggan,'') as lokasimuat"),
-                    // DB::raw("ltrim(rtrim(isnull(c.nocont,'')))+' / '+ltrim(rtrim(isnull(c.noseal,''))) as nocontseal"),                    
-                    DB::raw("ltrim(rtrim(isnull(c.nocont,'')))+ (case when c.container_id=3 then ','+c.nocont2 else '' end) + (case when isnull(c.noseal,'')!='' then ' / '+ltrim(rtrim(isnull(c.noseal,''))) else '' end) as nocontseal"),
-                    DB::raw("isnull(j.namaagen,'') as emkl"),
-                    DB::raw("(case when c.statuscontainer_id =$fullId then c.nosp else '' end) as spfull"),
-                    DB::raw("(case when c.statuscontainer_id =$emptyId then c.nosp else '' end) as spempty"),
-                    DB::raw("(case when c.statuscontainer_id =$fullEmptyId then c.nosp else '' end) as spfullempty"),
-                    DB::raw("isnull(C.jobtrucking,'') as jobtrucking"),
-                    // db::raw("(case when b.urutextra=1 then isnull(c.gajisupir,0) else 0 end) as gajisupir"),
-                    db::raw("b.gajisupir as gajisupir"),
-                    DB::raw("isnull(k.nobukti,'') as nobuktiebs"),
-                    DB::raw("isnull(A.nobukti,'') as nobuktiric"),
-                    DB::raw("isnull(l.pengeluaran_nobukti,'') as pengeluarannobuktiebs"),
-                    DB::raw("isnull(b.komisisupir,0) as komisisupir"),
-                    DB::raw("isnull(b.gajikenek,0) as gajikenek"),
-                    DB::raw("isnull(b.voucher,0) as voucher"),
-                    DB::raw("isnull(b.novoucher,'') as novoucher"),
-                    DB::raw("isnull(b.gajiritasi,0) as gajiritasi"),
-                    DB::raw("isnull(m.statusritasi,'') as ketritasi"),
-                    // db::raw("row_number() Over( partition by a.nobukti Order By c.nobukti,c.tglbukti) as urutric"),
-                    db::raw("b.nourut as urutric"),
-                    DB::raw("isnull(c.omset,0) as omset"),
-                    DB::raw("isnull(b.biayatambahan,0) as biayatambahan"),
-                    DB::raw("isnull(b.keteranganbiayatambahan,'') as keteranganbiayatambahan"),
-                    db::raw("isnull(b.biayaextrasupir_nobukti,'') as biayaextrasupir_nobukti"),
-                    db::raw("isnull(b.nominalbiayaextrasupir,0) as biayaextrasupir_nominal"),
-                    db::raw("isnull(b.keteranganbiayaextrasupir,'') as biayaextrasupir_keterangan"),
-                    // 'b.biayaextrasupir_nobukti',
-                    // DB::raw("isnull(b.nominalbiayaextrasupir,0) as biayaextrasupir_nominal"),
-                    // 'b.keteranganbiayaextrasupir as biayaextrasupir_keterangan',
-                    'b.urutextra',
-                    db::raw("(trim(c.nobukti)+trim(a.nobukti)) as suratpengantarric")
-
+            if ($cabang == 'MEDAN') {
+                $queryTempdata = DB::table("suratpengantar")->from(
+                    DB::raw("suratpengantar as c with (readuncommitted)")
                 )
-                ->join(DB::raw("gajisupirdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
-                ->join(DB::raw("suratpengantar as c with (readuncommitted) "), 'b.suratpengantar_nobukti', 'c.nobukti')
-                ->leftjoin(DB::raw("gandengan with (readuncommitted) "), 'c.gandengan_id', 'gandengan.id')
-                ->leftjoin(DB::raw("trado as d with (readuncommitted) "), 'c.trado_id', 'd.id')
-                ->leftjoin(DB::raw("supir as e with (readuncommitted) "), 'c.supir_id', 'e.id')
-                ->leftjoin(DB::raw("kota as f with (readuncommitted) "), 'c.dari_id', 'f.id')
-                ->leftjoin(DB::raw("kota as g with (readuncommitted) "), 'c.sampai_id', 'g.id')
-                ->leftjoin(DB::raw("container as h with (readuncommitted) "), 'c.container_id', 'h.id')
-                ->leftjoin(DB::raw("pelanggan as i with (readuncommitted) "), 'c.pelanggan_id', 'i.id')
-                ->leftjoin(DB::raw("agen as j with (readuncommitted) "), 'c.agen_id', 'j.id')
-                ->leftjoin(DB::raw("prosesgajisupirdetail as k with (readuncommitted) "), 'a.nobukti', 'k.gajisupir_nobukti')
-                ->leftjoin(DB::raw("prosesgajisupirheader as l with (readuncommitted) "), 'k.nobukti', 'l.nobukti')
-                ->leftjoin(DB::raw("$tempritasi as m with (readuncommitted) "), 'b.ritasi_nobukti', 'm.nobukti')
-                ->whereRaw("(c.tglbukti >= '$dari' and c.tglbukti <= '$sampai')")
-                ->whereraw("(c.trado_id>=$tradodari")
-                ->whereraw("c.trado_id<=$tradosampai)")
-                ->orderBy("d.kodetrado", "asc")
-                ->orderBy("e.namasupir", "asc")
-                ->orderBy("c.tglbukti", "asc")
-                ->orderBy("c.nobukti", "asc");
+
+                    ->select(
+                        'c.nobukti',
+                        'c.tglbukti',
+                        'd.kodetrado as nopol',
+                        'gandengan.keterangan as gandengan',
+                        'e.namasupir',
+                        DB::raw("ltrim(rtrim(isnull(f.kodekota ,'')))+'-'+ltrim(rtrim(isnull(g.kodekota,''))) +
+                        (case when isnull(c.penyesuaian,'')<>'' then ' ( '+isnull(c.penyesuaian,'')+' )' else '' end)
+                        as rute"),
+                        DB::raw("isnull(h.kodecontainer,'') as qty"),
+                        DB::raw("isnull(i.namapelanggan,'') as lokasimuat"),
+                        // DB::raw("ltrim(rtrim(isnull(c.nocont,'')))+' / '+ltrim(rtrim(isnull(c.noseal,''))) as nocontseal"),                    
+                        DB::raw("ltrim(rtrim(isnull(c.nocont,'')))+ (case when c.container_id=3 then ','+c.nocont2 else '' end) + (case when isnull(c.noseal,'')!='' then ' / '+ltrim(rtrim(isnull(c.noseal,''))) else '' end) as nocontseal"),
+                        DB::raw("isnull(j.namaagen,'') as emkl"),
+                        DB::raw("(case when c.statuscontainer_id =$fullId then c.nosp else '' end) as spfull"),
+                        DB::raw("(case when c.statuscontainer_id =$emptyId then c.nosp else '' end) as spempty"),
+                        DB::raw("(case when c.statuscontainer_id =$fullEmptyId then c.nosp else '' end) as spfullempty"),
+                        DB::raw("isnull(C.jobtrucking,'') as jobtrucking"),
+                        // db::raw("(case when b.urutextra=1 then isnull(c.gajisupir,0) else 0 end) as gajisupir"),
+                        db::raw("isnull(b.gajisupir,0) as gajisupir"),
+                        DB::raw("isnull(k.nobukti,'') as nobuktiebs"),
+                        DB::raw("isnull(A.nobukti,'') as nobuktiric"),
+                        DB::raw("isnull(l.pengeluaran_nobukti,'') as pengeluarannobuktiebs"),
+                        DB::raw("isnull(b.komisisupir,0) as komisisupir"),
+                        DB::raw("isnull(b.gajikenek,0) as gajikenek"),
+                        DB::raw("isnull(b.voucher,0) as voucher"),
+                        DB::raw("isnull(b.novoucher,'') as novoucher"),
+                        DB::raw("isnull(b.gajiritasi,0) as gajiritasi"),
+                        DB::raw("isnull(m.statusritasi,'') as ketritasi"),
+                        // db::raw("row_number() Over( partition by a.nobukti Order By c.nobukti,c.tglbukti) as urutric"),
+                        db::raw("b.nourut as urutric"),
+                        DB::raw("isnull(c.omset,0) as omset"),
+                        DB::raw("isnull(b.biayatambahan,0) as biayatambahan"),
+                        DB::raw("isnull(b.keteranganbiayatambahan,'') as keteranganbiayatambahan"),
+                        db::raw("isnull(b.biayaextrasupir_nobukti,'') as biayaextrasupir_nobukti"),
+                        db::raw("isnull(b.nominalbiayaextrasupir,0) as biayaextrasupir_nominal"),
+                        db::raw("isnull(b.keteranganbiayaextrasupir,'') as biayaextrasupir_keterangan"),
+                        // 'b.biayaextrasupir_nobukti',
+                        // DB::raw("isnull(b.nominalbiayaextrasupir,0) as biayaextrasupir_nominal"),
+                        // 'b.keteranganbiayaextrasupir as biayaextrasupir_keterangan',
+                        db::raw("isnull(b.urutextra,1) as urutextra"),
+                        db::raw("(trim(c.nobukti)+trim(a.nobukti)) as suratpengantarric")
+
+                    )
+                    ->leftjoin(DB::raw("gajisupirdetail as b with (readuncommitted) "), 'c.nobukti', 'b.suratpengantar_nobukti')
+                    ->leftjoin(DB::raw("gajisupirheader as a with (readuncommitted) "), 'b.nobukti', 'a.nobukti')
+                    ->leftjoin(DB::raw("gandengan with (readuncommitted) "), 'c.gandengan_id', 'gandengan.id')
+                    ->leftjoin(DB::raw("trado as d with (readuncommitted) "), 'c.trado_id', 'd.id')
+                    ->leftjoin(DB::raw("supir as e with (readuncommitted) "), 'c.supir_id', 'e.id')
+                    ->leftjoin(DB::raw("kota as f with (readuncommitted) "), 'c.dari_id', 'f.id')
+                    ->leftjoin(DB::raw("kota as g with (readuncommitted) "), 'c.sampai_id', 'g.id')
+                    ->leftjoin(DB::raw("container as h with (readuncommitted) "), 'c.container_id', 'h.id')
+                    ->leftjoin(DB::raw("pelanggan as i with (readuncommitted) "), 'c.pelanggan_id', 'i.id')
+                    ->leftjoin(DB::raw("agen as j with (readuncommitted) "), 'c.agen_id', 'j.id')
+                    ->leftjoin(DB::raw("prosesgajisupirdetail as k with (readuncommitted) "), 'a.nobukti', 'k.gajisupir_nobukti')
+                    ->leftjoin(DB::raw("prosesgajisupirheader as l with (readuncommitted) "), 'k.nobukti', 'l.nobukti')
+                    ->leftjoin(DB::raw("$tempritasi as m with (readuncommitted) "), 'b.ritasi_nobukti', 'm.nobukti')
+                    ->whereRaw("(c.tglbukti >= '$dari' and c.tglbukti <= '$sampai')")
+                    ->whereraw("(c.trado_id>=$tradodari")
+                    ->whereraw("c.trado_id<=$tradosampai)")
+                    ->orderBy("d.kodetrado", "asc")
+                    ->orderBy("e.namasupir", "asc")
+                    ->orderBy("c.tglbukti", "asc")
+                    ->orderBy("c.nobukti", "asc");
+            } else {
+                $queryTempdata = DB::table("gajisupirheader")->from(
+                    DB::raw("gajisupirheader as a with (readuncommitted)")
+                )
+
+                    ->select(
+                        'c.nobukti',
+                        'c.tglbukti',
+                        'd.kodetrado as nopol',
+                        'gandengan.keterangan as gandengan',
+                        'e.namasupir',
+                        DB::raw("ltrim(rtrim(isnull(f.kodekota ,'')))+'-'+ltrim(rtrim(isnull(g.kodekota,''))) +
+                        (case when isnull(c.penyesuaian,'')<>'' then ' ( '+isnull(c.penyesuaian,'')+' )' else '' end)
+                        as rute"),
+                        DB::raw("isnull(h.kodecontainer,'') as qty"),
+                        DB::raw("isnull(i.namapelanggan,'') as lokasimuat"),
+                        // DB::raw("ltrim(rtrim(isnull(c.nocont,'')))+' / '+ltrim(rtrim(isnull(c.noseal,''))) as nocontseal"),                    
+                        DB::raw("ltrim(rtrim(isnull(c.nocont,'')))+ (case when c.container_id=3 then ','+c.nocont2 else '' end) + (case when isnull(c.noseal,'')!='' then ' / '+ltrim(rtrim(isnull(c.noseal,''))) else '' end) as nocontseal"),
+                        DB::raw("isnull(j.namaagen,'') as emkl"),
+                        DB::raw("(case when c.statuscontainer_id =$fullId then c.nosp else '' end) as spfull"),
+                        DB::raw("(case when c.statuscontainer_id =$emptyId then c.nosp else '' end) as spempty"),
+                        DB::raw("(case when c.statuscontainer_id =$fullEmptyId then c.nosp else '' end) as spfullempty"),
+                        DB::raw("isnull(C.jobtrucking,'') as jobtrucking"),
+                        // db::raw("(case when b.urutextra=1 then isnull(c.gajisupir,0) else 0 end) as gajisupir"),
+                        db::raw("b.gajisupir as gajisupir"),
+                        DB::raw("isnull(k.nobukti,'') as nobuktiebs"),
+                        DB::raw("isnull(A.nobukti,'') as nobuktiric"),
+                        DB::raw("isnull(l.pengeluaran_nobukti,'') as pengeluarannobuktiebs"),
+                        DB::raw("isnull(b.komisisupir,0) as komisisupir"),
+                        DB::raw("isnull(b.gajikenek,0) as gajikenek"),
+                        DB::raw("isnull(b.voucher,0) as voucher"),
+                        DB::raw("isnull(b.novoucher,'') as novoucher"),
+                        DB::raw("isnull(b.gajiritasi,0) as gajiritasi"),
+                        DB::raw("isnull(m.statusritasi,'') as ketritasi"),
+                        // db::raw("row_number() Over( partition by a.nobukti Order By c.nobukti,c.tglbukti) as urutric"),
+                        db::raw("b.nourut as urutric"),
+                        DB::raw("isnull(c.omset,0) as omset"),
+                        DB::raw("isnull(b.biayatambahan,0) as biayatambahan"),
+                        DB::raw("isnull(b.keteranganbiayatambahan,'') as keteranganbiayatambahan"),
+                        db::raw("isnull(b.biayaextrasupir_nobukti,'') as biayaextrasupir_nobukti"),
+                        db::raw("isnull(b.nominalbiayaextrasupir,0) as biayaextrasupir_nominal"),
+                        db::raw("isnull(b.keteranganbiayaextrasupir,'') as biayaextrasupir_keterangan"),
+                        // 'b.biayaextrasupir_nobukti',
+                        // DB::raw("isnull(b.nominalbiayaextrasupir,0) as biayaextrasupir_nominal"),
+                        // 'b.keteranganbiayaextrasupir as biayaextrasupir_keterangan',
+                        'b.urutextra',
+                        db::raw("(trim(c.nobukti)+trim(a.nobukti)) as suratpengantarric")
+
+                    )
+                    ->join(DB::raw("gajisupirdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+                    ->join(DB::raw("suratpengantar as c with (readuncommitted) "), 'b.suratpengantar_nobukti', 'c.nobukti')
+                    ->leftjoin(DB::raw("gandengan with (readuncommitted) "), 'c.gandengan_id', 'gandengan.id')
+                    ->leftjoin(DB::raw("trado as d with (readuncommitted) "), 'c.trado_id', 'd.id')
+                    ->leftjoin(DB::raw("supir as e with (readuncommitted) "), 'c.supir_id', 'e.id')
+                    ->leftjoin(DB::raw("kota as f with (readuncommitted) "), 'c.dari_id', 'f.id')
+                    ->leftjoin(DB::raw("kota as g with (readuncommitted) "), 'c.sampai_id', 'g.id')
+                    ->leftjoin(DB::raw("container as h with (readuncommitted) "), 'c.container_id', 'h.id')
+                    ->leftjoin(DB::raw("pelanggan as i with (readuncommitted) "), 'c.pelanggan_id', 'i.id')
+                    ->leftjoin(DB::raw("agen as j with (readuncommitted) "), 'c.agen_id', 'j.id')
+                    ->leftjoin(DB::raw("prosesgajisupirdetail as k with (readuncommitted) "), 'a.nobukti', 'k.gajisupir_nobukti')
+                    ->leftjoin(DB::raw("prosesgajisupirheader as l with (readuncommitted) "), 'k.nobukti', 'l.nobukti')
+                    ->leftjoin(DB::raw("$tempritasi as m with (readuncommitted) "), 'b.ritasi_nobukti', 'm.nobukti')
+                    ->whereRaw("(c.tglbukti >= '$dari' and c.tglbukti <= '$sampai')")
+                    ->whereraw("(c.trado_id>=$tradodari")
+                    ->whereraw("c.trado_id<=$tradosampai)")
+                    ->orderBy("d.kodetrado", "asc")
+                    ->orderBy("e.namasupir", "asc")
+                    ->orderBy("c.tglbukti", "asc")
+                    ->orderBy("c.nobukti", "asc");
+            }
         }
 
 
@@ -375,8 +531,7 @@ class ExportLaporanMingguanSupir extends Model
 
 
 
-        $parameter = new Parameter();
-        $cabang = $parameter->cekText('CABANG', 'CABANG') ?? 0;
+
         $param1 = 1;
         if ($cabang == 'MAKASSAR') {
             $querytempuangjalan = DB::table("gajisupirheader")->from(
@@ -998,6 +1153,31 @@ class ExportLaporanMingguanSupir extends Model
             'keterangan',
         ], $querylist);
 
+        // 
+        $tempritasirekap = '##tempritasirekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempritasirekap, function ($table) {
+            $table->string('nobukti', 100)->nullable();
+            $table->double('gajiritasi', 15, 2)->nullable();
+            $table->longtext('ketritasi')->nullable();
+        });
+
+
+        $querylist = db::table('gajisupirdetail')->from(db::raw("gajisupirdetail a with (readuncommitted)"))
+            ->select(
+                'a.suratpengantar_nobukti as nobukti',
+                db::raw("sum(a.gajiritasi) as gajiritasi"),
+                db::raw("STRING_AGG(cast(trim(m.statusritasi) as nvarchar(max)), ', ') as ketritasi"),
+            )
+            ->join(db::raw($tempData . " b "),'a.suratpengantar_nobukti','b.nobukti')
+            ->join(DB::raw("$tempritasi as m with (readuncommitted) "), 'a.ritasi_nobukti', 'm.nobukti')
+            ->groupBY('a.suratpengantar_nobukti');
+
+        DB::table($tempritasirekap)->insertUsing([
+            'nobukti',
+            'gajiritasi',
+            'ketritasi',
+        ], $querylist);
+
 
         // dd(db::table($tempuangjalanrekap)->get());
 
@@ -1024,6 +1204,7 @@ class ExportLaporanMingguanSupir extends Model
             ], $queryuangjalanrekap);
 
 
+            // dd(db::table($tempritasirekap)->whereraw("nobukti='TRP 0227/VIII/2024'")->get());
 
             $data =  DB::table($tempData)->from(
                 DB::raw($tempData . " as a")
@@ -1079,9 +1260,9 @@ class ExportLaporanMingguanSupir extends Model
                     DB::raw("isnull(f.tolsupir,0) as tolsupir"),
                     DB::raw("0 as uangbon"),
                     DB::raw("isnull(A.pengeluarannobuktiebs,'') as nobuktikbtebs2"),
-                    DB::raw("isnull(a.gajiritasi,0) as ritasi"),
+                    DB::raw("isnull(j.gajiritasi,0) as ritasi"),
                     DB::raw("0 as extrabbm"),
-                    DB::raw("isnull(a.ketritasi,'') as ketritasi"),
+                    DB::raw("isnull(j.ketritasi,'') as ketritasi"),
                     // DB::raw("(case when a.urutextra=1 then
                     //     (case when isnull(a.urutric,0)=1 then isnull(d.nominaluangjalan,0) else 0 end) else 0 end) as uangjalan"),
                     // DB::raw("(case when a.urutextra=1 then
@@ -1135,6 +1316,7 @@ class ExportLaporanMingguanSupir extends Model
                 ->leftjoin(DB::raw($tempbuktikomisi . " as g "), 'a.nobukti', 'g.nobukti')
                 ->leftjoin(DB::raw($temprekapketeranganlain . " as h "), 'a.nobukti', 'h.nobukti')
                 ->leftjoin(DB::raw($tempInvoicetambahanrekap . " as i "), 'a.nobukti', 'i.suratpengantar')
+                ->leftjoin(DB::raw($tempritasirekap . " as j "), 'a.nobukti', 'j.nobukti')
                 ->orderBy('a.nopol')
                 ->orderBy('a.tglbukti')
                 ->orderBy('a.namasupir')
@@ -1269,17 +1451,17 @@ class ExportLaporanMingguanSupir extends Model
                 });
             // dd($cabang);
             if ($cabang == 'MAKASSAR') {
-                $data=
-                $data->leftJoin(DB::raw($tempuangjalanrekap . " as d "), function ($join) {
-                    $join->on(db::raw("isnull(a.suratpengantarric,'')"), '=', 'd.suratpengantar_nobukti');
-                })
+                $data =
+                    $data->leftJoin(DB::raw($tempuangjalanrekap . " as d "), function ($join) {
+                        $join->on(db::raw("isnull(a.suratpengantarric,'')"), '=', 'd.suratpengantar_nobukti');
+                    })
                     ->orderBy('a.nopol')
                     ->orderBy('a.tglbukti')
                     ->orderBy('a.namasupir')
                     ->orderby('a.nobukti', 'asc')
                     ->get();
             } else {
-                $data= $data->leftJoin(DB::raw($tempuangjalanrekap . " as d "), function ($join)  use ($paramurutextra) {
+                $data = $data->leftJoin(DB::raw($tempuangjalanrekap . " as d "), function ($join)  use ($paramurutextra) {
                     $join->on(db::raw("isnull(a.suratpengantarric,'')"), '=', 'd.suratpengantar_nobukti');
                     $join->on('a.urutextra', '=', DB::raw($paramurutextra));
                 })

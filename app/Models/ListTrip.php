@@ -16,6 +16,7 @@ class ListTrip extends MyModel
 
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $cekTanpaBatas = (new Parameter())->cekText('TANPA BATAS TRIP', 'TANPA BATAS TRIP');
 
         $jobmanual = (new Parameter())->cekText('JOB TRUCKING MANUAL', 'JOB TRUCKING MANUAL') ?? 'TIDAK';
         $aksi = request()->aksi;
@@ -218,82 +219,85 @@ class ListTrip extends MyModel
             }
         }
 
-        if ($trip->approvalbukatanggal_id > 0) {
-            $getTglBatasApproval = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip with (readuncommitted)"))
-                ->where('id', $trip->approvalbukatanggal_id)
-                ->first();
 
-            if (date('Y-m-d H:i:s') > date('Y-m-d H:i:s', strtotime($getTglBatasApproval->tglbatas))) {
-                if (date('Y-m-d H:i:s') > date('Y-m-d H:i:s', strtotime($trip->tglbataseditsuratpengantar))) {
-                    $keteranganerror = $error->cekKeteranganError('LB') ?? '';
-                    $data = [
-                        'kondisi' => true,
-                        'keterangan' => $keteranganerror . "<br> BATAS $aksi " . date('d-m-Y H:i:s', strtotime($trip->tglbataseditsuratpengantar)) . ' <br> ' . $keterangantambahanerror,
-                        'kodeerror' => 'LB',
-                    ];
+        if ($cekTanpaBatas == 'TIDAK') {
+            if ($trip->approvalbukatanggal_id > 0) {
+                $getTglBatasApproval = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip with (readuncommitted)"))
+                    ->where('id', $trip->approvalbukatanggal_id)
+                    ->first();
 
-                    goto selesai;
-                }
-            }
-        } else {
-            $tanggal = date('Y-m-d', strtotime($trip->tglbukti));
-
-            $batasHari = $getBatasHari;
-            $kondisi = true;
-            if ($getBatasHari != 0) {
-
-                while ($kondisi) {
-                    $cekHarilibur = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))
-                        ->where('tgl', $tanggal)
-                        ->first();
-                    $todayIsSunday = date('l', strtotime($tanggal));
-                    $tomorrowIsSunday = date('l', strtotime($tanggal . "+1 days"));
-                    if ($cekHarilibur == '') {
-                        $kondisi = false;
-                        $allowed = true;
-                        if (strtolower($todayIsSunday) == 'sunday') {
-                            $kondisi = true;
-                            $batasHari += 1;
-                        }
-                        if (strtolower($tomorrowIsSunday) == 'sunday') {
-                            $kondisi = true;
-                            $batasHari += 1;
-                        }
-                        if (strtolower($todayIsSunday) != 'sunday' && strtolower($tomorrowIsSunday) != 'sunday') {
-                            if ($batasHari > 1) {
-                                $batasHari -= 1;
-                            }
-                        }
-                    } else {
-                        $batasHari += 1;
-                    }
-                    $tanggal = date('Y-m-d', strtotime($trip->tglbukti . "+$batasHari days"));
-                }
-            }
-            $batas = $tanggal . ' ' . $getBatasInput;
-            if (date('Y-m-d H:i:s') > $batas) {
-                if ($trip->statusapprovaleditsuratpengantar == 3) {
+                if (date('Y-m-d H:i:s') > date('Y-m-d H:i:s', strtotime($getTglBatasApproval->tglbatas))) {
                     if (date('Y-m-d H:i:s') > date('Y-m-d H:i:s', strtotime($trip->tglbataseditsuratpengantar))) {
                         $keteranganerror = $error->cekKeteranganError('LB') ?? '';
-
                         $data = [
                             'kondisi' => true,
-                            'keterangan' =>  $keteranganerror . "<br> BATAS $aksi " . date('d-m-Y', strtotime($trip->tglbukti . "+$getBatasHari days")) . ' ' . $getBatasInput . ' <br> ' . $keterangantambahanerror,
+                            'keterangan' => $keteranganerror . "<br> BATAS $aksi " . date('d-m-Y H:i:s', strtotime($trip->tglbataseditsuratpengantar)) . ' <br> ' . $keterangantambahanerror,
                             'kodeerror' => 'LB',
                         ];
 
+                        goto selesai;
+                    }
+                }
+            } else {
+                $tanggal = date('Y-m-d', strtotime($trip->tglbukti));
+
+                $batasHari = $getBatasHari;
+                $kondisi = true;
+                if ($getBatasHari != 0) {
+
+                    while ($kondisi) {
+                        $cekHarilibur = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))
+                            ->where('tgl', $tanggal)
+                            ->first();
+                        $todayIsSunday = date('l', strtotime($tanggal));
+                        $tomorrowIsSunday = date('l', strtotime($tanggal . "+1 days"));
+                        if ($cekHarilibur == '') {
+                            $kondisi = false;
+                            $allowed = true;
+                            if (strtolower($todayIsSunday) == 'sunday') {
+                                $kondisi = true;
+                                $batasHari += 1;
+                            }
+                            if (strtolower($tomorrowIsSunday) == 'sunday') {
+                                $kondisi = true;
+                                $batasHari += 1;
+                            }
+                            // if (strtolower($todayIsSunday) != 'sunday' && strtolower($tomorrowIsSunday) != 'sunday') {
+                            //     if ($batasHari > 1) {
+                            //         $batasHari -= 1;
+                            //     }
+                            // }
+                        } else {
+                            $batasHari += 1;
+                        }
+                        $tanggal = date('Y-m-d', strtotime($trip->tglbukti . "+$batasHari days"));
+                    }
+                }
+                $batas = $tanggal . ' ' . $getBatasInput;
+                if (date('Y-m-d H:i:s') > $batas) {
+                    if ($trip->statusapprovaleditsuratpengantar == 3) {
+                        if (date('Y-m-d H:i:s') > date('Y-m-d H:i:s', strtotime($trip->tglbataseditsuratpengantar))) {
+                            $keteranganerror = $error->cekKeteranganError('LB') ?? '';
+
+                            $data = [
+                                'kondisi' => true,
+                                'keterangan' =>  $keteranganerror . "<br> BATAS $aksi " . date('d-m-Y', strtotime($trip->tglbukti . "+$getBatasHari days")) . ' ' . $getBatasInput . ' <br> ' . $keterangantambahanerror,
+                                'kodeerror' => 'LB',
+                            ];
+
+
+                            goto selesai;
+                        }
+                    } else {
+                        $keteranganerror = $error->cekKeteranganError('LB') ?? '';
+                        $data = [
+                            'kondisi' => true,
+                            'keterangan' => $keteranganerror . "<br> BATAS $aksi " . date('d-m-Y', strtotime($trip->tglbukti . "+$getBatasHari days")) . ' ' . $getBatasInput  . ' <br> ' . $keterangantambahanerror,
+                            'kodeerror' => 'LB',
+                        ];
 
                         goto selesai;
                     }
-                } else {
-                    $keteranganerror = $error->cekKeteranganError('LB') ?? '';
-                    $data = [
-                        'kondisi' => true,
-                        'keterangan' => $keteranganerror . "<br> BATAS $aksi " . date('d-m-Y', strtotime($trip->tglbukti . "+$getBatasHari days")) . ' ' . $getBatasInput  . ' <br> ' . $keterangantambahanerror,
-                        'kodeerror' => 'LB',
-                    ];
-
-                    goto selesai;
                 }
             }
         }
@@ -780,7 +784,8 @@ class ListTrip extends MyModel
                 $pelanggan_id = $data['pelanggan_id'];
                 $jenisorder_id = $data['jenisorder_id'];
                 $container_id = $data['container_id'];
-                DB::update(DB::raw("UPDATE SURATPENGANTAR SET nocont='$trip->nocont',nocont2='$trip->nocont2',noseal='$trip->noseal',noseal2='$trip->noseal2', agen_id='$agen_id', pelanggan_id='$pelanggan_id',container_id='$container_id',jenisorder_id='$jenisorder_id' where jobtrucking='$trip->jobtrucking'"));
+                $gandengan_id = $data['gandengan_id'];
+                DB::update(DB::raw("UPDATE SURATPENGANTAR SET nocont='$trip->nocont',nocont2='$trip->nocont2',noseal='$trip->noseal',noseal2='$trip->noseal2', agen_id='$agen_id', pelanggan_id='$pelanggan_id',container_id='$container_id',jenisorder_id='$jenisorder_id',gandengan_id='$gandengan_id' where jobtrucking='$trip->jobtrucking'"));
             }
         }
 
@@ -1227,11 +1232,17 @@ class ListTrip extends MyModel
                 if ($trip->container_id != $data['container_id'] || $trip->statuscontainer_id != $data['statuscontainer_id']) {
                     $nominalspr = $nominalSupir;
                     $nominalkenek = $upahsupirRincian->nominalkenek;
-                    $nominalkomisi = $trip->komisisupir;
+                    $nominalkomisi = $upahsupirRincian->nominalkomisi;
                 } else {
-                    $nominalspr = $nominalSupir;
-                    $nominalkenek = $trip->gajikenek;
-                    $nominalkomisi = $trip->komisisupir;
+                    if($trip->upah_id != $data['upah_id']){
+                        $nominalspr = $nominalSupir;
+                        $nominalkenek = $upahsupirRincian->nominalkenek;
+                        $nominalkomisi = $upahsupirRincian->nominalkomisi;
+                    } else {
+                        $nominalspr = $nominalSupir;
+                        $nominalkenek = $trip->gajikenek;
+                        $nominalkomisi = $trip->komisisupir;
+                    }
                 }
             }
         } else {

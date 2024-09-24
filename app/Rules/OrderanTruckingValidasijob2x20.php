@@ -4,6 +4,7 @@ namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
 use Illuminate\Support\Facades\DB;
 
 class OrderanTruckingValidasijob2x20 implements Rule
@@ -65,12 +66,17 @@ class OrderanTruckingValidasijob2x20 implements Rule
 
          
         if (isset($query) and $nojobemkl == '' and  request()->container_id==$container2x20->text  )  {
+            $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
             $getOrderan = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('id', request()->id)->first();
             $currentDate = date('Y-m-d H:i:s');
             if ($getOrderan->statusapprovaltanpajob == 3 && $currentDate <  date('Y-m-d H:i:s', strtotime($getOrderan->tglbatastanpajoborderantrucking))) {
                 $nilai = true;
             } else {
-                $nilai = false;
+                if($cabang != 'MEDAN' && $cabang != 'BITUNG'){
+                    $nilai = false;
+                }else{
+                    $nilai = true;
+                }
             }
         } else {
             $nilai = true;

@@ -1782,6 +1782,7 @@ class ReminderOli extends MyModel
             )
             ->leftjoin(db::raw("trado b with (readuncommitted)"), 'a.nopol', 'b.kodetrado')
             ->where('b.id', $trado_id)
+            ->where('b.statusaktif', 1)
             ->orderby('a.id', 'asc');
 
         //   dd($querysaldo->get());

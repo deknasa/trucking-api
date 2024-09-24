@@ -2504,6 +2504,8 @@ class PengeluaranTruckingHeader extends MyModel
                             }
                         }
                     }
+                    
+                    $nominalBiaya = $nominalBiaya + $data['nominal'][$i];
                 }
                 goto postingkas;
             }
@@ -3158,6 +3160,8 @@ class PengeluaranTruckingHeader extends MyModel
                             }
                         }
                     }
+                    
+                    $nominalBiaya = $nominalBiaya + $data['nominal'][$i];
                 }
                 goto postingkas;
             }

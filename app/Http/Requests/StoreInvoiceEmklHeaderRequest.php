@@ -33,35 +33,58 @@ class StoreInvoiceEmklHeaderRequest extends FormRequest
     public function rules()
     {
         $jumlahdetail = $this->jumlahdetail ?? 0;
-        $rules = [
-            'statusinvoice' => [
-                'required', 
-            ],
-            'statuspajak' => [
-                'required', 
-            ],
-            'kapal' => [
-                'required', 
-            ],
-            'destination' => [
-                'required', 
-            ],
-            'nobuktiinvoicepajak' => [
-                new validasiNoInvoicePajakEmkl()
-            ],
-            'tglbukti' => [
-                'required', 'date_format:d-m-Y',
-                new DateTutupBuku(),
-                'before_or_equal:' . date('d-m-Y'),
-            ],
-            'tgldari' => [
-                'required', 'date_format:d-m-Y', new validasiTglInvoiceEmkl()
-            ],
-            'tglsampai' => [
-                'required', 'date_format:d-m-Y', new validasiTglInvoiceEmkl()
-            ],
+        $jenisorder_id = $this->jenisorder_id;
 
-        ];
+        if ($jenisorder_id ==1) {
+            $rules = [
+                'statusinvoice' => [
+                    'required', 
+                ],
+                'statuspajak' => [
+                    'required', 
+                ],
+                'kapal' => [
+                    'required', 
+                ],
+                'destination' => [
+                    'required', 
+                ],
+                // 'nobuktiinvoicepajak' => [
+                //     new validasiNoInvoicePajakEmkl()
+                // ],
+                'tglbukti' => [
+                    'required', 'date_format:d-m-Y',
+                    new DateTutupBuku(),
+                    'before_or_equal:' . date('d-m-Y'),
+                ],
+                'tgldari' => [
+                    'required', 'date_format:d-m-Y', new validasiTglInvoiceEmkl()
+                ],
+                'tglsampai' => [
+                    'required', 'date_format:d-m-Y', new validasiTglInvoiceEmkl()
+                ],
+    
+            ];
+        } else {
+            $rules = [
+                'statusinvoice' => [
+                    'required', 
+                ],
+                'tglbukti' => [
+                    'required', 'date_format:d-m-Y',
+                    new DateTutupBuku(),
+                    'before_or_equal:' . date('d-m-Y'),
+                ],
+                'tgldari' => [
+                    'required', 'date_format:d-m-Y', new validasiTglInvoiceEmkl()
+                ],
+                'tglsampai' => [
+                    'required', 'date_format:d-m-Y', new validasiTglInvoiceEmkl()
+                ],
+    
+            ];
+        }
+     
         
 
         $pelanggan_id = $this->pelanggan_id;
@@ -116,7 +139,7 @@ class StoreInvoiceEmklHeaderRequest extends FormRequest
             ];
         }
 
-        $jenisorder_id = $this->jenisorder_id;
+
         $rulesjenisorder_id = [];
         if ($jenisorder_id != '' && $this->jenisorder != '') {
             $rulesjenisorder_id = [
@@ -171,12 +194,22 @@ class StoreInvoiceEmklHeaderRequest extends FormRequest
         ];
 
         foreach ($relatedRequests as $relatedRequest) {
-            $rules = array_merge(
-                $rules,
-                (new $relatedRequest)->rules(), 
-                $rulesPelanggan_id,
-                $rulesjenisorder_id,
-            );
+            if ($jenisorder_id ==1) {
+                $rules = array_merge(
+                    $rules,
+                    (new $relatedRequest)->rules(), 
+                    $rulesPelanggan_id,
+                    $rulesjenisorder_id,
+                );
+    
+            } else {
+                $rules = array_merge(
+                    $rules,
+                    (new $relatedRequest)->rules(), 
+                    $rulesjenisorder_id,
+                );
+    
+            }
         }
         return $rules;
     }

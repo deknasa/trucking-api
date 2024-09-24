@@ -123,6 +123,7 @@ class PengembalianKasGantungHeader extends MyModel
 
             )
             ->where('tipe', '=', 'KAS')
+            ->where('statusaktif', 1)
             ->first();
 
         DB::table($tempdefault)->insert(

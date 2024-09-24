@@ -1507,7 +1507,7 @@ class UpahSupir extends MyModel
             if ($connecTnl) {
                 $upahsupirDetail->setConnection('srvtnl');
             }
-            $upahsupirDetail::where('upahsupir_id', $upahsupir->id)->delete();
+            $upahsupirDetail->where('upahsupir_id', $upahsupir->id)->delete();
             /* Store detail */
             $detaillog = [];
             for ($i = 0; $i < count($data['nominalsupir']); $i++) {

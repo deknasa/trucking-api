@@ -4,6 +4,7 @@ namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
 use Illuminate\Support\Facades\DB;
 
 class OrderanTruckingValidasinoseal2x20 implements Rule
@@ -53,6 +54,7 @@ class OrderanTruckingValidasinoseal2x20 implements Rule
 
        
         $noseal = request()->noseal2 ?? '';
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
         if ($noseal == '' and  request()->container_id==$container2x20->text  )  {
             if ($this->kondisi == true){
                 $nilai = true;
@@ -72,7 +74,9 @@ class OrderanTruckingValidasinoseal2x20 implements Rule
 
             
         }
-
+        if($cabang == 'MEDAN'){
+            $nilai = true;
+        }
         return $nilai;
     }
 

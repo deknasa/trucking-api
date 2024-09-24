@@ -52,6 +52,7 @@ class InvoiceEmklHeaderController extends Controller
      */
     public function store(StoreInvoiceEmklHeaderRequest $request): JsonResponse
     {
+        // dd('test');
         DB::beginTransaction();
 
         try {
@@ -60,6 +61,7 @@ class InvoiceEmklHeaderController extends Controller
                 'tglbukti' => $request->tglbukti,
                 'pelanggan_id' => $request->pelanggan_id,
                 'jenisorder_id' => $request->jenisorder_id,
+                'tujuan_id' => $request->tujuan_id,
                 'jenisorder' => $request->jenisorder,
                 'statusinvoice' => $request->statusinvoice,
                 'tgldari' => $request->tgldari,
@@ -73,7 +75,9 @@ class InvoiceEmklHeaderController extends Controller
                 'nominal' => $requestData['nominal'],
                 'nojobemkl' => $requestData['nojobemkl'],
                 'keterangan_detail' => $requestData['keterangan_detail'],
+                "keterangan_biaya" => $requestData['keterangan_biaya'],      
             ];
+            // dd($data);
             $invoiceEmklHeader = (new InvoiceEmklHeader())->processStore($data);
             $invoiceEmklHeader->position = $this->getPosition($invoiceEmklHeader, $invoiceEmklHeader->getTable())->position;
             if ($request->limit == 0) {
@@ -120,6 +124,7 @@ class InvoiceEmklHeaderController extends Controller
                 'tglbukti' => $request->tglbukti,
                 'pelanggan_id' => $request->pelanggan_id,
                 'jenisorder_id' => $request->jenisorder_id,
+                'tujuan_id' => $request->tujuan_id,
                 'jenisorder' => $request->jenisorder,
                 'statusinvoice' => $request->statusinvoice,
                 'tgldari' => $request->tgldari,
@@ -133,6 +138,7 @@ class InvoiceEmklHeaderController extends Controller
                 'nominal' => $requestData['nominal'],
                 'nojobemkl' => $requestData['nojobemkl'],
                 'keterangan_detail' => $requestData['keterangan_detail'],
+                "keterangan_biaya" => $requestData['keterangan_biaya'],      
             ];
             $invoiceEmklHeader = (new InvoiceEmklHeader())->processUpdate($invoiceemklheader, $data);
             $invoiceEmklHeader->position = $this->getPosition($invoiceEmklHeader, $invoiceEmklHeader->getTable())->position;

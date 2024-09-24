@@ -52,6 +52,8 @@ class LaporanKalkulasiEmkl extends Model
             $table->longtext('jenisorder')->nullable();
             $table->longtext('marketing')->nullable();
             $table->longtext('kapal')->nullable();
+            $table->longtext('voy')->nullable();
+            $table->longtext('penerima')->nullable();
             $table->longtext('destination')->nullable();
             $table->longtext('nocontseal')->nullable();
             $table->longtext('lokasibongkarmuat')->nullable();
@@ -68,6 +70,8 @@ class LaporanKalkulasiEmkl extends Model
             db::raw("isnull(e.keterangan,'') as jenisorder"),
             db::raw("isnull(f.keterangan,'') as marketing"),
             'a.kapal',
+            db::raw("isnull(a.voy,'') as voy"),
+            db::raw("isnull(a.penerima,'') as penerima"),
             'a.destination',
             db::raw("trim(isnull(a.nocont,''))+' / '+trim(isnull(a.noseal,''))as nocontseal"),
             'a.lokasibongkarmuat',
@@ -91,6 +95,8 @@ class LaporanKalkulasiEmkl extends Model
             'jenisorder',
             'marketing',
             'kapal',
+            'voy',
+            'penerima',
             'destination',
             'nocontseal',
             'lokasibongkarmuat',
@@ -107,6 +113,8 @@ class LaporanKalkulasiEmkl extends Model
             $table->longtext('jenisorder')->nullable();
             $table->longtext('marketing')->nullable();
             $table->longtext('kapal')->nullable();
+            $table->longtext('voy')->nullable();
+            $table->longtext('penerima')->nullable();
             $table->longtext('destination')->nullable();
             $table->longtext('nocontseal')->nullable();
             $table->longtext('lokasibongkarmuat')->nullable();
@@ -125,6 +133,8 @@ class LaporanKalkulasiEmkl extends Model
                 'a.jenisorder',
                 'a.marketing',
                 'a.kapal',
+                'a.voy',
+                'a.penerima',
                 'a.destination',
                 'a.nocontseal',
                 'a.lokasibongkarmuat',
@@ -144,6 +154,8 @@ class LaporanKalkulasiEmkl extends Model
             'jenisorder',
             'marketing',
             'kapal',
+            'voy',
+            'penerima',
             'destination',
             'nocontseal',
             'lokasibongkarmuat',
@@ -179,11 +191,11 @@ class LaporanKalkulasiEmkl extends Model
                 'a.jenisorder',
                 'a.marketing',
                 'a.kapal',
+                'a.voy',
+                'a.penerima',
                 'a.destination',
                 'a.nocontseal',
                 'a.lokasibongkarmuat',   
-                db::raw("'' as penerima"),
-                db::raw("'' as voy"),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
                 DB::raw("upper('Job Emkl ". $jenisorderan." Bulan : ".$periode ."') as judulLaporan"),

@@ -21,6 +21,9 @@ class OrderanEmkl extends MyModel
         $jenisorder = request()->jenisorder_id ?? 0;
 
 
+        $getParameter = (new Parameter())->cekText('ORDERAN EMKL REPLICATION', 'ORDERAN EMKL REPLICATION');
+        $koneksi = ($getParameter == 'YA') ? 'sqlsrv' : 'sqlsrvemkl';
+
         if ($container == '1') {
             $containerid = '6,4,10';
         } elseif ($container == '2') {
@@ -49,7 +52,7 @@ class OrderanEmkl extends MyModel
         if ($proses == 'reload') {
             $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
 
-            $querydata = DB::connection('sqlsrvemkl')->table('listtemporarytabel')->from(
+            $querydata = DB::connection($koneksi)->table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel a with (readuncommitted)")
             )
                 ->select(
@@ -62,11 +65,11 @@ class OrderanEmkl extends MyModel
                 ->first();
 
             if (isset($querydata)) {
-                Schema::connection('sqlsrvemkl')->dropIfExists($querydata->namatabel);
-                DB::connection('sqlsrvemkl')->table('listtemporarytabel')->where('id', $querydata->id)->delete();
+                Schema::connection($koneksi)->dropIfExists($querydata->namatabel);
+                DB::connection($koneksi)->table('listtemporarytabel')->where('id', $querydata->id)->delete();
             }
 
-            DB::connection('sqlsrvemkl')->table('listtemporarytabel')->insert(
+            DB::connection($koneksi)->table('listtemporarytabel')->insert(
                 [
                     'class' => $class,
                     'namatabel' => $temtabel,
@@ -75,12 +78,15 @@ class OrderanEmkl extends MyModel
                     'updated_at' => date('Y/m/d H:i:s'),
                 ]
             );
-            Schema::connection('sqlsrvemkl')->create($temtabel, function (Blueprint $table) {
+            Schema::connection($koneksi)->create($temtabel, function (Blueprint $table) {
                 $table->string('nojob', 50)->nullable();
                 $table->date('tgl')->nullable();
                 $table->string('nocont', 1000)->nullable();
                 $table->string('noseal', 1000)->nullable();
+                $table->string('nospempty', 1000)->nullable();
+                $table->string('nospfull', 1000)->nullable();
                 $table->string('jenisorderan', 1000)->nullable();
+                $table->string('kapal', 1000)->nullable();
                 $table->longtext('pelanggan')->nullable();
                 $table->integer('fidcontainer')->nullable();
                 $table->longtext('fasalmuatan')->nullable();
@@ -88,24 +94,30 @@ class OrderanEmkl extends MyModel
 
 
             $temphasil = '##temphasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::connection('sqlsrvemkl')->create($temphasil, function (Blueprint $table) {
+            Schema::connection($koneksi)->create($temphasil, function (Blueprint $table) {
                 $table->string('nojob', 255)->nullable();
                 $table->date('tgl')->nullable();
                 $table->string('nocont', 1000)->nullable();
                 $table->string('noseal', 1000)->nullable();
+                $table->string('nospempty', 1000)->nullable();
+                $table->string('nospfull', 1000)->nullable();
                 $table->string('jenisorderan', 100)->nullable();
+                $table->string('kapal', 100)->nullable();
                 $table->string('pelanggan', 100)->nullable();
                 $table->integer('fidcontainer')->nullable();
                 $table->string('fasalmuatan', 100)->nullable();
             });
             if ($jenisorder == 'MUATAN') {
-                $query = DB::connection('sqlsrvemkl')->table('tpreorderanmuatan')->from(DB::raw("tpreorderanmuatan as orderan with (readuncommitted)"))
+                $query = DB::connection($koneksi)->table('tpreorderanmuatan')->from(DB::raw("tpreorderanmuatan as orderan with (readuncommitted)"))
                     ->select(
                         'orderan.fntrans as nojob',
                         'orderan.ftgl as tgl',
                         DB::raw("(case when isnull(c.FNtrans,'')='' then isnull(orderan.fnocont,'') else  isnull(c.fnocont,'') end) as nocont "),
                         DB::raw("(case when isnull(c.FNtrans,'')='' then isnull(orderan.fnoseal,'') else  isnull(c.fnoseal,'') end) as noseal "),
+                        'c.FNoSP as nospempty',
+                        'c.FNoSpFull as nospfull',
                         DB::raw("'MUATAN' AS jenisorderan"),
+                        DB::raw("'' AS kapal"),
                         'b.fnshipper as pelanggan',
                         'orderan.fidcontainer as fidcontainer',
                         DB::raw("'' as fasalmuatan")
@@ -113,12 +125,15 @@ class OrderanEmkl extends MyModel
                     ->join(DB::raw("mshipper b with (readuncommitted)"), 'orderan.fidshipper', 'b.fidtrans')
                     ->leftjoin(DB::raw("torderanMuatan c with (readuncommitted)"), 'orderan.FNtransorder', 'c.FNtrans');
 
-                DB::connection('sqlsrvemkl')->table($temphasil)->insertUsing([
+                    DB::connection($koneksi)->table($temphasil)->insertUsing([
                     'nojob',
                     'tgl',
                     'nocont',
                     'noseal',
+                    'nospempty',
+                    'nospfull',
                     'jenisorderan',
+                    'kapal',
                     'pelanggan',
                     'fidcontainer',
                     'fasalmuatan',
@@ -126,25 +141,31 @@ class OrderanEmkl extends MyModel
 
                 ], $query);
             } else if ($jenisorder == 'BONGKARAN') {
-                $query = db::connection('sqlsrvemkl')->table('torderanbongkaran')->from(DB::raw("torderanbongkaran as orderan with (readuncommitted)"))
+                $query = db::connection($koneksi)->table('torderanbongkaran')->from(DB::raw("torderanbongkaran as orderan with (readuncommitted)"))
                     ->select(
                         'orderan.fntrans as nojob',
                         'orderan.ftglproses as tgl',
                         'orderan.fnocont as nocont',
                         'orderan.fnoseal as noseal',
+                        'orderan.FNoSpEmpty as nospempty',
+                        'orderan.FNoSpFull as nospfull',
                         DB::raw("'BONGKARAN' AS jenisorderan"),
+                        DB::raw("'' AS kapal"),
                         'orderan.fshipper as pelanggan',
                         'orderan.fidukurancontainer as fidcontainer',
                         DB::raw("'' as fasalmuatan")
 
                     );
 
-                DB::connection('sqlsrvemkl')->table($temphasil)->insertUsing([
+                DB::connection($koneksi)->table($temphasil)->insertUsing([
                     'nojob',
                     'tgl',
                     'nocont',
                     'noseal',
+                    'nospempty',
+                    'nospfull',
                     'jenisorderan',
+                    'kapal',
                     'pelanggan',
                     'fidcontainer',
                     'fasalmuatan',
@@ -153,13 +174,14 @@ class OrderanEmkl extends MyModel
                 ], $query);
                 // dd('test'); 
 
-                $query = db::connection('sqlsrvemkl')->table('tpreorderanmuatan')->from(DB::raw("tpreorderanmuatan as orderan with (readuncommitted)"))
+                $query = db::connection($koneksi)->table('tpreorderanmuatan')->from(DB::raw("tpreorderanmuatan as orderan with (readuncommitted)"))
                     ->select(
                         'orderan.fntrans as nojob',
                         'orderan.ftgl as tgl',
                         'orderan.fnocont as nocont',
                         'orderan.fnoseal as noseal',
                         DB::raw("'MUATAN' AS jenisorderan"),
+                        DB::raw("'' AS kapal"),
                         'b.fnshipper as pelanggan',
                         'orderan.fidcontainer as fidcontainer',
                         DB::raw("isnull(orderan.fasalmuatan,'') as fasalmuatan")
@@ -171,12 +193,13 @@ class OrderanEmkl extends MyModel
                 // dd($query->toSql());
 
 
-                DB::connection('sqlsrvemkl')->table($temphasil)->insertUsing([
+                DB::connection($koneksi)->table($temphasil)->insertUsing([
                     'nojob',
                     'tgl',
                     'nocont',
                     'noseal',
                     'jenisorderan',
+                    'kapal',
                     'pelanggan',
                     'fidcontainer',
                     'fasalmuatan',
@@ -184,13 +207,16 @@ class OrderanEmkl extends MyModel
 
                 ], $query);
             } else if ($jenisorder == 'IMPORT') {
-                $query = db::connection('sqlsrvemkl')->table('torderanimportdetail')->from(DB::raw("torderanimportdetail as orderan with (readuncommitted)"))
+                $query = db::connection($koneksi)->table('torderanimportdetail')->from(DB::raw("torderanimportdetail as orderan with (readuncommitted)"))
                     ->select(
                         'orderan.fntrans as nojob',
                         'a.ftgl as tgl',
                         'orderan.fnocont as nocont',
                         'orderan.fnoseal as noseal',
+                        'orderan.FSPEmpty as nospempty',
+                        'orderan.FSPFull as nospfull',
                         DB::raw("'IMPORT' AS jenisorderan"),
+                        DB::raw("'' AS kapal"),
                         'b.fnshipper as pelanggan',
                         'orderan.fidcontainer as fidcontainer',
                         DB::raw("'' as fasalmuatan")
@@ -199,12 +225,15 @@ class OrderanEmkl extends MyModel
                     ->join(DB::raw("torderanimport a with (readuncommitted)"), 'orderan.fntrans', 'a.fntrans')
                     ->join(DB::raw("mshipper b with (readuncommitted)"), 'a.fidshipper', 'b.fidtrans');
 
-                DB::connection('sqlsrvemkl')->table($temphasil)->insertUsing([
+                DB::connection($koneksi)->table($temphasil)->insertUsing([
                     'nojob',
                     'tgl',
                     'nocont',
                     'noseal',
+                    'nospempty',
+                    'nospfull',
                     'jenisorderan',
+                    'kapal',
                     'pelanggan',
                     'fidcontainer',
                     'fasalmuatan',
@@ -212,13 +241,16 @@ class OrderanEmkl extends MyModel
 
                 ], $query);
             } else if ($jenisorder == 'EXPORT') {
-                $query = db::connection('sqlsrvemkl')->table('torderanexport')->from(DB::raw("torderanexport as orderan with (readuncommitted)"))
+                $query = db::connection($koneksi)->table('torderanexport')->from(DB::raw("torderanexport as orderan with (readuncommitted)"))
                     ->select(
                         'orderan.fntrans as nojob',
                         'orderan.ftgl as tgl',
                         'orderan.fnocont as nocont',
                         'orderan.fnoseal as noseal',
+                        'orderan.fnosp as nospempty',
+                        'orderan.fnospfull as nospfull',
                         DB::raw("'EXPORT' AS jenisorderan"),
+                        DB::raw("'' AS kapal"),
                         'b.fnshipper as pelanggan',
                         'orderan.fidcontainer as fidcontainer',
                         DB::raw("'' as fasalmuatan")
@@ -226,19 +258,22 @@ class OrderanEmkl extends MyModel
                     )
                     ->join(DB::raw("mshipper b with (readuncommitted)"), 'orderan.fidshipper', 'b.fidtrans');
 
-                DB::connection('sqlsrvemkl')->table($temphasil)->insertUsing([
+                DB::connection($koneksi)->table($temphasil)->insertUsing([
                     'nojob',
                     'tgl',
                     'nocont',
                     'noseal',
+                    'nospempty',
+                    'nospfull',
                     'jenisorderan',
+                    'kapal',
                     'pelanggan',
                     'fidcontainer',
                     'fasalmuatan',
 
                 ], $query);
             } else {
-                $query = db::connection('sqlsrvemkl')->table('tpreorderanmuatan')->from(DB::raw("tpreorderanmuatan as orderan with (readuncommitted)"))
+                $query = db::connection($koneksi)->table('tpreorderanmuatan')->from(DB::raw("tpreorderanmuatan as orderan with (readuncommitted)"))
                     ->select(
                         'orderan.fntrans as nojob',
                         'orderan.ftgl as tgl',
@@ -252,7 +287,7 @@ class OrderanEmkl extends MyModel
                     )
                     ->join(DB::raw("mshipper b with (readuncommitted)"), 'orderan.fidshipper', 'b.fidtrans');
 
-                DB::connection('sqlsrvemkl')->table($temphasil)->insertUsing([
+                DB::connection($koneksi)->table($temphasil)->insertUsing([
                     'nojob',
                     'tgl',
                     'nocont',
@@ -265,29 +300,35 @@ class OrderanEmkl extends MyModel
                 ], $query);
             }
 
-            $query = db::connection('sqlsrvemkl')->table($temphasil)
+            $query = db::connection($koneksi)->table($temphasil)
                 ->select(
                     'nojob',
                     'tgl',
                     'nocont',
                     'noseal',
+                    'nospempty',
+                    'nospfull',
                     'jenisorderan',
+                    'kapal',
                     'pelanggan',
                     'fidcontainer',
                     'fasalmuatan',
                 );
-            DB::connection('sqlsrvemkl')->table($temtabel)->insertUsing([
+            DB::connection($koneksi)->table($temtabel)->insertUsing([
                 'nojob',
                 'tgl',
                 'nocont',
                 'noseal',
+                'nospempty',
+                'nospfull',
                 'jenisorderan',
+                'kapal',
                 'pelanggan',
                 'fidcontainer',
                 'fasalmuatan',
             ], $query);
         } else {
-            $querydata = DB::connection('sqlsrvemkl')->table('listtemporarytabel')->from(
+            $querydata = DB::connection($koneksi)->table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel with (readuncommitted)")
             )
                 ->select(
@@ -301,7 +342,7 @@ class OrderanEmkl extends MyModel
             $temtabel = $querydata->namatabel;
         }
 
-        $query = DB::connection('sqlsrvemkl')->table($temtabel)->from(
+        $query = DB::connection($koneksi)->table($temtabel)->from(
             db::raw($temtabel . " orderan")
         )
             ->select(
@@ -309,7 +350,10 @@ class OrderanEmkl extends MyModel
                 'orderan.tgl',
                 'orderan.nocont',
                 'orderan.noseal',
+                'orderan.nospempty',
+                'orderan.nospfull',
                 'orderan.jenisorderan',
+                'orderan.kapal',
                 'orderan.pelanggan',
                 'orderan.fasalmuatan',
             );
@@ -346,7 +390,11 @@ class OrderanEmkl extends MyModel
 
     public function getjob($job)
     {
-        $query = db::connection('sqlsrvemkl')->table('tpreorderanmuatan')
+        
+        $getParameter = (new Parameter())->cekText('ORDERAN EMKL REPLICATION', 'ORDERAN EMKL REPLICATION');
+        $koneksi = ($getParameter == 'YA') ? 'sqlsrv' : 'sqlsrvemkl';
+
+        $query = db::connection($koneksi)->table('tpreorderanmuatan')
             ->from(DB::raw("tpreorderanmuatan as orderan with (readuncommitted)"))
             ->select('orderan.ftgl as tgl')
             ->where('orderan.fntrans', '=', $job)
@@ -357,7 +405,7 @@ class OrderanEmkl extends MyModel
             goto selesai;
         }
 
-        $query = db::connection('sqlsrvemkl')->table('torderanbongkaran')
+        $query = db::connection($koneksi)->table('torderanbongkaran')
             ->from(DB::raw("torderanbongkaran as orderan with (readuncommitted)"))
             ->select('orderan.ftglproses as tgl')
             ->where('orderan.fntrans', '=', $job)
@@ -368,7 +416,7 @@ class OrderanEmkl extends MyModel
             goto selesai;
         }
 
-        $query = db::connection('sqlsrvemkl')->table('torderanexport')
+        $query = db::connection($koneksi)->table('torderanexport')
             ->from(DB::raw("torderanexport as orderan with (readuncommitted)"))
             ->select('orderan.ftgl as tgl')
             ->where('orderan.fntrans', '=', $job)
@@ -379,7 +427,7 @@ class OrderanEmkl extends MyModel
             goto selesai;
         }
 
-        $query = db::connection('sqlsrvemkl')->table('torderanimport')
+        $query = db::connection($koneksi)->table('torderanimport')
             ->from(DB::raw("torderanimport as orderan with (readuncommitted)"))
             // ->select(DB::raw("cast(format(orderan.ftgl,'yyyy-MM-dd') as date) as tgl"))
             ->select('orderan.ftgl as tgl')

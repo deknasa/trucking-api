@@ -1010,7 +1010,7 @@ class LaporanNeraca extends MyModel
                 $table->string('diperiksa', 500)->nullable();
             });
 
-// dd((new LaporanDepositoSupir())->getReport($tglsd, '', 1)->get());
+            // dd((new LaporanDepositoSupir())->getReport($tglsd, '', 1)->get());
 
             DB::table($tempdepositosupir)->insertUsing([
                 'id',
@@ -1328,29 +1328,33 @@ class LaporanNeraca extends MyModel
             });
 
 
+            $parameter = new Parameter();
 
+            $cabang = $parameter->cekText('CABANG', 'CABANG') ?? '';
 
-            DB::table($tempstok)->insertUsing([
-                'header',
-                'judul',
-                'lokasi',
-                'namalokasi',
-                'kategori',
-                'tgldari',
-                'tglsampai',
-                'stokdari',
-                'stoksampai',
-                'vulkanisirke',
-                'id',
-                'kodebarang',
-                'namabarang',
-                'tanggal',
-                'qty',
-                'satuan',
-                'nilaisaldo',
-                'disetujui',
-                'diperiksa',
-            ], (new LaporanSaldoInventory())->getReport('', '', '', 186, 364, $tglsd, 0, 0, 1, 1,714));
+            if ($cabang != 'BITUNG-EMKL') {
+                DB::table($tempstok)->insertUsing([
+                    'header',
+                    'judul',
+                    'lokasi',
+                    'namalokasi',
+                    'kategori',
+                    'tgldari',
+                    'tglsampai',
+                    'stokdari',
+                    'stoksampai',
+                    'vulkanisirke',
+                    'id',
+                    'kodebarang',
+                    'namabarang',
+                    'tanggal',
+                    'qty',
+                    'satuan',
+                    'nilaisaldo',
+                    'disetujui',
+                    'diperiksa',
+                ], (new LaporanSaldoInventory())->getReport('', '', '', 186, 364, $tglsd, 0, 0, 1, 1, 714));
+            }
 
             //  dd(db::table($tempdepositosupir)->get());
             // dd('test');
