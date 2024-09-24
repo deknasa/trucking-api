@@ -88,7 +88,19 @@ class LaporanKartuHutangPerSupplier extends MyModel
 
         });
 
-        $queryhutangsaldo = db::table('hutangheader')->from(db::raw("hutangheader a with (readuncommitted)"))
+        if ($prosesneraca==1) {
+            $queryhutangsaldo = db::table('hutangheader')->from(db::raw("hutangheader a with (readuncommitted)"))
+            ->select(
+                'a.nobukti',
+                db::raw("sum(b.total) as nominal"),
+            )
+            ->join(db::raw("hutangdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->whereRaw("a.tglbukti<'" . $dari1 . "'")
+            ->whereRaw("a.coakredit='03.02.02.01'")
+            ->whereRaw("(a.supplier_id>=" . $supplierdari . " and a.supplier_id<=" . $suppliersampai . ")")
+            ->groupby('a.nobukti');
+        } else {
+            $queryhutangsaldo = db::table('hutangheader')->from(db::raw("hutangheader a with (readuncommitted)"))
             ->select(
                 'a.nobukti',
                 db::raw("sum(b.total) as nominal"),
@@ -97,6 +109,8 @@ class LaporanKartuHutangPerSupplier extends MyModel
             ->whereRaw("a.tglbukti<'" . $dari1 . "'")
             ->whereRaw("(a.supplier_id>=" . $supplierdari . " and a.supplier_id<=" . $suppliersampai . ")")
             ->groupby('a.nobukti');
+        }
+
 
         DB::table($temphutangsaldo)->insertUsing([
             'nobukti',
@@ -141,7 +155,19 @@ class LaporanKartuHutangPerSupplier extends MyModel
         ], $queryrekaphutang);
 
 
-        $queryrekaphutang = db::table("hutangheader")->from(db::raw("hutangheader a with (readuncommitted) "))
+        if ($prosesneraca==1) {
+            $queryrekaphutang = db::table("hutangheader")->from(db::raw("hutangheader a with (readuncommitted) "))
+            ->select(
+                'a.nobukti',
+                db::raw("sum(isnull(b.total,0)) as nominal"),
+            )
+            ->leftjoin(db::raw("hutangdetail b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+            ->whereRaw("(a.tglbukti>='" . $dari1 . "' and a.tglbukti<='" . $sampai . "')")
+            ->whereRaw("(a.supplier_id>=" . $supplierdari . " and a.supplier_id<=" . $suppliersampai . ")")
+            ->whereRaw("a.coakredit='03.02.02.01'")
+            ->groupby('a.nobukti');
+        } else {
+            $queryrekaphutang = db::table("hutangheader")->from(db::raw("hutangheader a with (readuncommitted) "))
             ->select(
                 'a.nobukti',
                 db::raw("sum(isnull(b.total,0)) as nominal"),
@@ -150,6 +176,8 @@ class LaporanKartuHutangPerSupplier extends MyModel
             ->whereRaw("(a.tglbukti>='" . $dari1 . "' and a.tglbukti<='" . $sampai . "')")
             ->whereRaw("(a.supplier_id>=" . $supplierdari . " and a.supplier_id<=" . $suppliersampai . ")")
             ->groupby('a.nobukti');
+        }
+
 
            
 
