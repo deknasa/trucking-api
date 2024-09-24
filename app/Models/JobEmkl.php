@@ -77,6 +77,10 @@ class JobEmkl extends MyModel
             // ->leftJoin(DB::raw("parameter AS param2 with (readuncommitted)"), 'jobemkl.statusperalihan', '=', 'param2.id')
             ->leftJoin(DB::raw("parameter AS param3 with (readuncommitted)"), 'jobemkl.statusapprovaledit', '=', 'param3.id');
         
+        if (request()->tgldari && request()->tglsampai) {
+            $query->whereBetween('jobemkl.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        
         if ($jenisorder_id != '') {
             $query->where('jobemkl.jenisorder_id',$jenisorder_id);
         }
