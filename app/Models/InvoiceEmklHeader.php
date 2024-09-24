@@ -341,9 +341,8 @@ class InvoiceEmklHeader extends MyModel
                 ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
                 ->where('a.jenisorder_id', $request->jenisorder_id)
                 ->where('a.shipper_id', $request->pelanggan_id);
-
         } else {
-            if ($statusinvoice == $invoiceUtamaId) {
+            if ($statusinvoice == $invoiceUtamaId->id) {
                 $queryhasil = DB::table('jobemkl')->from(
                     db::raw("jobemkl a with (readuncommitted)")
                 )
@@ -369,8 +368,8 @@ class InvoiceEmklHeader extends MyModel
                     // })                    
                     ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
                     ->where('a.tujuan_id', $request->tujuan_id)
-                    ->where('a.jenisorder_id', $request->jenisorder_id)
-                    ->whereraw("isnull(d.nobukti,'')=''");
+                    ->where('a.jenisorder_id', $request->jenisorder_id);
+                // ->whereraw("isnull(d.nobukti,'')=''");
             } else {
                 $queryhasil = DB::table('jobemkl')->from(
                     db::raw("jobemkl a with (readuncommitted)")
@@ -430,7 +429,7 @@ class InvoiceEmklHeader extends MyModel
             ->leftjoin(DB::raw($temphasil . " a1"), 'a.jobemkl_nobukti', 'a1.nojobemkl')
             ->join(DB::raw("jobemkl as b with (readuncommitted)"), 'a1.nojobemkl', 'b.nobukti')
             ->leftJoin(db::raw("pelanggan with (readuncommitted)"), 'b.shipper_id', 'pelanggan.id')
-            ->where('a.invoiceemkl_id', $request->id)
+            ->where('a.invoiceemkl_id', $id)
 
             ->orderBy("b.tglbukti");
 
@@ -446,7 +445,7 @@ class InvoiceEmklHeader extends MyModel
             'keterangan_detail'
         ], $query2);
 
-        // dd($query2->get());
+        // dd($query2->get(), db::table($temphasil)->get());
 
 
         $query2 = DB::table($temphasil)->from(
@@ -587,6 +586,31 @@ class InvoiceEmklHeader extends MyModel
             ];
             goto selesai;
         }
+        $getPengeluaran = db::table("invoiceemklheader")->from(db::raw("invoiceemklheader with (readuncommitted)"))
+            ->where('nobukti', $nobukti)
+            ->first();
+
+        $pelunasanPiutang = DB::table('pengeluaranheader')
+            ->from(
+                DB::raw("pengeluaranheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti',
+            )
+            ->where('a.nobukti', '=', $getPengeluaran->pengeluaranheader_nobukti)
+            ->first();
+        if (isset($pelunasanPiutang)) {
+
+            $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti PENGELUARAN <b>' . $pelunasanPiutang->nobukti . '</b> <br> ' . $keterangantambahanerror,
+
+                // 'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
 
         $data = [
             'kondisi' => false,
@@ -599,7 +623,7 @@ class InvoiceEmklHeader extends MyModel
     public function processStore(array $data): InvoiceEmklHeader
     {
         $prosesReimburse = $data['prosesreimburse'] ?? 0;
-        $jenisbiaya=$data['statusjenisbiaya'] ?? 0;
+        $jenisbiaya = $data['statusjenisbiaya'] ?? 0;
 
         $group = 'INVOICE BUKTI';
         $subGroup = 'INVOICE BUKTI';
@@ -674,16 +698,22 @@ class InvoiceEmklHeader extends MyModel
         $invoiceHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         if ($jenisorder_id == 2) {
             $invoiceHeader->statusformatinvoicetambahan = $formatinvoicetambahan->id;
-            $invoiceHeader->nobuktiinvoicetambahan = (new RunningNumberService)->get($groupinvoicebongkaran, $subGroupinvoicebongkaran, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), $tujuan_id, $cabang_id, 0, 0, 'nobuktiinvoicetambahan','statusformatinvoicetambahan');
+            $invoiceHeader->nobuktiinvoicetambahan = (new RunningNumberService)->get($groupinvoicebongkaran, $subGroupinvoicebongkaran, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), $tujuan_id, $cabang_id, 0, 0, 'nobuktiinvoicetambahan', 'statusformatinvoicetambahan');
         }
         if ($jenisorder_id == 1) {
             // dd($statusPajak->id,$statuspajakdata);
             if ($statusPajak->id == $statuspajakdata) {
                 // dd('a');
                 $invoiceHeader->statusformatinvoicepajak = $formatinvoicepajak->id;
-                $invoiceHeader->nobuktiinvoicepajak = (new RunningNumberService)->get($groupinvoicepajak, $subGroupinvoicepajak, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), 0, 0, 0, 0, 'nobuktiinvoicepajak','statusformatinvoicepajak');
+                $invoiceHeader->nobuktiinvoicepajak = (new RunningNumberService)->get($groupinvoicepajak, $subGroupinvoicepajak, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), 0, 0, 0, 0, 'nobuktiinvoicepajak', 'statusformatinvoicepajak');
                 // dd($invoiceHeader->nobuktiinvoicepajak);
             }
+        }
+        
+        if ($invoiceHeader->tujuan_id != 0) {
+            $pelangggan = db::table("tujuan")->from(db::raw("tujuan with (readuncommitted)"))->where('id', $invoiceHeader->tujuan_id)->first()->pelanggan_id ?? 0;
+
+            $invoiceHeader->pelanggan_id = $pelangggan;
         }
         // dd($invoiceHeader->nobuktiinvoicepajak);
         // dd('test1');
@@ -697,15 +727,15 @@ class InvoiceEmklHeader extends MyModel
                 ->where('grp', $group)
                 ->where('subgrp', $subGroup)
                 ->first();
-                $invoiceHeader->statusformatreimbursement = $format->id;
-                $cabang_id = $data['cabang_id'] ?? 0;
+            $invoiceHeader->statusformatreimbursement = $format->id;
+            $cabang_id = $data['cabang_id'] ?? 0;
 
-                $parameter = new Parameter();
+            $parameter = new Parameter();
 
-                $cabang_id = $parameter->cekText('ID CABANG', 'ID CABANG') ?? '1900-01-01';
+            $cabang_id = $parameter->cekText('ID CABANG', 'ID CABANG') ?? '1900-01-01';
 
-                $invoiceHeader->nobuktiinvoicereimbursement = (new RunningNumberService)->get($group, $subGroup, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), $tujuan_id, $cabang_id,$jenisbiaya, 0, 'nobuktiinvoicereimbursement','statusformatinvoicereimbursement');
-                // dd($invoiceHeader->nobuktiinvoicereimbursement);
+            $invoiceHeader->nobuktiinvoicereimbursement = (new RunningNumberService)->get($group, $subGroup, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), $tujuan_id, $cabang_id, $jenisbiaya, 0, 'nobuktiinvoicereimbursement', 'statusformatinvoicereimbursement');
+            // dd($invoiceHeader->nobuktiinvoicereimbursement);
             $invoiceHeader->pengeluaranheader_nobukti = $data['pengeluaranheader_nobukti'];
         }
         if ($data['statuspajak'] == $statusNonPajak->id) {
@@ -873,8 +903,6 @@ class InvoiceEmklHeader extends MyModel
             $coadebetfifo = [];
             $selisih = 0;
             $jobemkl = '';
-            $coadebetdetail='';
-            $coakreditdetail='';
             if ($prosesReimburse == 0) {
                 $jobemkl = DB::table("jobemkl")->from(DB::raw("jobemkl with (readuncommitted)"))
                     ->where('nobukti', $data['nojobemkl'][$i])->first();
@@ -922,6 +950,10 @@ class InvoiceEmklHeader extends MyModel
                         $nominalfifo[] = -$selisih;
                         $coadebetfifo[] = $coadebetdetail;
                     }
+                    if ($data['nominal'][$i] == $nominalawal) {
+                        $coadebetdetail = '';
+                        $coakreditdetail = '';
+                    }
                 }
                 if ($data['statusinvoice'] == $statusInvoice->id && date('m', strtotime($data['tglbukti'])) == date('m', strtotime($data['tgldari']))) {
                     $status[] = 'normal';
@@ -951,17 +983,19 @@ class InvoiceEmklHeader extends MyModel
 
                 $coadebetfifo[] = $coadebet;
             }
-
+            // dd($data['nominal'][$i]);
 
             $invoiceDetail = (new InvoiceEmklDetail())->processStore($invoiceHeader, [
                 'nominal' => $data['nominal'][$i],
                 'jobemkl_nobukti' => ($prosesReimburse == 0) ? $jobemkl->nobukti : '',
                 'container_id' => ($prosesReimburse == 0) ? $jobemkl->container_id : '',
-                'coadebet' => $coadebetdetail ,
-                'coakredit' => $coakreditdetail ,
+                'coadebet' => $coadebetdetail,
+                'coakredit' => $coakreditdetail,
                 'selisih' => $selisih,
                 'keterangan' => $invoiceHeader->nobukti . ' ' . $nojobemkl . ' ' . $data['keterangan_detail'][$i],
             ]);
+
+            $invoiceDetails[] = $invoiceDetail->toArray();
             $keterangan_biaya = $data['keterangan_biaya'][$i] ?? '';
             if ($keterangan_biaya != '') {
 
@@ -975,7 +1009,7 @@ class InvoiceEmklHeader extends MyModel
                     'modifiedby' => auth('api')->user()->name,
                 ]);
             }
-            if ($data['jenisorder_id'] == 2) {
+            if ($data['jenisorder_id'] == 2 && $prosesReimburse == 0) {
                 $querydetailjob = db::table("invoiceemkldetailrincianbiaya")->from(db::raw("invoiceemkldetailrincianbiaya a with (readuncommitted)"))
                     ->select(
                         db::raw("sum(a.nominal) as nominal")
@@ -1009,7 +1043,6 @@ class InvoiceEmklHeader extends MyModel
                 $nojobs .= ' ' . $jobemkl->nobukti . ',';
             }
             // STORE 
-            $invoiceDetails[] = $invoiceDetail->toArray();
 
             // STORE JURNAL
 
@@ -1133,9 +1166,12 @@ class InvoiceEmklHeader extends MyModel
         if ($prosesReimburse == 0) {
             if ($data['jenisorder_id'] == $idMuatan->id) {
                 if ($statusPPN->text == 'PPN 1.1%') {
-                    $nominalppn = $total * 0.011;
+
+                    $nilaippn = db::select("select round(($total * 0.011), 0, 1) as ppn");
+                    $nominalppn = $nilaippn[0]->ppn;
                 } else {
-                    $nominalppn = $total * 0.11;
+                    $nilaippn = db::select("select round(($total * 0.11), 0, 1) as ppn");
+                    $nominalppn = $nilaippn[0]->ppn;
                 }
             }
         }
@@ -1218,7 +1254,11 @@ class InvoiceEmklHeader extends MyModel
         $invoiceHeader->info = html_entity_decode(request()->info);
         $invoiceHeader->editing_by = '';
         $invoiceHeader->editing_at = null;
+        if ($invoiceHeader->tujuan_id != 0) {
+            $pelangggan = db::table("tujuan")->from(db::raw("tujuan with (readuncommitted)"))->where('id', $invoiceHeader->tujuan_id)->first()->pelanggan_id ?? 0;
 
+            $invoiceHeader->pelanggan_id = $pelangggan;
+        }
 
         if (!$invoiceHeader->save()) {
             throw new \Exception("Error updating invoice emkl header.");
@@ -1369,7 +1409,7 @@ class InvoiceEmklHeader extends MyModel
                 $coakreditdetail = $memo['JURNAL'];
             }
         }
- 
+
         $total = 0;
         $nojobs = '';
         $nominaljurnal = [];
@@ -1429,6 +1469,10 @@ class InvoiceEmklHeader extends MyModel
                         $nominalfifo[] = -$selisih;
                         $coadebetfifo[] = $coadebetdetail;
                     }
+                    if ($data['nominal'][$i] == $nominalawal) {
+                        $coadebetdetail = '';
+                        $coakreditdetail = '';
+                    }
                 }
 
                 if ($data['statusinvoice'] == $statusInvoice->id && date('m', strtotime($data['tglbukti'])) == date('m', strtotime($data['tgldari']))) {
@@ -1474,7 +1518,7 @@ class InvoiceEmklHeader extends MyModel
                     'modifiedby' => auth('api')->user()->name,
                 ]);
             }
-            if ($data['jenisorder_id'] == 2) {
+            if ($data['jenisorder_id'] == 2 && $prosesReimburse == 0) {
                 $querydetailjob = db::table("invoiceemkldetailrincianbiaya")->from(db::raw("invoiceemkldetailrincianbiaya a with (readuncommitted)"))
                     ->select(
                         db::raw("sum(a.nominal) as nominal")
@@ -1601,9 +1645,11 @@ class InvoiceEmklHeader extends MyModel
         if ($prosesReimburse == 0) {
             if ($invoiceHeader->jenisorder_id == $idMuatan->id) {
                 if ($statusPPN->text == 'PPN 1.1%') {
-                    $nominalppn = $total * 0.011;
+                    $nilaippn = db::select("select round(($total * 0.011), 0, 1) as ppn");
+                    $nominalppn = $nilaippn[0]->ppn;
                 } else {
-                    $nominalppn = $total * 0.11;
+                    $nilaippn = db::select("select round(($total * 0.11), 0, 1) as ppn");
+                    $nominalppn = $nilaippn[0]->ppn;
                 }
             }
         }

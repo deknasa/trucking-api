@@ -29,6 +29,7 @@ class Tujuan extends MyModel
             ->first();
 
         $aktif = request()->aktif ?? '';
+        $emkl = request()->emkl ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -59,6 +60,9 @@ class Tujuan extends MyModel
                 ->first();
 
             $query->where('tujuan.statusaktif', '=', $statusaktif->id);
+        }
+        if($emkl=='emkl'){
+            $query->whereRaw("isnull(tujuan.pelanggan_id,0) != 0");
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
