@@ -23,7 +23,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
         'created_at',
         'updated_at',
     ];
-    public function getReport($dari, $sampai, $supplierdari, $suppliersampai, $prosesneraca)
+    public function getReport($dari, $sampai, $supplierdari, $suppliersampai, $prosesneraca, $jenislaporan = 0)
     {
         $prosesneraca = $prosesneraca ?? 0;
 
@@ -31,19 +31,18 @@ class LaporanKartuHutangPerSupplier extends MyModel
         $tgl = '01-' . date('m', strtotime($dari)) . '-' . date('Y', strtotime($dari));
         $dari1 = date('Y-m-d', strtotime($tgl));
 
-        $keterangansupplier='';
-        if ($supplierdari==0 || $suppliersampai==0 )  {
-            $keterangansupplier='SEMUA';
+        $keterangansupplier = '';
+        if ($supplierdari == 0 || $suppliersampai == 0) {
+            $keterangansupplier = 'SEMUA';
         }
 
-        if ($supplierdari == 0 || $suppliersampai == 0 ) {
+        if ($supplierdari == 0 || $suppliersampai == 0) {
             $supplierdari = db::table('supplier')->from(db::raw("supplier with (readuncommitted)"))
                 ->select('id')->orderby('id', 'asc')->first()->id ?? 0;
 
-                $suppliersampai = db::table('supplier')->from(db::raw("supplier with (readuncommitted)"))
+            $suppliersampai = db::table('supplier')->from(db::raw("supplier with (readuncommitted)"))
                 ->select('id')->orderby('id', 'desc')->first()->id ?? 0;
-
-            }
+        }
 
 
         if ($supplierdari > $suppliersampai) {
@@ -53,11 +52,11 @@ class LaporanKartuHutangPerSupplier extends MyModel
             $suppliersampai = $suppliersampai1;
         }
 
-        $supplierdarinama=db::table('supplier')->from(db::raw("supplier with (readuncommitted)"))
-        ->select('namasupplier')->orderby('id', 'asc')->where('id',$supplierdari)->first()->namasupplier ?? '';
+        $supplierdarinama = db::table('supplier')->from(db::raw("supplier with (readuncommitted)"))
+            ->select('namasupplier')->orderby('id', 'asc')->where('id', $supplierdari)->first()->namasupplier ?? '';
 
-        $suppliersampainama=db::table('supplier')->from(db::raw("supplier with (readuncommitted)"))
-        ->select('namasupplier')->orderby('id', 'asc')->where('id',$suppliersampai)->first()->namasupplier ?? '';
+        $suppliersampainama = db::table('supplier')->from(db::raw("supplier with (readuncommitted)"))
+            ->select('namasupplier')->orderby('id', 'asc')->where('id', $suppliersampai)->first()->namasupplier ?? '';
 
         $getJudul = DB::table('parameter')
             ->select('text')
@@ -85,30 +84,56 @@ class LaporanKartuHutangPerSupplier extends MyModel
             $table->double('nominal')->nullable();
 
             $table->index('nobukti', 'temphutangsaldo_nobukti_index');
-
         });
+        $parameter = new Parameter();
+        $jenislaporanhutangusaha = $parameter->cekId('JENIS KARTU HUTANG', 'JENIS KARTU HUTANG', 'HUTANG USAHA') ?? 0;
+        $jenislaporanhutangprediksi = $parameter->cekId('JENIS KARTU HUTANG', 'JENIS KARTU HUTANG', 'HUTANG PREDIKSI') ?? 0;
 
-        if ($prosesneraca==1) {
+        if ($prosesneraca == 1) {
             $queryhutangsaldo = db::table('hutangheader')->from(db::raw("hutangheader a with (readuncommitted)"))
-            ->select(
-                'a.nobukti',
-                db::raw("sum(b.total) as nominal"),
-            )
-            ->join(db::raw("hutangdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-            ->whereRaw("a.tglbukti<'" . $dari1 . "'")
-            ->whereRaw("a.coakredit='03.02.02.01'")
-            ->whereRaw("(a.supplier_id>=" . $supplierdari . " and a.supplier_id<=" . $suppliersampai . ")")
-            ->groupby('a.nobukti');
+                ->select(
+                    'a.nobukti',
+                    db::raw("sum(b.total) as nominal"),
+                )
+                ->join(db::raw("hutangdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                ->whereRaw("a.tglbukti<'" . $dari1 . "'")
+                ->whereRaw("a.coakredit='03.02.02.01'")
+                ->whereRaw("(a.supplier_id>=" . $supplierdari . " and a.supplier_id<=" . $suppliersampai . ")")
+                ->groupby('a.nobukti');
         } else {
-            $queryhutangsaldo = db::table('hutangheader')->from(db::raw("hutangheader a with (readuncommitted)"))
-            ->select(
-                'a.nobukti',
-                db::raw("sum(b.total) as nominal"),
-            )
-            ->join(db::raw("hutangdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-            ->whereRaw("a.tglbukti<'" . $dari1 . "'")
-            ->whereRaw("(a.supplier_id>=" . $supplierdari . " and a.supplier_id<=" . $suppliersampai . ")")
-            ->groupby('a.nobukti');
+            if ($jenislaporan == $jenislaporanhutangusaha) {
+                $queryhutangsaldo = db::table('hutangheader')->from(db::raw("hutangheader a with (readuncommitted)"))
+                    ->select(
+                        'a.nobukti',
+                        db::raw("sum(b.total) as nominal"),
+                    )
+                    ->join(db::raw("hutangdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                    ->whereRaw("a.tglbukti<'" . $dari1 . "'")
+                    ->whereRaw("a.coakredit='03.02.02.01'")                    
+                    ->whereRaw("(a.supplier_id>=" . $supplierdari . " and a.supplier_id<=" . $suppliersampai . ")")
+                    ->groupby('a.nobukti');
+            } else if ($jenislaporan == $jenislaporanhutangprediksi) {
+                $queryhutangsaldo = db::table('hutangheader')->from(db::raw("hutangheader a with (readuncommitted)"))
+                    ->select(
+                        'a.nobukti',
+                        db::raw("sum(b.total) as nominal"),
+                    )
+                    ->join(db::raw("hutangdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                    ->whereRaw("a.coakredit<>'03.02.02.01'")                    
+                    ->whereRaw("a.tglbukti<'" . $dari1 . "'")
+                    ->whereRaw("(a.supplier_id>=" . $supplierdari . " and a.supplier_id<=" . $suppliersampai . ")")
+                    ->groupby('a.nobukti');
+            } else {
+                $queryhutangsaldo = db::table('hutangheader')->from(db::raw("hutangheader a with (readuncommitted)"))
+                    ->select(
+                        'a.nobukti',
+                        db::raw("sum(b.total) as nominal"),
+                    )
+                    ->join(db::raw("hutangdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                    ->whereRaw("a.tglbukti<'" . $dari1 . "'")
+                    ->whereRaw("(a.supplier_id>=" . $supplierdari . " and a.supplier_id<=" . $suppliersampai . ")")
+                    ->groupby('a.nobukti');
+            }
         }
 
 
@@ -116,7 +141,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             'nobukti',
             'nominal',
         ], $queryhutangsaldo);
-      
+
 
         $querypelunasansaldo = db::table('pelunasanhutangheader')->from(db::raw("pelunasanhutangheader a with (readuncommitted)"))
             ->select(
@@ -125,7 +150,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             )
             ->join(db::raw("pelunasanhutangdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(db::raw($temphutangsaldo . " c "), 'b.hutang_nobukti', 'c.nobukti')
-            ->whereRaw("a.tglbukti<'" . $dari1 . "' and a.tglbukti>'".$tglsaldo."'")
+            ->whereRaw("a.tglbukti<'" . $dari1 . "' and a.tglbukti>'" . $tglsaldo . "'")
             ->groupby('c.nobukti');
 
         DB::table($temppelunasansaldo)->insertUsing([
@@ -155,38 +180,66 @@ class LaporanKartuHutangPerSupplier extends MyModel
         ], $queryrekaphutang);
 
 
-        if ($prosesneraca==1) {
+        if ($prosesneraca == 1) {
             $queryrekaphutang = db::table("hutangheader")->from(db::raw("hutangheader a with (readuncommitted) "))
-            ->select(
-                'a.nobukti',
-                db::raw("sum(isnull(b.total,0)) as nominal"),
-            )
-            ->leftjoin(db::raw("hutangdetail b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
-            ->whereRaw("(a.tglbukti>='" . $dari1 . "' and a.tglbukti<='" . $sampai . "')")
-            ->whereRaw("(a.supplier_id>=" . $supplierdari . " and a.supplier_id<=" . $suppliersampai . ")")
-            ->whereRaw("a.coakredit='03.02.02.01'")
-            ->groupby('a.nobukti');
+                ->select(
+                    'a.nobukti',
+                    db::raw("sum(isnull(b.total,0)) as nominal"),
+                )
+                ->leftjoin(db::raw("hutangdetail b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+                ->whereRaw("(a.tglbukti>='" . $dari1 . "' and a.tglbukti<='" . $sampai . "')")
+                ->whereRaw("(a.supplier_id>=" . $supplierdari . " and a.supplier_id<=" . $suppliersampai . ")")
+                ->whereRaw("a.coakredit='03.02.02.01'")
+                ->groupby('a.nobukti');
         } else {
-            $queryrekaphutang = db::table("hutangheader")->from(db::raw("hutangheader a with (readuncommitted) "))
-            ->select(
-                'a.nobukti',
-                db::raw("sum(isnull(b.total,0)) as nominal"),
-            )
-            ->leftjoin(db::raw("hutangdetail b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
-            ->whereRaw("(a.tglbukti>='" . $dari1 . "' and a.tglbukti<='" . $sampai . "')")
-            ->whereRaw("(a.supplier_id>=" . $supplierdari . " and a.supplier_id<=" . $suppliersampai . ")")
-            ->groupby('a.nobukti');
+
+            // 
+            if ($jenislaporan == $jenislaporanhutangusaha) {
+                $queryrekaphutang = db::table("hutangheader")->from(db::raw("hutangheader a with (readuncommitted) "))
+                ->select(
+                    'a.nobukti',
+                    db::raw("sum(isnull(b.total,0)) as nominal"),
+                )
+                ->leftjoin(db::raw("hutangdetail b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+                ->whereRaw("(a.tglbukti>='" . $dari1 . "' and a.tglbukti<='" . $sampai . "')")
+                ->whereRaw("a.coakredit='03.02.02.01'")
+                ->whereRaw("(a.supplier_id>=" . $supplierdari . " and a.supplier_id<=" . $suppliersampai . ")")
+                ->groupby('a.nobukti');
+            } else if ($jenislaporan == $jenislaporanhutangprediksi) {
+                $queryrekaphutang = db::table("hutangheader")->from(db::raw("hutangheader a with (readuncommitted) "))
+                ->select(
+                    'a.nobukti',
+                    db::raw("sum(isnull(b.total,0)) as nominal"),
+                )
+                ->leftjoin(db::raw("hutangdetail b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+                ->whereRaw("(a.tglbukti>='" . $dari1 . "' and a.tglbukti<='" . $sampai . "')")
+                ->whereRaw("a.coakredit<>'03.02.02.01'")
+                ->whereRaw("(a.supplier_id>=" . $supplierdari . " and a.supplier_id<=" . $suppliersampai . ")")
+                ->groupby('a.nobukti');
+            } else {
+                $queryrekaphutang = db::table("hutangheader")->from(db::raw("hutangheader a with (readuncommitted) "))
+                ->select(
+                    'a.nobukti',
+                    db::raw("sum(isnull(b.total,0)) as nominal"),
+                )
+                ->leftjoin(db::raw("hutangdetail b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+                ->whereRaw("(a.tglbukti>='" . $dari1 . "' and a.tglbukti<='" . $sampai . "')")
+                ->whereRaw("(a.supplier_id>=" . $supplierdari . " and a.supplier_id<=" . $suppliersampai . ")")
+                ->groupby('a.nobukti');
+            }            
+            // 
+  
         }
 
 
-           
+
 
         DB::table($temprekaphutang)->insertUsing([
             'nobukti',
             'nominal',
         ], $queryrekaphutang);
 
-     
+
 
         // dd('test');
         $temprekapdata = '##temprekapdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -221,10 +274,10 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 // db::raw("(case when isnull(c.nobukti,'')=''  and b.tglbukti>'" . $tglsaldo . "'  then 'HUTANG PREDIKSI' else 'HUTANG USAHA' END) as jenishutang"),
                 db::raw("(case when isnull(c.nobukti,'')=''  and b.tglbukti>'" . $tglsaldo . "'  then 'HUTANG USAHA' else 'HUTANG USAHA' END) as jenishutang"),
                 db::raw("0 as urut"),
-                )
+            )
             ->join(db::raw("hutangheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
             ->leftjoin(db::raw("penerimaanstokheader c with (readuncommitted) "), 'b.nobukti', 'c.hutang_nobukti');
-           
+
         DB::table($temprekapdata)->insertUsing([
             'supplier_id',
             'nobukti',
@@ -238,7 +291,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             'urut',
         ], $queryrekapdata);
 
-       
+
         $queryrekapdata = db::table($temprekaphutang)->from(db::raw($temprekaphutang . " a  "))
             ->select(
                 'b.supplier_id',
@@ -251,14 +304,14 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 'b.tglbukti as tglberjalan',
                 // db::raw("(case when isnull(b.nobukti,'')=''  and b.tglbukti>'" . $tglsaldo . "'  then 'HUTANG PREDIKSI' else 'HUTANG USAHA' END) as jenishutang"),
                 db::raw("(case when isnull(b.nobukti,'')=''  and b.tglbukti>'" . $tglsaldo . "'  then 'HUTANG USAHA' else 'HUTANG USAHA' END) as jenishutang"),
-                db::raw("1 as urut"),                
+                db::raw("1 as urut"),
             )
             ->join(db::raw("hutangheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
             ->join(db::raw("pelunasanhutangdetail c with (readuncommitted) "), 'a.nobukti', 'c.hutang_nobukti')
             ->join(db::raw("pelunasanhutangheader d with (readuncommitted) "), 'c.nobukti', 'd.nobukti')
-            ->whereRaw("(d.tglbukti>='" . $dari1 . "' and d.tglbukti<='" . $sampai . "'  and d.tglbukti>'".$tglsaldo."')");
+            ->whereRaw("(d.tglbukti>='" . $dari1 . "' and d.tglbukti<='" . $sampai . "'  and d.tglbukti>'" . $tglsaldo . "')");
 
-          
+
 
         DB::table($temprekapdata)->insertUsing([
             'supplier_id',
@@ -278,7 +331,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
         $temprekaphasil = '##temprekaphasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprekaphasil, function ($table) {
             $table->id();
-            $table->string('supplier_id',1000)->nullable();
+            $table->string('supplier_id', 1000)->nullable();
             $table->string('nobukti', 50)->nullable();
             $table->dateTime('tglbukti')->nullable();
             $table->double('nominalhutang')->nullable();
@@ -291,7 +344,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             $table->string('jenishutang', 50)->nullable();
             $table->integer('urut')->nullable();
         });
-    
+
         $queryrekaphasil = db::table($temprekapdata)->from(db::raw($temprekapdata . " a  "))
             ->select(
                 'b.namasupplier as supplier_id',
@@ -309,7 +362,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 // 'a.urut'
             )
             ->leftjoin(db::raw("supplier b with (readuncommitted) "), 'a.supplier_id', 'b.id')
-     
+
             ->orderby('b.namasupplier', 'asc')
             ->orderby('a.jenishutang', 'asc')
             ->orderby('a.tglberjalan', 'asc')
@@ -342,115 +395,114 @@ class LaporanKartuHutangPerSupplier extends MyModel
             ->where('grp', 'DIPERIKSA')
             ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
-    $temprekapuji = '##temprekapuji' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-    Schema::create($temprekapuji, function ($table) {
-        $table->id();
-        $table->string('supplier_id_jenishutang',500)->nullable();
-        $table->string('nobukti', 50);
-        $table->dateTime('tglbukti');
-        $table->double('nominalhutang')->nullable();
-        $table->dateTime('tglbayar');
-        $table->double('nominalbayar')->nullable();
-        $table->string('nobuktihutang', 50);
-        $table->dateTime('tglberjalan');
-        $table->string('jenishutang', 50);
-        $table->integer('urut')->nullable();
+        $temprekapuji = '##temprekapuji' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temprekapuji, function ($table) {
+            $table->id();
+            $table->string('supplier_id_jenishutang', 500)->nullable();
+            $table->string('nobukti', 50);
+            $table->dateTime('tglbukti');
+            $table->double('nominalhutang')->nullable();
+            $table->dateTime('tglbayar');
+            $table->double('nominalbayar')->nullable();
+            $table->string('nobuktihutang', 50);
+            $table->dateTime('tglberjalan');
+            $table->string('jenishutang', 50);
+            $table->integer('urut')->nullable();
 
-        $table->index('nobukti', 'temprekapdata_nobukti_index');
-        $table->index('nobukti', 'temprekapdata_supplier_id_index');
-    });
-    
+            $table->index('nobukti', 'temprekapdata_nobukti_index');
+            $table->index('nobukti', 'temprekapdata_supplier_id_index');
+        });
 
-// $queryurut=db::table($temprekaphasil)->from(db::raw($temprekaphasil . " a"))
-// ->select(
-//     'a.id',
-//     'a.supplier_id',
-//     'a.jenishutang',
-//     'a.nobukti',
-//     'a.nobuktihutang',
-//     )
-//     ->orderby('a.id')
-//     ->get();
-//     $datadetail = json_decode($queryurut, true);
-//     $xuji='';
-//     $xnobukti='';
-//     $xnobuktihutang='';
 
-    $temprekaphasil1 = '##temprekaphasil1' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-    Schema::create($temprekaphasil1, function ($table) {
-        $table->id();
-        $table->string('supplier_id_jenishutang',1000)->nullable();
-        $table->string('nobukti', 50)->nullable();       
-        $table->string('nobuktihutang', 50)->nullable();
-        $table->dateTime('tglbukti')->nullable();
+        // $queryurut=db::table($temprekaphasil)->from(db::raw($temprekaphasil . " a"))
+        // ->select(
+        //     'a.id',
+        //     'a.supplier_id',
+        //     'a.jenishutang',
+        //     'a.nobukti',
+        //     'a.nobuktihutang',
+        //     )
+        //     ->orderby('a.id')
+        //     ->get();
+        //     $datadetail = json_decode($queryurut, true);
+        //     $xuji='';
+        //     $xnobukti='';
+        //     $xnobuktihutang='';
 
-    });
+        $temprekaphasil1 = '##temprekaphasil1' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temprekaphasil1, function ($table) {
+            $table->id();
+            $table->string('supplier_id_jenishutang', 1000)->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->string('nobuktihutang', 50)->nullable();
+            $table->dateTime('tglbukti')->nullable();
+        });
 
-    $temprekaphasil2 = '##temprekaphasil2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-    Schema::create($temprekaphasil2, function ($table) {
-        $table->id();
-        $table->string('supplier_id_jenishutang',1000)->nullable();
-        $table->string('nobukti', 50)->nullable();
-        $table->string('nobuktihutang', 50)->nullable();
-        $table->dateTime('tglbukti')->nullable();
-        $table->BigInteger('urut')->nullable();
-    });
+        $temprekaphasil2 = '##temprekaphasil2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temprekaphasil2, function ($table) {
+            $table->id();
+            $table->string('supplier_id_jenishutang', 1000)->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->string('nobuktihutang', 50)->nullable();
+            $table->dateTime('tglbukti')->nullable();
+            $table->BigInteger('urut')->nullable();
+        });
 
-    $queryrekaphasil1=db::table($temprekaphasil)->from(db::raw($temprekaphasil . " a"))
-->select(
-    db::raw("trim(a.supplier_id)+'_'+trim(a.jenishutang) as supplier_id_jenishutang"),
-    'a.nobukti',
-    'a.nobuktihutang',
-    'a.tglbukti',
-    )
-    ->whereRaw("isnull(a.nobukti,'')=isnull(a.nobuktihutang,'')")
-    ->orderby(db::raw("trim(a.supplier_id)+'_'+trim(a.jenishutang)"));
-   
-   
-    DB::table($temprekaphasil1)->insertUsing([
-        'supplier_id_jenishutang',
-        'nobukti',
-        'nobuktihutang',
-        'tglbukti',
-    ], $queryrekaphasil1);
-    
-    $query=db::table($temprekaphasil1)
-    ->select(
-        'supplier_id_jenishutang',
-        'nobukti',
-        'nobuktihutang',
-        'tglbukti',
-        DB::raw('ROW_NUMBER() OVER (PARTITION BY supplier_id_jenishutang ORDER BY tglbukti) as urut')
-    )
-    ->orderby('tglbukti');
+        $queryrekaphasil1 = db::table($temprekaphasil)->from(db::raw($temprekaphasil . " a"))
+            ->select(
+                db::raw("trim(a.supplier_id)+'_'+trim(a.jenishutang) as supplier_id_jenishutang"),
+                'a.nobukti',
+                'a.nobuktihutang',
+                'a.tglbukti',
+            )
+            ->whereRaw("isnull(a.nobukti,'')=isnull(a.nobuktihutang,'')")
+            ->orderby(db::raw("trim(a.supplier_id)+'_'+trim(a.jenishutang)"));
 
-    DB::table($temprekaphasil2)->insertUsing([
-        'supplier_id_jenishutang',
-        'nobukti',
-        'nobuktihutang',
-        'tglbukti',
-        'urut'
-    ], $query);
 
-    // DB::update(DB::raw("UPDATE " . $temprekaphasil . " SET urut=0"));
-    // $urut=0;
-    // foreach ($datadetail as $item) {
-    //     $xuji2=$item['supplier_id'].$item['jenishutang'];
+        DB::table($temprekaphasil1)->insertUsing([
+            'supplier_id_jenishutang',
+            'nobukti',
+            'nobuktihutang',
+            'tglbukti',
+        ], $queryrekaphasil1);
 
-    //     if ($xuji2!=$xuji) {
-    //         $urut=0;
-    //     }
-    //         if ($item['nobukti']==$item['nobuktihutang']) {
-    //             $urut=$urut+1;
-    //             DB::update(DB::raw("UPDATE " . $temprekaphasil . " SET urut=".$urut." where id=". $item['id']));
-    //         }
-            
-        
-    //     $xuji=$item['supplier_id'].$item['jenishutang'];
-    //     $xnobukti=$item['nobukti'];
-    //     $xnobuktihutang=$item['nobuktihutang'];
-    
-    // }
+        $query = db::table($temprekaphasil1)
+            ->select(
+                'supplier_id_jenishutang',
+                'nobukti',
+                'nobuktihutang',
+                'tglbukti',
+                DB::raw('ROW_NUMBER() OVER (PARTITION BY supplier_id_jenishutang ORDER BY tglbukti) as urut')
+            )
+            ->orderby('tglbukti');
+
+        DB::table($temprekaphasil2)->insertUsing([
+            'supplier_id_jenishutang',
+            'nobukti',
+            'nobuktihutang',
+            'tglbukti',
+            'urut'
+        ], $query);
+
+        // DB::update(DB::raw("UPDATE " . $temprekaphasil . " SET urut=0"));
+        // $urut=0;
+        // foreach ($datadetail as $item) {
+        //     $xuji2=$item['supplier_id'].$item['jenishutang'];
+
+        //     if ($xuji2!=$xuji) {
+        //         $urut=0;
+        //     }
+        //         if ($item['nobukti']==$item['nobuktihutang']) {
+        //             $urut=$urut+1;
+        //             DB::update(DB::raw("UPDATE " . $temprekaphasil . " SET urut=".$urut." where id=". $item['id']));
+        //         }
+
+
+        //     $xuji=$item['supplier_id'].$item['jenishutang'];
+        //     $xnobukti=$item['nobukti'];
+        //     $xnobuktihutang=$item['nobuktihutang'];
+
+        // }
 
 
         $select_data = DB::table($temprekaphasil . ' AS A')
@@ -480,11 +532,11 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 db::raw("'" . $diperiksa . "' as diperiksa"),
 
             ])
-            ->leftjoin(db::raw($temprekaphasil2 ." b"),'a.nobukti','b.nobukti')
+            ->leftjoin(db::raw($temprekaphasil2 . " b"), 'a.nobukti', 'b.nobukti')
 
             ->orderBy('a.id', 'asc');
 
-            // dd($select_data->get());
+        // dd($select_data->get());
 
         if ($prosesneraca == 1) {
             $data = $select_data;
@@ -499,7 +551,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
         // 
     }
 
-   
+
 
     public function getReportOld($dari, $sampai, $supplierdari, $suppliersampai, $prosesneraca)
     {
