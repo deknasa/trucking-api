@@ -1729,6 +1729,8 @@ class LaporanNeraca extends MyModel
                 ->whereRaw("coa='" . $coalabarugiberjalan . "'")
                 ->First();
 
+                // dd($querytahunsaldo);
+
             if (isset($querytahunsaldo)) {
                 $subquery1 = DB::table('jurnalumumpusatheader as J')
                     ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('round(SUM(D.nominal),2) as FNominal'))
@@ -1738,6 +1740,7 @@ class LaporanNeraca extends MyModel
                     ->whereraw("D.coamain<>'" . $coalabarugiberjalan . "'")
                     ->groupBy('D.coamain', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
             } else {
+                // dd('test');
                 $subquery1 = DB::table('jurnalumumpusatheader as J')
                     ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('round(SUM(D.nominal),2) as FNominal'))
                     ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
@@ -1769,6 +1772,7 @@ class LaporanNeraca extends MyModel
             } else {
 
                 // dd($ptgl);
+                // dd($cabang_id);
                 $subquery2 = DB::table('jurnalumumpusatheader as J')
                     ->select('LR.coa', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('round(SUM(D.nominal),2) as FNominal'))
                     ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
@@ -1787,6 +1791,8 @@ class LaporanNeraca extends MyModel
                     })
                     ->whereraw("month(D.tglbukti)=month('" . $ptgl . "') and year(D.tglbukti)=year('" . $ptgl . "')")
                     ->groupBy('LR.coa', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
+
+                    // dd($subquery2->get());
             }
 
             $RecalKdPerkiraan = DB::table(DB::raw("({$subquery1->toSql()} UNION ALL {$subquery2->toSql()}) as V"))
