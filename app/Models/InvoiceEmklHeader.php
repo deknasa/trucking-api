@@ -648,6 +648,8 @@ class InvoiceEmklHeader extends MyModel
 
         $statuspajakdata = $data['statuspajak'] ?? '';
         $invoiceHeader = new InvoiceEmklHeader();
+        // $no=(new RunningNumberService)->get($groupinvoicepajak, $subGroupinvoicepajak, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), 0, 0, 0, 0, 'nobuktiinvoicepajak', 'statusformatinvoicepajak');
+        // dd($no);
         $invoiceHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $invoiceHeader->pelanggan_id = $data['pelanggan_id'];
         $invoiceHeader->jenisorder_id = $data['jenisorder_id'];
@@ -672,14 +674,15 @@ class InvoiceEmklHeader extends MyModel
         $invoiceHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         if ($jenisorder_id == 2) {
             $invoiceHeader->statusformatinvoicetambahan = $formatinvoicetambahan->id;
-            $invoiceHeader->nobuktiinvoicetambahan = (new RunningNumberService)->get($groupinvoicebongkaran, $subGroupinvoicebongkaran, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), $tujuan_id, $cabang_id, 0, 0, 'nobuktiinvoicetambahan');
+            $invoiceHeader->nobuktiinvoicetambahan = (new RunningNumberService)->get($groupinvoicebongkaran, $subGroupinvoicebongkaran, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), $tujuan_id, $cabang_id, 0, 0, 'nobuktiinvoicetambahan','statusformatinvoicetambahan');
         }
         if ($jenisorder_id == 1) {
             // dd($statusPajak->id,$statuspajakdata);
             if ($statusPajak->id == $statuspajakdata) {
                 // dd('a');
                 $invoiceHeader->statusformatinvoicepajak = $formatinvoicepajak->id;
-                $invoiceHeader->nobuktiinvoicepajak = (new RunningNumberService)->get($groupinvoicepajak, $subGroupinvoicepajak, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), 0, 0, 0, 0, 'nobuktiinvoicepajak');
+                $invoiceHeader->nobuktiinvoicepajak = (new RunningNumberService)->get($groupinvoicepajak, $subGroupinvoicepajak, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), 0, 0, 0, 0, 'nobuktiinvoicepajak','statusformatinvoicepajak');
+                // dd($invoiceHeader->nobuktiinvoicepajak);
             }
         }
         // dd($invoiceHeader->nobuktiinvoicepajak);
@@ -701,7 +704,7 @@ class InvoiceEmklHeader extends MyModel
 
                 $cabang_id = $parameter->cekText('ID CABANG', 'ID CABANG') ?? '1900-01-01';
 
-                $invoiceHeader->nobuktiinvoicereimbursement = (new RunningNumberService)->get($group, $subGroup, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), $tujuan_id, $cabang_id,$jenisbiaya, 0, 'nobuktiinvoicereimbursement');
+                $invoiceHeader->nobuktiinvoicereimbursement = (new RunningNumberService)->get($group, $subGroup, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), $tujuan_id, $cabang_id,$jenisbiaya, 0, 'nobuktiinvoicereimbursement','statusformatinvoicereimbursement');
                 // dd($invoiceHeader->nobuktiinvoicereimbursement);
             $invoiceHeader->pengeluaranheader_nobukti = $data['pengeluaranheader_nobukti'];
         }
