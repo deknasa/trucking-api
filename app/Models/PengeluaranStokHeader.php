@@ -3544,6 +3544,7 @@ class PengeluaranStokHeader extends MyModel
                     if (($kelompokAKI->id == $stok->kelompok_id) || ($kelompokBAN->id == $stok->kelompok_id)) {
                         $stok->statusaktif = $statusNonAktif->id;
                     }
+                    $stok->statusban_old = $stok->statusban;
                     $stok->statusban = $statusafkir->id;
                     $stok->save();
                     $data['detail_qty'][$i] = 0;
@@ -5113,6 +5114,31 @@ class PengeluaranStokHeader extends MyModel
             (new PengeluaranStokDetail())->returnVulkanisir($pengeluaranStokHeader->id);
         }
 
+        $afkir = DB::table('pengeluaranstok')->where('kodepengeluaran', 'AFKIR')->first();
+        if($fetchFormat->id == $afkir->id){
+            $detailStok = db::table("pengeluaranstokdetail")->from(db::raw("pengeluaranstokdetail a with (readuncommitted)"))
+            ->select(
+                'a.qty',
+                'a.stok_id',
+                'a.keterangan',
+                'a.harga',
+                'a.total',
+                'a.id',
+                )
+            ->where("a.pengeluaranstokheader_id", $pengeluaranStokHeader->id)
+            ->get();
+            $statusAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
+
+            foreach ($detailStok as $item) {
+                $stok = Stok::where('id',$item->stok_id)->first();
+                
+                $stok->statusban = $stok->statusban_old;
+                $stok->statusban_old = '';
+                $stok->statusaktif = $statusAktif->id;
+                $stok->save();
+            }
+        }
+
         /*DELETE EXISTING DETAIL*/
         PengeluaranStokDetail::where('pengeluaranstokheader_id', $pengeluaranStokHeader->id)->lockForUpdate()->delete();
         $pengeluaranStokDetailFifo = PengeluaranStokDetailFifo::where('pengeluaranstokheader_id', $pengeluaranStokHeader->id)->lockForUpdate()->delete();
@@ -5179,7 +5205,6 @@ class PengeluaranStokHeader extends MyModel
         $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
         $memokredit = json_decode($getCoaKredit->memo, true);
         $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
-
 
         if ($spk->text == $fetchFormat->id) {
             $spk = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
