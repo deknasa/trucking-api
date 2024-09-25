@@ -92,10 +92,11 @@ class LaporanKartuHutangPerSupplierController extends Controller
         $suppliersampai = $request->suppliersampai_id ?? 0;
         $supplierdari = $request->supplierdari ?? '';
         $suppliersampai = $request->suppliersampai ?? '';
+        $jenislaporan = $request->jenislaporan ?? 0;
         $prosesneraca = 0;
 
         $laporankartuhutangpersupplier = new LaporanKartuHutangPerSupplier();
-        $laporan_kartuhutangpersupplier = $laporankartuhutangpersupplier->getReport($dari, $sampai, $supplierdari, $suppliersampai, $prosesneraca);
+        $laporan_kartuhutangpersupplier = $laporankartuhutangpersupplier->getReport($dari, $sampai, $supplierdari, $suppliersampai, $prosesneraca, $jenislaporan);
 
         if ($request->isCheck) {
             if (count($laporan_kartuhutangpersupplier) === 0) {
@@ -165,7 +166,7 @@ class LaporanKartuHutangPerSupplierController extends Controller
             $header_start_row = 6;
             $detail_start_row = 7;
 
-            
+
 
             $styleArray = array(
                 'borders' => array(
@@ -233,7 +234,7 @@ class LaporanKartuHutangPerSupplierController extends Controller
             $groupedData = [];
             if (is_array($pengeluaran)) {
                 foreach ($pengeluaran as $row) {
-                    $jenishutang = $row->jenishutang;
+                    $jenishutang = $row->coa;
                     $supplier_id = $row->supplier_id;
                     $groupedData[$jenishutang][$supplier_id][] = $row;
                 }
@@ -345,7 +346,8 @@ class LaporanKartuHutangPerSupplierController extends Controller
                     $sheet->getStyle("F$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
                     $sheet->getStyle("G$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
                     $sheet->getStyle("D$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-                    $sheet->setCellValue('A' . $detail_start_row, 'TOTAL ' . $jenishutang)->getStyle("A$detail_start_row")->getFont()->setBold(true);
+                    $judultotal = ($jenishutang == '03.02.02.01') ? 'HUTANG USAHA' : 'HUTANG PREDIKSI';
+                    $sheet->setCellValue('A' . $detail_start_row, 'TOTAL ' . $judultotal)->getStyle("A$detail_start_row")->getFont()->setBold(true);
                     $sheet->setCellValue('F' . $detail_start_row, $hutangtotalBayar)->getStyle("F$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
                     $sheet->setCellValue('D' . $detail_start_row, $hutangtotalNominal)->getStyle("D$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
                     // $sheet->setCellValue('F' . $detail_start_row, "=SUM(F$startcell:$bayarCell)")->getStyle("F$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
@@ -359,8 +361,8 @@ class LaporanKartuHutangPerSupplierController extends Controller
                     $sheet->getStyle("A" . ($detail_start_row) . ":G" . ($detail_start_row))->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
                     $sheet->getStyle("A" . ($detail_start_row))->getBorders()->getLeft()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
                     $sheet->getStyle("G" . ($detail_start_row))->getBorders()->getRight()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-
-
+                    $hutangbayarcell = [];
+                    $hutangnominalcell = [];
                     $detail_start_row += 3;
                 }
 
@@ -368,21 +370,23 @@ class LaporanKartuHutangPerSupplierController extends Controller
                 // array_push($sumNominal, 'D' . $detail_start_row);
 
                 $total_start_row = $detail_start_row - 2;
+                if ($jenislaporan == 0) {
 
-                $sheet->setCellValue('A' . $total_start_row, 'TOTAL KARTU HUTANG')->getStyle("A$total_start_row")->getFont()->setBold(true);
-                $totalBayar = "=" . implode('+', $sumBayar);
-                $totalNominal = "=" . implode('+', $sumNominal);
-                $sheet->setCellValue("D$total_start_row", $totalNominal)->getStyle("D$total_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
-                $sheet->getStyle("D$total_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-                $sheet->setCellValue("F$total_start_row", $totalBayar)->getStyle("F$total_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
-                $sheet->getStyle("F$total_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-                $sheet->setCellValue("G$total_start_row", "=D$total_start_row-F$total_start_row")->getStyle("G$total_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
-                $sheet->getStyle("G$total_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->setCellValue('A' . $total_start_row, 'TOTAL KARTU HUTANG')->getStyle("A$total_start_row")->getFont()->setBold(true);
+                    $totalBayar = "=" . implode('+', $sumBayar);
+                    $totalNominal = "=" . implode('+', $sumNominal);
+                    $sheet->setCellValue("D$total_start_row", $totalNominal)->getStyle("D$total_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+                    $sheet->getStyle("D$total_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->setCellValue("F$total_start_row", $totalBayar)->getStyle("F$total_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+                    $sheet->getStyle("F$total_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->setCellValue("G$total_start_row", "=D$total_start_row-F$total_start_row")->getStyle("G$total_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+                    $sheet->getStyle("G$total_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
 
-                $sheet->getStyle("A" . ($total_start_row) . ":G" . ($total_start_row))->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-                $sheet->getStyle("A" . ($total_start_row) . ":G" . ($total_start_row))->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-                $sheet->getStyle("A" . ($total_start_row))->getBorders()->getLeft()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-                $sheet->getStyle("G" . ($total_start_row))->getBorders()->getRight()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                    $sheet->getStyle("A" . ($total_start_row) . ":G" . ($total_start_row))->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                    $sheet->getStyle("A" . ($total_start_row) . ":G" . ($total_start_row))->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                    $sheet->getStyle("A" . ($total_start_row))->getBorders()->getLeft()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                    $sheet->getStyle("G" . ($total_start_row))->getBorders()->getRight()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                }
             }
 
             //UKURAN KOLOM

@@ -533,7 +533,10 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 DB::raw("(case when '$keterangansupplier'='' then '$supplierdarinama' else '$keterangansupplier' end)  AS dari"),
                 DB::raw("(case when '$keterangansupplier'='' then '$suppliersampainama' else '$keterangansupplier' end)   AS sampai"),
 
-                DB::raw("'Laporan Kartu Hutang Per Supplier' as judulLaporan"),
+                DB::raw("(case 
+                    when $jenislaporan = 0 then 'Laporan Kartu Hutang Per Supplier' 
+                    when $jenislaporan = $jenislaporanhutangusaha then 'Laporan Kartu Hutang Usaha Per Supplier' else 
+					'Laporan Kartu Hutang Prediksi Per Supplier' end) as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
