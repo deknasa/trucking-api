@@ -187,7 +187,7 @@ class LaporanKasBank extends MyModel
             ->groupby('a.bank_id')
             ->groupby(db::raw("format(c.tglbukti,'MM-yyyy')"));
 
-// dd($querykredit->get());
+        // dd($querykredit->get());
         DB::table($tempsaldoawal)->insertUsing([
             'bulan',
             'bank_id',
@@ -233,6 +233,7 @@ class LaporanKasBank extends MyModel
                 'a.id as bank_id',
                 'a.coa as coa',
             )
+            ->where('a.statusaktif', 1)
             ->whereraw("left(a.kodebank,12)<>'PENGEMBALIAN'");
 
         DB::table($tempnonpengembaliankepusat)->insertUsing([
@@ -246,6 +247,7 @@ class LaporanKasBank extends MyModel
                 'a.id as bankpengembalian_id',
             )
             ->join(db::raw($tempnonpengembaliankepusat . " b"), 'a.coa', 'b.coa')
+            ->where('a.statusaktif', 1)
             ->whereraw("left(a.kodebank,12)='PENGEMBALIAN'");
 
         DB::table($temppengembaliankepusat)->insertUsing([
@@ -460,6 +462,7 @@ class LaporanKasBank extends MyModel
         $bankpengembaliankepusat = db::table('bank')->from(db::raw("bank a with (readuncommitted)"))
             ->select('a.id')
             ->where('a.coa', $coabank)
+            ->where('a.statusaktif', 1)
             ->whereRaw("a.id<>" . $bank_id)
             ->first();
         if (isset($bankpengembaliankepusat)) {
@@ -941,7 +944,7 @@ class LaporanKasBank extends MyModel
 
                     +format(a.tglbukti,'-yy') 
                      end) as tglbukti"),
-                     DB::raw("a.tglbukti as tglbukti2"),
+                        DB::raw("a.tglbukti as tglbukti2"),
                         'a.nobukti',
                         'a.keterangan',
                         'a.debet',
