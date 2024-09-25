@@ -26,7 +26,6 @@ class LaporanHistoryDeposito extends MyModel
 
     public function getReport($supirdari_id)
     {
-
         $parameter = new Parameter();
 
         $tglsaldo = $parameter->cekText('SALDO', 'SALDO') ?? '1900-01-01';

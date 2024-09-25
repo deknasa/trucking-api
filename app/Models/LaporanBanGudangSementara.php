@@ -158,7 +158,7 @@ class LaporanBanGudangSementara extends MyModel
         Schema::create($temprekapall, function ($table) {
             $table->id();
             $table->string('nobukti', 1000)->nullable();
-            $table->datetime('tgl')->nullable();
+            $table->date('tgl')->nullable();
             $table->integer('gudang_id')->nullable();
             $table->double('qty')->nullable();
             $table->integer('stok_id')->nullable();

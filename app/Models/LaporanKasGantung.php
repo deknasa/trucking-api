@@ -1065,7 +1065,7 @@ class LaporanKasGantung extends MyModel
         $TempLaporan2 = '##TempLaporan2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($TempLaporan2, function ($table) {
             $table->bigIncrements('id');
-            $table->dateTime('tglbukti');
+            $table->date('tglbukti');
             $table->string('nobukti', 50);
             $table->longText('keterangan');
             $table->float('debet');

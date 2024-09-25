@@ -348,7 +348,7 @@ class LaporanHutangBBM extends MyModel
         $tempLaporan2 = '##tempLaporan2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempLaporan2, function ($table) {
             $table->BigIncrements('id');
-            $table->dateTime('tglbukti')->nullable();
+            $table->date('tglbukti')->nullable();
             $table->string('nobukti', 50)->nullable();
             $table->longText('keterangan')->nullable();
             $table->double('nominal', 15, 2)->nullable();

@@ -356,7 +356,7 @@ class LaporanKartuPiutangPerAgen extends MyModel
             $table->id();
             $table->string('agen_id', 1000)->nullable();
             $table->string('nobukti', 50)->nullable();
-            $table->dateTime('tglbukti')->nullable();
+            $table->date('tglbukti')->nullable();
             $table->double('nominalpiutang')->nullable();
             $table->dateTime('tgllunas')->nullable();
             $table->double('nominallunas')->nullable();
