@@ -47,7 +47,7 @@ class LaporanHutangGiro extends MyModel
          $select_TempPencairan = DB::table('pengeluaranheader')->from(DB::raw("pengeluaranheader AS A WITH (READUNCOMMITTED)"))
         ->select([
             'a.nobukti',
-            'a.nobukti as nobuktipencairan',
+            'b.nobukti as nobuktipencairan',
             'a.tglbukti',
             'b.tglbukti as tglbuktipencairan',
         ])
@@ -66,7 +66,7 @@ class LaporanHutangGiro extends MyModel
         $select_TempPencairan = DB::table('saldopengeluaranheader')->from(DB::raw("saldopengeluaranheader AS A WITH (READUNCOMMITTED)"))
         ->select([
             'a.nobukti',
-            'a.nobukti as nobuktipencairan',
+            'b.nobukti as nobuktipencairan',
             'a.tglbukti',
             'b.tglbukti as tglbuktipencairan',
         ])
@@ -80,7 +80,9 @@ class LaporanHutangGiro extends MyModel
             'nobuktipencairan',
             'tglbukti',
             'tglbuktipencairan',
-        ], $select_TempPencairan);        
+        ], $select_TempPencairan);     
+        
+        // dd(db::table($TempPencairan)->get());
 
         $TempPencairan2 = '##TempPencairan2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($TempPencairan2, function ($table) {
@@ -110,14 +112,15 @@ class LaporanHutangGiro extends MyModel
         DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
         DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") 
     ])
-    ->leftJoin($TempPencairan . " AS b", function ($join) {
-        $join->on('a.nobukti', '=', 'b.nobukti')
-             ->whereNull('b.nobukti');
-    })
+    ->leftjoin(db::raw($TempPencairan ." AS b"), 'a.nobukti', 'b.nobukti')
+    // ->leftJoin($TempPencairan . " AS b", function ($join) {
+    //     $join->on('a.nobukti', '=', 'b.nobukti')
+    //          ->whereNull('b.nobukti');
+    // })
     ->join('pengeluarandetail AS c', 'a.nobukti', '=', 'c.nobukti')
 
     ->whereRaw("c.tgljatuhtempo<='".$periode."'")
-    ->whereNull('b.nobukti')
+    ->whereRaw("isnull(b.nobukti,'')=''")
     ->where('a.alatbayar_id', $alatbayar);
 
 
@@ -148,12 +151,13 @@ class LaporanHutangGiro extends MyModel
         DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
         DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") 
     ])
-    ->leftJoin($TempPencairan . " AS b", function ($join) {
-        $join->on('a.nobukti', '=', 'b.nobukti')
-             ->whereNull('b.nobukti');
-    })
+    ->leftjoin(db::raw($TempPencairan ." AS b"), 'a.nobukti', 'b.nobukti')
+    // ->leftJoin($TempPencairan . " AS b", function ($join) {
+    //     $join->on('a.nobukti', '=', 'b.nobukti')
+    //          ->whereNull('b.nobukti');
+    // })
     ->join('saldopengeluarandetail AS c', 'a.nobukti', '=', 'c.nobukti')
-    ->whereNull('b.nobukti')
+    ->whereRaw("isnull(b.nobukti,'')=''")
     ->where('a.alatbayar_id', $alatbayar);
 
     DB::table($TempPencairan2)->insertUsing([
