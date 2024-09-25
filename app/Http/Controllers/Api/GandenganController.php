@@ -57,7 +57,14 @@ class GandenganController extends Controller
     {
         $aksi = request()->aksi ?? '';
         if( $aksi == 'VIEW'||$aksi == 'ADD'){
-            $cekdata['kondisi'] = false;
+            $data = [
+                'status' => false,
+                'message' => '',
+                'errors' => '',
+                'kondisi' => false,
+            ];
+            return response($data);
+
         }
         
         $gandengan = new Gandengan();
