@@ -52,7 +52,7 @@ class LaporanDepositoSupirController extends Controller
         $tglsaldo = date('Y-m-d', strtotime($tglsaldo));
         $tglsampai = date('Y-m-d', strtotime($sampai));
         if ($tglsampai < $tglsaldo) {
-            dd('test');
+            // dd('test');
             $data = $laporandepositosupir->getReportLama($sampai, $jenis, $prosesneraca);
         } else {
             $data = $laporandepositosupir->getReport($sampai, $jenis, $prosesneraca);
