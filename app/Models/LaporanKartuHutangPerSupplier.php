@@ -254,6 +254,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             $table->string('nobuktihutang', 50);
             $table->dateTime('tglberjalan');
             $table->string('jenishutang', 50);
+            $table->string('coa', 50);
             $table->integer('urut')->nullable();
 
             $table->index('nobukti', 'temprekapdata_nobukti_index');
@@ -273,6 +274,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 'b.tglbukti as tglberjalan',
                 // db::raw("(case when isnull(c.nobukti,'')=''  and b.tglbukti>'" . $tglsaldo . "'  then 'HUTANG PREDIKSI' else 'HUTANG USAHA' END) as jenishutang"),
                 db::raw("(case when isnull(c.nobukti,'')=''  and b.tglbukti>'" . $tglsaldo . "'  then 'HUTANG USAHA' else 'HUTANG USAHA' END) as jenishutang"),
+                'b.coakredit as coa',
                 db::raw("0 as urut"),
             )
             ->join(db::raw("hutangheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
@@ -288,6 +290,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             'nobuktihutang',
             'tglberjalan',
             'jenishutang',
+            'coa',
             'urut',
         ], $queryrekapdata);
 
@@ -304,6 +307,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 'b.tglbukti as tglberjalan',
                 // db::raw("(case when isnull(b.nobukti,'')=''  and b.tglbukti>'" . $tglsaldo . "'  then 'HUTANG PREDIKSI' else 'HUTANG USAHA' END) as jenishutang"),
                 db::raw("(case when isnull(b.nobukti,'')=''  and b.tglbukti>'" . $tglsaldo . "'  then 'HUTANG USAHA' else 'HUTANG USAHA' END) as jenishutang"),
+                'b.coakredit as coa',
                 db::raw("1 as urut"),
             )
             ->join(db::raw("hutangheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
@@ -323,6 +327,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             'nobuktihutang',
             'tglberjalan',
             'jenishutang',
+            'coa',
             'urut',
         ], $queryrekapdata);
 
@@ -342,6 +347,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             $table->double('saldo')->nullable();
             $table->double('saldobayar')->nullable();
             $table->string('jenishutang', 50)->nullable();
+            $table->string('coa', 50)->nullable();
             $table->integer('urut')->nullable();
         });
 
@@ -358,6 +364,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 db::raw("SUM(a.nominalhutang-a.nominalbayar) OVER (PARTITION BY a.jenishutang,b.namasupplier ORDER BY a.tglberjalan,a.nobuktihutang,a.urut ASC) as saldo"),
                 db::raw("a.nominalhutang-a.nominalbayar  as saldobayar"),
                 'a.jenishutang',
+                'a.coa',
                 db::raw("0 as urut")
                 // 'a.urut'
             )
@@ -382,6 +389,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             'saldo',
             'saldobayar',
             'jenishutang',
+            'coa',
             'urut',
         ], $queryrekaphasil);
         // dd('test4');
@@ -519,6 +527,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 'a.saldo',
                 'a.saldobayar',
                 'a.jenishutang',
+                'a.coa',
                 db::raw("isnull(b.urut,0) as urut"),
                 DB::raw("'$getJudul->text' AS text"),
                 DB::raw("(case when '$keterangansupplier'='' then '$supplierdarinama' else '$keterangansupplier' end)  AS dari"),
