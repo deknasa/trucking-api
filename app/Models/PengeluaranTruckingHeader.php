@@ -2393,14 +2393,16 @@ class PengeluaranTruckingHeader extends MyModel
                     $kondisi = true;
                     $nominaltarik =  $data['nominal'][$i] ?? 0;
                     $nobuktiebs =  $data['penerimaantruckingheader_nobukti'][$i] ?? 0;
+                    $tglbukti = date('Y-m-d', strtotime(request()->tglbukti));
+                    $tempPribadi = (new PenerimaanTruckingHeader())->createTempBbm($nobuktiebs, $tglbukti);
 
                     $a = 0;
                     while ($kondisi == true) {
                         $a++;
 
-                        $tglbukti = date('Y-m-d', strtotime(request()->tglbukti));
-                        $tempPribadi = (new PenerimaanTruckingHeader())->createTempBbm($nobuktiebs, $tglbukti);
+          
                         // dd('test');
+                        // dd(db::table($tempPribadi)->get());
 
                         $query = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
                             ->select(
@@ -2417,12 +2419,14 @@ class PengeluaranTruckingHeader extends MyModel
                             ->where("penerimaantruckingheader.tglbukti", '<=', $tglbukti)
                             ->whereraw("penerimaantruckingheader.penerimaantrucking_id=1")
                             ->orderBy('penerimaantruckingheader.id', 'asc')
-                            ->first();
-
+                             ->first();
+                        // dd('test');
+                        // dd($query->toSql());
+                        // dd($query->toSql());
                         if (isset($query)) {
                             $nominalsisa = $query->sisa ?? 0;
                             if ($nominaltarik <= $nominalsisa) {
-
+                                // dump($query->nobukti, $nominaltarik,'1');
                                 $pengeluaranTruckingDetail = (new PengeluaranTruckingDetail())->processStore($pengeluaranTruckingHeader, [
                                     'pengeluarantruckingheader_id' => $pengeluaranTruckingHeader->id,
                                     'nobukti' => $pengeluaranTruckingHeader->nobukti,
@@ -2466,7 +2470,7 @@ class PengeluaranTruckingHeader extends MyModel
                             } else {
 
                                 $nominaltarik = $nominaltarik - $nominalsisa;
-                                // dd($nominaltarik);
+                                //  dump($query->nobukti, $nominaltarik,'2');
                                 $pengeluaranTruckingDetail = (new PengeluaranTruckingDetail())->processStore($pengeluaranTruckingHeader, [
                                     'pengeluarantruckingheader_id' => $pengeluaranTruckingHeader->id,
                                     'nobukti' => $pengeluaranTruckingHeader->nobukti,
@@ -2501,12 +2505,17 @@ class PengeluaranTruckingHeader extends MyModel
                                     'keterangantambahan' => '',
                                 ]);
                                 $pengeluaranTruckingDetails[] = $pengeluaranTruckingDetail->toArray();
+                                if ($nominaltarik <0) {
+                                    $kondisi=false;
+                                }
                             }
                         }
                     }
-                    
+
                     $nominalBiaya = $nominalBiaya + $data['nominal'][$i];
                 }
+  
+                // dd('test');
                 goto postingkas;
             }
         }
