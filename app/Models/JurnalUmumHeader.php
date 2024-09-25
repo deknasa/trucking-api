@@ -893,12 +893,13 @@ class JurnalUmumHeader extends MyModel
             DB::raw("parameter with (readuncommitted)")
         )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
+        $aksi = '';
         for ($i = 0; $i < count($data['jurnalId']); $i++) {
 
             $jurnalumum = JurnalUmumHeader::find($data['jurnalId'][$i]);
 
             $jurnalUmumPusat = JurnalUmumPusatHeader::from(DB::raw("jurnalumumpusatheader with (readuncommitted)"))->where('nobukti', $jurnalumum->nobukti)->first();
-            
+
             if ($jurnalUmumPusat != null) {
                 (new JurnalUmumPusatHeader())->processDestroy($jurnalUmumPusat->id, "APPROVAL/NON JURNAL UMUM");
             }
@@ -906,7 +907,7 @@ class JurnalUmumHeader extends MyModel
                 $jurnalumum->statusapproval = $statusNonApproval->id;
                 $jurnalumum->tglapproval = date('Y-m-d', strtotime("1900-01-01"));
                 $jurnalumum->userapproval = '';
-
+                $aksi = $statusNonApproval->text;
             } else {
                 $jurnalumum->statusapproval = $statusApproval->id;
                 $aksi = $statusApproval->text;
