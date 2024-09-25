@@ -115,7 +115,8 @@ class LaporanHutangGiro extends MyModel
              ->whereNull('b.nobukti');
     })
     ->join('pengeluarandetail AS c', 'a.nobukti', '=', 'c.nobukti')
-    ->whereRaw("a.tglbukti<='".$periode."'")
+
+    ->whereRaw("c.tgljatuhtempo<='".$periode."'")
     ->whereNull('b.nobukti')
     ->where('a.alatbayar_id', $alatbayar);
 
