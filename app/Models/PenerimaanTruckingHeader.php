@@ -952,6 +952,7 @@ class PenerimaanTruckingHeader extends MyModel
                 ->leftJoin(db::raw($temptgl . " d "), 'prosesgajisupirheader.nobukti', '=', 'd.nobukti ')
                 ->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
                 ->where('penerimaantruckingheader.penerimaantrucking_id', '=', 1)
+                // ->whereraw("isnull(prosesgajisupirdetail.nobukti,'')='EBS 0012/VIiI/2024'")
                 ->groupBy('prosesgajisupirdetail.nobukti');
 
             // dd($fetch->tosql());
