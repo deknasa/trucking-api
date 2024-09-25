@@ -364,6 +364,9 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('dashboard', DashboardController::class)->whereNumber('dashboard');
     Route::get('remainderfinalabsensi', [AuthController::class,'remainderFinalAbsensi']);
     Route::get('error/geterrors', [ErrorController::class, 'errorUrl']);
+    Route::get('/checkuser', function (Request $request) {
+        return 'oke';
+    });
 });
 
 route::middleware(['auth:api'])->group(function () {
