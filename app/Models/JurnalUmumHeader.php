@@ -898,15 +898,15 @@ class JurnalUmumHeader extends MyModel
             $jurnalumum = JurnalUmumHeader::find($data['jurnalId'][$i]);
 
             $jurnalUmumPusat = JurnalUmumPusatHeader::from(DB::raw("jurnalumumpusatheader with (readuncommitted)"))->where('nobukti', $jurnalumum->nobukti)->first();
+            
+            if ($jurnalUmumPusat != null) {
+                (new JurnalUmumPusatHeader())->processDestroy($jurnalUmumPusat->id, "APPROVAL/NON JURNAL UMUM");
+            }
             if ($jurnalumum->statusapproval == $statusApproval->id) {
                 $jurnalumum->statusapproval = $statusNonApproval->id;
                 $jurnalumum->tglapproval = date('Y-m-d', strtotime("1900-01-01"));
                 $jurnalumum->userapproval = '';
-                $aksi = $statusNonApproval->text;
 
-                if ($jurnalUmumPusat != null) {
-                    (new JurnalUmumPusatHeader())->processDestroy($jurnalUmumPusat->id, "$aksi JURNAL UMUM");
-                }
             } else {
                 $jurnalumum->statusapproval = $statusApproval->id;
                 $aksi = $statusApproval->text;
