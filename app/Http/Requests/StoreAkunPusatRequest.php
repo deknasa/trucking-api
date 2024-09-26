@@ -45,6 +45,13 @@ class StoreAkunPusatRequest extends FormRequest
         }
 
         $parameter = new Parameter();
+        $dataParent = $parameter->getcombodata('STATUS DEFAULT PARAMETER', 'STATUS DEFAULT PARAMETER');
+        $dataParent = json_decode($dataParent, true);
+        foreach ($dataParent as $item) {
+            $statusManual[] = $item['id'];
+        }
+
+        $parameter = new Parameter();
         $dataNeraca = $parameter->getcombodata('STATUS NERACA', 'STATUS NERACA');
         $dataNeraca = json_decode($dataNeraca, true);
         foreach ($dataNeraca as $item) {
@@ -79,6 +86,7 @@ class StoreAkunPusatRequest extends FormRequest
             'statusneraca' => ['required', Rule::in($statusNeraca)],
             'statuslabarugi' => ['required', Rule::in($statusLabaRugi)],
             'coamainket' => ['required'],
+            'statusmanual' => ['required', Rule::in($statusManual)],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'parentnama' => [new ValidasiParentAkunPusat]
         ];

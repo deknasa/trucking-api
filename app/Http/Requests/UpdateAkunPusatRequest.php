@@ -59,6 +59,13 @@ class UpdateAkunPusatRequest extends FormRequest
             $statusLabaRugi[] = $item['id'];
         }
 
+        $parameter = new Parameter();
+        $dataParent = $parameter->getcombodata('STATUS DEFAULT PARAMETER', 'STATUS DEFAULT PARAMETER');
+        $dataParent = json_decode($dataParent, true);
+        foreach ($dataParent as $item) {
+            $statusManual[] = $item['id'];
+        }
+
         $type_id = $this->type_id;
         $rulesType_id = [];
         if ($type_id != null) {
@@ -101,6 +108,7 @@ class UpdateAkunPusatRequest extends FormRequest
             'statusneraca' => ['required', Rule::in($statusNeraca)],
             'statuslabarugi' => ['required', Rule::in($statusLabaRugi)],
             'coamainket' => ['required'],
+            'statusmanual' => ['required', Rule::in($statusManual)],
             'statusaktif' => ['required', Rule::in($statusAktif)],            
             'parentnama' => [$ruleParent]
         ];
