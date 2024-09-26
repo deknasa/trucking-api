@@ -776,6 +776,7 @@ class LaporanNeraca extends MyModel
                 $table->double('saldo')->nullable();
                 $table->double('saldobayar')->nullable();
                 $table->string('jenishutang', 50)->nullable();
+                $table->string('coa', 50)->nullable();
                 $table->integer('urut')->nullable();
                 $table->string('text', 500)->nullable();
                 $table->string('dari', 500)->nullable();
@@ -803,6 +804,7 @@ class LaporanNeraca extends MyModel
                 'saldo',
                 'saldobayar',
                 'jenishutang',
+                'coa',
                 'urut',
                 'text',
                 'dari',
