@@ -238,10 +238,17 @@ class PiutangHeader extends MyModel
                 ->from(
                     DB::raw("piutangheader with (readuncommitted)")
                 )
-                ->select(DB::raw("row_number() Over(Order By piutangheader.id) as id,piutangheader.nobukti as nobukti,piutangheader.tglbukti as tglbukti_piutang, piutangheader.invoice_nobukti, piutangheader.nominal, piutangheader.pelanggan_id," . $temp . ".sisa, $temp.sisa as sisaawal,
+                ->select(DB::raw("row_number() Over(Order By piutangheader.id) as id,piutangheader.nobukti as nobukti,piutangheader.tglbukti as tglbukti_piutang, 
+                (case when isnull(c.nobuktiinvoicepajak,'')<>'' then isnull(c.nobuktiinvoicepajak,'')
+                    when isnull(c.nobuktiinvoicereimbursement,'')<>'' then isnull(c.nobuktiinvoicereimbursement,'')
+                    when isnull(c.nobuktiinvoicetambahan,'')<>'' then isnull(c.nobuktiinvoicetambahan,'')
+                    else
+                       piutangheader.invoice_nobukti
+                 end) as invoice_nobukti, 
+                piutangheader.nominal, piutangheader.pelanggan_id," . $temp . ".sisa, $temp.sisa as sisaawal,
                 (case when isnull(c.nobukti,'')<>'' or isnull(piutangheader.postingdari,'')='INVOICE' then 'UTAMA' else 'TAMBAHAN' end) as jenisinvoice"))
                 ->leftJoin(DB::raw("$temp with (readuncommitted)"), 'piutangheader.pelanggan_id', $temp . ".pelanggan_id")
-                ->leftjoin(DB::raw("invoiceheader c with (readuncommitted)"), 'piutangheader.invoice_nobukti', "c.nobukti")
+                ->leftjoin(DB::raw("invoiceemklheader c with (readuncommitted)"), 'piutangheader.invoice_nobukti', "c.nobukti")
                 ->whereRaw("piutangheader.pelanggan_id = $id")
                 ->whereRaw("piutangheader.nobukti = $temp.nobukti")
                 ->where(function ($query) use ($temp) {

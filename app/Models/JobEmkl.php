@@ -387,7 +387,12 @@ class JobEmkl extends MyModel
         $jobEmkl->info = html_entity_decode(request()->info);
         $data['sortname'] = $data['sortname'] ?? 'id';
         $data['sortorder'] = $data['sortorder'] ?? 'asc';
-        $jobEmkl->nobukti = (new RunningNumberService)->get($group, $subGroup, $jobEmkl->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), $tujuan_id, 0, 0, $marketing_id);
+        if ($jenisorder_id == 1) {
+            $jobEmkl->nobukti = (new RunningNumberService)->get($group, $subGroup, $jobEmkl->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), $tujuan_id, 0, 0, $marketing_id);
+        } else {
+            $jobEmkl->nobukti = (new RunningNumberService)->get($group, $subGroup, $jobEmkl->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), $tujuan_id, 0, 0, 0);
+
+        }
 
         if (!$jobEmkl->save()) {
             throw new \Exception('Error storing JOB EMKL.');

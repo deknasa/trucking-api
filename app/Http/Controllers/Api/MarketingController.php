@@ -12,6 +12,7 @@ use App\Http\Requests\StoreMarketingRequest;
 use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\UpadateMarketingRequest;
 use App\Http\Requests\RangeExportReportRequest;
+use App\Models\MarketingDetail;
 
 class MarketingController extends Controller
 {
@@ -45,6 +46,7 @@ class MarketingController extends Controller
                 "kodemarketing" => $request->kodemarketing ?? '',
                 "keterangan" => $request->keterangan ?? '',
                 "statusaktif" => $request->statusaktif ?? '',
+                'users' => $request->users,
             ];
             $marketing = new Marketing();
             $marketing->processStore($data, $marketing);            
@@ -82,9 +84,12 @@ class MarketingController extends Controller
     public function show($id)
     {
         $marketing = new Marketing();
+        // dd($id);
         return response([
             'status' => true,
-            'data' => $marketing->findAll($id)
+            'data' => $marketing->findAll($id),
+            'detail' => (new MarketingDetail())->findAll($id)
+
         ]);
     }
     
@@ -101,6 +106,7 @@ class MarketingController extends Controller
                 "kodemarketing" => $request->kodemarketing ?? '',
                 "keterangan" => $request->keterangan ?? '',
                 "statusaktif" => $request->statusaktif ?? '',
+                'users' => $request->users,
             ];
 
             $marketing = new Marketing();
