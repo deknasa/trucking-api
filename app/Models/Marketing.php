@@ -22,28 +22,80 @@ class Marketing extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $aktif = request()->aktif ?? '';
-        $query = DB::table($this->table)->from(
-            DB::raw("marketing with (readuncommitted)")
+
+        $querymarketing = db::table("marketingdetail")->from(db::raw("marketingdetail a with (readuncommitted)"))
+            ->select(
+                'a.marketing_id',
+                'b.user as name'
+                )
+                ->join(db::raw("[user] b with (readuncommitted)"),'a.user_id','b.id')
+                ->orderBy('a.marketing_id','asc');
+
+        $tempmarketingdetail = '##tempmarketingdetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempmarketingdetail, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('marketing_id')->nullable();
+            $table->longText('name')->nullable();
+        });
+
+        DB::table($tempmarketingdetail)->insertUsing([
+            'marketing_id',
+            'name',
+        ],  $querymarketing);
+
+        $tempmarketingdetailrekap = '##tempmarketingdetailrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempmarketingdetailrekap, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('marketing_id')->nullable();
+            $table->longText('name')->nullable();
+        });
+
+        $querylist=db::table($tempmarketingdetail)->from(db::raw($tempmarketingdetail . " b"))
+        ->select(
+            db::raw("
+             distinct b.marketing_id,Stuff((SELECT DISTINCT ', ' + a.name
+              FROM ".$tempmarketingdetail ." a
+              WHERE  a.marketing_id=B.marketing_id
+              FOR XML PATH('')), 1, 2, '') AS name
+            ")
         );
 
-        $query = $this->selectColumns($query);
-        $query->addSelect(
-            DB::raw("'Laporan Marketing' as judulLaporan"),
-            DB::raw("'" . $getJudul->text . "' as judul"),
-            DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
-        );
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        DB::table($tempmarketingdetailrekap)->insertUsing([
+            'marketing_id',
+            'name',
+        ],  $querylist);
 
-        $this->sort($query);
+
+
+        $query = DB::table($this->table)->from(DB::raw("marketing with (readuncommitted)"))
+            ->select(
+                'marketing.id',
+                'marketing.kodemarketing',
+                'marketing.keterangan',
+                'user.name as user',
+                'parameter.memo as statusaktif',
+                'marketing.modifiedby',
+                'marketing.created_at',
+                'marketing.updated_at',
+                DB::raw("'Laporan Marketing' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'marketing.statusaktif', '=', 'parameter.id')
+            // ->leftJoin(DB::raw("[user] with (readuncommitted)"), 'marketing.user_id', '=', db::raw("[user].id"));
+            ->leftJoin(DB::raw($tempmarketingdetailrekap . " as [user]"), 'marketing.id', db::raw("[user].marketing_id"));
+
+
+
         $this->filter($query);
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
@@ -55,10 +107,14 @@ class Marketing extends MyModel
 
             $query->where('marketing.statusaktif', '=', $statusaktif->id);
         }
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
         $this->paginate($query);
 
         $data = $query->get();
-
+// dd($data);
         return $data;
     }
 
@@ -231,7 +287,8 @@ class Marketing extends MyModel
             throw new \Exception('Error storing marketing.');
         }
 
-        (new LogTrail())->processStore([
+
+        $marketingLogTrail =  (new LogTrail())->processStore([
             'namatabel' => strtoupper($marketing->getTable()),
             'postingdari' => 'ENTRY marketing',
             'idtrans' => $marketing->id,
@@ -240,6 +297,36 @@ class Marketing extends MyModel
             'datajson' => $marketing->toArray(),
             'modifiedby' => $marketing->modifiedby
         ]);
+
+        if (is_iterable($data['users'])) {
+            $marketingDetails = [];
+            for ($i = 0; $i < count($data['users']); $i++) {
+                $datadetail = [
+                    'user_id' => $data['users'][$i],
+                    'marketing_id' => $marketing->id,
+                    'tas_id' => $data['detail_tas_id'][$i]??0,
+                ];
+                $marketingDetail = new MarketingDetail();
+                
+                $marketingDetail->processStore($datadetail, $marketingDetail);
+                
+                $marketing->detailTasId[] = $marketingDetail->id;
+
+                $marketingDetails[] = $marketingDetail->toArray();
+            }
+            
+            $logtrail = new LogTrail();
+            $logtrail->processStore([
+                'namatabel' => strtoupper($marketingDetail->getTable()),
+                'postingdari' => 'ENTRY marketing DETAIL',
+                'idtrans' =>  $marketingLogTrail->id,
+                'nobuktitrans' => $marketing->id,
+                'aksi' => 'ENTRY',
+                'datajson' => $marketingDetails,
+                'modifiedby' => auth('api')->user()->user,
+            ]);
+        }
+
 
         return $marketing;
     }
@@ -254,7 +341,7 @@ class Marketing extends MyModel
             throw new \Exception('Error updating marketing.');
         }
 
-        (new LogTrail())->processStore([
+        $marketingLogTrail= (new LogTrail())->processStore([
             'namatabel' => strtoupper($marketing->getTable()),
             'postingdari' => 'EDIT marketing',
             'idtrans' => $marketing->id,
@@ -263,6 +350,51 @@ class Marketing extends MyModel
             'datajson' => $marketing->toArray(),
             'modifiedby' => $marketing->modifiedby
         ]);
+
+        if (is_iterable($data['users'])) {
+            $marketingDetail = new MarketingDetail();
+            $marketingDetail->where('marketing_id', $marketing->id)->delete();
+            $marketingDetails = [];
+            for ($i = 0; $i < count($data['users']); $i++) {
+                $datadetail = [
+                    'user_id' => $data['users'][$i],
+                    'marketing_id' => $marketing->id,
+                ];
+                $marketingDetail = new MarketingDetail();
+                $marketingDetail->processStore($datadetail, $marketingDetail);
+                // $marketing->detailTasId[] = $marketingDetail->id;
+
+                $marketingDetails[] = $marketingDetail->toArray();
+            }
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($marketingDetail->getTable()),
+                'postingdari' => 'EDIT marketing DETAIL',
+                'idtrans' =>  $marketingLogTrail->id,
+                'nobuktitrans' => $marketing->id,
+                'aksi' => 'EDIT',
+                'datajson' => $marketingDetails,
+                'modifiedby' => auth('api')->user()->user,
+            ]);
+        } else {
+            $checkDetail = DB::table('marketingdetail')->from(DB::raw("marketingdetail with (readuncommitted)"));
+            $checkDetailExist = $checkDetail->where('marketing_id', $marketing->id)->first();
+            if ($checkDetailExist != '') {
+                $marketingDetail = DB::table('marketingdetail')->from(DB::raw("marketingdetail with (readuncommitted)"));
+                $marketingDetail->where('marketing_id', $marketing->id)->get();
+                $marketingDetail = new marketingDetail();
+                $marketingDetail->where('marketing_id', $marketing->id)->delete();
+
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper('marketingdetail'),
+                    'postingdari' => 'EDIT marketing DELETE DETAIL',
+                    'idtrans' =>  $marketingLogTrail->id,
+                    'nobuktitrans' => $marketing->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => $marketingDetail->toArray(),
+                    'modifiedby' => auth('api')->user()->user,
+                ]);
+            }
+        }
 
         return $marketing;
     }
