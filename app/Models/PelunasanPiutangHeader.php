@@ -2109,7 +2109,7 @@ class PelunasanPiutangHeader extends MyModel
             ->where('grp', 'JUDULAN LAPORAN')
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
-
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
         $query = DB::table($this->table)->from(DB::raw("pelunasanpiutangheader with (readuncommitted)"))
             ->select(
                 'pelunasanpiutangheader.id',
@@ -2125,15 +2125,18 @@ class PelunasanPiutangHeader extends MyModel
                 "statuscetak.id as  statuscetak_id",
                 'bank.namabank as bank_id',
                 'agen.namaagen as agen_id',
+                'pelanggan.namapelanggan as pelanggan_id',
                 'alatbayar.namaalatbayar as alatbayar_id',
                 DB::raw("'Bukti Pelunasan Piutang' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'" . $cabang . "' as cabang"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pelunasanpiutangheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pelunasanpiutangheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'pelunasanpiutangheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pelunasanpiutangheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pelunasanpiutangheader.alatbayar_id', 'alatbayar.id')
             ->where("$this->table.id", $id);
 

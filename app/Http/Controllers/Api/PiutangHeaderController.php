@@ -390,19 +390,28 @@ class PiutangHeaderController extends Controller
                     'index' => 'postingdari',
                 ],
             ];
-            $header_right_columns = [
-                [
-                    'label' => 'Customer',
-                    'index' => 'agen_id',
-                ],
-                [
+            if ($piutang_Header->cabang != 'BITUNG-EMKL') {
+                $header_right_columns[] =
+
+                    [
+                        'label' => 'Customer',
+                        'index' => 'agen_id',
+                    ];
+            } else {
+                $header_right_columns[] =
+
+                    [
+                        'label' => 'Shipper',
+                        'index' => 'pelanggan_id',
+                    ];
+            }
+            $header_right_columns[] = [
                     'label' => 'Nama Perkiraan (Debet)',
                     'index' => 'coadebet',
-                ],
-                [
+            ];
+            $header_right_columns[] = [
                     'label' => 'Nama Perkiraan (Kredit)',
                     'index' => 'coakredit',
-                ],
             ];
 
             $detail_columns = [

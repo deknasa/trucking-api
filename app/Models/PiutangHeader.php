@@ -75,6 +75,7 @@ class PiutangHeader extends MyModel
             DB::raw('(case when (year(piutangheader.tglbukacetak) <= 2000) then null else piutangheader.tglbukacetak end ) as tglbukacetak'),
             'piutangheader.userbukacetak',
             'agen.namaagen as agen_id',
+            'pelanggan.namapelanggan as pelanggan_id',
             db::raw("cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceheader"),
             db::raw("cast(cast(format((cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceheader"),
             db::raw("cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceextraheader"),
@@ -84,6 +85,7 @@ class PiutangHeader extends MyModel
             ->leftJoin(DB::raw("invoiceextraheader as invoiceextra with (readuncommitted)"), 'piutangheader.invoice_nobukti', '=', 'invoiceextra.nobukti')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'piutangheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'piutangheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'piutangheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), 'piutangheader.coadebet', 'debet.coa')
             ->leftJoin(DB::raw("akunpusat as kredit with (readuncommitted)"), 'piutangheader.coakredit', 'kredit.coa')
             ->leftJoin(DB::raw($temppelunasan . " as c"), 'piutangheader.nobukti', 'c.piutang_nobukti');
@@ -367,6 +369,7 @@ class PiutangHeader extends MyModel
                  piutangheader.nominal-isnull(c.nominal,0) as sisapiutang,
                  $this->table.invoice_nobukti,
                  'agen.namaagen as agen_id',
+                 'pelanggan.namapelanggan as pelanggan_id',
                  'parameter.text as statuscetak',
                  $this->table.userbukacetak,
                  $this->table.tglbukacetak,
@@ -378,6 +381,7 @@ class PiutangHeader extends MyModel
             )
         )
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'piutangheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'piutangheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'piutangheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), 'piutangheader.coadebet', 'debet.coa')
             ->leftJoin(DB::raw("akunpusat as kredit with (readuncommitted)"), 'piutangheader.coakredit', 'kredit.coa')
@@ -398,6 +402,7 @@ class PiutangHeader extends MyModel
             $table->float('sisapiutang')->nullable();
             $table->string('invoice_nobukti')->nullable();
             $table->string('agen_id')->nullable();
+            $table->string('pelanggan_id')->nullable();
             $table->string('statuscetak', 1000)->nullable();
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
@@ -419,7 +424,7 @@ class PiutangHeader extends MyModel
         $models = $this->filter($query);
         $models = $query
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'tgljatuhtempo', 'postingdari', 'nominal', 'nominalpelunasan', 'sisapiutang', 'invoice_nobukti', 'agen_id', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'coadebet', 'coakredit', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'tgljatuhtempo', 'postingdari', 'nominal', 'nominalpelunasan', 'sisapiutang', 'invoice_nobukti', 'agen_id', 'pelanggan_id', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'coadebet', 'coakredit', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -432,6 +437,8 @@ class PiutangHeader extends MyModel
             return $query->orderBy(DB::raw("(piutangheader.nominal - isnull(c.nominal,0))"), $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'agen_id') {
             return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'pelanggan_id') {
+            return $query->orderBy('pelanggan.namapelanggan', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'coadebet') {
             return $query->orderBy('debet.keterangancoa', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'coakredit') {
@@ -452,6 +459,8 @@ class PiutangHeader extends MyModel
                                 $query = $query->where('parameter.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'agen_id') {
                                 $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'pelanggan_id') {
+                                $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->whereRaw("format(piutangheader.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominalpelunasan') {
@@ -481,6 +490,8 @@ class PiutangHeader extends MyModel
                                     $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'agen_id') {
                                     $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'pelanggan_id') {
+                                    $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'nominal') {
                                     $query = $query->orWhereRaw("format(piutangheader.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'nominalpelunasan') {
@@ -946,6 +957,7 @@ class PiutangHeader extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
         $query = DB::table($this->table)->from(
             DB::raw("piutangheader with (readuncommitted)")
         )->select(
@@ -960,17 +972,20 @@ class PiutangHeader extends MyModel
             'debet.keterangancoa as coadebet',
             'kredit.keterangancoa as coakredit',
             'agen.namaagen as agen_id',
+            'pelanggan.namapelanggan as pelanggan_id',
             'piutangheader.jumlahcetak',
             'statuscetak.memo as statuscetak',
             'statuscetak.id as  statuscetak_id',
             DB::raw("'Bukti Piutang' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'" . $cabang . "' as cabang"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
             DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
         )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'piutangheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'piutangheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'piutangheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), 'piutangheader.coadebet', 'debet.coa')
             ->leftJoin(DB::raw("akunpusat as kredit with (readuncommitted)"), 'piutangheader.coakredit', 'kredit.coa')
             ->leftJoin(DB::raw($temppelunasan . " as c"), 'piutangheader.nobukti', 'c.piutang_nobukti');
