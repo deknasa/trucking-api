@@ -2104,6 +2104,10 @@ class UpahSupirRincian extends MyModel
 
     public function setUpRow()
     {
+        $parameter = new Parameter();
+        $statusaktif = $parameter->cekId('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF') ?? 0;
+
+        
         $query = DB::table('statuscontainer')->select(
             'statuscontainer.kodestatuscontainer as statuscontainer',
             'statuscontainer.id as statuscontainer_id',
@@ -2115,6 +2119,7 @@ class UpahSupirRincian extends MyModel
             db::Raw("0 as nominaltol"),
             db::Raw("0 as liter")
         )
+        ->where('statuscontainer.statusaktif', $statusaktif)
             ->crossJoin('container')
             ->orderBy('container.id', 'asc')
             ->orderBy('statuscontainer.kodestatuscontainer', 'desc');
