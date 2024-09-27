@@ -1897,7 +1897,7 @@ class InvoiceEmklHeader extends MyModel
                 'statusinvoice.text as statusinvoice',
                 'statuscetak.memo as statuscetak',
                 'statuscetak.id as  statuscetak_id',
-                DB::raw("(case when statusformatreimbursement.text = 'YA' then 'INVOICE REIMBURSEMENT' else 
+                DB::raw("(case when isnull(invoiceemklheader.nobuktiinvoicereimbursement,'') <> '' then 'INVOICE REIMBURSEMENT' else 
                     (case when invoiceemklheader.jenisorder_id=1 then 'KWITANSI / INVOICE' else 'INVOICE TAGIHAN' end) end) as judulLaporan"),
                 DB::raw("'" . $getBank . "' as footerbank"),
                 DB::raw("'" . $getAn . "' as footerperusahaan"),
