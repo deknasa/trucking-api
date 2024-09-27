@@ -50,7 +50,7 @@ class JobEmkl extends MyModel
                 "jenisorder.keterangan as jenisorder",
                 "jobemkl.kapal",
                 "jobemkl.voy",
-                "jobemkl.nominal",
+                db::raw("isnull(jobemkl.nominal,0) as nominal"),
                 "jobemkl.destination",
                 "jobemkl.nocont",
                 "jobemkl.noseal",
@@ -176,7 +176,7 @@ class JobEmkl extends MyModel
                 "jenisorder.keterangan as jenisorder",
                 "jobemkl.kapal",
                 "jobemkl.voy",
-                "jobemkl.nominal",
+                db::raw("isnull(jobemkl.nominal,0) as nominal"),
                 "jobemkl.destination",
                 "jobemkl.nocont",
                 "jobemkl.noseal",
@@ -296,6 +296,8 @@ class JobEmkl extends MyModel
                                 $query = $query->whereRaw("container.keterangan LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                             } else if ($filters['field'] == 'jenisorder') {
                                 $query = $query->whereRaw("jenisorder.keterangan LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->whereRaw("format(isnull(jobemkl.nominal,0), '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
@@ -322,6 +324,8 @@ class JobEmkl extends MyModel
                                     $query = $query->orWhereRaw("container.keterangan LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                                 } else if ($filters['field'] == 'jenisorder') {
                                     $query = $query->orWhereRaw("jenisorder.keterangan LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                } else if ($filters['field'] == 'nominal') {
+                                    $query = $query->orWhereRaw("format(isnull(jobemkl.nominal, 0), '#,#0.00') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                                 } else {

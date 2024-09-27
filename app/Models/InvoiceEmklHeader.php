@@ -129,7 +129,7 @@ class InvoiceEmklHeader extends MyModel
                             } else if ($filters['field'] == 'container_id') {
                                 $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominalppn') {
-                                $query = $query->whereRaw("format($this->table.nominalppn, '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $query->whereRaw("format(isnull($this->table.nominalppn, 0), '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgljatuhtempo' || $filters['field'] == 'tglterima' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapproval') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
@@ -163,7 +163,7 @@ class InvoiceEmklHeader extends MyModel
                                 } else if ($filters['field'] == 'container_id') {
                                     $query = $query->orWhere('container.keterangan', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'nominalppn') {
-                                    $query = $query->orWhereRaw("format($this->table.nominalppn, '#,#0.00') LIKE '%$filters[data]%'");
+                                    $query = $query->orWhereRaw("format(isnull($this->table.nominalppn, 0), '#,#0.00') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgljatuhtempo' || $filters['field'] == 'tglterima' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapproval') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
