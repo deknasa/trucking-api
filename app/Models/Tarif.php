@@ -1164,13 +1164,21 @@ class Tarif extends MyModel
     }
     public function processApprovalaktif(array $data)
     {
-        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+
+        $parameter = new Parameter();
+        $statusaktif = $parameter->cekId('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF') ?? 0;
+        $statusnonaktif = $parameter->cekId('STATUS AKTIF', 'STATUS AKTIF', 'NON AKTIF') ?? 0;
+        
         for ($i = 0; $i < count($data['Id']); $i++) {
             $Tarif = Tarif::find($data['Id'][$i]);
-
-            $Tarif->statusaktif = $statusaktif->id;
-            $aksi = $statusaktif->text;
+            $statusaktif_id=$Tarif->statusaktif ?? 0;
+            if ($statusaktif_id==$statusaktif) {
+                $Tarif->statusaktif = $statusnonaktif;
+                $aksi = 'NON AKTIF';
+            } else {
+                $Tarif->statusaktif = $statusaktif;
+                $aksi = 'AKTIF';
+            }
 
             // dd($Tarif);
             if ($Tarif->save()) {

@@ -97,6 +97,7 @@ class UpahSupir extends MyModel
                 $table->longText('tarif')->nullable();
                 $table->longText('kotadari_id')->nullable();
                 $table->longText('kotasampai_id')->nullable();
+                $table->longText('kotasampaiid')->nullable();
                 $table->longText('zonadari_id')->nullable();
                 $table->longText('zonasampai_id')->nullable();
                 $table->longText('penyesuaian')->nullable();
@@ -145,6 +146,7 @@ class UpahSupir extends MyModel
                     'tarif.tujuan as tarif',
                     'kotadari.kodekota as kotadari_id',
                     'kotasampai.kodekota as kotasampai_id',
+                    'kotasampai.id as kotasampaiid',
                     'zonadari.zona as zonadari_id',
                     'zonasampai.zona as zonasampai_id',
                     'upahsupir.penyesuaian',
@@ -189,6 +191,7 @@ class UpahSupir extends MyModel
                 'tarif',
                 'kotadari_id',
                 'kotasampai_id',
+                'kotasampaiid',
                 'zonadari_id',
                 'zonasampai_id',
                 'penyesuaian',
@@ -247,6 +250,7 @@ class UpahSupir extends MyModel
                 'a.tarif',
                 'a.kotadari_id',
                 'a.kotasampai_id',
+                'a.kotasampaiid',
                 'a.zonadari_id',
                 'a.zonasampai_id',
                 'a.penyesuaian',
@@ -1675,13 +1679,20 @@ class UpahSupir extends MyModel
     public function processApprovalaktif(array $data)
     {
 
-        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        $parameter = new Parameter();
+        $statusaktif = $parameter->cekId('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF') ?? 0;
+        $statusnonaktif = $parameter->cekId('STATUS AKTIF', 'STATUS AKTIF', 'NON AKTIF') ?? 0;
+        
         for ($i = 0; $i < count($data['Id']); $i++) {
             $UpahSupir = UpahSupir::find($data['Id'][$i]);
-
-            $UpahSupir->statusaktif = $statusaktif->id;
-            $aksi = $statusaktif->text;
+            $statusaktif_id=$UpahSupir->statusaktif ?? 0;
+            if ($statusaktif_id==$statusaktif) {
+                $UpahSupir->statusaktif = $statusnonaktif;
+                $aksi = 'NON AKTIF';
+            } else {
+                $UpahSupir->statusaktif = $statusaktif;
+                $aksi = 'AKTIF';
+            }
 
             // dd($UpahSupir);
             if ($UpahSupir->save()) {
