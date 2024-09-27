@@ -138,6 +138,19 @@ class User extends Authenticatable
         }
         return false;
     }
+
+    public function isMarketing()
+    {
+        $role = DB::table('role')->select('id')->where('rolename', 'MARKETING')->first();
+        $userMandor = $this->checkUserRole($role);
+
+        if ($userMandor->count()) {
+            //check user has mandor
+            return $this->select('marketing.id as marketing_id')->rightJoin(DB::raw("marketingdetail as marketing  with (readuncommitted)"), 'marketing.user_id', 'user.id')->where('marketing.user_id', $this->id)->first();
+        }
+        return false;
+    }
+
     public function isAdmin()
     {
         $role = DB::table('role')->select('id')->where('rolename', 'ADMIN')->first();

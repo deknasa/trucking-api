@@ -90,6 +90,8 @@ class JenisOrder extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+        $isMarketing = auth()->user()->isMarketing();
+        $isAdmin = auth()->user()->isAdmin();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
@@ -116,7 +118,11 @@ class JenisOrder extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jenisorder.statusaktif', '=', 'parameter.id');
 
 
-
+     if (!$isAdmin) {
+            if ($isMarketing) {
+                $query->Where('jenisorder.id',1);
+            }
+        }
 
         $this->filter($query);
 

@@ -1037,6 +1037,24 @@ class LaporanKalkulasiEmklController extends Controller
             $sheet->setCellValue("F$rowIndex", $response_detail->voy);
             $sheet->setCellValue("G$rowIndex", $response_detail->nocontseal);
             $sheet->setCellValue("H$rowIndex", $response_detail->lokasibongkarmuat);
+            $sheet->setCellValue("AL$rowIndex", $response_detail->biayadoor);
+            $sheet->setCellValue("AM$rowIndex", $response_detail->biayado);
+            $sheet->setCellValue("AN$rowIndex", $response_detail->uangkawal);
+            $sheet->setCellValue("AO$rowIndex", $response_detail->uangburuh);
+            $sheet->setCellValue("AP$rowIndex", $response_detail->biayacleaning);
+            $sheet->setCellValue("AQ$rowIndex", $response_detail->biayalain);
+            $sheet->setCellValue("AS$rowIndex", $response_detail->invoiceemkl_nobuktiinvoicetambahan);
+            $sheet->setCellValue("I$rowIndex", $response_detail->nominalthc);
+            $sheet->setCellValue("J$rowIndex", $response_detail->nobuktipengeluaranthc);
+            $sheet->setCellValue("K$rowIndex", $response_detail->nobuktiinvoicethc);
+            $sheet->setCellValue("L$rowIndex", $response_detail->nominalsto);
+            $sheet->setCellValue("M$rowIndex", $response_detail->nobuktipengeluaransto);
+            $sheet->setCellValue("N$rowIndex", $response_detail->nobuktiinvoicesto);
+            $sheet->setCellValue("O$rowIndex", $response_detail->nominalstodem);
+            $sheet->setCellValue("P$rowIndex", $response_detail->nobuktipengeluaranstodem);
+            $sheet->setCellValue("Q$rowIndex", $response_detail->nobuktiinvoicestodem);
+
+            
 
             $sheet->setCellValue("AJ$rowIndex", "=S$rowIndex+U$rowIndex+X$rowIndex+Z$rowIndex+AB$rowIndex+AD$rowIndex+AF$rowIndex+AH$rowIndex")->getStyle("AJ$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
             $sheet->setCellValue("AR$rowIndex", "=AL$rowIndex+AM$rowIndex+AN$rowIndex+AO$rowIndex+AP$rowIndex+AQ$rowIndex")->getStyle("AR$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
@@ -1146,15 +1164,15 @@ class LaporanKalkulasiEmklController extends Controller
         $sheet->getColumnDimension('F')->setWidth(15);
         $sheet->getColumnDimension('G')->setWidth(22);
         $sheet->getColumnDimension('H')->setWidth(22);
-        $sheet->getColumnDimension('I')->setWidth(10);
-        $sheet->getColumnDimension('J')->setWidth(18);
-        $sheet->getColumnDimension('K')->setWidth(18);
-        $sheet->getColumnDimension('L')->setWidth(18);
-        $sheet->getColumnDimension('M')->setWidth(18);
-        $sheet->getColumnDimension('N')->setWidth(18);
-        $sheet->getColumnDimension('O')->setWidth(18);
-        $sheet->getColumnDimension('P')->setWidth(18);
-        $sheet->getColumnDimension('Q')->setWidth(18);
+        $sheet->getColumnDimension('I')->setWidth(20);
+        $sheet->getColumnDimension('J')->setWidth(20);
+        $sheet->getColumnDimension('K')->setWidth(20);
+        $sheet->getColumnDimension('L')->setWidth(20);
+        $sheet->getColumnDimension('M')->setWidth(20);
+        $sheet->getColumnDimension('N')->setWidth(20);
+        $sheet->getColumnDimension('O')->setWidth(20);
+        $sheet->getColumnDimension('P')->setWidth(20);
+        $sheet->getColumnDimension('Q')->setWidth(20);
         $sheet->getColumnDimension('R')->setWidth(18);
         $sheet->getColumnDimension('S')->setWidth(18);
         $sheet->getColumnDimension('T')->setWidth(18);
