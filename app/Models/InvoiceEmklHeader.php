@@ -1022,8 +1022,21 @@ class InvoiceEmklHeader extends MyModel
             }
             // dd($data['nominal'][$i]);
 
+            $nominalbiaya = $data['nominal'][$i];
+            // if ($data['jenisorder_id'] == $idMuatan->id) {
+            //     if ($statusPPN->text == 'PPN 1.1%') {
+
+            //         $nilaippn = db::select("select round(($nominalbiaya * 0.011), 0, 1) as ppn");
+            //         $nominalppn = $nilaippn[0]->ppn;
+            //         $nominalbiaya = $nominalbiaya + $nominalppn;
+            //     } else {
+            //         $nilaippn = db::select("select round(($nominalbiaya * 0.11), 0, 1) as ppn");
+            //         $nominalppn = $nilaippn[0]->ppn;
+            //         $nominalbiaya = $nominalbiaya + $nominalppn;
+            //     }
+            // }
             $invoiceDetail = (new InvoiceEmklDetail())->processStore($invoiceHeader, [
-                'nominal' => $data['nominal'][$i],
+                'nominal' => $nominalbiaya,
                 'jobemkl_nobukti' => ($prosesReimburse == 0) ? $jobemkl->nobukti : '',
                 'container_id' => ($prosesReimburse == 0) ? $jobemkl->container_id : '',
                 'coadebet' => $coadebetdetail,
@@ -1169,7 +1182,22 @@ class InvoiceEmklHeader extends MyModel
         }
         $nominalDetail[] = $total;
         $invoiceNobukti[] =  $invoiceHeader->nobukti;
+        $nominalppn = 0;
+        if ($prosesReimburse == 0) {
+            if ($data['jenisorder_id'] == $idMuatan->id) {
+                $nominalDetail = [];
+                if ($statusPPN->text == 'PPN 1.1%') {
 
+                    $nilaippn = db::select("select round(($total * 0.011), 0, 1) as ppn");
+                    $nominalppn = $nilaippn[0]->ppn;
+                    $nominalDetail[] = $total + $nominalppn;
+                } else {
+                    $nilaippn = db::select("select round(($total * 0.11), 0, 1) as ppn");
+                    $nominalppn = $nilaippn[0]->ppn;
+                    $nominalDetail[] = $total + $nominalppn;
+                }
+            }
+        }
         $invoiceRequest = [
             'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
             'tgljatuhtempo' => date('Y-m-d', strtotime($data['tglbukti'])),
@@ -1199,19 +1227,7 @@ class InvoiceEmklHeader extends MyModel
         $piutangHeader = (new PiutangHeader())->processStore($invoiceRequest);
         $invoiceHeader->piutang_nobukti = $piutangHeader->nobukti;
 
-        $nominalppn = 0;
-        if ($prosesReimburse == 0) {
-            if ($data['jenisorder_id'] == $idMuatan->id) {
-                if ($statusPPN->text == 'PPN 1.1%') {
-
-                    $nilaippn = db::select("select round(($total * 0.011), 0, 1) as ppn");
-                    $nominalppn = $nilaippn[0]->ppn;
-                } else {
-                    $nilaippn = db::select("select round(($total * 0.11), 0, 1) as ppn");
-                    $nominalppn = $nilaippn[0]->ppn;
-                }
-            }
-        }
+       
         $invoiceHeader->nominalppn = $nominalppn;
 
         if ($prosesReimburse == 0) {
@@ -1569,8 +1585,21 @@ class InvoiceEmklHeader extends MyModel
                 }
             }
 
+            $nominalbiaya = $data['nominal'][$i];
+            // if ($data['jenisorder_id'] == $idMuatan->id) {
+            //     if ($statusPPN->text == 'PPN 1.1%') {
+
+            //         $nilaippn = db::select("select round(($nominalbiaya * 0.011), 0, 1) as ppn");
+            //         $nominalppn = $nilaippn[0]->ppn;
+            //         $nominalbiaya = $nominalbiaya + $nominalppn;
+            //     } else {
+            //         $nilaippn = db::select("select round(($nominalbiaya * 0.11), 0, 1) as ppn");
+            //         $nominalppn = $nilaippn[0]->ppn;
+            //         $nominalbiaya = $nominalbiaya + $nominalppn;
+            //     }
+            // }
             $invoiceDetail = (new InvoiceEmklDetail())->processStore($invoiceHeader, [
-                'nominal' => $data['nominal'][$i],
+                'nominal' => $nominalbiaya,
                 'jobemkl_nobukti' => ($prosesReimburse == 0) ? $jobemkl->nobukti : '',
                 'container_id' => ($prosesReimburse == 0) ? $jobemkl->container_id : '',
                 'coadebet' => $coadebetdetail,
@@ -1717,12 +1746,15 @@ class InvoiceEmklHeader extends MyModel
 
         if ($prosesReimburse == 0) {
             if ($invoiceHeader->jenisorder_id == $idMuatan->id) {
+                $nominalDetail = [];
                 if ($statusPPN->text == 'PPN 1.1%') {
                     $nilaippn = db::select("select round(($total * 0.011), 0, 1) as ppn");
                     $nominalppn = $nilaippn[0]->ppn;
+                    $nominalDetail[] = $total + $nominalppn;
                 } else {
                     $nilaippn = db::select("select round(($total * 0.11), 0, 1) as ppn");
                     $nominalppn = $nilaippn[0]->ppn;
+                    $nominalDetail[] = $total + $nominalppn;
                 }
             }
         }
