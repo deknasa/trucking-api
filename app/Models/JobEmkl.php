@@ -33,6 +33,23 @@ class JobEmkl extends MyModel
 
         $jenisorder_id = request()->jenisorder_id ?? '';
 
+        $isMarketing = auth()->user()->isMarketing();
+        $isAdmin = auth()->user()->isAdmin();
+
+        $userid = auth('api')->user()->id;
+        $querymarketing = db::table("marketingdetail")->from(db::raw("marketingdetail a with (readuncommitted)"))
+        ->select('a.marketing_id')
+        ->where('a.user_id', $userid);
+    $tempmarketingdetail = '##tempmarketingdetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+    Schema::create($tempmarketingdetail, function ($table) {
+        $table->id();
+        $table->unsignedBigInteger('marketing_id')->nullable();
+    });
+
+    DB::table($tempmarketingdetail)->insertUsing([
+        'marketing_id',
+    ],  $querymarketing);        
+
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " as jobemkl")
         )
@@ -79,6 +96,11 @@ class JobEmkl extends MyModel
         
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween('jobemkl.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        if (!$isAdmin) {
+            if ($isMarketing) {
+                $query->Join(DB::raw($tempmarketingdetail . " as marketingdetail"), 'jobemkl.marketing_id', 'marketingdetail.marketing_id');
+            }
         }
         
         if ($jenisorder_id != '') {
