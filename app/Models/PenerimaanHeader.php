@@ -1229,8 +1229,8 @@ class PenerimaanHeader extends MyModel
         $penerimaanHeader = new PenerimaanHeader();
 
         $penerimaanHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
-        $penerimaanHeader->pelanggan_id = $data['pelanggan_id'] ?? '';
-        $penerimaanHeader->agen_id = $data['agen_id'] ?? '';
+        $penerimaanHeader->pelanggan_id = $data['pelanggan_id'] ?? 0;
+        $penerimaanHeader->agen_id = $data['agen_id'] ?? 0;
         $penerimaanHeader->postingdari = $data['postingdari'] ?? 'ENTRY PENERIMAAN KAS/BANK';
         $penerimaanHeader->diterimadari = $data['diterimadari'] ?? '';
         $penerimaanHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
@@ -1462,9 +1462,11 @@ class PenerimaanHeader extends MyModel
         ];
         /*DELETE EXISTING JURNAL*/
         $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiOld)->first();
-        $newJurnal = new JurnalUmumHeader();
-        $newJurnal = $newJurnal->find($getJurnal->id);
-        (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+        if ($getJurnal != '') {
+            $newJurnal = new JurnalUmumHeader();
+            $newJurnal = $newJurnal->find($getJurnal->id);
+            (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+        }
 
         return $penerimaanHeader;
     }

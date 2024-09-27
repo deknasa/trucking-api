@@ -135,6 +135,7 @@ class NotaDebetFifo extends Model
         $notadebetFifo->pelunasanpiutang_id = $data['pelunasanpiutang_id'];
         $notadebetFifo->pelunasanpiutang_nobukti = $data['pelunasanpiutang_nobukti'];
         $notadebetFifo->agen_id = $data['agen_id'];
+        $notadebetFifo->pelanggan_id = $data['pelanggan_id'];
         $notadebetFifo->notadebet_id = $notaDebetDetail[0]->notadebet_id ?? '';
         $notadebetFifo->nominal = $data['nominal'] ?? 0;
         $notadebetFifo->notadebet_nobukti = $data['notadebet_nobukti'] ?? '';

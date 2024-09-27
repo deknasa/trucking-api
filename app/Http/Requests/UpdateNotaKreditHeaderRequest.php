@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\AlatBayar;
+use App\Models\Parameter;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\DestroyNotaKredit;
@@ -62,6 +63,22 @@ class UpdateNotaKreditHeaderRequest extends FormRequest
             }
         });
 
+        $requiredAgen = Rule::requiredIf(function () {
+
+            $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
+            if ($cabang != 'BITUNG-EMKL') {
+                return true;
+            }
+            return false;
+        });
+        $requiredPelanggan = Rule::requiredIf(function () {
+
+            $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
+            if ($cabang == 'BITUNG-EMKL') {
+                return true;
+            }
+            return false;
+        });
         $rules = [
             'id' => [new DestroyNotaKredit()],
             'tglbukti' => [
@@ -74,7 +91,8 @@ class UpdateNotaKreditHeaderRequest extends FormRequest
                 new DateTutupBuku(),
                 'before_or_equal:' . date('d-m-Y')
             ],
-            'agen' => 'required',
+            'agen' => $requiredAgen,
+            'pelanggan' => $requiredPelanggan,
             'nowarkat' => $requiredGiro
         ];
         $relatedRequests = [

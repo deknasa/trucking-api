@@ -2207,6 +2207,7 @@ class OrderanTrucking extends MyModel
 
     public function processUpdate(OrderanTrucking $orderanTrucking, array $data): OrderanTrucking
     {
+        $updatenocont = $data['updatenocont'] ?? 0;
 
         $defaultapproval = DB::table('parameter')
             ->where('grp', 'STATUS APPROVAL')
@@ -2270,9 +2271,9 @@ class OrderanTrucking extends MyModel
                     $nosp = '';
                     if ($cabang == 'MEDAN') {
                         if ($item['statuscontainer_id'] == $statuscontainerEmpty) {
-                            $nosp = $data['nospempty'];
+                            $nosp = $data['nospempty'] ?? '';
                         } else {
-                            $nosp = $data['nospfull'];
+                            $nosp = $data['nospfull'] ?? '';
                         }
                     }
                     $suratPengantar = [
@@ -2291,6 +2292,7 @@ class OrderanTrucking extends MyModel
                         'nosp' => $nosp,
                         'jenisorder_id' => $data['jenisorder_id'],
                         'pelanggan_id' => $data['pelanggan_id'],
+                        'updatenocont' => $updatenocont,
                         // 'tarif_id' => $data['tarifrincian_id'],
                         'postingdari' => 'EDIT ORDERAN TRUCKING'
                     ];

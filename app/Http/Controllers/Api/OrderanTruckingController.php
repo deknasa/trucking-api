@@ -386,6 +386,7 @@ class OrderanTruckingController extends Controller
                 'jenisorder_id' => $request->jenisorder_id,
                 'jenisorderemkl_id' => $jenisorderemkl_id->id,
                 'pelanggan_id' => $request->pelanggan_id,
+                'gandengan_id' => $request->gandengan_id,
                 'tarifrincian_id' => $request->tarifrincian_id,
                 'nojobemkl' => $request->nojobemkl,
                 'nocont' => $request->nocont,
@@ -395,6 +396,7 @@ class OrderanTruckingController extends Controller
                 'noseal2' => $request->noseal2,
                 'statuslangsir' => $request->statuslangsir,
                 'statusperalihan' => $request->statusperalihan,
+                'updatenocont' => 1
             ];
             $orderanTrucking = (new OrderanTrucking())->processUpdateNoContainer($orderantrucking, $data);
             $orderanTrucking->position = $this->getPosition($orderanTrucking, $orderanTrucking->getTable())->position;

@@ -33,7 +33,8 @@ class NotaDebetHeader extends MyModel
         $statusCetak = request()->statuscetak ?? '';
 
         $panjar = request()->panjar ?? '';
-        $agen_id = request()->agen_id ?? 0;
+        $agen = request()->agen_id ?? 0;
+        $pelanggan = request()->pelanggan_id ?? 0;
 
         if ($panjar == 'PANJAR') {
             $tglnow = date('Y-m-d');
@@ -43,6 +44,9 @@ class NotaDebetHeader extends MyModel
                 $table->string('nobukti', 50)->nullable();
                 $table->double('nominal')->nullable();
             });
+
+            $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
+            $agen_id = ($cabang == 'BITUNG-EMKL') ? $pelanggan : $agen;
 
             DB::table($temppanjar)->insertUsing([
                 'nobukti',
@@ -78,6 +82,7 @@ class NotaDebetHeader extends MyModel
                 "parameter.memo as  statusapproval_memo",
                 "$this->table.penerimaan_nobukti",
                 "agen.namaagen as agen",
+                "pelanggan.namapelanggan as pelanggan",
                 "bank.namabank as bank",
                 "alatbayar.namaalatbayar as alatbayar",
                 DB::raw('(case when (year(notadebetheader.tglkirimberkas) <= 2000) then null else notadebetheader.tglkirimberkas end ) as tglkirimberkas'),
@@ -94,6 +99,7 @@ class NotaDebetHeader extends MyModel
                 ->leftJoin(DB::raw("penerimaanheader with (readuncommitted)"), 'notadebetheader.penerimaan_nobukti', '=', 'penerimaanheader.nobukti')
                 ->leftJoin(DB::raw("bank with (readuncommitted)"), 'notadebetheader.bank_id', 'bank.id')
                 ->leftJoin(DB::raw("agen with (readuncommitted)"), 'notadebetheader.agen_id', 'agen.id')
+                ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'notadebetheader.pelanggan_id', 'pelanggan.id')
                 ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'notadebetheader.alatbayar_id', 'alatbayar.id')
                 ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'notadebetheader.statusapproval', 'parameter.id')
                 ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'notadebetheader.statuskirimberkas', 'statuskirimberkas.id')
@@ -123,6 +129,7 @@ class NotaDebetHeader extends MyModel
                 "parameter.memo as  statusapproval_memo",
                 "$this->table.penerimaan_nobukti",
                 "agen.namaagen as agen",
+                "pelanggan.namapelanggan as pelanggan",
                 "bank.namabank as bank",
                 "alatbayar.namaalatbayar as alatbayar",
                 DB::raw('(case when (year(notadebetheader.tglkirimberkas) <= 2000) then null else notadebetheader.tglkirimberkas end ) as tglkirimberkas'),
@@ -140,6 +147,7 @@ class NotaDebetHeader extends MyModel
                 ->leftJoin(DB::raw("penerimaanheader with (readuncommitted)"), 'notadebetheader.penerimaan_nobukti', '=', 'penerimaanheader.nobukti')
                 ->leftJoin(DB::raw("bank with (readuncommitted)"), 'notadebetheader.bank_id', 'bank.id')
                 ->leftJoin(DB::raw("agen with (readuncommitted)"), 'notadebetheader.agen_id', 'agen.id')
+                ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'notadebetheader.pelanggan_id', 'pelanggan.id')
                 ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'notadebetheader.alatbayar_id', 'alatbayar.id')
                 ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'notadebetheader.statusapproval', 'parameter.id')
                 ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'notadebetheader.statuskirimberkas', 'statuskirimberkas.id')
@@ -157,13 +165,12 @@ class NotaDebetHeader extends MyModel
             $query->where("notadebetheader.statuscetak", $statusCetak);
         }
 
-
+        $this->filter($query);
         // dd('test');
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->sort($query);
-        $this->filter($query);
         $this->paginate($query);
         $data = $query->get();
 
@@ -327,6 +334,7 @@ class NotaDebetHeader extends MyModel
             $table->date('tglbukti')->nullable();
             $table->date('tgllunas')->nullable();
             $table->string('agen', 200)->nullable();
+            $table->string('pelanggan', 200)->nullable();
             $table->string('pelunasanpiutang_nobukti', 50)->nullable();
             $table->string('bank', 50)->nullable();
             $table->string('alatbayar', 50)->nullable();
@@ -365,6 +373,7 @@ class NotaDebetHeader extends MyModel
             "tglbukti",
             "tgllunas",
             "agen",
+            "pelanggan",
             "pelunasanpiutang_nobukti",
             "bank",
             "alatbayar",
@@ -397,6 +406,7 @@ class NotaDebetHeader extends MyModel
                 "$this->table.tglbukti",
                 "$this->table.tgllunas",
                 'agen.namaagen as agen',
+                'pelanggan.namapelanggan as pelanggan',
                 "$this->table.pelunasanpiutang_nobukti",
                 'bank.namabank as bank',
                 'alatbayar.namaalatbayar as alatbayar',
@@ -418,6 +428,7 @@ class NotaDebetHeader extends MyModel
 
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'notadebetheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'notadebetheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'notadebetheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'notadebetheader.alatbayar_id', 'alatbayar.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'notadebetheader.statusapproval', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'notadebetheader.statuscetak', 'statuscetak.id')
@@ -468,6 +479,8 @@ class NotaDebetHeader extends MyModel
             return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'bank') {
             return $query->orderBy('bank.namabank', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'pelanggan') {
+            return $query->orderBy('pelanggan.namapelanggan', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'alatbayar') {
             return $query->orderBy('alatbayar.namaalatbayar', $this->params['sortOrder']);
         } else {
@@ -493,6 +506,8 @@ class NotaDebetHeader extends MyModel
                                     $query = $query->where('statuskirimberkas.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'agen') {
                                     $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'pelanggan') {
+                                    $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'nominal') {
                                     $query = $query->where('panjar.nominal', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'bank') {
@@ -523,6 +538,8 @@ class NotaDebetHeader extends MyModel
                                         $query = $query->orWhere('statuskirimberkas.text', '=', "$filters[data]");
                                     } else if ($filters['field'] == 'agen') {
                                         $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                                    } else if ($filters['field'] == 'pelanggan') {
+                                        $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                                     } else if ($filters['field'] == 'nominal') {
                                         $query = $query->orwhere('panjar.nominal', 'LIKE', "%$filters[data]%");
                                     } else if ($filters['field'] == 'bank') {
@@ -561,6 +578,8 @@ class NotaDebetHeader extends MyModel
                                     $query = $query->where('statuscetak.text', '=', $filters['data']);
                                 } else if ($filters['field'] == 'agen') {
                                     $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'pelanggan') {
+                                    $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'bank') {
                                     $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'alatbayar') {
@@ -587,6 +606,8 @@ class NotaDebetHeader extends MyModel
                                         $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
                                     } else if ($filters['field'] == 'agen') {
                                         $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                                    } else if ($filters['field'] == 'pelanggan') {
+                                        $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                                     } else if ($filters['field'] == 'bank') {
                                         $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                                     } else if ($filters['field'] == 'alatbayar') {
@@ -651,7 +672,8 @@ class NotaDebetHeader extends MyModel
         $notaDebetHeader = new NotaDebetHeader();
 
         $notaDebetHeader->pelunasanpiutang_nobukti = $data['pelunasanpiutang_nobukti'] ?? '';
-        $notaDebetHeader->agen_id = $data['agen_id'];
+        $notaDebetHeader->agen_id = $data['agen_id'] ?? 0;
+        $notaDebetHeader->pelanggan_id = $data['pelanggan_id'] ?? 0;
         $notaDebetHeader->bank_id = $data['bank_id'];
         $notaDebetHeader->alatbayar_id = $data['alatbayar_id'];
         $notaDebetHeader->nowarkat = $data['nowarkat'] ?? '';
@@ -724,15 +746,16 @@ class NotaDebetHeader extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
 
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
         if ($data['cekcoakredit'] == $memoNotaDebetCoa['JURNAL']) {
             $alatbayarGiro = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'GIRO')->first();
             if ($data['alatbayar_id'] != $alatbayarGiro->id) {
                 $penerimaanRequest = [
                     'tglbukti' => $data['tglbukti'],
-                    'pelanggan_id' => 0,
-                    'agen_id' => $data['agen_id'],
+                    'pelanggan_id' => $data['pelanggan_id'] ?? 0,
+                    'agen_id' => $data['agen_id'] ?? 0,
                     'postingdari' => $data['postingdari'] ?? 'ENTRY NOTA DEBET',
-                    'diterimadari' => $data['agen'],
+                    'diterimadari' => ($cabang != 'BITUNG-EMKL') ? $data['agen'] : $data['pelanggan'],
                     'tgllunas' => $data['tglbukti'],
                     'bank_id' => $data['bank_id'],
                     'nowarkat' => null,
@@ -752,10 +775,10 @@ class NotaDebetHeader extends MyModel
             } else {
                 $penerimaanGiroRequest = [
                     'tglbukti' => $data['tglbukti'],
-                    'pelanggan_id' => 0,
-                    'agen_id' => $data['agen_id'],
+                    'pelanggan_id' => $data['pelanggan_id'] ?? 0,
+                    'agen_id' => $data['agen_id'] ?? 0,
                     'postingdari' => 'ENTRY PELUNASAN PIUTANG',
-                    'diterimadari' => $data['agen'],
+                    'diterimadari' => ($cabang != 'BITUNG-EMKL') ? $data['agen'] : $data['pelanggan'],
                     'tgllunas' => $data['tglbukti'],
                     'bank_id' => $data['bank_id'],
                     'nowarkat' => $noWarkat,
@@ -773,6 +796,7 @@ class NotaDebetHeader extends MyModel
             }
             $notaDebetRincian = (new NotaDebetRincian())->processStore($notaDebetHeader, [
                 "agen_id" => $data['agen_id'],
+                "pelanggan_id" => $data['pelanggan_id'],
                 "nominal" => $nominal,
             ]);
         } else {
@@ -830,7 +854,8 @@ class NotaDebetHeader extends MyModel
 
         $notaDebetHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
         $notaDebetHeader->nowarkat = $data['nowarkat'] ?? '';
-        $notaDebetHeader->agen_id = $data['agen_id'] ?? '';
+        $notaDebetHeader->agen_id = $data['agen_id'] ?? 0;
+        $notaDebetHeader->pelanggan_id = $data['pelanggan_id'] ?? 0;
         $notaDebetHeader->bank_id = $data['bank_id'];
         $notaDebetHeader->alatbayar_id = $data['alatbayar_id'];
         $notaDebetHeader->modifiedby = auth('api')->user()->name;
@@ -893,6 +918,7 @@ class NotaDebetHeader extends MyModel
         if ($data['cekcoakredit'] == $memoNotaDebetCoa['JURNAL']) {
             $notaDebetRincian = (new NotaDebetRincian())->processStore($notaDebetHeader, [
                 "agen_id" => $data['agen_id'],
+                "pelanggan_id" => $data['pelanggan_id'],
                 "nominal" => $nominal,
             ]);
         }
@@ -906,6 +932,7 @@ class NotaDebetHeader extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
 
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
         if ($tanpaprosesnobukti == 1) {
             // CEK JIKA COA BERGANTI
             if ($data['cekcoakredit'] != $getPreviousCoa->coalebihbayar) {
@@ -939,10 +966,10 @@ class NotaDebetHeader extends MyModel
                     if ($data['alatbayar_id'] != $alatbayarGiro->id) {
                         $penerimaanRequest = [
                             'tglbukti' => $data['tglbukti'],
-                            'pelanggan_id' => 0,
-                            'agen_id' => $data['agen_id'],
+                            'pelanggan_id' => $data['pelanggan_id'] ?? 0,
+                            'agen_id' => $data['agen_id'] ?? 0,
                             'postingdari' => $data['postingdari'] ?? 'ENTRY NOTA DEBET',
-                            'diterimadari' => $data['agen'],
+                            'diterimadari' => ($cabang != 'BITUNG-EMKL') ? $data['agen'] : $data['pelanggan'],
                             'tgllunas' => $data['tglbukti'],
                             'bank_id' => $data['bank_id'],
                             'nowarkat' => null,
@@ -962,10 +989,10 @@ class NotaDebetHeader extends MyModel
                     } else {
                         $penerimaanGiroRequest = [
                             'tglbukti' => $data['tglbukti'],
-                            'pelanggan_id' => 0,
-                            'agen_id' => $data['agen_id'],
+                            'pelanggan_id' => $data['pelanggan_id'] ?? 0,
+                            'agen_id' => $data['agen_id'] ?? 0,
                             'postingdari' => 'ENTRY PELUNASAN PIUTANG',
-                            'diterimadari' => $data['agen'],
+                            'diterimadari' => ($cabang != 'BITUNG-EMKL') ? $data['agen'] : $data['pelanggan'],
                             'tgllunas' => $data['tglbukti'],
                             'bank_id' => $data['bank_id'],
                             'nowarkat' => $noWarkat,
@@ -1009,10 +1036,10 @@ class NotaDebetHeader extends MyModel
                 if ($data['alatbayar_id'] != $alatbayarGiro->id) {
                     $penerimaanRequest = [
                         'tglbukti' => $notaDebetHeader->tglbukti,
-                        'pelanggan_id' => 0,
-                        'agen_id' => $data['agen_id'],
+                        'pelanggan_id' => $data['pelanggan_id'] ?? 0,
+                        'agen_id' => $data['agen_id'] ?? 0,
                         'postingdari' => 'EDIT NOTA DEBET',
-                        'diterimadari' => $data['agen'],
+                        'diterimadari' => ($cabang != 'BITUNG-EMKL') ? $data['agen'] : $data['pelanggan'],
                         'tgllunas' => $notaDebetHeader->tglbukti,
                         'bank_id' => $notaDebetHeader->bank_id,
                         'nowarkat' => null,
@@ -1033,10 +1060,10 @@ class NotaDebetHeader extends MyModel
                 } else {
                     $penerimaanGiroRequest = [
                         'tglbukti' => $data['tglbukti'],
-                        'pelanggan_id' => 0,
-                        'agen_id' => $data['agen_id'],
+                        'pelanggan_id' => $data['pelanggan_id'] ?? 0,
+                        'agen_id' => $data['agen_id'] ?? 0,
                         'postingdari' => 'ENTRY PELUNASAN PIUTANG',
-                        'diterimadari' => $data['agen'],
+                        'diterimadari' => ($cabang != 'BITUNG-EMKL') ? $data['agen'] : $data['pelanggan'],
                         'tgllunas' => $data['tglbukti'],
                         'bank_id' => $data['bank_id'],
                         'nowarkat' => $noWarkat,
