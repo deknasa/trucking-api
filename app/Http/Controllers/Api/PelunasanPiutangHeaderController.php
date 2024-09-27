@@ -432,11 +432,22 @@ class PelunasanPiutangHeaderController extends Controller
                     'label' => 'Bank/Kas',
                     'index' => 'bank_id',
                 ],
-                [
-                    'label' => 'Customer',
-                    'index' => 'agen_id',
-                ],
             ];
+            if ($pelunasan_PiutangHeader->cabang != 'BITUNG-EMKL') {
+                $header_columns[] =
+
+                    [
+                        'label' => 'Customer',
+                        'index' => 'agen_id',
+                    ];
+            } else {
+                $header_columns[] =
+
+                    [
+                        'label' => 'Shipper',
+                        'index' => 'pelanggan_id',
+                    ];
+            }
             $header_right_columns = [
                 [
                     'label' => 'No Bukti Penerimaan',
