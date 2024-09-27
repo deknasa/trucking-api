@@ -37,7 +37,10 @@ class ValidasiNotaDebetPelunasan implements Rule
         $tgl = request()->tglbukti ?? '01-01-1900' ;
         $tglnow = date('Y-m-d', strtotime($tgl)) ;
         $nobukti=request()->nobukti ?? '' ;
-        $agen_id=request()->agen_id ?? 0 ;
+        $agen=request()->agen_id ?? 0 ;
+        $pelanggan=request()->pelanggan_id ?? 0 ;
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
+        $agen_id = ($cabang == 'BITUNG-EMKL') ? $pelanggan : $agen;
         $notadebet_nobukti=request()->notadebet_nobukti ?? '' ;
         $statuspelunasan=request()->statuspelunasan ?? 0 ;
         $parameter = new Parameter();
@@ -73,7 +76,6 @@ class ValidasiNotaDebetPelunasan implements Rule
                 'nobukti',
                 'nominal',
             ], (new LaporanKartuPanjar())->getSisapanjarbukti($tglnow, $tglnow, 0, 0, 1,$agen_id,$tglnow,$notadebet_nobukti));
-
             $querysisapanjar=db::table($temppanjar)->from(db::raw($temppanjar . " a"))
             ->select (
                 'a.nominal'

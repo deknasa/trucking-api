@@ -270,6 +270,7 @@ class PelunasanPiutangHeader extends MyModel
                 'statuscetak.memo as statuscetak',
                 'bank.namabank as bank_id',
                 'agen.namaagen as agen_id',
+                'pelanggan.namapelanggan as pelanggan_id',
                 'alatbayar.namaalatbayar as alatbayar_id',
                 db::raw("cast((format(penerimaangiroheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaangiroheader"),
                 db::raw("cast(cast(format((cast((format(penerimaangiroheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaangiroheader"),
@@ -294,6 +295,7 @@ class PelunasanPiutangHeader extends MyModel
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pelunasanpiutangheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pelunasanpiutangheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'pelunasanpiutangheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pelunasanpiutangheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pelunasanpiutangheader.alatbayar_id', 'alatbayar.id');
 
         if (request()->tgldari && request()->tglsampai) {
@@ -578,6 +580,7 @@ class PelunasanPiutangHeader extends MyModel
                 'statuscetak.text as statuscetak',
                 'bank.namabank as bank_id',
                 'agen.namaagen as agen_id',
+                'pelanggan.namapelanggan as pelanggan_id',
                 'alatbayar.namaalatbayar as alatbayar_id',
                 'pelunasanpiutangheader.modifiedby',
                 'pelunasanpiutangheader.created_at',
@@ -586,6 +589,7 @@ class PelunasanPiutangHeader extends MyModel
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pelunasanpiutangheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pelunasanpiutangheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'pelunasanpiutangheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pelunasanpiutangheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pelunasanpiutangheader.alatbayar_id', 'alatbayar.id');
     }
 
@@ -605,6 +609,7 @@ class PelunasanPiutangHeader extends MyModel
             $table->string('statuscetak')->nullable();
             $table->string('bank_id')->nullable();
             $table->string('agen_id')->nullable();
+            $table->string('pelanggan_id')->nullable();
             $table->string('alatbayar_id')->nullable();
             $table->string('modifiedby')->default();
             $table->dateTime('created_at')->nullable();
@@ -618,7 +623,7 @@ class PelunasanPiutangHeader extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluaran_nobukti', 'penerimaan_nobukti', 'penerimaangiro_nobukti', 'notadebet_nobukti', 'notakredit_nobukti', 'notakreditpph_nobukti', 'statuscetak', 'bank_id', 'agen_id', 'alatbayar_id', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluaran_nobukti', 'penerimaan_nobukti', 'penerimaangiro_nobukti', 'notadebet_nobukti', 'notakredit_nobukti', 'notakreditpph_nobukti', 'statuscetak', 'bank_id', 'agen_id','pelanggan_id', 'alatbayar_id', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -629,6 +634,8 @@ class PelunasanPiutangHeader extends MyModel
             return $query->orderBy('bank.namabank', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'agen_id') {
             return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'pelanggan_id') {
+            return $query->orderBy('pelanggan.namapelanggan', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'alatbayar_id') {
             return $query->orderBy('alatbayar.namaalatbayar', $this->params['sortOrder']);
         } else {
@@ -649,6 +656,8 @@ class PelunasanPiutangHeader extends MyModel
                                 $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'agen_id') {
                                 $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'pelanggan_id') {
+                                $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'alatbayar_id') {
                                 $query = $query->where('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tglbukti') {
@@ -673,6 +682,8 @@ class PelunasanPiutangHeader extends MyModel
                                     $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'agen_id') {
                                     $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'pelanggan_id') {
+                                    $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'alatbayar_id') {
                                     $query = $query->orWhere('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'tglbukti') {
@@ -745,6 +756,7 @@ class PelunasanPiutangHeader extends MyModel
             ->first();
         $alatbayarGiro = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'GIRO')->first();
 
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
@@ -789,8 +801,8 @@ class PelunasanPiutangHeader extends MyModel
         $pelunasanPiutangHeader->notakredit_nobukti = '-';
         $pelunasanPiutangHeader->notakreditpph_nobukti = '-';
         $pelunasanPiutangHeader->notadebet_nobukti =  '-';
-        $pelunasanPiutangHeader->agen_id = $data['agen_id'];
-        $pelunasanPiutangHeader->pelanggan_id = $data['pelanggan_id'];
+        $pelunasanPiutangHeader->agen_id = $data['agen_id'] ?? 0;
+        $pelunasanPiutangHeader->pelanggan_id = $data['pelanggan_id'] ?? 0;
         $pelunasanPiutangHeader->nowarkat = $data['nowarkat'] ?? '';
         $pelunasanPiutangHeader->tglcair = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $pelunasanPiutangHeader->statusformat = $format->id;
@@ -826,6 +838,9 @@ class PelunasanPiutangHeader extends MyModel
         $getCoa = db::table("agen")->from(db::raw("agen a with (readuncommitted)"))->where('id', $data['agen_id'])->first();
         $getJurnalPengeluaran = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'TIPENOTADEBET')->where('text', 'UANG DITERIMA DIMUKA')->first();
         $memoJurnalPengeluaran = json_decode($getJurnalPengeluaran->memo, true);
+        // GET JURNAL EMKL UNTUK NOTA
+        $getJurnalNotaEmkl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL INVOICE MUATAN UTAMA')->where('text', 'DEBET')->first();
+        $memoJurnalEmkl = json_decode($getJurnalNotaEmkl->memo, true);
 
         if ($notadebet ==  true) {
             $notadebetCoaMemo = [];
@@ -858,7 +873,7 @@ class PelunasanPiutangHeader extends MyModel
         $nominalemkl_jurnal = [];
         $coakreditemkl_jurnal = [];
         $keteranganemkl_jurnal = [];
-
+        $tglSaldo = (new Parameter())->cekText('SALDO', 'SALDO');
         for ($i = 0; $i < count($data['piutang_id']); $i++) {
             $piutang = PiutangHeader::where('nobukti', $data['piutang_nobukti'][$i])->first();
             $potongan = $data['potongan'][$i] ?? 0;
@@ -870,8 +885,12 @@ class PelunasanPiutangHeader extends MyModel
                 $nominalPiutangND[] = $piutang->nominal;
                 $nominalBayarND[] = $data['bayar'][$i];
                 $nominalLebihBayar[] = $data['nominallebihbayar'][$i] ?? 0;
-                $coaDebetNotaDebet[] = $getCoa->coa;
                 $coaKreditNotaDebet[] = $memoNotaDebetCoa['JURNAL'];
+                if ($cabang != 'BITUNG-EMKL') {
+                    $coaDebetNotaDebet[] = $getCoa->coa;
+                } else {
+                    $coaDebetNotaDebet[] = $memoJurnalEmkl['JURNAL'];
+                }
             }
 
             if ($data['potongan'][$i] > 0) {
@@ -882,7 +901,11 @@ class PelunasanPiutangHeader extends MyModel
                 $keteranganPotongan[] = $data['keteranganpotongan'][$i];
                 $nominalPotongan[] = $potongan;
                 $coaPotongan[] = $memoNotaKreditCoa['JURNAL'] ?? '';
-                $coaKreditNotaKredit[] = $getCoa->coa; //$memoNotaKreditCoa['JURNAL'];
+                if ($cabang != 'BITUNG-EMKL') {
+                    $coaKreditNotaKredit[] = $getCoa->coa; //$memoNotaKreditCoa['JURNAL'];
+                } else {
+                    $coaKreditNotaKredit[] = $memoJurnalEmkl['JURNAL'];
+                }
             }
 
             if ($data['potonganpph'][$i] > 0) {
@@ -893,7 +916,11 @@ class PelunasanPiutangHeader extends MyModel
                 $nominalPotonganpph[] = $potonganpph;
                 $keteranganPotonganPPH[] = $data['keteranganpotonganpph'][$i];
                 $coaPotonganpph[] = $memoNotaKreditCoaPPH['JURNAL'] ?? '';
-                $coaKreditNotaKreditpph[] = $getCoa->coa; //$memoNotaKreditCoa['JURNAL'];
+                if ($cabang != 'BITUNG-EMKL') {
+                    $coaKreditNotaKreditpph[] = $getCoa->coa; //$memoNotaKreditCoa['JURNAL'];
+                } else {
+                    $coaKreditNotaKreditpph[] = $memoJurnalEmkl['JURNAL'];
+                }
             }
 
 
@@ -942,7 +969,6 @@ class PelunasanPiutangHeader extends MyModel
                         ->whereRaw("isnull(nominal,0) != isnull(nominalpelunasan,0)")
                         ->whereRaw("isnull(nominal,0) > 0")
                         ->first();
-
                     if ($cekfifo != '') {
                         $nominalsisa = $cekfifo->nominal - $cekfifo->nominalpelunasan;
                         if ($nominalbayarfifo <= $nominalsisa) {
@@ -974,17 +1000,35 @@ class PelunasanPiutangHeader extends MyModel
                                 $coakreditemkl_jurnal[] = $cekfifoselisihkurang->coadebet;
                                 $keteranganemkl_jurnal[] = $data['keterangan'][$i];
                             }
-
                         }
+                    } else { 
+                        $nominalemkl_jurnal[] = $data['bayar'][$i];
+                        $keteranganemkl_jurnal[] = $data['keterangan'][$i];
+                        if ($piutang->tglbukti == date('Y-m-d', strtotime($tglSaldo))) {
+                            $coakreditemkl_jurnal[] = $piutang->coadebet;
+                        } else {
+                            $getcoainvoice = db::table('invoiceemkldetail')->from(db::raw("invoiceemkldetail as a with (readuncommitted)"))
+                                ->select('a.coadebet')
+                                ->join(db::raw("invoiceemklheader as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                                ->where('b.piutang_nobukti', $piutang->nobukti)
+                                ->first();
+                            $coakreditemkl_jurnal[] = $getcoainvoice->coadebet;
+                        }
+                        $kondisi = false;
                     }
                 }
                 // END INVOICE EMKL FIFO UNTUK KE JURNAL
-                $getcoainvoice = db::table('invoiceemkldetail')->from(db::raw("invoiceemkldetail as a with (readuncommitted)"))
-                    ->select('a.coadebet')
-                    ->join(db::raw("invoiceemklheader as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-                    ->where('b.piutang_nobukti', $piutang->nobukti)
-                    ->first();
-                $coaKredit[] = $getcoainvoice->coadebet;
+
+                if ($piutang->tglbukti == date('Y-m-d', strtotime($tglSaldo))) {
+                    $coaKredit[] =  $piutang->coadebet;
+                } else {
+                    $getcoainvoice = db::table('invoiceemkldetail')->from(db::raw("invoiceemkldetail as a with (readuncommitted)"))
+                        ->select('a.coadebet')
+                        ->join(db::raw("invoiceemklheader as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                        ->where('b.piutang_nobukti', $piutang->nobukti)
+                        ->first();
+                    $coaKredit[] = $getcoainvoice->coadebet;
+                }
             }
             // dd($piutang->coadebet,$piutang->invoice_nobukti);
             $keteranganDetail[] = $data['keterangan'][$i];
@@ -1021,8 +1065,10 @@ class PelunasanPiutangHeader extends MyModel
                 'tanpaprosesnobukti' => 1,
                 'tglbukti' => $data['tglbukti'],
                 'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
-                'agen_id' => $data['agen_id'],
-                'agen' => $data['agen'],
+                'agen_id' => $data['agen_id'] ?? 0,
+                'agen' => $data['agen'] ?? '',
+                'pelanggan_id' => $data['pelanggan_id'] ?? 0,
+                'pelanggan' => $data['pelanggan'] ?? '',
                 'bank_id' => $data['bank_id'],
                 'alatbayar_id' => $data['alatbayar_id'],
                 'postingdari' => 'ENTRY PELUNASAN PIUTANG',
@@ -1046,10 +1092,10 @@ class PelunasanPiutangHeader extends MyModel
             // SAVE TO PENERIMAAN
             $penerimaanRequest = [
                 'tglbukti' => $data['tglbukti'],
-                'pelanggan_id' => 0,
-                'agen_id' => $data['agen_id'],
+                'pelanggan_id' => $data['pelanggan_id'] ?? 0,
+                'agen_id' => $data['agen_id'] ?? 0,
                 'postingdari' => 'ENTRY PELUNASAN PIUTANG',
-                'diterimadari' => $data['agen'],
+                'diterimadari' => ($cabang != 'BITUNG-EMKL') ? $data['agen'] : $data['pelanggan'],
                 'tgllunas' => $data['tglbukti'],
                 'bank_id' => $data['bank_id'],
                 'nowarkat' => $noWarkat,
@@ -1061,7 +1107,7 @@ class PelunasanPiutangHeader extends MyModel
                 'pelunasanpiutang_nobukti' => $pelunasanNobukti
 
             ];
-            if($data['pelanggan_id'] != 0){
+            if ($data['pelanggan_id'] != 0) {
                 // JURNAL UNTUK PENERIMAAN KAS/BANK INVOICE EMKL
                 $penerimaanRequest['nominalemkl_jurnal'] = $nominalemkl_jurnal;
                 $penerimaanRequest['coakreditemkl_jurnal'] = $coakreditemkl_jurnal;
@@ -1074,9 +1120,10 @@ class PelunasanPiutangHeader extends MyModel
             $penerimaanGiroRequest = [
                 'tglbukti' => $data['tglbukti'],
                 'pelanggan_id' => 0,
-                'agen_id' => $data['agen_id'],
+                'pelanggan_id' => $data['pelanggan_id'] ?? 0,
+                'agen_id' => $data['agen_id'] ?? 0,
                 'postingdari' => 'ENTRY PELUNASAN PIUTANG',
-                'diterimadari' => $data['agen'],
+                'diterimadari' => ($cabang != 'BITUNG-EMKL') ? $data['agen'] : $data['pelanggan'],
                 'tgllunas' => $data['tglbukti'],
                 'bank_id' => $data['bank_id'],
                 'nowarkat' => $noWarkat,
@@ -1097,8 +1144,10 @@ class PelunasanPiutangHeader extends MyModel
                 'tanpaprosesnobukti' => 1,
                 'tglbukti' => $data['tglbukti'],
                 'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
-                'agen_id' => $data['agen_id'],
-                'agen' => $data['agen'],
+                'agen_id' => $data['agen_id'] ?? 0,
+                'agen' => $data['agen'] ?? '',
+                'pelanggan_id' => $data['pelanggan_id'] ?? 0,
+                'pelanggan' => $data['pelanggan'] ?? '',
                 'bank_id' => $data['bank_id'],
                 'alatbayar_id' => $data['alatbayar_id'],
                 'postingdari' => 'ENTRY PELUNASAN PIUTANG',
@@ -1122,10 +1171,12 @@ class PelunasanPiutangHeader extends MyModel
                 'tanpaprosesnobukti' => 1,
                 'tglbukti' => $data['tglbukti'],
                 'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
-                'agen_id' => $data['agen_id'],
+                'agen_id' => $data['agen_id'] ?? 0,
+                'pelanggan_id' => $data['pelanggan_id'] ?? 0,
                 'bank_id' => $data['bank_id'],
                 'alatbayar_id' => $data['alatbayar_id'],
-                'agen' => $data['agen'],
+                'agen' => $data['agen'] ?? '',
+                'pelanggan' => $data['pelanggan'] ?? '',
                 'postingdari' => 'ENTRY PELUNASAN PIUTANG',
                 'tgllunas' => $data['tglbukti'],
                 'nowarkat' => $data['nowarkat'] ?? '',
@@ -1140,13 +1191,14 @@ class PelunasanPiutangHeader extends MyModel
             $notaDebetheader = (new NotaDebetHeader())->processStore($notaDebetRequest);
             $pelunasanPiutangHeader->notadebet_nobukti = $notaDebetheader->nobukti;
         }
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
         $cekStatusPelunasan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PELUNASAN')->where('text', 'NOTA DEBET')->first();
         if ($data['statuspelunasan'] == $cekStatusPelunasan->id) {
             $pengeluaranRequest = [
                 'tglbukti' => $pelunasanPiutangHeader->tglbukti,
-                'pelanggan_id' => 0,
+                'pelanggan_id' => $data['pelanggan_id'] ?? 0,
                 'postingdari' => "ENTRY PELUNASAN PIUTANG",
-                'dibayarke' => $data['agen'],
+                'dibayarke' => ($cabang != 'BITUNG-EMKL') ? $data['agen'] : $data['pelanggan'],
                 'alatbayar_id' => $data['alatbayar_id'],
                 'bank_id' => $data['bank_id'],
                 'transferkeac' => "",
@@ -1172,7 +1224,8 @@ class PelunasanPiutangHeader extends MyModel
             if ($data['notadebet_nobukti']) {
                 $detailFifo = [
                     'nominal' => $nominal,
-                    'agen_id' => $data['agen_id'],
+                    'agen_id' => $data['agen_id'] ?? 0,
+                    'pelanggan_id' => $data['pelanggan_id'] ?? 0,
                     'pelunasanpiutang_id' => $pelunasanPiutangHeader->id,
                     'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
                     'notadebet_nobukti' => $data['notadebet_nobukti'],
@@ -1212,6 +1265,7 @@ class PelunasanPiutangHeader extends MyModel
         $previousStatusPelunasan = $pelunasanPiutangHeader->statuspelunasan;
         $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'PELUNASAN PIUTANG')->first();
 
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
         if (trim($getTgl->text) == 'YA') {
             $group = 'PELUNASAN PIUTANG BUKTI';
             $subGroup = 'PELUNASAN PIUTANG BUKTI';
@@ -1322,8 +1376,16 @@ class PelunasanPiutangHeader extends MyModel
             $memoNotaKreditCoaPPH = json_decode($getNotaKreditCoaPPH->memo, true);
         }
 
+        // GET JURNAL EMKL UNTUK NOTA
+        $getJurnalNotaEmkl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL INVOICE MUATAN UTAMA')->where('text', 'DEBET')->first();
+        $memoJurnalEmkl = json_decode($getJurnalNotaEmkl->memo, true);
+
+        $tglSaldo = (new Parameter())->cekText('SALDO', 'SALDO');
         // dd($getcoadebetnk);
         $nominal = 0;
+        $nominalemkl_jurnal = [];
+        $coakreditemkl_jurnal = [];
+        $keteranganemkl_jurnal = [];
         for ($i = 0; $i < count($data['piutang_id']); $i++) {
             $piutang = PiutangHeader::where('nobukti', $data['piutang_nobukti'][$i])->first();
 
@@ -1335,8 +1397,12 @@ class PelunasanPiutangHeader extends MyModel
                 $nominalPiutangND[] = $piutang->nominal;
                 $nominalBayarND[] = $data['bayar'][$i];
                 $nominalLebihBayar[] = $data['nominallebihbayar'][$i] ?? 0;
-                $coaDebetNotaDebet[] = $getCoa->coa;
                 $coaKreditNotaDebet[] = $memoNotaDebetCoa['JURNAL'];
+                if ($cabang != 'BITUNG-EMKL') {
+                    $coaDebetNotaDebet[] = $getCoa->coa;
+                } else {
+                    $coaDebetNotaDebet[] = $memoJurnalEmkl['JURNAL'];
+                }
             }
 
             if ($data['potongan'][$i] > 0) {
@@ -1347,7 +1413,11 @@ class PelunasanPiutangHeader extends MyModel
                 $nominalBayarNK[] = $data['bayar'][$i];
                 $nominalPotongan[] = $potongan;
                 $coaPotongan[] = $memoNotaKreditCoa['JURNAL'] ?? '';
-                $coaKreditNotaKredit[] = $getCoa->coa; //$memoNotaKreditCoa['JURNAL'];
+                if ($cabang != 'BITUNG-EMKL') {
+                    $coaKreditNotaKredit[] = $getCoa->coa; //$memoNotaKreditCoa['JURNAL'];
+                } else {
+                    $coaKreditNotaKredit[] = $memoJurnalEmkl['JURNAL'];
+                }
             }
             if ($data['potonganpph'][$i] > 0) {
                 $getCoaPotonganpph = $memoNotaKreditCoaPPH['JURNAL'];
@@ -1357,7 +1427,11 @@ class PelunasanPiutangHeader extends MyModel
                 $nominalPotonganpph[] = $potonganpph;
                 $keteranganPotonganPPH[] = $data['keteranganpotonganpph'][$i];
                 $coaPotonganpph[] = $memoNotaKreditCoaPPH['JURNAL'] ?? '';
-                $coaKreditNotaKreditpph[] = $getCoa->coa; //$memoNotaKreditCoa['JURNAL'];
+                if ($cabang != 'BITUNG-EMKL') {
+                    $coaKreditNotaKreditpph[] = $getCoa->coa; //$memoNotaKreditCoa['JURNAL']; 
+                } else {
+                    $coaKreditNotaKreditpph[] = $memoJurnalEmkl['JURNAL'];
+                }
             }
 
             $pelunasanPiutangDetail = (new PelunasanPiutangDetail())->processStore($pelunasanPiutangHeader, [
@@ -1394,12 +1468,21 @@ class PelunasanPiutangHeader extends MyModel
             if ($pelunasanPiutangHeader->agen_id != 0) {
                 $coaKredit[] =  $piutang->coadebet;
             } else {
-                $getcoainvoice = db::table('invoiceemkldetail')->from(db::raw("invoiceemkldetail as a with (readuncommitted)"))
-                    ->select('a.coadebet')
-                    ->join(db::raw("invoiceemklheader as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-                    ->where('b.piutang_nobukti', $piutang->nobukti)
-                    ->first();
-                $coaKredit[] = $getcoainvoice->coadebet;
+                
+                $nominalemkl_jurnal[] = $data['bayar'][$i];
+                $keteranganemkl_jurnal[] = $data['keterangan'][$i];
+                if ($piutang->tglbukti == date('Y-m-d', strtotime($tglSaldo))) {
+                    $coaKredit[] =  $piutang->coadebet;
+                    $coakreditemkl_jurnal[] = $piutang->coadebet;
+                } else {
+                    $getcoainvoice = db::table('invoiceemkldetail')->from(db::raw("invoiceemkldetail as a with (readuncommitted)"))
+                        ->select('a.coadebet')
+                        ->join(db::raw("invoiceemklheader as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                        ->where('b.piutang_nobukti', $piutang->nobukti)
+                        ->first();
+                    $coaKredit[] = $getcoainvoice->coadebet;
+                    $coakreditemkl_jurnal[] = $getcoainvoice->coadebet;
+                }
             }
             $keteranganDetail[] = $data['keterangan'][$i];
             $invoiceNobukti[] = $piutang->invoice_nobukti ?? '';
@@ -1438,8 +1521,10 @@ class PelunasanPiutangHeader extends MyModel
                     'tanpaprosesnobukti' => 1,
                     'tglbukti' => $pelunasanPiutangHeader->tglbukti,
                     'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
-                    'agen_id' => $data['agen_id'],
-                    'agen' => $data['agen'],
+                    'agen_id' => $data['agen_id'] ?? 0,
+                    'agen' => $data['agen'] ?? '',
+                    'pelanggan_id' => $data['pelanggan_id'] ?? 0,
+                    'pelanggan' => $data['pelanggan'] ?? '',
                     'bank_id' => $pelunasanPiutangHeader->bank_id,
                     'alatbayar_id' => $pelunasanPiutangHeader->alatbayar_id,
                     'postingdari' => 'EDIT PELUNASAN PIUTANG',
@@ -1471,8 +1556,10 @@ class PelunasanPiutangHeader extends MyModel
                     'tanpaprosesnobukti' => 1,
                     'tglbukti' => $pelunasanPiutangHeader->tglbukti,
                     'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
-                    'agen_id' => $data['agen_id'],
-                    'agen' => $data['agen'],
+                    'agen_id' => $data['agen_id'] ?? 0,
+                    'agen' => $data['agen'] ?? '',
+                    'pelanggan_id' => $data['pelanggan_id'] ?? 0,
+                    'pelanggan' => $data['pelanggan'] ?? '',
                     'bank_id' => $pelunasanPiutangHeader->bank_id,
                     'alatbayar_id' => $pelunasanPiutangHeader->alatbayar_id,
                     'postingdari' => 'EDIT PELUNASAN PIUTANG',
@@ -1496,11 +1583,11 @@ class PelunasanPiutangHeader extends MyModel
             $get = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
                 ->where('nobukti', $pelunasanPiutangHeader->penerimaan_nobukti)->first();
             $penerimaanRequest = [
-                'pelanggan_id' => 0,
+                'pelanggan_id' => $pelunasanPiutangHeader->pelanggan_id,
                 'agen_id' => $pelunasanPiutangHeader->agen_id,
                 'tglbukti' => $pelunasanPiutangHeader->tglbukti,
                 'postingdari' => 'EDIT PELUNASAN PIUTANG',
-                'diterimadari' => $data['agen'],
+                'diterimadari' => ($cabang != 'BITUNG-EMKL') ? $data['agen'] : $data['pelanggan'],
                 'tgllunas' => $pelunasanPiutangHeader->tglbukti,
                 'bank_id' => $data['bank_id'],
                 'nowarkat' => $noWarkat,
@@ -1512,6 +1599,13 @@ class PelunasanPiutangHeader extends MyModel
                 'pelunasanpiutang_nobukti' => $pelunasanNobukti
 
             ];
+            if ($data['pelanggan_id'] != 0) {
+                // JURNAL UNTUK PENERIMAAN KAS/BANK INVOICE EMKL
+                $penerimaanRequest['nominalemkl_jurnal'] = $nominalemkl_jurnal;
+                $penerimaanRequest['coakreditemkl_jurnal'] = $coakreditemkl_jurnal;
+                $penerimaanRequest['keteranganemkl_jurnal'] = $keteranganemkl_jurnal;
+                $penerimaanRequest['pelunasanemkl'] = 1;
+            }
             $newPenerimaan = new PenerimaanHeader();
             $newPenerimaan = $newPenerimaan->findAll($get->id);
             $getPenerimaan = (new PenerimaanHeader())->processUpdate($newPenerimaan, $penerimaanRequest);
@@ -1526,9 +1620,10 @@ class PelunasanPiutangHeader extends MyModel
             $penerimaanGiroRequest = [
                 'isUpdate' => 1,
                 'tglbukti' => $pelunasanPiutangHeader->tglbukti,
+                'pelanggan_id' => $pelunasanPiutangHeader->pelanggan_id,
                 'agen_id' => $pelunasanPiutangHeader->agen_id,
                 'postingdari' => 'EDIT PELUNASAN PIUTANG',
-                'diterimadari' => $data['agen'],
+                'diterimadari' => ($cabang != 'BITUNG-EMKL') ? $data['agen'] : $data['pelanggan'],
                 'tgllunas' => $pelunasanPiutangHeader->tglbukti,
                 'nowarkat' => $noWarkat,
                 'tgljatuhtempo' => $tglJatuhTempo,
@@ -1559,8 +1654,10 @@ class PelunasanPiutangHeader extends MyModel
                     'tanpaprosesnobukti' => 1,
                     'tglbukti' => $pelunasanPiutangHeader->tglbukti,
                     'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
-                    'agen_id' => $data['agen_id'],
-                    'agen' => $data['agen'],
+                    'agen_id' => $data['agen_id'] ?? 0,
+                    'agen' => $data['agen'] ?? '',
+                    'pelanggan_id' => $data['pelanggan_id'] ?? 0,
+                    'pelanggan' => $data['pelanggan'] ?? '',
                     'bank_id' => $pelunasanPiutangHeader->bank_id,
                     'alatbayar_id' => $pelunasanPiutangHeader->alatbayar_id,
                     'postingdari' => 'EDIT PELUNASAN PIUTANG',
@@ -1594,8 +1691,10 @@ class PelunasanPiutangHeader extends MyModel
                     'tanpaprosesnobukti' => 1,
                     'tglbukti' => $pelunasanPiutangHeader->tglbukti,
                     'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
-                    'agen_id' => $data['agen_id'],
-                    'agen' => $data['agen'],
+                    'agen_id' => $data['agen_id'] ?? 0,
+                    'agen' => $data['agen'] ?? '',
+                    'pelanggan_id' => $data['pelanggan_id'] ?? 0,
+                    'pelanggan' => $data['pelanggan'] ?? '',
                     'bank_id' => $pelunasanPiutangHeader->bank_id,
                     'alatbayar_id' => $pelunasanPiutangHeader->alatbayar_id,
                     'postingdari' => 'EDIT PELUNASAN PIUTANG',
@@ -1615,6 +1714,7 @@ class PelunasanPiutangHeader extends MyModel
             }
         }
 
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
         $statuspelunasan = $data['statuspelunasan'] ?? 0;
         $parameter = new Parameter();
         $idstatuspelunasan = $parameter->cekId('PELUNASAN', 'PELUNASAN', 'NOTA DEBET') ?? 0;
@@ -1629,10 +1729,12 @@ class PelunasanPiutangHeader extends MyModel
                         'tanpaprosesnobukti' => 1,
                         'tglbukti' => $pelunasanPiutangHeader->tglbukti,
                         'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
-                        'agen_id' => $data['agen_id'],
+                        'agen_id' => $data['agen_id'] ?? 0,
+                        'pelanggan_id' => $data['pelanggan_id'] ?? 0,
                         'bank_id' => $pelunasanPiutangHeader->bank_id,
                         'alatbayar_id' => $pelunasanPiutangHeader->alatbayar_id,
-                        'agen' => $data['agen'],
+                        'agen' => $data['agen'] ?? '',
+                        'pelanggan' => $data['pelanggan'] ?? '',
                         'postingdari' => 'EDIT PELUNASAN PIUTANG',
                         'tgllunas' => $pelunasanPiutangHeader->tglbukti,
                         'nowarkat' => $data['nowarkat'] ?? '',
@@ -1661,10 +1763,12 @@ class PelunasanPiutangHeader extends MyModel
                         'tanpaprosesnobukti' => 1,
                         'tglbukti' => $pelunasanPiutangHeader->tglbukti,
                         'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
-                        'agen_id' => $data['agen_id'],
+                        'agen_id' => $data['agen_id'] ?? 0,
+                        'pelanggan_id' => $data['pelanggan_id'] ?? 0,
                         'bank_id' => $pelunasanPiutangHeader->bank_id,
                         'alatbayar_id' => $pelunasanPiutangHeader->alatbayar_id,
-                        'agen' => $data['agen'],
+                        'agen' => $data['agen'] ?? '',
+                        'pelanggan' => $data['pelanggan'] ?? '',
                         'postingdari' => 'EDIT PELUNASAN PIUTANG',
                         'tgllunas' => $pelunasanPiutangHeader->tglbukti,
                         'nowarkat' => $data['nowarkat'] ?? '',
@@ -1687,9 +1791,9 @@ class PelunasanPiutangHeader extends MyModel
                 ->where('nobukti', $pelunasanPiutangHeader->penerimaan_nobukti)->first();
             $pengeluaranRequest = [
                 'tglbukti' => $pelunasanPiutangHeader->tglbukti,
-                'pelanggan_id' => 0,
+                'pelanggan_id' => $pelunasanPiutangHeader->pelanggan_id ?? 0,
                 'postingdari' => "EDIT PELUNASAN PIUTANG",
-                'dibayarke' => $data['agen'],
+                'dibayarke' => ($cabang != 'BITUNG-EMKL') ? $data['agen'] : $data['pelanggan'],
                 'alatbayar_id' => $data['alatbayar_id'],
                 'bank_id' => $data['bank_id'],
                 'transferkeac' => "",
@@ -1787,9 +1891,9 @@ class PelunasanPiutangHeader extends MyModel
         if ($data['statuspelunasan'] == $cekStatusPelunasan->id) {
             $pengeluaranRequest = [
                 'tglbukti' => $pelunasanPiutangHeader->tglbukti,
-                'pelanggan_id' => 0,
+                'pelanggan_id' => $pelunasanPiutangHeader->pelanggan_id,
                 'postingdari' => "ENTRY PELUNASAN PIUTANG",
-                'dibayarke' => $data['agen'],
+                'dibayarke' => ($cabang != 'BITUNG-EMKL') ? $data['agen'] : $data['pelanggan'],
                 'alatbayar_id' => $data['alatbayar_id'],
                 'bank_id' => $data['bank_id'],
                 'transferkeac' => "",
@@ -1816,7 +1920,8 @@ class PelunasanPiutangHeader extends MyModel
                 db::table('notadebetfifo')->where('pelunasanpiutang_nobukti', $pelunasanPiutangHeader->nobukti)->delete();
                 $detailFifo = [
                     'nominal' => $nominal,
-                    'agen_id' => $data['agen_id'],
+                    'agen_id' => $data['agen_id'] ?? 0,
+                    'pelanggan_id' => $data['pelanggan_id'] ?? 0,
                     'pelunasanpiutang_id' => $pelunasanPiutangHeader->id,
                     'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
                     'notadebet_nobukti' => $data['notadebet_nobukti'],

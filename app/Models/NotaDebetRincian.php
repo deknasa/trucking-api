@@ -29,6 +29,7 @@ class NotaDebetRincian extends MyModel
         $notaDebetRincian->nobukti = $notaDebetHeader->nobukti;
         $notaDebetRincian->tglterima = $notaDebetHeader->tglbukti;
         $notaDebetRincian->agen_id = $data['agen_id'];
+        $notaDebetRincian->pelanggan_id = $data['pelanggan_id'];
         $notaDebetRincian->nominal = $data['nominal'];
         $notaDebetRincian->modifiedby = auth('api')->user()->name;
 

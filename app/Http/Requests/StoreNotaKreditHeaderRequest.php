@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\AlatBayar;
+use App\Models\Parameter;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistAgen;
@@ -44,35 +45,54 @@ class StoreNotaKreditHeaderRequest extends FormRequest
             ];
         }
         $requiredGiro = Rule::requiredIf(function () {
-            if(request()->alatbayar_id == '' || request()->alatbayar_id == 0){
+            if (request()->alatbayar_id == '' || request()->alatbayar_id == 0) {
                 return false;
-            }else{
+            } else {
                 $cekGiro = DB::table('alatbayar')
-                ->from(
-                    DB::raw("alatbayar with (readuncommitted)")
-                )
-                ->select('kodealatbayar')
-                ->where('id', request()->alatbayar_id)
-                ->first();
+                    ->from(
+                        DB::raw("alatbayar with (readuncommitted)")
+                    )
+                    ->select('kodealatbayar')
+                    ->where('id', request()->alatbayar_id)
+                    ->first();
                 if ($cekGiro->kodealatbayar == 'GIRO') {
-                        return true;
+                    return true;
                 }
                 return false;
             }
         });
 
+        $requiredAgen = Rule::requiredIf(function () {
+
+            $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
+            if ($cabang != 'BITUNG-EMKL') {
+                return true;
+            }
+            return false;
+        });
+        $requiredPelanggan = Rule::requiredIf(function () {
+
+            $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
+            if ($cabang == 'BITUNG-EMKL') {
+                return true;
+            }
+            return false;
+        });
         $rules = [
             'tglbukti' => [
-                'required', 'date_format:d-m-Y',
+                'required',
+                'date_format:d-m-Y',
                 new DateTutupBuku(),
                 'before_or_equal:' . date('d-m-Y')
             ],
             'tgllunas' => [
-                'required', 'date_format:d-m-Y',
+                'required',
+                'date_format:d-m-Y',
                 new DateTutupBuku(),
                 'before_or_equal:' . date('d-m-Y')
             ],
-            'agen' => 'required',
+            'agen' => $requiredAgen,
+            'pelanggan' => $requiredPelanggan,
             'nowarkat' => $requiredGiro
         ];
         $relatedRequests = [
@@ -225,7 +245,9 @@ class StoreNotaKreditHeaderRequest extends FormRequest
         return [
             'nominal_detail.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
             'agen_id.required' => ':attribute ' . app(ErrorController::class)->geterror('HPDL')->keterangan,
-            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
+            'agen.required_if' => ':attribute ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'pelanggan.required_if' => ':attribute ' . app(ErrorController::class)->geterror('WI')->keterangan,
         ];
     }
 }

@@ -726,8 +726,8 @@ class PenerimaanGiroHeader extends MyModel
         $penerimaanGiroHeader = new PenerimaanGiroHeader();
 
         $penerimaanGiroHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
-        $penerimaanGiroHeader->pelanggan_id = $data['pelanggan_id'] ?? '';
-        $penerimaanGiroHeader->agen_id = $data['agen_id'] ?? '';
+        $penerimaanGiroHeader->pelanggan_id = $data['pelanggan_id'] ?? 0;
+        $penerimaanGiroHeader->agen_id = $data['agen_id'] ?? 0;
         $penerimaanGiroHeader->postingdari = $data['postingdari'] ?? 'ENTRY PENERIMAAN GIRO';
         $penerimaanGiroHeader->diterimadari = $data['diterimadari'];
         $penerimaanGiroHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));

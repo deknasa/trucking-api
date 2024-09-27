@@ -4503,7 +4503,8 @@ class SuratPengantar extends MyModel
                         $suratPengantar->gajisupir = $upahsupirRincian->nominalsupir;
                     }
                 }
-                if ($cabang == 'MEDAN') {
+                $updatenocont = $data['updatenocont'] ?? 0;
+                if ($cabang == 'MEDAN' && $updatenocont == 0) {
                     $suratPengantar->nosp = $data['nosp'];
                 }
 
