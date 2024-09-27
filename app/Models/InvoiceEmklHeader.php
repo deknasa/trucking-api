@@ -333,6 +333,7 @@ class InvoiceEmklHeader extends MyModel
             $table->longtext('keteranganbiaya')->nullable();
         });
         if ($request->jenisorder_id == 1) {
+
             $queryhasil = DB::table('jobemkl')->from(
                 db::raw("jobemkl a with (readuncommitted)")
             )
@@ -461,12 +462,12 @@ class InvoiceEmklHeader extends MyModel
                 DB::raw("a.nominal as nominal"),
                 DB::raw("'' as keterangan_detail"),
                 DB::raw("a.keteranganbiaya as keterangan_biaya")
-            )
-            ->leftJoin(DB::raw("invoiceemkldetail f with (readuncommitted)"), 'a.nojobemkl', 'f.jobemkl_nobukti');
+            );
 
 
         if ($statusinvoice == $invoiceUtamaId->id || $edit == true) {
-            $query2->whereRaw("isnull(f.jobemkl_nobukti,'')=''");
+            $query2->leftJoin(DB::raw("invoiceemkldetail f with (readuncommitted)"), 'a.nojobemkl', 'f.jobemkl_nobukti')
+                ->whereRaw("isnull(f.jobemkl_nobukti,'')=''");
         }
 
         $query2->orderBy("a.tgljobemkl");
@@ -709,7 +710,7 @@ class InvoiceEmklHeader extends MyModel
                 // dd($invoiceHeader->nobuktiinvoicepajak);
             }
         }
-        
+
         if ($invoiceHeader->tujuan_id != 0) {
             $pelangggan = db::table("tujuan")->from(db::raw("tujuan with (readuncommitted)"))->where('id', $invoiceHeader->tujuan_id)->first()->pelanggan_id ?? 0;
 
@@ -793,19 +794,55 @@ class InvoiceEmklHeader extends MyModel
             $coakreditdetail = $coakredit;
         }
         if ($data['statusinvoice'] != $statusInvoice->id) {
-            $paramcoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PIUTANG INVOICE EMKL TAMBAHAN')
-                ->where('subgrp', 'DEBET')
-                ->where('text', 'DEBET')
-                ->first();
-            $memocoa = json_decode($paramcoa->memo, true);
-            $coadebetdetail = $memocoa['JURNAL'];
+            // JURNAL TAMBAHAN BULAN SAMA
+            if (date('m', strtotime($data['tglbukti'])) == date('m', strtotime($data['tgldari']))) {
 
-            $param = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PIUTANG INVOICE EMKL TAMBAHAN')
-                ->where('subgrp', 'KREDIT')
-                ->where('text', 'KREDIT')
-                ->first();
-            $memo = json_decode($param->memo, true);
-            $coakreditdetail = $memo['JURNAL'];
+                if ($data['jenisorder_id'] == $idMuatan->id) {
+                    $paramcoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL INVOICE MUATAN UTAMA')
+                        ->where('subgrp', 'DEBET')
+                        ->where('text', 'DEBET')
+                        ->first();
+                    $memocoa = json_decode($paramcoa->memo, true);
+                    $coadebetdetail = $memocoa['JURNAL'];
+
+                    $param = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL INVOICE MUATAN UTAMA')
+                        ->where('subgrp', 'KREDIT')
+                        ->where('text', 'KREDIT')
+                        ->first();
+                    $memo = json_decode($param->memo, true);
+                    $coakreditdetail = $memo['JURNAL'];
+                } else {
+                    $paramcoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL INVOICE BONGKARAN UTAMA')
+                        ->where('subgrp', 'DEBET')
+                        ->where('text', 'DEBET')
+                        ->first();
+                    $memocoa = json_decode($paramcoa->memo, true);
+                    $coadebetdetail = $memocoa['JURNAL'];
+
+                    $param = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL INVOICE BONGKARAN UTAMA')
+                        ->where('subgrp', 'KREDIT')
+                        ->where('text', 'KREDIT')
+                        ->first();
+                    $memo = json_decode($param->memo, true);
+                    $coakreditdetail = $memo['JURNAL'];
+                }
+            } else {
+
+                // JURNAL TAMBAHAN BULAN BEDA
+                $paramcoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PIUTANG INVOICE EMKL TAMBAHAN')
+                    ->where('subgrp', 'DEBET')
+                    ->where('text', 'DEBET')
+                    ->first();
+                $memocoa = json_decode($paramcoa->memo, true);
+                $coadebetdetail = $memocoa['JURNAL'];
+
+                $param = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PIUTANG INVOICE EMKL TAMBAHAN')
+                    ->where('subgrp', 'KREDIT')
+                    ->where('text', 'KREDIT')
+                    ->first();
+                $memo = json_decode($param->memo, true);
+                $coakreditdetail = $memo['JURNAL'];
+            }
         }
 
         if ($data['statusinvoice'] == $statusInvoice->id && date('m', strtotime($data['tglbukti'])) != date('m', strtotime($data['tgldari']))) {
@@ -1314,19 +1351,55 @@ class InvoiceEmklHeader extends MyModel
             $coakreditdetail = $coakredit;
         }
         if ($data['statusinvoice'] != $statusInvoice->id) {
-            $paramcoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PIUTANG INVOICE EMKL TAMBAHAN')
-                ->where('subgrp', 'DEBET')
-                ->where('text', 'DEBET')
-                ->first();
-            $memocoa = json_decode($paramcoa->memo, true);
-            $coadebetdetail = $memocoa['JURNAL'];
+            // JURNAL TAMBAHAN BULAN SAMA
+            if (date('m', strtotime($data['tglbukti'])) == date('m', strtotime($data['tgldari']))) {
 
-            $param = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PIUTANG INVOICE EMKL TAMBAHAN')
-                ->where('subgrp', 'KREDIT')
-                ->where('text', 'KREDIT')
-                ->first();
-            $memo = json_decode($param->memo, true);
-            $coakreditdetail = $memo['JURNAL'];
+                if ($data['jenisorder_id'] == $idMuatan->id) {
+                    $paramcoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL INVOICE MUATAN UTAMA')
+                        ->where('subgrp', 'DEBET')
+                        ->where('text', 'DEBET')
+                        ->first();
+                    $memocoa = json_decode($paramcoa->memo, true);
+                    $coadebetdetail = $memocoa['JURNAL'];
+
+                    $param = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL INVOICE MUATAN UTAMA')
+                        ->where('subgrp', 'KREDIT')
+                        ->where('text', 'KREDIT')
+                        ->first();
+                    $memo = json_decode($param->memo, true);
+                    $coakreditdetail = $memo['JURNAL'];
+                } else {
+                    $paramcoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL INVOICE BONGKARAN UTAMA')
+                        ->where('subgrp', 'DEBET')
+                        ->where('text', 'DEBET')
+                        ->first();
+                    $memocoa = json_decode($paramcoa->memo, true);
+                    $coadebetdetail = $memocoa['JURNAL'];
+
+                    $param = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL INVOICE BONGKARAN UTAMA')
+                        ->where('subgrp', 'KREDIT')
+                        ->where('text', 'KREDIT')
+                        ->first();
+                    $memo = json_decode($param->memo, true);
+                    $coakreditdetail = $memo['JURNAL'];
+                }
+            } else {
+
+                // JURNAL TAMBAHAN BULAN BEDA
+                $paramcoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PIUTANG INVOICE EMKL TAMBAHAN')
+                    ->where('subgrp', 'DEBET')
+                    ->where('text', 'DEBET')
+                    ->first();
+                $memocoa = json_decode($paramcoa->memo, true);
+                $coadebetdetail = $memocoa['JURNAL'];
+
+                $param = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PIUTANG INVOICE EMKL TAMBAHAN')
+                    ->where('subgrp', 'KREDIT')
+                    ->where('text', 'KREDIT')
+                    ->first();
+                $memo = json_decode($param->memo, true);
+                $coakreditdetail = $memo['JURNAL'];
+            }
         }
 
         if ($data['statusinvoice'] == $statusInvoice->id && date('m', strtotime($data['tglbukti'])) != date('m', strtotime($data['tgldari']))) {

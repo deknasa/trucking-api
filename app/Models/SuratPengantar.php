@@ -1471,7 +1471,7 @@ class SuratPengantar extends MyModel
                 ->Join(db::raw($tempmandor . " as mandortrado"), db::raw("isnull(suratpengantar.mandortrado_id,0)"), 'mandortrado.id')
                 ->Join(db::raw($tempmandor . " as mandorsupir"), db::raw("isnull(suratpengantar.mandorsupir_id,0)"), 'mandorsupir.id')
                 ->Join(db::raw($temptarif . " as tarif"), db::raw("isnull(suratpengantar.tarif_id,0)"), 'tarif.id')
-                ->Join(DB::raw($temporderantrucking . " as orderantrucking with (readuncommitted)"), db::raw("isnull(suratpengantar.jobtrucking,'')"), 'orderantrucking.nobukti')
+                ->leftJoin(DB::raw($temporderantrucking . " as orderantrucking with (readuncommitted)"), db::raw("isnull(suratpengantar.jobtrucking,'')"), 'orderantrucking.nobukti')
                 ->Join(DB::raw($tempgajisupirheader . " as gajisupirheader  with (readuncommitted)"), db::raw("isnull(suratpengantar.gajisupir_nobukti,'')"), 'gajisupirheader.nobukti')
                 // ->leftJoin(DB::raw("prosesgajisupirdetail  with (readuncommitted)"), 'gajisupirheader.nobukti', 'prosesgajisupirdetail.gajisupir_nobukti')
                 ->Join(DB::raw($tempinvoiceheader . " as invoiceheader  with (readuncommitted)"), db::raw("isnull(suratpengantar.invoice_nobukti,'')"), 'invoiceheader.nobukti');
