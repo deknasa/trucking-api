@@ -56,8 +56,9 @@ class LaporanKasBank extends MyModel
             ->where('subgrp', 'TUTUP BUKU')
             ->first()->text ?? '1900-01-01';
 
+        $tutupbuku = date('Y-m-', strtotime($tutupbuku . '-30 day')). '01';
         $awaldari = date('Y-m-', strtotime($dari)) . '01';
-        $awalcek = date('Y-m-d', strtotime($tutupbuku . ' +1 day'));
+        $awalcek = date('Y-m-d', strtotime($tutupbuku ));
         $akhircek = date('Y-m-d', strtotime($awaldari . ' -1 day'));
 
         $tgl3 = date('Y-m-d', strtotime($dari . ' +33 days'));
@@ -68,6 +69,7 @@ class LaporanKasBank extends MyModel
         $tgl2 = $tahun2 . '-' . $bulan2 . '-1';
         $tgl2 = date('Y-m-d', strtotime($tgl2 . ' -1 day'));
 
+        // dd($awalcek);
         if ($awalcek <= $awalsaldo) {
             $awalcek = $awalsaldo;
         }
@@ -298,7 +300,7 @@ class LaporanKasBank extends MyModel
             ->groupby('c.bank_id')
             ->groupby(db::raw("format(d.tglbukti,'MM-yyyy')"));
 
-
+        // dd($tglawalcek, $tgl2);
 
         DB::table($tempsaldoawal)->insertUsing([
             'bulan',
@@ -306,6 +308,8 @@ class LaporanKasBank extends MyModel
             'nominaldebet',
             'nominalkredit',
         ], $querykredit);
+
+
 
         DB::delete(DB::raw("delete " . $tempsaldoawal . " from " . $tempsaldoawal . " a 
                     inner join " . $temppengembaliankepusat . " b on a.bank_id=b.bankpengembalian_id"));
@@ -328,6 +332,8 @@ class LaporanKasBank extends MyModel
             )
             ->groupby('a.bulan')
             ->groupby('a.bank_id');
+
+        // dd($queryrekap->get());
 
         $tempsaldoawalrekap = '##tempsaldoawalrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsaldoawalrekap, function ($table) {
@@ -527,6 +533,7 @@ class LaporanKasBank extends MyModel
         // dump($querysaldoawal->nominal,$querysaldoawalpenerimaan->nominal,$querysaldoawalpenerimaanpindahbuku->nominal) ;
         // dump('test');
         // dd($querysaldoawalpengeluaran,$querysaldoawalpengeluaranpindahbuku->nominal,$saldoawalpengembaliankepusat);        
+        // dd($querysaldoawal->nominal);
         $saldoawal =  ($querysaldoawal->nominal + $querysaldoawalpenerimaan->nominal + $querysaldoawalpenerimaanpindahbuku->nominal) - ($querysaldoawalpengeluaran + $querysaldoawalpengeluaranpindahbuku->nominal + $saldoawalpengembaliankepusat);
         // dd($saldoawal);
 
