@@ -29,6 +29,36 @@ class CreatePelangganTable extends Migration
             $table->string('alamat2',200)->nullable();
             $table->string('kota',200)->nullable();
             $table->string('kodepos',50)->nullable();
+
+
+            $table->string('npwp',50)->nullable();
+            $table->string('noktp',50)->nullable();
+            $table->string('alamatfakturpajak',100)->nullable();
+            $table->string('alamatkantorpenagihan',100)->nullable();
+            $table->string('namapemilik',100)->nullable();
+            $table->string('telpkantor',100)->nullable();
+            $table->string('faxkantor',100)->nullable();
+            $table->string('website',100)->nullable();
+            $table->string('contactperson',100)->nullable();
+            $table->string('telpcp',100)->nullable();
+            $table->string('asuransitas',100)->nullable();
+            $table->string('asuransisendiri',100)->nullable();
+            $table->double('top', 15,2)->nullable();
+            $table->string('prosedurpenagihan',100)->nullable();
+            $table->string('syaratpenagihan',100)->nullable();
+            $table->string('pickeuangan',100)->nullable();
+            $table->string('telppickeuangan',50)->nullable();
+            $table->string('jenisusaha',100)->nullable();
+            $table->string('volumeperbulan',100)->nullable();
+            $table->string('kompetitor',100)->nullable();
+            $table->string('referensi',100)->nullable();
+            $table->double('nominalplafon', 15,2)->nullable();
+            $table->string('danaditransferdari',100)->nullable();
+            $table->string('atasnama',100)->nullable();
+            $table->string('norekening',100)->nullable();
+            $table->string('bank',100)->nullable();
+
+
             $table->integer('statusaktif')->length(11)->nullable();                
             $table->unsignedBigInteger('tas_id')->nullable();
             $table->string('editing_by',50)->nullable();            
