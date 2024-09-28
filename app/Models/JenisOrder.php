@@ -118,11 +118,11 @@ class JenisOrder extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jenisorder.statusaktif', '=', 'parameter.id');
 
 
-     if (!$isAdmin) {
+    //  if (!$isAdmin) {
             if ($isMarketing) {
                 $query->Where('jenisorder.id',1);
             }
-        }
+        // }
 
         $this->filter($query);
 
