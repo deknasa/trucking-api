@@ -162,6 +162,35 @@ class Pelanggan extends MyModel
             'pelanggan.alamat2',
             'pelanggan.kota',
             'pelanggan.kodepos',
+
+            'pelanggan.npwp',
+            'pelanggan.noktp',
+            'pelanggan.alamatfakturpajak',
+            'pelanggan.alamatkantorpenagihan',
+            'pelanggan.namapemilik',
+            'pelanggan.telpkantor',
+            'pelanggan.faxkantor',
+            'pelanggan.website',
+            'pelanggan.contactperson',
+            'pelanggan.telpcp',
+            'pelanggan.asuransitas',
+            'pelanggan.asuransisendiri',
+            'pelanggan.top',
+            'pelanggan.prosedurpenagihan',
+            'pelanggan.syaratpenagihan',
+            'pelanggan.pickeuangan',
+            'pelanggan.telppickeuangan',
+            'pelanggan.jenisusaha',
+            'pelanggan.volumeperbulan',
+            'pelanggan.kompetitor',
+            'pelanggan.referensi',
+            'pelanggan.nominalplafon',
+            'pelanggan.danaditransferdari',
+            'pelanggan.atasnama',
+            'pelanggan.norekening',
+            'pelanggan.bank',
+
+
             'pelanggan.modifiedby',
             'parameter.memo as statusaktif',
             'pelanggan.created_at',
@@ -215,8 +244,38 @@ class Pelanggan extends MyModel
                 'pelanggan.kota',
                 'pelanggan.kodepos',
                 'pelanggan.modifiedby',
-                'parameter.memo as statusaktif',
+                'pelanggan.statusaktif',
+                // 'parameter.memo as statusaktif',
                 'parameter.text as statusaktifnama',
+
+                'pelanggan.npwp',
+                'pelanggan.noktp',
+                'pelanggan.alamatfakturpajak',
+                'pelanggan.alamatkantorpenagihan',
+                'pelanggan.namapemilik',
+                'pelanggan.telpkantor',
+                'pelanggan.faxkantor',
+                'pelanggan.website',
+                'pelanggan.contactperson',
+                'pelanggan.telpcp',
+                'pelanggan.asuransitas',
+                'pelanggan.asuransisendiri',
+                'pelanggan.top',
+                'pelanggan.prosedurpenagihan',
+                'pelanggan.syaratpenagihan',
+                'pelanggan.pickeuangan',
+                'pelanggan.telppickeuangan',
+                'pelanggan.jenisusaha',
+                'pelanggan.volumeperbulan',
+                'pelanggan.kompetitor',
+                'pelanggan.referensi',
+                'pelanggan.nominalplafon',
+                'pelanggan.danaditransferdari',
+                'pelanggan.atasnama',
+                'pelanggan.norekening',
+                'pelanggan.bank',
+
+
                 'pelanggan.created_at',
                 'pelanggan.updated_at',
             )
@@ -247,7 +306,33 @@ class Pelanggan extends MyModel
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
-                )
+                ),
+            "$this->table.npwp",
+            "$this->table.noktp",
+            "$this->table.alamatfakturpajak",
+            "$this->table.alamatkantorpenagihan",
+            "$this->table.namapemilik",
+            "$this->table.telpkantor",
+            "$this->table.faxkantor",
+            "$this->table.website",
+            "$this->table.contactperson",
+            "$this->table.telpcp",
+            "$this->table.asuransitas",
+            "$this->table.asuransisendiri",
+            "$this->table.top",
+            "$this->table.prosedurpenagihan",
+            "$this->table.syaratpenagihan",
+            "$this->table.pickeuangan",
+            "$this->table.telppickeuangan",
+            "$this->table.jenisusaha",
+            "$this->table.volumeperbulan",
+            "$this->table.kompetitor",
+            "$this->table.referensi",
+            "$this->table.nominalplafon",
+            "$this->table.danaditransferdari",
+            "$this->table.atasnama",
+            "$this->table.norekening",
+            "$this->table.bank",
             )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pelanggan.statusaktif', '=', 'parameter.id');
     }
 
@@ -265,6 +350,34 @@ class Pelanggan extends MyModel
             $table->string('alamat2', 1000)->nullable()->nullable();
             $table->string('kota', 1000)->nullable();
             $table->string('kodepos', 1000)->nullable();
+
+            $table->string('npwp',50)->nullable();
+            $table->string('noktp',50)->nullable();
+            $table->string('alamatfakturpajak',100)->nullable();
+            $table->string('alamatkantorpenagihan',100)->nullable();
+            $table->string('namapemilik',100)->nullable();
+            $table->string('telpkantor',100)->nullable();
+            $table->string('faxkantor',100)->nullable();
+            $table->string('website',100)->nullable();
+            $table->string('contactperson',100)->nullable();
+            $table->string('telpcp',100)->nullable();
+            $table->string('asuransitas',100)->nullable();
+            $table->string('asuransisendiri',100)->nullable();
+            $table->double('top', 15,2)->nullable();
+            $table->string('prosedurpenagihan',100)->nullable();
+            $table->string('syaratpenagihan',100)->nullable();
+            $table->string('pickeuangan',100)->nullable();
+            $table->string('telppickeuangan',50)->nullable();
+            $table->string('jenisusaha',100)->nullable();
+            $table->string('volumeperbulan',100)->nullable();
+            $table->string('kompetitor',100)->nullable();
+            $table->string('referensi',100)->nullable();
+            $table->double('nominalplafon', 15,2)->nullable();
+            $table->string('danaditransferdari',100)->nullable();
+            $table->string('atasnama',100)->nullable();
+            $table->string('norekening',100)->nullable();
+            $table->string('bank',100)->nullable();
+
             $table->string('statusaktif', 500)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
@@ -277,7 +390,7 @@ class Pelanggan extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'kodepelanggan', 'namapelanggan', 'namakontak', 'keterangan', 'telp', 'alamat', 'alamat2', 'kota', 'kodepos', 'modifiedby', 'statusaktif', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', "kodepelanggan","namapelanggan","namakontak","keterangan","telp","alamat","alamat2","kota","kodepos", "statusaktif","modifiedby","created_at","updated_at","npwp","noktp","alamatfakturpajak","alamatkantorpenagihan","namapemilik","telpkantor","faxkantor","website","contactperson","telpcp","asuransitas","asuransisendiri","top","prosedurpenagihan","syaratpenagihan","pickeuangan","telppickeuangan","jenisusaha","volumeperbulan","kompetitor","referensi","nominalplafon","danaditransferdari","atasnama","norekening","bank" ], $models);
 
 
         return  $temp;
@@ -384,6 +497,34 @@ class Pelanggan extends MyModel
         $pelanggan->kota = $data['kota'];
         $pelanggan->kodepos = $data['kodepos'];
         $pelanggan->keterangan = $data['keterangan'] ?? '';
+
+        $pelanggan->npwp = $data['npwp'] ?? '';
+        $pelanggan->noktp = $data['noktp'] ?? '';
+        $pelanggan->alamatfakturpajak = $data['alamatfakturpajak'] ?? '';
+        $pelanggan->alamatkantorpenagihan = $data['alamatkantorpenagihan'] ?? '';
+        $pelanggan->namapemilik = $data['namapemilik'] ?? '';
+        $pelanggan->telpkantor = $data['telpkantor'] ?? '';
+        $pelanggan->faxkantor = $data['faxkantor'] ?? '';
+        $pelanggan->website = $data['website'] ?? '';
+        $pelanggan->contactperson = $data['contactperson'] ?? '';
+        $pelanggan->telpcp = $data['telpcp'] ?? '';
+        $pelanggan->asuransitas = $data['asuransitas'] ?? '';
+        $pelanggan->asuransisendiri = $data['asuransisendiri'] ?? '';
+        $pelanggan->top = $data['top'] ?? 0;
+        $pelanggan->prosedurpenagihan = $data['prosedurpenagihan'] ?? '';
+        $pelanggan->syaratpenagihan = $data['syaratpenagihan'] ?? '';
+        $pelanggan->pickeuangan = $data['pickeuangan'] ?? '';
+        $pelanggan->telppickeuangan = $data['telppickeuangan'] ?? '';
+        $pelanggan->jenisusaha = $data['jenisusaha'] ?? '';
+        $pelanggan->volumeperbulan = $data['volumeperbulan'] ?? '';
+        $pelanggan->kompetitor = $data['kompetitor'] ?? '';
+        $pelanggan->referensi = $data['referensi'] ?? '';
+        $pelanggan->nominalplafon = $data['nominalplafon'] ?? 0;
+        $pelanggan->danaditransferdari = $data['danaditransferdari'] ?? '';
+        $pelanggan->atasnama = $data['atasnama'] ?? '';
+        $pelanggan->norekening = $data['norekening'] ?? '';
+        $pelanggan->bank = $data['bank'] ?? '';
+
         $pelanggan->modifiedby = auth('api')->user()->name;
         $pelanggan->info = html_entity_decode(request()->info);
         $pelanggan->statusaktif = $data['statusaktif'];
@@ -417,6 +558,35 @@ class Pelanggan extends MyModel
         $pelanggan->kota = $data['kota'];
         $pelanggan->kodepos = $data['kodepos'];
         $pelanggan->keterangan = $data['keterangan'] ?? '';
+
+        
+        $pelanggan->npwp = $data['npwp'] ?? '';
+        $pelanggan->noktp = $data['noktp'] ?? '';
+        $pelanggan->alamatfakturpajak = $data['alamatfakturpajak'] ?? '';
+        $pelanggan->alamatkantorpenagihan = $data['alamatkantorpenagihan'] ?? '';
+        $pelanggan->namapemilik = $data['namapemilik'] ?? '';
+        $pelanggan->telpkantor = $data['telpkantor'] ?? '';
+        $pelanggan->faxkantor = $data['faxkantor'] ?? '';
+        $pelanggan->website = $data['website'] ?? '';
+        $pelanggan->contactperson = $data['contactperson'] ?? '';
+        $pelanggan->telpcp = $data['telpcp'] ?? '';
+        $pelanggan->asuransitas = $data['asuransitas'] ?? '';
+        $pelanggan->asuransisendiri = $data['asuransisendiri'] ?? '';
+        $pelanggan->top = $data['top'] ?? 0;
+        $pelanggan->prosedurpenagihan = $data['prosedurpenagihan'] ?? '';
+        $pelanggan->syaratpenagihan = $data['syaratpenagihan'] ?? '';
+        $pelanggan->pickeuangan = $data['pickeuangan'] ?? '';
+        $pelanggan->telppickeuangan = $data['telppickeuangan'] ?? '';
+        $pelanggan->jenisusaha = $data['jenisusaha'] ?? '';
+        $pelanggan->volumeperbulan = $data['volumeperbulan'] ?? '';
+        $pelanggan->kompetitor = $data['kompetitor'] ?? '';
+        $pelanggan->referensi = $data['referensi'] ?? '';
+        $pelanggan->nominalplafon = $data['nominalplafon'] ?? 0;
+        $pelanggan->danaditransferdari = $data['danaditransferdari'] ?? '';
+        $pelanggan->atasnama = $data['atasnama'] ?? '';
+        $pelanggan->norekening = $data['norekening'] ?? '';
+        $pelanggan->bank = $data['bank'] ?? '';
+
         $pelanggan->statusaktif = $data['statusaktif'];
         $pelanggan->modifiedby = auth('api')->user()->name;
         $pelanggan->info = html_entity_decode(request()->info);
