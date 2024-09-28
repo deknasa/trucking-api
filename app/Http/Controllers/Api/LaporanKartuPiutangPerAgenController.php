@@ -127,13 +127,23 @@ class LaporanKartuPiutangPerAgenController extends Controller
         $sheet->setCellValue('A4', strtoupper('Periode : ' . $tanggal));
         $sheet->getStyle("A4")->getFont()->setBold(true);
         $sheet->mergeCells('A4:J4');
+        if ($pengeluaran[0]->cabang != 'BITUNG-EMKL') {
 
-        $agendari = $request->agendari ?? '';
-        $agensampai = $request->agensampai ?? '';
-        if ($agendari == '' || $agensampai == '') {
-            $sheet->setCellValue('A5', strtoupper('Customer : SEMUA'));
+            $agendari = $request->agendari ?? '';
+            $agensampai = $request->agensampai ?? '';
+            if ($agendari == '' || $agensampai == '') {
+                $sheet->setCellValue('A5', strtoupper('Customer : SEMUA'));
+            } else {
+                $sheet->setCellValue('A5', strtoupper('Customer : ' . $request->agendari . ' S/D ' . $request->agensampai));
+            }
         } else {
-            $sheet->setCellValue('A5', strtoupper('Customer : ' . $request->agendari . ' S/D ' . $request->agensampai));
+            $agendari = $request->pelanggandari ?? '';
+            $agensampai = $request->pelanggansampai ?? '';
+            if ($agendari == '' || $agensampai == '') {
+                $sheet->setCellValue('A5', strtoupper('Shipper : SEMUA'));
+            } else {
+                $sheet->setCellValue('A5', strtoupper('Shipper : ' . $request->agendari . ' S/D ' . $request->agensampai));
+            }
         }
 
         $sheet->getStyle("A5")->getFont()->setBold(true);
@@ -223,7 +233,12 @@ class LaporanKartuPiutangPerAgenController extends Controller
 
                 foreach ($group as $customer => $row) {
                     $startcellcustomer = $detail_start_row + 2;
-                    $sheet->setCellValue("A$detail_start_row", 'Customer : ' . $customer)->getStyle("A$detail_start_row")->getFont()->setBold(true);
+
+                    if ($pengeluaran[0]->cabang != 'BITUNG-EMKL') {
+                        $sheet->setCellValue("A$detail_start_row", 'Customer : ' . $customer)->getStyle("A$detail_start_row")->getFont()->setBold(true);
+                    } else {
+                        $sheet->setCellValue("A$detail_start_row", 'Shipper : ' . $customer)->getStyle("A$detail_start_row")->getFont()->setBold(true);
+                    }
                     $detail_start_row++;
                     foreach ($header_columns as $data_columns_index => $data_column) {
 
@@ -232,8 +247,8 @@ class LaporanKartuPiutangPerAgenController extends Controller
                         $sheet->getStyle("A$detail_start_row:$lastColumn$detail_start_row")->applyFromArray($styleArray)->getFont()->setBold(true);
                     }
                     $detail_start_row++;
-                    $bayarCell = 'F' . ($detail_start_row + count($row)-1);
-                    $nominalCell = 'D' . ($detail_start_row + count($row)-1);
+                    $bayarCell = 'F' . ($detail_start_row + count($row) - 1);
+                    $nominalCell = 'D' . ($detail_start_row + count($row) - 1);
                     // // DATA
                     $prevNobukti = '';
                     foreach ($row as $response_detail) {
