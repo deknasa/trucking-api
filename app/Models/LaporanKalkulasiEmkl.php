@@ -135,6 +135,8 @@ class LaporanKalkulasiEmkl extends Model
             $table->double('nominalstodem',15,2)->nullable();
             $table->longtext('nobuktipengeluaranstodem')->nullable();
             $table->longtext('nobuktiinvoicestodem')->nullable();
+            $table->double('dpp',15,2)->nullable();
+            $table->longtext('nobuktiinvoicemuatan')->nullable();
 
         });
 
@@ -473,6 +475,57 @@ $queryinvoicebongkaranstodem=db::table($tempinvoicebongkaranstodemlist)->from(db
             'nominal',
         ], $queryinvoicebongkaranstodem);  
         // 
+
+        $tempinvoicemuatanlist = '##tempinvoicemuatanlist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempinvoicemuatanlist, function ($table) {
+            $table->string('nobukti', 50)->nullable();
+            $table->longtext('nobuktiinvoicemuatan')->nullable();
+            $table->double('dpp',15,2)->nullable();
+        });
+
+
+        $queryinvoicemuatanlist=db::table("invoiceemklheader")->from(db::raw("invoiceemklheader a with (readuncommitted)"))
+        ->select(
+            'c.nobukti',
+            'a.nobuktiinvoicepajak as nobuktiinvoicemuatan',
+            db::raw("b.nominal as nominal"),
+            
+        )
+        ->join(db::raw("invoiceemkldetail b with (readuncommitted)"),'a.nobukti','b.nobukti')
+        ->join(db::raw("jobemkl c with (readuncommitted)"),'b.jobemkl_nobukti','c.nobukti')
+        ->where('a.jenisorder_id',1)
+        ->where('a.statuspajak',724);
+
+
+        DB::table($tempinvoicemuatanlist)->insertUsing([
+            'nobukti',
+            'nobuktiinvoicemuatan',
+            'dpp',
+        ], $queryinvoicemuatanlist); 
+
+
+        $tempinvoicemuatan = '##tempinvoicemuatan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempinvoicemuatan, function ($table) {
+            $table->string('nobukti', 50)->nullable();
+            $table->longtext('nobuktiinvoicemuatan')->nullable();
+            $table->double('dpp',15,2)->nullable();
+        });             
+        
+        $queryinvoicemuatan=db::table($tempinvoicemuatanlist)->from(db::raw($tempinvoicemuatanlist . " a "))
+        ->select(
+            'a.nobukti',
+            db::raw("string_agg(a.nobuktiinvoicemuatan,',') as nobuktiinvoicemuatan"),
+            db::raw("sum(isnull(a.dpp,0)) as dpp"),
+            
+        )
+        ->groupBy('a.nobukti');
+
+        DB::table($tempinvoicemuatan)->insertUsing([
+            'nobukti',
+            'nobuktiinvoicemuatan',
+            'dpp',
+        ], $queryinvoicemuatan);        
+
         $queryTempLaporan = DB::table($temporderan)->from(
             DB::raw($temporderan . " as a")
         )
@@ -508,6 +561,8 @@ $queryinvoicebongkaranstodem=db::table($tempinvoicebongkaranstodemlist)->from(db
                 db::raw("isnull(f.nominal,0) as nominalstodem"),
                 db::raw("isnull(f.nobuktipengeluaran,'') as nobuktipengeluaranstodem"),
                 db::raw("isnull(f.nobuktiinvoice,'') as nobuktiinvoicestodem"),
+                db::raw("isnull(g.dpp,0) as dpp"),
+                db::raw("isnull(g.nobuktiinvoicemuatan,'') as nobuktiinvoicemuatan"),
 
             )
             ->leftjoin(db::raw($tempinvoicebongkaranutama. " b"),'a.nobukti','b.nobukti')
@@ -515,6 +570,7 @@ $queryinvoicebongkaranstodem=db::table($tempinvoicebongkaranstodemlist)->from(db
             ->leftjoin(db::raw($tempinvoicebongkaranthc. " d"),'a.nobukti','d.nobukti')
             ->leftjoin(db::raw($tempinvoicebongkaransto. " e"),'a.nobukti','e.nobukti')
             ->leftjoin(db::raw($tempinvoicebongkaranstodem. " f"),'a.nobukti','f.nobukti')
+            ->leftjoin(db::raw($tempinvoicemuatan. " g"),'a.nobukti','g.nobukti')
             
             ->orderBy('a.tglbukti', 'ASC')
             ->orderBy('a.nobukti', 'ASC');
@@ -552,6 +608,8 @@ $queryinvoicebongkaranstodem=db::table($tempinvoicebongkaranstodemlist)->from(db
             'nominalstodem',
             'nobuktipengeluaranstodem',
             'nobuktiinvoicestodem',
+            'dpp',
+            'nobuktiinvoicemuatan',
 
         ], $queryTempLaporan);
 
@@ -607,6 +665,8 @@ $queryinvoicebongkaranstodem=db::table($tempinvoicebongkaranstodemlist)->from(db
                 'a.nominalstodem',
                 'a.nobuktipengeluaranstodem',
                 'a.nobuktiinvoicestodem',
+                'a.dpp',
+                'a.nobuktiinvoicemuatan',                
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
                 DB::raw("upper('Job Emkl ". $jenisorderan." Bulan : ".$periode ."') as judulLaporan"),
