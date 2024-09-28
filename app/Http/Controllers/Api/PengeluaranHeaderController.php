@@ -703,11 +703,11 @@ class PengeluaranHeaderController extends Controller
                 $nominal = 0;
                 foreach ($pengeluaran_Detail as $response_index => $response_detail) {
 
-                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
-                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : 0);
-                        $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getFont()->setBold(true);
-                        $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getAlignment()->setHorizontal('center');
-                    }
+                    // foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                    //     $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : 0);
+                    //     $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getFont()->setBold(true);
+                    //     $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                    // }
 
                     $sheet->setCellValue("A$detail_start_row", $response_index + 1);
                     $sheet->setCellValue("B$detail_start_row", $response_detail->coadebet);
@@ -897,9 +897,9 @@ class PengeluaranHeaderController extends Controller
                 'data' => $pengeluaran_Header
             ]);
         }
-        return response([
-            'data' => $pengeluaranHeader->getExport($id)
-        ]);
+        // return response([
+        //     'data' => $pengeluaranHeader->getExport($id)
+        // ]);
     }
 
     public function editingat(EditingByRequest $request) {}
