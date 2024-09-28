@@ -444,6 +444,8 @@ class LaporanKalkulasiEmklController extends Controller
             $sheet->setCellValue("G$rowIndex", $response_detail->nocontseal);
             $sheet->setCellValue("H$rowIndex", $response_detail->lokasibongkarmuat);
             $sheet->setCellValue("I$rowIndex", $response_detail->marketing);
+            $sheet->setCellValue("AV$rowIndex", $response_detail->dpp);
+            $sheet->setCellValue("AY$rowIndex", $response_detail->nobuktiinvoicemuatan);
 
             $sheet->setCellValue("AU$rowIndex", "=K$rowIndex+M$rowIndex+O$rowIndex+Q$rowIndex+S$rowIndex+U$rowIndex+W$rowIndex+Z$rowIndex+AA$rowIndex+AC$rowIndex+AF$rowIndex+AH$rowIndex+AJ$rowIndex+AL$rowIndex+AN$rowIndex+AP$rowIndex+AR$rowIndex+AS$rowIndex")->getStyle("AB$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
             $sheet->setCellValue("AW$rowIndex", "=AV$rowIndex*1.1/100")->getStyle("AC$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
@@ -501,7 +503,7 @@ class LaporanKalkulasiEmklController extends Controller
             $sheet->getStyle("AS" . $rowIndex)->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
             $sheet->getStyle("AT" . $rowIndex)->applyFromArray($styleHeader4);
             $sheet->getStyle("AU" . $rowIndex)->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
-            $sheet->getStyle("AV" . $rowIndex)->applyFromArray($styleHeader4);
+            $sheet->getStyle("AV" . $rowIndex)->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
             $sheet->getStyle("AW" . $rowIndex)->applyFromArray($styleHeader4);
             $sheet->getStyle("AX" . $rowIndex)->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
             $sheet->getStyle("AY" . $rowIndex)->applyFromArray($styleHeader4);
@@ -521,7 +523,7 @@ class LaporanKalkulasiEmklController extends Controller
             $sheet->getStyle("AS" . $rowIndex)->applyFromArray($styleHeader4);
             $sheet->getStyle("AT" . $rowIndex)->applyFromArray($styleHeader4);
             $sheet->getStyle("AU" . $rowIndex)->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
-            $sheet->getStyle("AV" . $rowIndex)->applyFromArray($styleHeader4);
+            $sheet->getStyle("AV" . $rowIndex)->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
             $sheet->getStyle("AW" . $rowIndex)->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
             $sheet->getStyle("AX" . $rowIndex)->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
             $sheet->getStyle("AY" . $rowIndex)->applyFromArray($styleHeader4);
