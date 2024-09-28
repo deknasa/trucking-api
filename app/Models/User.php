@@ -142,6 +142,9 @@ class User extends Authenticatable
     public function isMarketing()
     {
         $role = DB::table('role')->select('id')->where('rolename', 'MARKETING')->first();
+        if (!$role) {
+            return false;
+        }
         $userMandor = $this->checkUserRole($role);
 
         if ($userMandor->count()) {
