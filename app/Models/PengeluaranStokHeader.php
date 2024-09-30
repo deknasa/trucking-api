@@ -3705,6 +3705,16 @@ class PengeluaranStokHeader extends MyModel
                         ]);
                     }
                 }
+                if (($kor->text != $data['pengeluaranstok_id'])) {
+                    $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
+                    $datadetailfifo['gudang_id'] = $gudangkantor->text;
+                }
+                //hanya pja dan koreksi yang tidak dari gudang yang tidak menggunakan fifo
+                if ((($kor->text == $data['pengeluaranstok_id']) && $gudang_id) || (($kor->text != $data['pengeluaranstok_id']) && ($pja->text != $data['pengeluaranstok_id']) && ($korv->id != $data['pengeluaranstok_id']) && ($afkir->id != $data['pengeluaranstok_id']))) {
+                    (new PengeluaranStokDetailFifo())->processStore($pengeluaranStokHeader, $datadetailfifo);
+                }
+
+
                 if ($pengeluaranstok_id == 1 ||  $pengeluaranstok_id == 5) {
 
                     $reuse = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
@@ -3722,10 +3732,19 @@ class PengeluaranStokHeader extends MyModel
                         ->where('a.statusreuse', $reuse)
                         ->first();
 
+                    
                     if (isset($stokreuse)) {
 
                         $ksqty = $data['detail_qty'][$i] ?? 0;
-                        $ksharga = $data['detail_harga'][$i] ?? 0;
+                        $kstok_id = $data['detail_stok_id'][$i] ?? 0;
+                        $ksharga = db::table("pengeluaranstokdetail")->from(db::raw("pengeluaranstokdetail a with (readuncommitted)"))
+                            ->select(
+                                'a.harga'
+                            )
+                            ->where('a.stok_id', $kstok_id)
+                            ->where('a.nobukti', $pengeluaranStokHeader->nobukti)
+                            ->first()->harga ?? 0;
+
                         $kstotal = $ksqty * $ksharga;
                         $ksnobukti = $pengeluaranStokHeader->nobukti ?? '';
 
@@ -3758,18 +3777,44 @@ class PengeluaranStokHeader extends MyModel
                                 "urutfifo" => $urutfifo,
                             ]);
                         }
+                    } else {
+                        if ($pengeluaranstok_id == $gst->text) {
+
+                            $ksqty = $data['detail_qty'][$i] ?? 0;
+                            $kstok_id = $data['detail_stok_id'][$i] ?? 0;
+                            $ksharga = db::table("pengeluaranstokdetail")->from(db::raw("pengeluaranstokdetail a with (readuncommitted)"))
+                                ->select(
+                                    'a.harga'
+                                )
+                                ->where('a.stok_id', $kstok_id)
+                                ->where('a.nobukti', $pengeluaranStokHeader->nobukti)
+                                ->first()->harga ?? 0;
+
+                                // dd( $ksharga);
+                            $kstotal = $ksqty * $ksharga;
+                            $ksnobukti = $pengeluaranStokHeader->nobukti ?? '';
+                            $kartuStok = (new KartuStok())->processStore([
+                                "gudang_id" =>  $ksgudang_id,
+                                "trado_id" =>  $kstrado_id,
+                                "gandengan_id" => $ksgandengan_id,
+                                "stok_id" => $data['detail_stok_id'][$i] ?? 0,
+                                "nobukti" => $ksnobukti ?? '',
+                                "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
+                                "qtymasuk" => $ksqty ?? 0,
+                                "nilaimasuk" =>  $kstotal,
+                                "qtykeluar" =>  0,
+                                "nilaikeluar" => 0,
+                                "urutfifo" => $urutfifo,
+                            ]);
+                        }
                     }
                 }
 
 
-                if (($kor->text != $data['pengeluaranstok_id'])) {
-                    $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
-                    $datadetailfifo['gudang_id'] = $gudangkantor->text;
-                }
-                //hanya pja dan koreksi yang tidak dari gudang yang tidak menggunakan fifo
-                if ((($kor->text == $data['pengeluaranstok_id']) && $gudang_id) || (($kor->text != $data['pengeluaranstok_id']) && ($pja->text != $data['pengeluaranstok_id']) && ($korv->id != $data['pengeluaranstok_id']) && ($afkir->id != $data['pengeluaranstok_id']))) {
-                    (new PengeluaranStokDetailFifo())->processStore($pengeluaranStokHeader, $datadetailfifo);
-                }
+
+                // gst
+
+                // 
 
                 $pengeluaranStokDetail = PengeluaranStokDetail::find($pengeluaranStokDetail->id);
                 $pengeluaranStokDetails[] = $pengeluaranStokDetail->toArray();
@@ -4910,13 +4955,21 @@ class PengeluaranStokHeader extends MyModel
             'modifiedby' => auth('api')->user()->user,
         ]);
 
-        if ($spk->text == $fetchFormat->id) {
+        if ($spk->text == $fetchFormat->id || $gst->text == $fetchFormat->id) {
             $spk = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
                 ->select(
                     'a.text'
                 )
                 ->where('a.grp', 'SPK STOK')
                 ->where('a.subgrp', 'SPK STOK')
+                ->first()->text ?? 0;
+
+            $gst = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                ->select(
+                    'a.text'
+                )
+                ->where('a.grp', 'GST STOK')
+                ->where('a.subgrp', 'GST STOK')
                 ->first()->text ?? 0;
 
             $queryspklainheader = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
@@ -4932,14 +4985,15 @@ class PengeluaranStokHeader extends MyModel
                     'a.keterangan',
                     'a.statusformat',
                 )
-                ->whereRaw("a.id>" . $pengeluaranStokHeader->id)
-                ->where('a.pengeluaranstok_id', $spk)
+                ->whereRaw("a.id>=" . $pengeluaranStokHeader->id)
+                ->whereraw("a.pengeluaranstok_id in(" . $spk . "," . $gst . ")")
                 ->orderBy('a.id', 'asc')
                 ->get();
 
             // dd($queryspklainheader);
             $dataheaderspk = json_decode($queryspklainheader, true);
             foreach ($dataheaderspk as $itemspkheader) {
+                // dd('abcd1');
                 // dd($itemspkheader['nobukti']);
                 $coadebet_detailreset = [];
                 $coakredit_detailreset = [];
@@ -5016,6 +5070,9 @@ class PengeluaranStokHeader extends MyModel
                             $ksgudang_id = $itemspkheader['gudang_id'] ?? '';
                             $kstrado_id = $itemspkheader['trado_id'] ?? '';
                             $ksgandengan_id = $itemspkheader['gandengan_id'] ?? '';
+                            $ksharga = $itemspkdetail['harga'] ?? 0;
+                            $kstotal = $ksqty * $ksharga;
+                            $kstotal = $ksqty * $ksharga;
 
                             $urutfifo = db::table("pengeluaranstok")->from(db::raw("pengeluaranstok as a with (readuncommitted)"))
                                 ->select('a.urutfifo')->where('a.id', $itemspkheader['pengeluaranstok_id'])->first()->urutfifo ?? 0;
@@ -5029,7 +5086,33 @@ class PengeluaranStokHeader extends MyModel
                                 "nobukti" => $ksnobukti ?? '',
                                 "tglbukti" => date('Y-m-d', strtotime($itemspkheader['tglbukti'])),
                                 "qtymasuk" => $ksqty ?? 0,
-                                "nilaimasuk" =>  0,
+                                "nilaimasuk" =>  $kstotal,
+                                "qtykeluar" =>  0,
+                                "nilaikeluar" => 0,
+                                "urutfifo" => $urutfifo,
+                            ]);
+                        } else {
+                            $ksqty = $itemspkdetail['qty'] ?? 0;
+                            $ksnobukti = $itemspkheader['nobukti'] ?? '';
+                            $ksgudang_id = $itemspkheader['gudang_id'] ?? '';
+                            $kstrado_id = $itemspkheader['trado_id'] ?? '';
+                            $ksgandengan_id = $itemspkheader['gandengan_id'] ?? '';
+                            $ksharga = $itemspkdetail['harga'] ?? 0;
+                            $kstotal = $ksqty * $ksharga;
+                            $urutfifo = db::table("pengeluaranstok")->from(db::raw("pengeluaranstok as a with (readuncommitted)"))
+                                ->select('a.urutfifo')->where('a.id', $itemspkheader['pengeluaranstok_id'])->first()->urutfifo ?? 0;
+                            $ksharga = $itemspkdetail['harga'] ?? 0;
+
+                            $kstotal = $ksqty * $ksharga;
+                            $kartuStok = (new KartuStok())->processStore([
+                                "gudang_id" =>  $ksgudang_id,
+                                "trado_id" =>  $kstrado_id,
+                                "gandengan_id" => $ksgandengan_id,
+                                "stok_id" => $itemspkdetail['stok_id'] ?? 0,
+                                "nobukti" => $ksnobukti ?? '',
+                                "tglbukti" => date('Y-m-d', strtotime($itemspkheader['tglbukti'])),
+                                "qtymasuk" => $ksqty ?? 0,
+                                "nilaimasuk" =>  $kstotal,
                                 "qtykeluar" =>  0,
                                 "nilaikeluar" => 0,
                                 "urutfifo" => $urutfifo,
@@ -5115,23 +5198,23 @@ class PengeluaranStokHeader extends MyModel
         }
 
         $afkir = DB::table('pengeluaranstok')->where('kodepengeluaran', 'AFKIR')->first();
-        if($fetchFormat->id == $afkir->id){
+        if ($fetchFormat->id == $afkir->id) {
             $detailStok = db::table("pengeluaranstokdetail")->from(db::raw("pengeluaranstokdetail a with (readuncommitted)"))
-            ->select(
-                'a.qty',
-                'a.stok_id',
-                'a.keterangan',
-                'a.harga',
-                'a.total',
-                'a.id',
+                ->select(
+                    'a.qty',
+                    'a.stok_id',
+                    'a.keterangan',
+                    'a.harga',
+                    'a.total',
+                    'a.id',
                 )
-            ->where("a.pengeluaranstokheader_id", $pengeluaranStokHeader->id)
-            ->get();
+                ->where("a.pengeluaranstokheader_id", $pengeluaranStokHeader->id)
+                ->get();
             $statusAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
 
             foreach ($detailStok as $item) {
-                $stok = Stok::where('id',$item->stok_id)->first();
-                
+                $stok = Stok::where('id', $item->stok_id)->first();
+
                 $stok->statusban = $stok->statusban_old;
                 $stok->statusban_old = '';
                 $stok->statusaktif = $statusAktif->id;
