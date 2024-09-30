@@ -938,6 +938,7 @@ class InvoiceEmklHeader extends MyModel
             $status = [];
             $nominalfifo = [];
             $coadebetfifo = [];
+            $biayaemkl_idfifo = [];
             $selisih = 0;
             $jobemkl = '';
             if ($prosesReimburse == 0) {
@@ -950,51 +951,79 @@ class InvoiceEmklHeader extends MyModel
                         $nominalawal = db::table("jurnalumumdetail")->from(db::raw("jurnalumumdetail with (readuncommitted)"))
                             ->where('coa', $coakredit)->where('nobukti', $data['nojobemkl'][$i])->first()->nominal ?? 0;
                         $nominalawal = $nominalawal * -1;
+                        // } else {
+                        //     $nominalawal = db::table("jurnalumumdetail")->from(db::raw("jurnalumumdetail with (readuncommitted)"))
+                        //         ->where('coa', $coadebet)->where('nobukti', $data['nojobemkl'][$i])->first()->nominal ?? 0;
+                        // }
+
+                        if ($statusPPN->text == 'PPN 1.1%') {
+                            $nom = $data['nominal'][$i];
+                            $nilaippn = db::select("select round(($nom * 0.011), 0, 1) as ppn");
+                            $nominalppn = $nilaippn[0]->ppn;
+                        } else {
+                            $nom = $data['nominal'][$i];
+                            $nilaippn = db::select("select round(($nom * 0.11), 0, 1) as ppn");
+                            $nominalppn = $nilaippn[0]->ppn;
+                        }
+
+                        if ($data['nominal'][$i] > $nominalawal) {
+                            $coadebetdetail = $coadebetdetailkelebihan;
+                            $coakreditdetail = $coakreditdetailkelebihan;
+
+                            $nominaljurnal[] = $data['nominal'][$i] - $nominalawal;
+                            $selisih = $data['nominal'][$i] - $nominalawal;
+                            $coadebetjurnal[] = $coadebetdetail;
+                            $coakreditjurnal[] = $coakreditdetail;
+                            $keteranganjurnal[] =  $invoiceHeader->nobukti . ' ' . $jobemkl->nobukti . ' ' . $data['keterangan_detail'][$i];
+                            $status[] = 'normal';
+                            $nominalfifo[] = $nominalawal + $nominalppn;
+                            $coadebetfifo[] = $coadebet;
+                            $status[] = 'selisih';
+                            $nominalfifo[] = $selisih;
+                            $coadebetfifo[] = $coadebetdetail;
+                        }
+                        if ($data['nominal'][$i] < $nominalawal) {
+                            $coadebetdetail = $coadebetdetailkekurangan;
+                            $coakreditdetail = $coakreditdetailkekurangan;
+
+                            $nominaljurnal[] = $nominalawal - $data['nominal'][$i];
+                            $selisih = $nominalawal - $data['nominal'][$i];
+                            $coadebetjurnal[] = $coadebetdetail;
+                            $coakreditjurnal[] = $coakreditdetail;
+                            $keteranganjurnal[] =  $invoiceHeader->nobukti . ' ' . $jobemkl->nobukti . ' ' . $data['keterangan_detail'][$i];
+                            $status[] = 'normal';
+                            $nominalfifo[] = $nominalawal - $selisih + $nominalppn;
+                            $coadebetfifo[] = $coadebet;
+                            $status[] = 'selisih';
+                            $nominalfifo[] = -$selisih;
+                            $coadebetfifo[] = $coadebetdetail;
+                        }
+                        if ($data['nominal'][$i] == $nominalawal) {
+                            $coadebetdetail = '';
+                            $coakreditdetail = '';
+                            if ($statusPPN->text == 'PPN 1.1%') {
+                                $nom = $data['nominal'][$i];
+                                $nilaippn = db::select("select round(($nom * 0.011), 0, 1) as ppn");
+                                $nominalppn = $nilaippn[0]->ppn;
+                            } else {
+                                $nom = $data['nominal'][$i];
+                                $nilaippn = db::select("select round(($nom * 0.11), 0, 1) as ppn");
+                                $nominalppn = $nilaippn[0]->ppn;
+                            }
+                            $status[] = 'normal';
+                            $nominalfifo[] = $data['nominal'][$i] + $nominalppn;
+                            $coadebetfifo[] = $coadebet;
+                        }
                     } else {
-                        $nominalawal = db::table("jurnalumumdetail")->from(db::raw("jurnalumumdetail with (readuncommitted)"))
-                            ->where('coa', $coadebet)->where('nobukti', $data['nojobemkl'][$i])->first()->nominal ?? 0;
-                    }
-
-                    if ($data['nominal'][$i] > $nominalawal) {
-                        $coadebetdetail = $coadebetdetailkelebihan;
-                        $coakreditdetail = $coakreditdetailkelebihan;
-
-                        $nominaljurnal[] = $data['nominal'][$i] - $nominalawal;
-                        $selisih = $data['nominal'][$i] - $nominalawal;
-                        $coadebetjurnal[] = $coadebetdetail;
-                        $coakreditjurnal[] = $coakreditdetail;
-                        $keteranganjurnal[] =  $invoiceHeader->nobukti . ' ' . $jobemkl->nobukti . ' ' . $data['keterangan_detail'][$i];
-                        $status[] = 'normal';
-                        $nominalfifo[] = $nominalawal;
-                        $coadebetfifo[] = $coadebet;
-                        $status[] = 'selisih';
-                        $nominalfifo[] = $selisih;
-                        $coadebetfifo[] = $coadebetdetail;
-                    }
-                    if ($data['nominal'][$i] < $nominalawal) {
-                        $coadebetdetail = $coadebetdetailkekurangan;
-                        $coakreditdetail = $coakreditdetailkekurangan;
-
-                        $nominaljurnal[] = $nominalawal - $data['nominal'][$i];
-                        $selisih = $nominalawal - $data['nominal'][$i];
-                        $coadebetjurnal[] = $coadebetdetail;
-                        $coakreditjurnal[] = $coakreditdetail;
-                        $keteranganjurnal[] =  $invoiceHeader->nobukti . ' ' . $jobemkl->nobukti . ' ' . $data['keterangan_detail'][$i];
-                        $status[] = 'normal';
-                        $nominalfifo[] = $nominalawal;
-                        $coadebetfifo[] = $coadebet;
-                        $status[] = 'selisih';
-                        $nominalfifo[] = -$selisih;
-                        $coadebetfifo[] = $coadebetdetail;
-                    }
-                    if ($data['nominal'][$i] == $nominalawal) {
-                        $coadebetdetail = '';
-                        $coakreditdetail = '';
+                        $coadebetdetail = $coadebet;
+                        $coakreditdetail = $coakredit;
                     }
                 }
                 if ($data['statusinvoice'] == $statusInvoice->id && date('m', strtotime($data['tglbukti'])) == date('m', strtotime($data['tgldari']))) {
                     $status[] = 'normal';
-                    $nominalfifo[] = $data['nominal'][$i];
+                    if ($data['jenisorder_id'] != 2) {
+                        $nominalfifo[] = $data['nominal'][$i];
+                    }
                     $coadebetfifo[] = $coadebet;
                 }
             }
@@ -1053,6 +1082,7 @@ class InvoiceEmklHeader extends MyModel
                 $invoiceEmklDetailRincianBiaya = (new InvoiceEmklDetailRincianBiaya())->processStore([
                     'invoiceemkl_id' => $invoiceHeader->id,
                     'invoiceemkldetail_id' => $invoiceDetail->id,
+                    'jobemkl_nobukti' => $invoiceDetail->jobemkl_nobukti,
                     'keteranganbiaya' =>  $keterangan_biaya,
                     'nobukti' =>   $invoiceHeader->nobukti,
                     'tglbukti' =>  $data['tglbukti'],
@@ -1070,9 +1100,77 @@ class InvoiceEmklHeader extends MyModel
                     ->where('b.id', $invoiceDetail->id)
                     ->first();
                 $nominalfifo[] = $querydetailjob->nominal ?? 0;
+                $status[] = 'normal';
+                $coadebetfifo[] = $coadebet;
                 $nominaldetail = $querydetailjob->nominal ?? 0;
 
                 db::update("update invoiceemkldetail set nominal=" . $nominaldetail . " where id=" . $invoiceDetail->id . " and nobukti='" . $invoiceHeader->nobukti . "'");
+
+                if ($data['statusinvoice'] == $statusInvoice->id && date('m', strtotime($data['tglbukti'])) != date('m', strtotime($data['tgldari']))) {
+                    $getSelisihBiaya = DB::table("jobemklrincianbiaya")->from(db::raw("jobemklrincianbiaya as a with (readuncommitted)"))
+                        ->select(db::raw("a.nobukti,a.biayaemkl_id, isnull(a.nominal, 0) as nominalawal, isnull(b.nominal, 0) as nominalrincian, (case when isnull(b.nominal, 0) > isnull(a.nominal, 0) then (isnull(b.nominal,0) - isnull(a.nominal,0)) else (isnull(a.nominal, 0) - isnull(b.nominal, 0)) end) as selisih"))
+                        ->join(DB::raw("invoiceemkldetailrincianbiaya as b with (readuncommitted)"), 'a.nobukti', 'b.jobemkl_nobukti')
+                        ->where('a.nobukti', $invoiceDetail->jobemkl_nobukti)
+                        ->whereRaw("a.biayaemkl_id=b.biayaemkl_id")
+                        // ->whereRaw("(isnull(a.nominal, 0) - isnull(b.nominal, 0)) != 0")
+                        ->get();
+                    $selisihnilaijob = 0;
+                    if (count($getSelisihBiaya) > 0) {
+                        $nominalfifo = [];
+                        $status = [];
+                        $coadebetfifo = [];
+
+                        for ($j = 0; $j < count($getSelisihBiaya); $j++) {
+                            if ($getSelisihBiaya[$j]->nominalrincian > $getSelisihBiaya[$j]->nominalawal) {
+                              
+                                $coadebetdetail = $coadebetdetailkelebihan;
+                                $coakreditdetail = $coakreditdetailkelebihan;
+                                $selisih = $getSelisihBiaya[$j]->nominalrincian - $getSelisihBiaya[$j]->nominalawal;
+                                
+                                $nominaljurnal[] = $selisih;
+                                $coadebetjurnal[] = $coadebetdetail;
+                                $coakreditjurnal[] = $coakreditdetail;
+                                $keteranganjurnal[] = $invoiceHeader->nobukti . ' ' . $nojobemkl . ' ' . $data['keterangan_detail'][$i];
+                                $nominalfifo[] = $getSelisihBiaya[$j]->nominalawal;
+                                $status[] = 'normal';
+                                $coadebetfifo[] = $coadebet;
+                                $biayaemkl_idfifo[] =  $getSelisihBiaya[$j]->biayaemkl_id;
+                                $status[] = 'selisih';
+                                $nominalfifo[] = $selisih;
+                                $coadebetfifo[] = $coadebetdetailkelebihan;
+                                $biayaemkl_idfifo[] =  $getSelisihBiaya[$j]->biayaemkl_id;
+                                $selisihnilaijob += $selisih;
+                            }
+                            if ($getSelisihBiaya[$j]->nominalrincian < $getSelisihBiaya[$j]->nominalawal) {
+
+                                $coadebetdetail = $coadebetdetailkekurangan;
+                                $coakreditdetail = $coakreditdetailkekurangan;
+                                $selisih = $getSelisihBiaya[$j]->nominalawal - $getSelisihBiaya[$j]->nominalrincian;
+                                $nominaljurnal[] = $selisih;
+                                $coadebetjurnal[] = $coadebetdetail;
+                                $coakreditjurnal[] = $coakreditdetail;
+                                $keteranganjurnal[] = $invoiceHeader->nobukti . ' ' . $nojobemkl . ' ' . $data['keterangan_detail'][$i];
+                                $nominalfifo[] = $getSelisihBiaya[$j]->nominalawal;
+                                $status[] = 'normal';
+                                $coadebetfifo[] = $coadebet;
+                                $biayaemkl_idfifo[] =  $getSelisihBiaya[$j]->biayaemkl_id;
+                                $status[] = 'selisih';
+                                $nominalfifo[] = -$selisih;
+                                $coadebetfifo[] = $coadebetdetailkekurangan;
+                                $biayaemkl_idfifo[] =  $getSelisihBiaya[$j]->biayaemkl_id;
+                                $selisihnilaijob -= $selisih;
+                            }
+                            if ($getSelisihBiaya[$j]->nominalrincian == $getSelisihBiaya[$j]->nominalawal) {
+                                $nominalfifo[] = $getSelisihBiaya[$j]->nominalawal;
+                                $status[] = 'normal';
+                                $coadebetfifo[] = $coadebet;
+                                $biayaemkl_idfifo[] =  $getSelisihBiaya[$j]->biayaemkl_id;
+                            }
+                        }
+                    }
+
+                    db::update("update invoiceemkldetail set selisih=" . $selisihnilaijob . " where id=" . $invoiceDetail->id . " and nobukti='" . $invoiceHeader->nobukti . "'");
+                }
             }
 
             $nojob_emkl = ($jobemkl != '') ? $jobemkl->nobukti : '';
@@ -1084,6 +1182,7 @@ class InvoiceEmklHeader extends MyModel
                     'status' => $status[$a] ?? '',
                     'nominal' => $nominalfifo[$a] ?? 0,
                     'coadebet' => $coadebetfifo[$a] ?? '',
+                    'biayaemkl_id' => $biayaemkl_idfifo[$a] ?? '',
                     'nominalpelunasan' => 0
                 ]);
             }
@@ -1227,7 +1326,7 @@ class InvoiceEmklHeader extends MyModel
         $piutangHeader = (new PiutangHeader())->processStore($invoiceRequest);
         $invoiceHeader->piutang_nobukti = $piutangHeader->nobukti;
 
-       
+
         $invoiceHeader->nominalppn = $nominalppn;
 
         if ($prosesReimburse == 0) {
@@ -1509,6 +1608,7 @@ class InvoiceEmklHeader extends MyModel
             $status = [];
             $nominalfifo = [];
             $coadebetfifo = [];
+            $biayaemkl_idfifo = [];
             $selisih = 0;
             $jobemkl = '';
             if ($prosesReimburse == 0) {
@@ -1521,46 +1621,71 @@ class InvoiceEmklHeader extends MyModel
                         $nominalawal = db::table("jurnalumumdetail")->from(db::raw("jurnalumumdetail with (readuncommitted)"))
                             ->where('coa', $coakredit)->where('nobukti', $data['nojobemkl'][$i])->first()->nominal ?? 0;
                         $nominalawal = $nominalawal * -1;
+                        // } else {
+                        //     $nominalawal = db::table("jurnalumumdetail")->from(db::raw("jurnalumumdetail with (readuncommitted)"))
+                        //         ->where('coa', $coadebet)->where('nobukti', $data['nojobemkl'][$i])->first()->nominal ?? 0;
+                        // }
+                        if ($statusPPN->text == 'PPN 1.1%') {
+                            $nom = $data['nominal'][$i];
+                            $nilaippn = db::select("select round(($nom * 0.011), 0, 1) as ppn");
+                            $nominalppn = $nilaippn[0]->ppn;
+                        } else {
+                            $nom = $data['nominal'][$i];
+                            $nilaippn = db::select("select round(($nom * 0.11), 0, 1) as ppn");
+                            $nominalppn = $nilaippn[0]->ppn;
+                        }
+
+                        if ($data['nominal'][$i] > $nominalawal) {
+                            $coadebetdetail = $coadebetdetailkelebihan;
+                            $coakreditdetail = $coakreditdetailkelebihan;
+
+                            $nominaljurnal[] = $data['nominal'][$i] - $nominalawal;
+                            $selisih = $data['nominal'][$i] - $nominalawal;
+                            $coadebetjurnal[] = $coadebetdetail;
+                            $coakreditjurnal[] = $coakreditdetail;
+                            $keteranganjurnal[] = $data['keterangan_detail'][$i] ?? $invoiceHeader->nobukti . ' ' . $jobemkl->nobukti;
+                            $status[] = 'normal';
+                            $nominalfifo[] = $nominalawal + $nominalppn;
+                            $coadebetfifo[] = $coadebet;
+                            $status[] = 'selisih';
+                            $nominalfifo[] = $selisih;
+                            $coadebetfifo[] = $coadebetdetail;
+                        }
+                        if ($data['nominal'][$i] < $nominalawal) {
+                            $coadebetdetail = $coadebetdetailkekurangan;
+                            $coakreditdetail = $coakreditdetailkekurangan;
+
+                            $nominaljurnal[] = $nominalawal - $data['nominal'][$i];
+                            $selisih = $nominalawal - $data['nominal'][$i];
+                            $coadebetjurnal[] = $coadebetdetail;
+                            $coakreditjurnal[] = $coakreditdetail;
+                            $keteranganjurnal[] = $data['keterangan_detail'][$i] ?? $invoiceHeader->nobukti . ' ' . $jobemkl->nobukti;
+                            $status[] = 'normal';
+                            $nominalfifo[] = $nominalawal - $selisih + $nominalppn;
+                            $coadebetfifo[] = $coadebet;
+                            $status[] = 'selisih';
+                            $nominalfifo[] = -$selisih;
+                            $coadebetfifo[] = $coadebetdetail;
+                        }
+                        if ($data['nominal'][$i] == $nominalawal) {
+                            $coadebetdetail = '';
+                            $coakreditdetail = '';
+                            if ($statusPPN->text == 'PPN 1.1%') {
+                                $nom = $data['nominal'][$i];
+                                $nilaippn = db::select("select round(($nom * 0.011), 0, 1) as ppn");
+                                $nominalppn = $nilaippn[0]->ppn;
+                            } else {
+                                $nom = $data['nominal'][$i];
+                                $nilaippn = db::select("select round(($nom * 0.11), 0, 1) as ppn");
+                                $nominalppn = $nilaippn[0]->ppn;
+                            }
+                            $status[] = 'normal';
+                            $nominalfifo[] = $data['nominal'][$i] + $nominalppn;
+                            $coadebetfifo[] = $coadebet;
+                        }
                     } else {
-                        $nominalawal = db::table("jurnalumumdetail")->from(db::raw("jurnalumumdetail with (readuncommitted)"))
-                            ->where('coa', $coadebet)->where('nobukti', $data['nojobemkl'][$i])->first()->nominal ?? 0;
-                    }
-
-                    if ($data['nominal'][$i] > $nominalawal) {
-                        $coadebetdetail = $coadebetdetailkelebihan;
-                        $coakreditdetail = $coakreditdetailkelebihan;
-
-                        $nominaljurnal[] = $data['nominal'][$i] - $nominalawal;
-                        $selisih = $data['nominal'][$i] - $nominalawal;
-                        $coadebetjurnal[] = $coadebetdetail;
-                        $coakreditjurnal[] = $coakreditdetail;
-                        $keteranganjurnal[] = $data['keterangan_detail'][$i] ?? $invoiceHeader->nobukti . ' ' . $jobemkl->nobukti;
-                        $status[] = 'normal';
-                        $nominalfifo[] = $nominalawal;
-                        $coadebetfifo[] = $coadebet;
-                        $status[] = 'selisih';
-                        $nominalfifo[] = $selisih;
-                        $coadebetfifo[] = $coadebetdetail;
-                    }
-                    if ($data['nominal'][$i] < $nominalawal) {
-                        $coadebetdetail = $coadebetdetailkekurangan;
-                        $coakreditdetail = $coakreditdetailkekurangan;
-
-                        $nominaljurnal[] = $nominalawal - $data['nominal'][$i];
-                        $selisih = $nominalawal - $data['nominal'][$i];
-                        $coadebetjurnal[] = $coadebetdetail;
-                        $coakreditjurnal[] = $coakreditdetail;
-                        $keteranganjurnal[] = $data['keterangan_detail'][$i] ?? $invoiceHeader->nobukti . ' ' . $jobemkl->nobukti;
-                        $status[] = 'normal';
-                        $nominalfifo[] = $nominalawal;
-                        $coadebetfifo[] = $coadebet;
-                        $status[] = 'selisih';
-                        $nominalfifo[] = -$selisih;
-                        $coadebetfifo[] = $coadebetdetail;
-                    }
-                    if ($data['nominal'][$i] == $nominalawal) {
-                        $coadebetdetail = '';
-                        $coakreditdetail = '';
+                        $coadebetdetail = $coadebet;
+                        $coakreditdetail = $coakredit;
                     }
                 }
 
@@ -1583,6 +1708,12 @@ class InvoiceEmklHeader extends MyModel
                 } else {
                     $keteranganjurnal[] =  $invoiceHeader->nobuktiinvoicereimbursement . ' ' . $data['keterangan_detail'][$i];
                 }
+                $status[] = 'normal';
+                if ($data['jenisorder_id'] != 2) {
+                    $nominalfifo[] = $data['nominal'][$i];
+                }
+
+                $coadebetfifo[] = $coadebet;
             }
 
             $nominalbiaya = $data['nominal'][$i];
@@ -1614,6 +1745,7 @@ class InvoiceEmklHeader extends MyModel
                 $invoiceEmklDetailRincianBiaya = (new InvoiceEmklDetailRincianBiaya())->processStore([
                     'invoiceemkl_id' => $invoiceHeader->id,
                     'invoiceemkldetail_id' => $invoiceDetail->id,
+                    'jobemkl_nobukti' => $invoiceDetail->jobemkl_nobukti,
                     'keteranganbiaya' =>  $keterangan_biaya,
                     'nobukti' =>   $invoiceHeader->nobukti,
                     'tglbukti' =>  $data['tglbukti'],
@@ -1631,10 +1763,84 @@ class InvoiceEmklHeader extends MyModel
                     ->where('b.id', $invoiceDetail->id)
                     ->first();
                 $nominalfifo[] = $querydetailjob->nominal ?? 0;
+                $status[] = 'normal';
+                $coadebetfifo[] = $coadebet;
                 $nominaldetail = $querydetailjob->nominal ?? 0;
                 db::update("update invoiceemkldetail set nominal=" . $nominaldetail . " where id=" . $invoiceDetail->id . " and nobukti='" . $invoiceHeader->nobukti . "'");
-            }
 
+                if ($data['statusinvoice'] == $statusInvoice->id && date('m', strtotime($data['tglbukti'])) != date('m', strtotime($data['tgldari']))) {
+                    $getSelisihBiaya = DB::table("jobemklrincianbiaya")->from(db::raw("jobemklrincianbiaya as a with (readuncommitted)"))
+                        ->select(db::raw("a.nobukti,a.biayaemkl_id, isnull(a.nominal, 0) as nominalawal, isnull(b.nominal, 0) as nominalrincian, (case when isnull(b.nominal, 0) > isnull(a.nominal, 0) then (isnull(b.nominal,0) - isnull(a.nominal,0)) else (isnull(a.nominal, 0) - isnull(b.nominal, 0)) end) as selisih"))
+                        ->join(DB::raw("invoiceemkldetailrincianbiaya as b with (readuncommitted)"), 'a.nobukti', 'b.jobemkl_nobukti')
+                        ->where('a.nobukti', $invoiceDetail->jobemkl_nobukti)
+                        ->whereRaw("a.biayaemkl_id=b.biayaemkl_id")
+                        // ->whereRaw("(isnull(a.nominal, 0) - isnull(b.nominal, 0)) != 0")
+                        ->get();
+                    $selisihnilaijob = 0;
+                    if (count($getSelisihBiaya) > 0) {
+                        $nominalfifo = [];
+                        $status = [];
+                        $coadebetfifo = [];
+                        // $getnilaiawal = db::table("jurnalumumdetail")->from(db::raw("jurnalumumdetail with (readuncommitted)"))
+                        //     ->select(DB::raw("nominal"))
+                        //     ->where('coa', $coadebet)->where('nobukti', $data['nojobemkl'][$i])->get();
+                        // for ($j = 0; $j < count($getnilaiawal); $j++) {
+                        //     $nominalfifo[] = $getnilaiawal[$j]->nominal;
+                        //     $status[] = 'normal';
+                        //     $coadebetfifo[] = $coadebet;
+                        // }
+
+                        for ($j = 0; $j < count($getSelisihBiaya); $j++) {
+                            if ($getSelisihBiaya[$j]->nominalrincian > $getSelisihBiaya[$j]->nominalawal) {
+
+                                $coadebetdetail = $coadebetdetailkelebihan;
+                                $coakreditdetail = $coakreditdetailkelebihan;
+                                $selisih = $getSelisihBiaya[$j]->nominalrincian - $getSelisihBiaya[$j]->nominalawal;
+                                $nominaljurnal[] = $selisih;
+                                $coadebetjurnal[] = $coadebetdetail;
+                                $coakreditjurnal[] = $coakreditdetail;
+                                $keteranganjurnal[] = $data['keterangan_detail'][$i] ?? $invoiceHeader->nobukti . ' ' . $jobemkl->nobukti;
+                                $nominalfifo[] = $getSelisihBiaya[$j]->nominalawal;
+                                $status[] = 'normal';
+                                $coadebetfifo[] = $coadebet;
+                                $biayaemkl_idfifo[] =  $getSelisihBiaya[$j]->biayaemkl_id;
+                                $status[] = 'selisih';
+                                $nominalfifo[] = $selisih;
+                                $coadebetfifo[] = $coadebetdetailkelebihan;
+                                $biayaemkl_idfifo[] =  $getSelisihBiaya[$j]->biayaemkl_id;
+                                $selisihnilaijob += $selisih;
+                            }
+                            if ($getSelisihBiaya[$j]->nominalrincian < $getSelisihBiaya[$j]->nominalawal) {
+
+                                $coadebetdetail = $coadebetdetailkekurangan;
+                                $coakreditdetail = $coakreditdetailkekurangan;
+                                $selisih = $getSelisihBiaya[$j]->nominalawal - $getSelisihBiaya[$j]->nominalrincian;
+                                $nominaljurnal[] = $selisih;
+                                $coadebetjurnal[] = $coadebetdetail;
+                                $coakreditjurnal[] = $coakreditdetail;
+                                $keteranganjurnal[] = $data['keterangan_detail'][$i] ?? $invoiceHeader->nobukti . ' ' . $jobemkl->nobukti;
+                                $nominalfifo[] = $getSelisihBiaya[$j]->nominalawal;
+                                $status[] = 'normal';
+                                $coadebetfifo[] = $coadebet;
+                                $biayaemkl_idfifo[] =  $getSelisihBiaya[$j]->biayaemkl_id;
+                                $status[] = 'selisih';
+                                $nominalfifo[] = -$selisih;
+                                $coadebetfifo[] = $coadebetdetailkekurangan;
+                                $biayaemkl_idfifo[] =  $getSelisihBiaya[$j]->biayaemkl_id;
+                                $selisihnilaijob -= $selisih;
+                            }
+                            if ($getSelisihBiaya[$j]->nominalrincian == $getSelisihBiaya[$j]->nominalawal) {
+                                $nominalfifo[] = $getSelisihBiaya[$j]->nominalawal;
+                                $status[] = 'normal';
+                                $coadebetfifo[] = $coadebet;
+                                $biayaemkl_idfifo[] =  $getSelisihBiaya[$j]->biayaemkl_id;
+                            }
+                        }
+                    }
+
+                    db::update("update invoiceemkldetail set selisih=" . $selisihnilaijob . " where id=" . $invoiceDetail->id . " and nobukti='" . $invoiceHeader->nobukti . "'");
+                }
+            }
 
             $nojob_emkl = ($jobemkl != '') ? $jobemkl->nobukti : '';
             for ($a = 0; $a < count($nominalfifo); $a++) {
@@ -1645,6 +1851,7 @@ class InvoiceEmklHeader extends MyModel
                     'status' => $status[$a] ?? '',
                     'nominal' => $nominalfifo[$a],
                     'coadebet' => $coadebetfifo[$a] ?? '',
+                    'biayaemkl_id' => $biayaemkl_idfifo[$a] ?? '',
                     'nominalpelunasan' => 0
                 ]);
             }
