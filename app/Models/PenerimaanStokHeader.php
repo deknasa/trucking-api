@@ -37,9 +37,9 @@ class PenerimaanStokHeader extends MyModel
         // dd(request());
         if ($cabang == 'TNL') {
             $query = $this->getForTnl();
-             goto endTnl;
-         }
- 
+            goto endTnl;
+        }
+
         $tempdatastokpg = '##tempdatastokpg' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdatastokpg, function ($table) {
             $table->string('nobukti', 100)->nullable();
@@ -1047,7 +1047,7 @@ class PenerimaanStokHeader extends MyModel
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
-        
+
         endTnl:
         $data = $query->get();
 
@@ -3079,6 +3079,23 @@ class PenerimaanStokHeader extends MyModel
         $masukgudang_id = $data['gudang_id'] ?? 0;
         $masuktrado_id = $data['trado_id'] ?? 0;
         $masukgandengan_id = $data['gandengan_id'] ?? 0;
+        if ($idpenerimaan == $pst->text) {
+            $datagst = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
+                ->select(
+                    db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                    db::raw("isnull(a.trado_id,0) as trado_id"),
+                    db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
+                )
+                ->where('a.nobukti', ($data['pengeluaranstok_nobukti'] == null) ? "" : $data['pengeluaranstok_nobukti'])
+                ->first();
+            $gudangdari_id = $datagst->gudang_id ?? 0;
+            $tradodari_id = $datagst->trado_id ?? 0;
+            $gandengandari_id = $datagst->gandengan_id ?? 0;
+            //         dd('uji');
+            // dd($gudangdari_id);
+        }
+
+
         if ($gudangke_id != 0) {
             $masukgudang_id = $gudangke_id ?? 0;
         }
@@ -3237,6 +3254,7 @@ class PenerimaanStokHeader extends MyModel
                     }
                 }
 
+                // dd($keluargudang_id);
                 if ($keluargudang_id != 0 || $keluartrado_id != 0  || $keluargandengan_id != 0) {
                     if ($penerimaanstok_id == 6) {
                         if ($keluargudang_id == $gdgkantor->text) {
@@ -3413,7 +3431,7 @@ class PenerimaanStokHeader extends MyModel
             $hutangHeader = (new HutangHeader())->processStore($hutangRequest);
             $penerimaanStokHeader->hutang_nobukti = $hutangHeader->nobukti;
             $penerimaanStokHeader->save();
-        } else if ( ($data['penerimaanstok_id'] == $pspk->text)) {
+        } else if (($data['penerimaanstok_id'] == $pspk->text)) {
 
             $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
@@ -3768,6 +3786,23 @@ class PenerimaanStokHeader extends MyModel
         $masukgudang_id = $data['gudang_id'] ?? 0;
         $masuktrado_id = $data['trado_id'] ?? 0;
         $masukgandengan_id = $data['gandengan_id'] ?? 0;
+
+        if ($idpenerimaan == $pst->text) {
+            $datagst = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
+                ->select(
+                    db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                    db::raw("isnull(a.trado_id,0) as trado_id"),
+                    db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
+                )
+                ->where('a.nobukti', ($data['pengeluaranstok_nobukti'] == null) ? "" : $data['pengeluaranstok_nobukti'])
+                ->first();
+            $gudangdari_id = $datagst->gudang_id ?? 0;
+            $tradodari_id = $datagst->trado_id ?? 0;
+            $gandengandari_id = $datagst->gandengan_id ?? 0;
+            //         dd('uji');
+            // dd($gudangdari_id);
+        }
+
 
         if ($gudangke_id != 0) {
             $masukgudang_id = $gudangke_id ?? 0;
