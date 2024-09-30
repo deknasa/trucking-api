@@ -85,6 +85,7 @@ class InvoiceEmklDetailRincianBiaya extends MyModel
             $invoiceEMklDetailRincianBiaya->invoiceemkl_id = $data['invoiceemkl_id'];
             $invoiceEMklDetailRincianBiaya->invoiceemkldetail_id = $data['invoiceemkldetail_id'];
             $invoiceEMklDetailRincianBiaya->nobukti = $data['nobukti'];
+            $invoiceEMklDetailRincianBiaya->jobemkl_nobukti = $data['jobemkl_nobukti'] ?? '';
             $invoiceEMklDetailRincianBiaya->biayaemkl_id = $idbiayaemkl ?? 0;
             $invoiceEMklDetailRincianBiaya->nominal = $nominal ?? 0;
             $invoiceEMklDetailRincianBiaya->keterangan = $keterangan ?? '';
