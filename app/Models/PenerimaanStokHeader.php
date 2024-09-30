@@ -3803,7 +3803,7 @@ class PenerimaanStokHeader extends MyModel
             // dd($gudangdari_id);
         }
 
-
+// dd('test');
         if ($gudangke_id != 0) {
             $masukgudang_id = $gudangke_id ?? 0;
         }
@@ -4184,7 +4184,7 @@ class PenerimaanStokHeader extends MyModel
             ];
             $hutangHeader = HutangHeader::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->first();
             (new HutangHeader())->processUpdate($hutangHeader, $hutangRequest);
-        } else if (($data['penerimaanstok_id'] == $pst->text) || $data['penerimaanstok_id'] == $pspk->text) {
+        } else if ($data['penerimaanstok_id'] == $pspk->text) {
             $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
             $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'DEBET')->first();
