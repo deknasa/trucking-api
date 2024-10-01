@@ -30,6 +30,10 @@ class PengeluaranStokDetailFifo extends MyModel
     public function processStore(PengeluaranStokHeader $pengeluaranStokHeader, array $data): PengeluaranStokDetailFifo
     {
         $qty = $data['qty'] ?? 0;
+        $kspemakaiangudang_id = $data['pemakaiangudang_id'] ?? 0;
+        $kspemakaiantrado_id = $data['pemakaiantrado_id'] ?? 0;
+        $kspemakaiangandengan_id = $data['pemakaiangandengan_id'] ?? 0;
+
 
         $totalharga = 0;
         $spk = Parameter::from(
@@ -399,6 +403,9 @@ class PengeluaranStokDetailFifo extends MyModel
                             // "nilaikeluar" => $kstotal,
                             "nilaikeluar" => $totalterpakai+$ttambahannilai,
                             "urutfifo" => $urutfifo,
+                            "pemakaiangudang_id" =>  $kspemakaiangudang_id,
+                            "pemakaiantrado_id" =>  $kspemakaiantrado_id,
+                            "pemakaiangandengan_id" => $kspemakaiangandengan_id,                            
                         ]);
                     }
 

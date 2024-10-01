@@ -220,7 +220,7 @@ class LaporanPemakaianStok extends MyModel
                 else '' end) as kodetrado
                 "),
                 // 'a.namabarang as namastok',
-                db::raw("isnull(c1.kodekelompok,'')+' - '+trim(a.namabarang) as namastok"),
+                db::raw("isnull(c1.kodekelompok,'')+' - '+trim(b.namastok) as namastok"),
 
                 'a.qtykeluar as qty',
                 'a.nilaikeluar as nominal',

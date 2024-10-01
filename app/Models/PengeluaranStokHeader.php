@@ -3450,6 +3450,9 @@ class PengeluaranStokHeader extends MyModel
         $gandengan_id = $data['gandengan_id'];
         $penerimaanstok_nobukti = $data['penerimaanstok_nobukti'];
         $servicein_nobukti = $data['servicein_nobukti'];
+        $kspemakaiangudang_id = $gudang_id ?? 0;
+        $kspemakaiantrado_id = $trado_id ?? 0;
+        $kspemakaiangandengan_id = $gandengan_id ?? 0;
         /* Store header */
         $pengeluaranStokHeader = new PengeluaranStokHeader();
         $pengeluaranStokHeader->tglbukti          = date('Y-m-d', strtotime($data['tglbukti']));
@@ -3665,6 +3668,10 @@ class PengeluaranStokHeader extends MyModel
                     "detail_keterangan" => $data['detail_keterangan'][$i] ?? '',
                     "detail_harga" => $data['detail_harga'][$i] ?? '',
                     "statusformat" => $statusformat,
+                    "pemakaiangudang_id" => $kspemakaiangudang_id ?? 0,
+                    "pemakaiantrado_id" => $kspemakaiantrado_id ?? 0,
+                    "pemakaiangandengan_id" => $kspemakaiangandengan_id ?? 0,
+
                 ];
 
 
@@ -3732,7 +3739,7 @@ class PengeluaranStokHeader extends MyModel
                         ->where('a.statusreuse', $reuse)
                         ->first();
 
-                    
+
                     if (isset($stokreuse)) {
 
                         $ksqty = $data['detail_qty'][$i] ?? 0;
@@ -3761,6 +3768,9 @@ class PengeluaranStokHeader extends MyModel
                                 "qtykeluar" =>  0,
                                 "nilaikeluar" => 0,
                                 "urutfifo" => $urutfifo,
+                                "pemakaiangudang_id" =>  $kspemakaiangudang_id,
+                                "pemakaiantrado_id" =>  $kspemakaiantrado_id,
+                                "pemakaiangandengan_id" => $kspemakaiangandengan_id,
                             ]);
                         } else {
                             $kartuStok = (new KartuStok())->processStore([
@@ -3775,6 +3785,9 @@ class PengeluaranStokHeader extends MyModel
                                 "qtykeluar" =>  0,
                                 "nilaikeluar" => 0,
                                 "urutfifo" => $urutfifo,
+                                "pemakaiangudang_id" =>  $kspemakaiangudang_id,
+                                "pemakaiantrado_id" =>  $kspemakaiantrado_id,
+                                "pemakaiangandengan_id" => $kspemakaiangandengan_id,
                             ]);
                         }
                     } else {
@@ -3790,7 +3803,7 @@ class PengeluaranStokHeader extends MyModel
                                 ->where('a.nobukti', $pengeluaranStokHeader->nobukti)
                                 ->first()->harga ?? 0;
 
-                                // dd( $ksharga);
+                            // dd( $ksharga);
                             $kstotal = $ksqty * $ksharga;
                             $ksnobukti = $pengeluaranStokHeader->nobukti ?? '';
                             $kartuStok = (new KartuStok())->processStore([
@@ -3805,6 +3818,9 @@ class PengeluaranStokHeader extends MyModel
                                 "qtykeluar" =>  0,
                                 "nilaikeluar" => 0,
                                 "urutfifo" => $urutfifo,
+                                "pemakaiangudang_id" =>  $kspemakaiangudang_id,
+                                "pemakaiantrado_id" =>  $kspemakaiantrado_id,
+                                "pemakaiangandengan_id" => $kspemakaiangandengan_id,
                             ]);
                         }
                     }
@@ -3834,6 +3850,9 @@ class PengeluaranStokHeader extends MyModel
 
 
         /*STORE JURNAL*/
+        if ($data['pengeluaranstok_id'] == 5) {
+            $nominal_detail[] = 0;
+        }
         $jurnalRequest = [
             'tanpaprosesnobukti' => 1,
             'nobukti' => $pengeluaranStokHeader->nobukti,
@@ -4228,6 +4247,11 @@ class PengeluaranStokHeader extends MyModel
             $servicein_nobukti = null;
         }
         $statuspotongretur = $pengeluaranStokHeader->statuspotongretur;
+        $kspemakaiangudang_id = $gudang_id ?? 0;
+        $kspemakaiantrado_id = $trado_id ?? 0;
+        $kspemakaiangandengan_id = $gandengan_id ?? 0;
+
+
 
         /* Store header */
         $pengeluaranStokHeader->tglbukti          = date('Y-m-d', strtotime($data['tglbukti']));
@@ -4569,6 +4593,9 @@ class PengeluaranStokHeader extends MyModel
                             "qtykeluar" =>  0,
                             "nilaikeluar" => 0,
                             "urutfifo" => $urutfifo,
+                            "pemakaiangudang_id" => $kspemakaiangudang_id ?? 0,
+                            "pemakaiantrado_id" => $kspemakaiantrado_id ?? 0,
+                            "pemakaiangandengan_id" => $kspemakaiangandengan_id ?? 0,                            
                         ]);
                     } else {
                         $kartuStok = (new KartuStok())->processStore([
@@ -4583,6 +4610,9 @@ class PengeluaranStokHeader extends MyModel
                             "qtykeluar" =>  0,
                             "nilaikeluar" => 0,
                             "urutfifo" => $urutfifo,
+                            "pemakaiangudang_id" => $kspemakaiangudang_id ?? 0,
+                            "pemakaiantrado_id" => $kspemakaiantrado_id ?? 0,
+                            "pemakaiangandengan_id" => $kspemakaiangandengan_id ?? 0,
                         ]);
                     }
                 }
@@ -4606,6 +4636,14 @@ class PengeluaranStokHeader extends MyModel
             $summaryDetail += $pengeluaranStokDetail->total;
         }
 
+        if ($pengeluaranstok_id == 5) {
+            $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->nobukti)->lockForUpdate()->first();
+            if ($jurnalUmumHeader) {
+                (new JurnalUmumHeader())->processDestroy($jurnalUmumHeader->id);
+            }
+
+            goto lanjuttanpajurnal;
+        }
 
         // dd(PengeluaranStokDetail::where('nobukti',$pengeluaranStokHeader->nobukti)->get());
         /*STORE JURNAL*/
@@ -4935,6 +4973,7 @@ class PengeluaranStokHeader extends MyModel
             }
         }
 
+        lanjuttanpajurnal:
         $pengeluaranStokHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($pengeluaranStokHeader->getTable()),
             'postingdari' => "ENTRY PENGELUARAN STOK ($fetchFormat->kodepengeluaran)",
@@ -5015,6 +5054,7 @@ class PengeluaranStokHeader extends MyModel
                     ->where("a.nobukti", $itemspkheader['nobukti'])
                     ->orderBy('a.id', 'asc')
                     ->get();
+                    // dd($kspemakaiantrado_id);
                 $datadetailspk = json_decode($queryspklaindetail, true);
                 foreach ($datadetailspk as $itemspkdetail) {
                     $datadetailfiforeset = [
@@ -5030,6 +5070,9 @@ class PengeluaranStokHeader extends MyModel
                         "detail_keterangan" => $itemspkdetail['keterangan'] ?? '',
                         "detail_harga" => $itemspkdetail['harga'] ?? '' ?? '',
                         "statusformat" => $itemspkheader['statusformat'] ?? '',
+                        "pemakaiangudang_id" => $kspemakaiangudang_id ?? 0,
+                        "pemakaiantrado_id" => $kspemakaiantrado_id ?? 0,
+                        "pemakaiangandengan_id" => $kspemakaiangandengan_id ?? 0,
                     ];
                     // dd($datadetailfiforeset);
                     (new PengeluaranStokDetailFifo())->processStore($pengeluaranStokHeader, $datadetailfiforeset);
@@ -5090,34 +5133,43 @@ class PengeluaranStokHeader extends MyModel
                                 "qtykeluar" =>  0,
                                 "nilaikeluar" => 0,
                                 "urutfifo" => $urutfifo,
+                                "pemakaiangudang_id" =>  $kspemakaiangudang_id,
+                                "pemakaiantrado_id" =>  $kspemakaiantrado_id,
+                                "pemakaiangandengan_id" => $kspemakaiangandengan_id,
                             ]);
-                        } else {
-                            $ksqty = $itemspkdetail['qty'] ?? 0;
-                            $ksnobukti = $itemspkheader['nobukti'] ?? '';
-                            $ksgudang_id = $itemspkheader['gudang_id'] ?? '';
-                            $kstrado_id = $itemspkheader['trado_id'] ?? '';
-                            $ksgandengan_id = $itemspkheader['gandengan_id'] ?? '';
-                            $ksharga = $itemspkdetail['harga'] ?? 0;
-                            $kstotal = $ksqty * $ksharga;
-                            $urutfifo = db::table("pengeluaranstok")->from(db::raw("pengeluaranstok as a with (readuncommitted)"))
-                                ->select('a.urutfifo')->where('a.id', $itemspkheader['pengeluaranstok_id'])->first()->urutfifo ?? 0;
-                            $ksharga = $itemspkdetail['harga'] ?? 0;
+                        } 
+                        
+                        // if ($itemspkheader['pengeluaranstok_id'] == 5 ){
+                        //     // dd($kspemakaiantrado_id);
+                        //     $ksqty = $itemspkdetail['qty'] ?? 0;
+                        //     $ksnobukti = $itemspkheader['nobukti'] ?? '';
+                        //     $ksgudang_id = $itemspkheader['gudang_id'] ?? '';
+                        //     $kstrado_id = $itemspkheader['trado_id'] ?? '';
+                        //     $ksgandengan_id = $itemspkheader['gandengan_id'] ?? '';
+                        //     $ksharga = $itemspkdetail['harga'] ?? 0;
+                        //     $kstotal = $ksqty * $ksharga;
+                        //     $urutfifo = db::table("pengeluaranstok")->from(db::raw("pengeluaranstok as a with (readuncommitted)"))
+                        //         ->select('a.urutfifo')->where('a.id', $itemspkheader['pengeluaranstok_id'])->first()->urutfifo ?? 0;
+                        //     $ksharga = $itemspkdetail['harga'] ?? 0;
 
-                            $kstotal = $ksqty * $ksharga;
-                            $kartuStok = (new KartuStok())->processStore([
-                                "gudang_id" =>  $ksgudang_id,
-                                "trado_id" =>  $kstrado_id,
-                                "gandengan_id" => $ksgandengan_id,
-                                "stok_id" => $itemspkdetail['stok_id'] ?? 0,
-                                "nobukti" => $ksnobukti ?? '',
-                                "tglbukti" => date('Y-m-d', strtotime($itemspkheader['tglbukti'])),
-                                "qtymasuk" => $ksqty ?? 0,
-                                "nilaimasuk" =>  $kstotal,
-                                "qtykeluar" =>  0,
-                                "nilaikeluar" => 0,
-                                "urutfifo" => $urutfifo,
-                            ]);
-                        }
+                        //     $kstotal = $ksqty * $ksharga;
+                        //     $kartuStok = (new KartuStok())->processStore([
+                        //         "gudang_id" =>  $ksgudang_id,
+                        //         "trado_id" =>  $kstrado_id,
+                        //         "gandengan_id" => $ksgandengan_id,
+                        //         "stok_id" => $itemspkdetail['stok_id'] ?? 0,
+                        //         "nobukti" => $ksnobukti ?? '',
+                        //         "tglbukti" => date('Y-m-d', strtotime($itemspkheader['tglbukti'])),
+                        //         "qtymasuk" => $ksqty ?? 0,
+                        //         "nilaimasuk" =>  $kstotal,
+                        //         "qtykeluar" =>  0,
+                        //         "nilaikeluar" => 0,
+                        //         "urutfifo" => $urutfifo,
+                        //         "pemakaiangudang_id" =>  $kspemakaiangudang_id,
+                        //         "pemakaiantrado_id" =>  $kspemakaiantrado_id,
+                        //         "pemakaiangandengan_id" => $kspemakaiangandengan_id,
+                        //     ]);
+                        // }
                     }
 
                     // 
@@ -5125,28 +5177,31 @@ class PengeluaranStokHeader extends MyModel
 
                 }
 
-                $jurnalRequestreset = [
-                    'tanpaprosesnobukti' => 1,
-                    'nobukti' => $itemspkheader['nobukti'],
-                    'tglbukti' => $itemspkheader['tglbukti'],
-                    'postingdari' => "ENTRY PENGELUARAN STOK ($fetchFormat->kodepengeluaran)",
-                    'statusapproval' => $statusApproval->id,
-                    'userapproval' => "",
-                    'tglapproval' => "",
-                    'modifiedby' => $itemspkheader['modifiedby'],
-                    'statusformat' => "0",
-                    'coakredit_detail' => $coakredit_detailreset,
-                    'coadebet_detail' => $coadebet_detailreset,
-                    'nominal_detail' => $nominal_detailreset,
-                    'keterangan_detail' => $keterangan_detailreset,
-                ];
+                if ($itemspkheader['pengeluaranstok_id'] != 5) {
+                    $jurnalRequestreset = [
+                        'tanpaprosesnobukti' => 1,
+                        'nobukti' => $itemspkheader['nobukti'],
+                        'tglbukti' => $itemspkheader['tglbukti'],
+                        'postingdari' => "ENTRY PENGELUARAN STOK ($fetchFormat->kodepengeluaran)",
+                        'statusapproval' => $statusApproval->id,
+                        'userapproval' => "",
+                        'tglapproval' => "",
+                        'modifiedby' => $itemspkheader['modifiedby'],
+                        'statusformat' => "0",
+                        'coakredit_detail' => $coakredit_detailreset,
+                        'coadebet_detail' => $coadebet_detailreset,
+                        'nominal_detail' => $nominal_detailreset,
+                        'keterangan_detail' => $keterangan_detailreset,
+                    ];
 
-                $jurnalUmumHeaderreset = JurnalUmumHeader::where('nobukti', $itemspkheader['nobukti'])->lockForUpdate()->first();
-                if ($jurnalUmumHeaderreset != null) {
-                    $jurnalUmumHeaderreset = (new JurnalUmumHeader())->processUpdate($jurnalUmumHeaderreset, $jurnalRequestreset);
-                } else {
-                    $jurnalUmumHeaderreset = (new JurnalUmumHeader())->processStore($jurnalRequestreset);
+                    $jurnalUmumHeaderreset = JurnalUmumHeader::where('nobukti', $itemspkheader['nobukti'])->lockForUpdate()->first();
+                    if ($jurnalUmumHeaderreset != null) {
+                        $jurnalUmumHeaderreset = (new JurnalUmumHeader())->processUpdate($jurnalUmumHeaderreset, $jurnalRequestreset);
+                    } else {
+                        $jurnalUmumHeaderreset = (new JurnalUmumHeader())->processStore($jurnalRequestreset);
+                    }
                 }
+
 
                 $pengeluaranStokHeaderLogTrailReset = (new LogTrail())->processStore([
                     'namatabel' => strtoupper($pengeluaranStokHeader->getTable()),
@@ -5259,7 +5314,6 @@ class PengeluaranStokHeader extends MyModel
                 (new JurnalUmumHeader())->processDestroy($jurnalUmumHeader->id);
             }
         }
-
         $pengeluaranStokHeader = $pengeluaranStokHeader->lockAndDestroy($id);
         $hutangLogTrail = (new LogTrail())->processStore([
             'namatabel' => $this->table,
@@ -5355,6 +5409,9 @@ class PengeluaranStokHeader extends MyModel
                         "detail_keterangan" => $itemspkdetail['keterangan'] ?? '',
                         "detail_harga" => $itemspkdetail['harga'] ?? '' ?? '',
                         "statusformat" => $itemspkheader['statusformat'] ?? '',
+                        "pemakaiangudang_id" => $kspemakaiangudang_id ?? 0,
+                        "pemakaiantrado_id" => $kspemakaiantrado_id ?? 0,
+                        "pemakaiangandengan_id" => $kspemakaiangandengan_id ?? 0,                        
                     ];
                     // dd($datadetailfiforeset);
                     (new PengeluaranStokDetailFifo())->processStore($pengeluaranStokHeader, $datadetailfiforeset);
@@ -5412,6 +5469,7 @@ class PengeluaranStokHeader extends MyModel
                                 "qtykeluar" =>  0,
                                 "nilaikeluar" => 0,
                                 "urutfifo" => $urutfifo,
+
                             ]);
                         }
                     }
