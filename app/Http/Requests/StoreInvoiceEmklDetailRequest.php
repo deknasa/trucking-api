@@ -23,8 +23,23 @@ class StoreInvoiceEmklDetailRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'nominal.*' => 'numeric|min:0'
-        ];
+        $dataPenjualan = json_decode(request()->detail, true);
+
+        $i=0;
+        // $dataNominal = $dataPenjualan['nominal'];
+
+        foreach ($dataPenjualan as $row => $data) {
+
+            $mainValidator = validator($dataPenjualan, [
+                "nominal.*" => ['required','gt:0'],
+                
+            ]);
+            $mainValidator->validate();
+            $validatedDetailData = $mainValidator->validated();
+            $i++;
+        }
+        
+
+        return $validatedDetailData;
     }
 }
