@@ -252,6 +252,7 @@ class Bank extends MyModel
         $bankExclude = request()->bankExclude ?? 0;
         $withPusat = request()->withPusat ?? 1;
         $alatBayar = request()->alatbayar ?? 0;
+        $default = request()->default ?? '';
 
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
@@ -322,6 +323,9 @@ class Bank extends MyModel
         }
         if ($withPusat == 0) {
             $query->where('bank.kodebank', 'NOT LIKE', '%PENGEMBALIAN KE PUSAT%');
+        }
+        if($default == 'YA'){
+            $query->where('bank.statusdefault', 58);
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
