@@ -1757,6 +1757,7 @@ class InvoiceHeader extends MyModel
 
     public function getInvoiceOtok($tgldari, $tglsampai, $agen_id, $container_id)
     {
+        $this->setRequestParameters();
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
         $class = 'OtobonKantorController';
@@ -1850,11 +1851,13 @@ class InvoiceHeader extends MyModel
                 'nojobtrucking_detail',
                 'tglbukti',
                 'nominal_detail',
-            )->orderBY('id');
+            );
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $this->totalNominal = $query->sum('nominal_detail');
+        $query->orderBy($temtabel . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        $this->paginate($query);
         $data = $query->get();
 
 
@@ -1862,6 +1865,7 @@ class InvoiceHeader extends MyModel
     }
     public function getInvoiceOtol($tgldari, $tglsampai, $agen_id, $container_id)
     {
+        $this->setRequestParameters();
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
         $class = 'OtobonLapanganController';
@@ -1955,11 +1959,14 @@ class InvoiceHeader extends MyModel
                 'nojobtrucking_detail',
                 'tglbukti',
                 'nominal_detail',
-            )->orderBY('id');
+            );
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $this->totalNominal = $query->sum('nominal_detail');
+        
+        $query->orderBy($temtabel . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        $this->paginate($query);
         $data = $query->get();
 
 

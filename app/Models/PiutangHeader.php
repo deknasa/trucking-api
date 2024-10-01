@@ -886,6 +886,13 @@ class PiutangHeader extends MyModel
                     if ($getJurnal != '') {
                         $jurnalumumHeader = (new JurnalUmumHeader())->processDestroy($getJurnal->id, 'EDIT INVOICE EMKL DETAIL');
                     }
+                }else{
+                    if ($getJurnal != '') {
+
+                        $newJurnal = new JurnalUmumHeader();
+                        $newJurnal = $newJurnal->find($getJurnal->id);
+                        $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+                    }
                 }
             } else {
 

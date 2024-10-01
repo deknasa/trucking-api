@@ -200,9 +200,11 @@ class PengeluaranTruckingHeaderController extends Controller
             $detail = $pengeluaranTrucking->getShowInvoice($id, $data->periodedari, $data->periodesampai);
         } else if ($data->kodepengeluaran == 'OTOK') {
             $pengeluaranTrucking = new PengeluaranTruckingHeader();
+            request()->limit = 0;
             $detail = $pengeluaranTrucking->getEditOtok('show', $id, $data->periodedari, $data->periodesampai, $data->agen_id, $data->containerheader_id);
         } else if ($data->kodepengeluaran == 'OTOL') {
             $pengeluaranTrucking = new PengeluaranTruckingHeader();
+            request()->limit = 0;
             $detail = $pengeluaranTrucking->getEditOtol('show', $id, $data->periodedari, $data->periodesampai, $data->agen_id, $data->containerheader_id);
         } else {
             $detail = PengeluaranTruckingDetail::getAll($id, $data->kodepengeluaran);
