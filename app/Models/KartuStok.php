@@ -3681,8 +3681,8 @@ class KartuStok extends MyModel
             $querygantungstok = db::table("kartustok")->from(db::raw("kartustok a "))
                 ->select(
                     'a.stok_id',
-                    db::raw("a.qtymasuk*-1 as qty"),
-                    db::raw("a.nilaimasuk*-1 as nominal"),
+                    db::raw("a.qtymasuk*1 as qty"),
+                    db::raw("a.nilaimasuk*1 as nominal"),
 
                 )
                 ->whereRaw("left(a.nobukti,3)='PST'")
