@@ -4480,7 +4480,7 @@ class SuratPengantar extends MyModel
             $jobmanual = (new Parameter())->cekText('JOB TRUCKING MANUAL', 'JOB TRUCKING MANUAL') ?? 'TIDAK';
             // if ($jobmanual == 'YA') {
 
-            if ($cabang == 'MEDAN') {
+            if ($cabang == 'MEDAN' || $cabang == 'BITUNG') {
                 $suratPengantar->nocont = $data['nocont'] ?? '';
                 $suratPengantar->nocont2 = $data['nocont2'] ?? '';
 
@@ -4492,7 +4492,7 @@ class SuratPengantar extends MyModel
 
                     DB::update(DB::raw("UPDATE orderantrucking SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2',agen_id='$suratPengantar->agen_id',jenisorder_id='$suratPengantar->jenisorder_id',pelanggan_id='$suratPengantar->pelanggan_id',container_id='$suratPengantar->container_id',gandengan_id='$suratPengantar->gandengan_id' where nobukti='$suratPengantar->jobtrucking'"));
                 }
-                if ($suratPengantar->jobtrucking != '') {
+                if ($suratPengantar->jobtrucking != '' && $cabang == 'MEDAN') {
                     $statuscontainerEmpty = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'EMPTY')->first()->id;
 
                     if ($suratPengantar->statuscontainer_id == $statuscontainerEmpty) {

@@ -1493,8 +1493,8 @@ class UpahSupirRincian extends MyModel
 
             }
             // dd(db::table($temtabel)->get());
-            DB::delete(DB::raw("delete " . $temtabel . " from " . $temtabel . " as a inner join upahsupir b on a.tarif_id=b.tarif_id 
-                    WHERE isnull(b.statusaktif,0)=2"));
+            // DB::delete(DB::raw("delete " . $temtabel . " from " . $temtabel . " as a inner join upahsupir b on a.tarif_id=b.tarif_id 
+            //         WHERE isnull(b.statusaktif,0)=2"));
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel with (readuncommitted)")
