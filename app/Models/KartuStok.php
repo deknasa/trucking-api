@@ -3729,17 +3729,19 @@ class KartuStok extends MyModel
             $queryrekapstokgantunglist = db::table($tempgantungstok)->from(db::raw($tempgantungstok . " a "))
                 ->select(
                     'a.stok_id',
-                    'a.qty',
-                    'a.nominal',
+                    db::raw("sum(a.qty) as qty"),
+                    db::raw("sum(a.nominal) as nominal"),
                 )
-                ->whereraw("a.nominal>0");
+                ->whereraw("a.nominal>0")
+                ->groupBy('a.stok_id');
+
             DB::table($tempgantungstokrekaplist)->insertUsing([
                 'stok_id',
                 'qty',
                 'nominal',
             ],  $queryrekapstokgantunglist);
-
-            // dd($queryrekapall->get());
+// 
+            // dd(db::table($tempgantungstokrekaplist)->get());
 
             if ($pemakaian == 0) {
                 $queryrekapall = db::table($tempgantungstokrekaplist)->from(db::raw($tempgantungstokrekaplist . " a"))
