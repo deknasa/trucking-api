@@ -3719,6 +3719,8 @@ class KartuStok extends MyModel
                 'nominal',
             ],  $queryrekapstokgantung);
 
+            // dd(db::table($tempgantungstokrekaplist)->get());
+
             $tempgantungstokrekaplist = '##tempgantungstokrekaplist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempgantungstokrekaplist, function ($table) {
                 $table->integer('stok_id')->nullable();
@@ -3726,7 +3728,7 @@ class KartuStok extends MyModel
                 $table->double('nominal', 15, 2)->nullable();
             });
 
-            $queryrekapstokgantunglist = db::table($tempgantungstok)->from(db::raw($tempgantungstok . " a "))
+            $queryrekapstokgantunglist = db::table($tempgantungstokrekap)->from(db::raw($tempgantungstokrekap . " a "))
                 ->select(
                     'a.stok_id',
                     db::raw("sum(a.qty) as qty"),
