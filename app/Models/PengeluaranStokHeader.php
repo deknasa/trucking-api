@@ -3191,6 +3191,44 @@ class PengeluaranStokHeader extends MyModel
 
         DB::table($tempNominal)->insertUsing(['nobukti', 'nominal'], $getNominal);
 
+        $tempKeteranganDetail = '##tempKeteranganDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempKeteranganDetail, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->index('nobukti');
+        });
+
+        $tempKeteranganDetaillist = '##tempKeteranganDetaillist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempKeteranganDetaillist, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->index('nobukti');
+        });
+
+        $getKeteranganDetaillist = DB::table("pengeluaranstokdetail")->from(DB::raw("pengeluaranstokdetail with (readuncommitted)"))
+            ->select(DB::raw("pengeluaranstokheader.nobukti,pengeluaranstokdetail.keterangan as keterangan"))
+            ->join(DB::raw("pengeluaranstokheader with (readuncommitted)"), 'pengeluaranstokheader.id', 'pengeluaranstokdetail.pengeluaranstokheader_id')
+            ->groupBy("pengeluaranstokheader.nobukti")
+            ->groupBy("pengeluaranstokdetail.keterangan");
+
+            $getKeteranganDetaillist->where('pengeluaranstokdetail.pengeluaranstokheader_id',$id)->first();
+
+        DB::table($tempKeteranganDetaillist)->insertUsing(['nobukti', 'keterangan'], $getKeteranganDetaillist);
+
+
+        $getKeteranganDetail = DB::table($tempKeteranganDetaillist)->from(DB::raw($tempKeteranganDetaillist ." a"))
+            ->select(DB::raw("a.nobukti,STRING_AGG(a.keterangan,',') as keterangan"))
+            ->groupBy("a.nobukti");
+
+
+        DB::table($tempKeteranganDetail)->insert([
+            'nobukti' => '',
+            'keterangan' => '',
+        ]);
+
+        DB::table($tempKeteranganDetail)->insertUsing(['nobukti', 'keterangan'], $getKeteranganDetail);
+
+
 
         $this->setRequestParameters();
 
@@ -3214,6 +3252,7 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('serviceinheader', 'pengeluaranstokheader.servicein_nobukti', 'serviceinheader.nobukti')
             ->leftJoin('pengeluarantruckingheader', 'pengeluaranstokheader.pengeluarantrucking_nobukti', 'pengeluarantruckingheader.nobukti')
             ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'pengeluaranstokheader.nobukti', 'nominal.nobukti')
+            ->Join(DB::raw("$tempKeteranganDetail as keterangandetail with (readuncommitted)"), db::raw("isnull(pengeluaranstokheader.nobukti,'')"), 'keterangandetail.nobukti')
             ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id');
 
         $data = $query->where("$this->table.id", $id)->first();
