@@ -144,7 +144,7 @@ class StoreTarifRequest extends FormRequest
             }
 
             $rules = [
-                'tujuan' =>  ['required', new ValidasiTujuanKota()],
+                // 'tujuan' =>  ['required', new ValidasiTujuanKota()],
                 'penyesuaian' => [new UniqueTarif()],
                 'statusaktif' => ['required', Rule::in($statusAktif)],
                 'statussistemton' => ['required', Rule::in($statusTon)],
@@ -154,6 +154,8 @@ class StoreTarifRequest extends FormRequest
                     'required', 'date_format:d-m-Y',
                 ],
                 'kota' => 'required',
+                'upah' => 'required',
+                'pelabuhan' => 'required',
                 'statuspostingtnl' => ['required', Rule::in($statusPostingTnl)],
             ];
             $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'TARIF')->first();
@@ -194,7 +196,8 @@ class StoreTarifRequest extends FormRequest
             'tglmulaiberlaku' => 'Tanggal Mulai Berlaku',
             'statuslangsir' => 'status langsir',
             'statuslangsirnama' => 'status langsir',
-            'statuspenyesuaianharga' => 'Status Penyesuaian Harga'
+            'statuspenyesuaianharga' => 'Status Penyesuaian Harga',
+            'upah' => 'upah supir'
         ];
     }
 
