@@ -3253,7 +3253,7 @@ class SuratPengantar extends MyModel
 
         return $data;
     }
-   
+
     public function getListTrip()
     {
         $this->setRequestParameters();
@@ -3379,9 +3379,9 @@ class SuratPengantar extends MyModel
                 'suratpengantar.modifiedby',
                 'suratpengantar.created_at',
                 'suratpengantar.updated_at'
-    
+
             )
-    
+
                 ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
                 ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
                 ->leftJoin('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
@@ -3408,7 +3408,7 @@ class SuratPengantar extends MyModel
                 }
             }
 
-            
+
             DB::table($tempsuratpengantar)->insertUsing([
                 'id',
                 'jobtrucking',
@@ -3462,44 +3462,44 @@ class SuratPengantar extends MyModel
         }
 
         $query = DB::table($tempsuratpengantar)->from(db::raw("$tempsuratpengantar as suratpengantar with (readuncommitted)"))
-        ->select(
-            'suratpengantar.id',
-            'suratpengantar.jobtrucking',
-            'suratpengantar.nobukti',
-            'suratpengantar.tglbukti',
-            'suratpengantar.nosp',
-            'suratpengantar.tglsp',
-            'suratpengantar.nojob',
-            'suratpengantar.pelanggan_id',
-            'suratpengantar.keterangan',
-            'suratpengantar.dari_id',
-            'suratpengantar.sampai_id',
-            'suratpengantar.gajisupir',
-            'suratpengantar.jarak',
-            'suratpengantar.penyesuaian',
-            'suratpengantar.agen_id',
-            'suratpengantar.jenisorder_id',
-            'suratpengantar.container_id',
-            'suratpengantar.nocont',
-            'suratpengantar.noseal',
-            'suratpengantar.statuscontainer_id',
-            'suratpengantar.gudang',
-            'suratpengantar.trado_id',
-            'suratpengantar.supir_id',
-            'suratpengantar.gandengan_id',
-            'suratpengantar.statuslongtrip',
-            'suratpengantar.statusperalihan',
-            'suratpengantar.statusritasiomset',
-            'suratpengantar.tarif_id',
-            'suratpengantar.mandortrado_id',
-            'suratpengantar.mandorsupir_id',
-            'suratpengantar.statusgudangsama',
-            'suratpengantar.statusbatalmuat',
-            'suratpengantar.modifiedby',
-            'suratpengantar.created_at',
-            'suratpengantar.updated_at'
+            ->select(
+                'suratpengantar.id',
+                'suratpengantar.jobtrucking',
+                'suratpengantar.nobukti',
+                'suratpengantar.tglbukti',
+                'suratpengantar.nosp',
+                'suratpengantar.tglsp',
+                'suratpengantar.nojob',
+                'suratpengantar.pelanggan_id',
+                'suratpengantar.keterangan',
+                'suratpengantar.dari_id',
+                'suratpengantar.sampai_id',
+                'suratpengantar.gajisupir',
+                'suratpengantar.jarak',
+                'suratpengantar.penyesuaian',
+                'suratpengantar.agen_id',
+                'suratpengantar.jenisorder_id',
+                'suratpengantar.container_id',
+                'suratpengantar.nocont',
+                'suratpengantar.noseal',
+                'suratpengantar.statuscontainer_id',
+                'suratpengantar.gudang',
+                'suratpengantar.trado_id',
+                'suratpengantar.supir_id',
+                'suratpengantar.gandengan_id',
+                'suratpengantar.statuslongtrip',
+                'suratpengantar.statusperalihan',
+                'suratpengantar.statusritasiomset',
+                'suratpengantar.tarif_id',
+                'suratpengantar.mandortrado_id',
+                'suratpengantar.mandorsupir_id',
+                'suratpengantar.statusgudangsama',
+                'suratpengantar.statusbatalmuat',
+                'suratpengantar.modifiedby',
+                'suratpengantar.created_at',
+                'suratpengantar.updated_at'
 
-        );
+            );
 
         //     ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
         //     ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
@@ -4315,6 +4315,58 @@ class SuratPengantar extends MyModel
 
             }
 
+            if ($edittripmandor == 0 && $cabang == 'MEDAN') {
+                if ($suratPengantar->dari_id != 1) {
+                    if ($data['dari_id'] == 1 && $data['dari_id'] != $suratPengantar->dari_id) {
+                        if ($data['jobtrucking'] == '') {
+                            $statusperalihan = DB::table('parameter')->from(
+                                DB::raw("parameter as a with (readuncommitted)")
+                            )
+                                ->select(
+                                    'a.id'
+                                )
+                                ->where('a.grp', '=', 'STATUS PERALIHAN')
+                                ->where('a.subgrp', '=', 'STATUS PERALIHAN')
+                                ->where('a.text', '=', 'BUKAN PERALIHAN')
+                                ->first();
+                            $statuslangsir = DB::table('parameter')->from(
+                                DB::raw("parameter as a with (readuncommitted)")
+                            )
+                                ->select(
+                                    'a.id'
+                                )
+                                ->where('a.grp', '=', 'STATUS LANGSIR')
+                                ->where('a.subgrp', '=', 'STATUS LANGSIR')
+                                ->where('a.text', '=', 'LANGSIR')
+                                ->first();
+
+                            $tglBatasEdit = date('Y-m-d', strtotime($data['tglbukti'])) . ' ' . '12:00:00';
+                            $orderan = [
+                                'tglbukti' => $data['tglbukti'],
+                                'container_id' => $data['container_id'],
+                                'agen_id' => $data['agen_id'],
+                                'jenisorder_id' => $data['jenisorder_id'],
+                                'pelanggan_id' => $data['pelanggan_id'],
+                                'tarifrincian_id' => $data['tarif_id'],
+                                'statusjeniskendaraan' => $data['statusjeniskendaraan'],
+                                'nojobemkl' => $data['nojobemkl'] ?? '',
+                                'nocont' => $data['nocont'] ?? '',
+                                'noseal' => $data['noseal'] ?? '',
+                                'nojobemkl2' => $data['nojobemkl2'] ?? '',
+                                'nocont2' => $data['nocont2'] ?? '',
+                                'noseal2' => $data['noseal2'] ?? '',
+                                'statuslangsir' => $statuslangsir->id,
+                                'gandengan_id' => $data['gandengan_id'],
+                                'statusperalihan' => $statusperalihan->id,
+                                'tglbataseditorderantrucking' => $tglBatasEdit,
+                                'inputtripmandor' =>  '1',
+                            ];
+                            $orderanTrucking = (new OrderanTrucking())->processStore($orderan);
+                            $data['jobtrucking'] = $orderanTrucking->nobukti;
+                        }
+                    }
+                }
+            }
             $suratPengantar->jobtrucking = $data['jobtrucking'];
             $suratPengantar->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
             $suratPengantar->pelanggan_id = $pelanggan;
