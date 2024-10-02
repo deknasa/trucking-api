@@ -295,9 +295,9 @@ class LaporanStok extends MyModel
                 DB::raw("'' as vulkanisirke"),
                 DB::raw("isnull(c.keterangan,isnull(d.keterangan,'')) as keterangan"),
                 'a.nobukti as nobukti',
-                db::raw("isnull(c1.kodekelompok,'')+' - '+trim(a.kodebarang) as id"),
-                db::raw("isnull(c1.kodekelompok,'')+' - '+trim(a.kodebarang) as kodebarang"),
-                db::raw("isnull(c1.kodekelompok,'')+' - '+trim(a.namabarang) as namabarang"),
+                db::raw("isnull(c1.kodekelompok,'')+' - '+trim(b.namastok) as id"),
+                db::raw("isnull(c1.kodekelompok,'')+' - '+trim(b.namastok) as kodebarang"),
+                db::raw("isnull(c1.kodekelompok,'')+' - '+trim(b.namastok) as namabarang"),
                 // db::raw("(case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end) as namabarang"),
                 'a.tglbukti as tglbukti',
                 db::raw("(isnull(a.qtymasuk,0)+
