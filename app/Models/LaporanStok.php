@@ -24,7 +24,7 @@ class LaporanStok extends MyModel
         'updated_at',
     ];
 
-    public function getReport($bulan, $tahun,$jenislaporan)
+    public function getReport($bulan, $tahun, $jenislaporan)
     {
 
 
@@ -61,9 +61,8 @@ class LaporanStok extends MyModel
             $table->double('nilaisaldo', 15, 2)->nullable();
             $table->string('modifiedby', 100)->nullable();
             $table->integer('urutfifo')->nullable();
-            $table->integer('iddata')->nullable();       
+            $table->integer('iddata')->nullable();
             $table->datetime('tglinput')->nullable();
-     
         });
 
         $tempstoktransaksi = '##tempstoktransaksi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -120,9 +119,9 @@ class LaporanStok extends MyModel
             'nilaisaldo',
             'modifiedby',
             'urutfifo',
-            'iddata',     
-            'tglinput',       
-        ], (new KartuStok())->getlaporan($tgldari, $tglsampai, $stokdari_id, $stoksampai_id, $idgudangkantor, $trado_id, $gandengan_id, $filtergudang,$stokgantung));
+            'iddata',
+            'tglinput',
+        ], (new KartuStok())->getlaporan($tgldari, $tglsampai, $stokdari_id, $stoksampai_id, $idgudangkantor, $trado_id, $gandengan_id, $filtergudang, $stokgantung));
 
         $temphistory = '##temphistory' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temphistory, function ($table) {
@@ -131,23 +130,23 @@ class LaporanStok extends MyModel
             $table->unsignedBigInteger('gudang_id')->nullable();
             $table->unsignedBigInteger('trado_id')->nullable();
             $table->unsignedBigInteger('gandengan_id')->nullable();
-        });  
+        });
 
-        $queryhistory=db::table($temprekapall)->from(db::raw($temprekapall ." a "))
-        ->select (
-            'a.stok_id',
-            'a.gudang_id',
-            'a.trado_id',
-            'a.gandengan_id',            
-        //     'a.qtykeluar',            
-        //     'a.qtymasuk',            
-        )
-        ->whereraw("(a.qtykeluar>0 or a.qtymasuk>0 or a.qtysaldo>0)")
-        // ->where('a.stok_id',6965);
-        ->groupby('a.stok_id')
-        ->groupby('a.gudang_id')
-        ->groupby('a.trado_id')
-        ->groupby('a.gandengan_id');
+        $queryhistory = db::table($temprekapall)->from(db::raw($temprekapall . " a "))
+            ->select(
+                'a.stok_id',
+                'a.gudang_id',
+                'a.trado_id',
+                'a.gandengan_id',
+                //     'a.qtykeluar',            
+                //     'a.qtymasuk',            
+            )
+            ->whereraw("(a.qtykeluar>0 or a.qtymasuk>0 or a.qtysaldo>0)")
+            // ->where('a.stok_id',6965);
+            ->groupby('a.stok_id')
+            ->groupby('a.gudang_id')
+            ->groupby('a.trado_id')
+            ->groupby('a.gandengan_id');
         // dd(db::table($queryhistory)->where('stok_id',6965)->get());
         // dd($queryhistory->get());
 
@@ -174,19 +173,19 @@ class LaporanStok extends MyModel
             $table->unsignedBigInteger('gudang_id')->nullable();
             $table->unsignedBigInteger('trado_id')->nullable();
             $table->unsignedBigInteger('gandengan_id')->nullable();
-        });        
+        });
 
-        $querystok=db::table($temprekapall)->from(db::raw($temprekapall ." a "))
-        ->select (
-            'a.stok_id',
-            'a.gudang_id',
-            'a.trado_id',
-            'a.gandengan_id',            
-        )
-        ->groupby('a.stok_id')
-        ->groupby('a.gudang_id')
-        ->groupby('a.trado_id')
-        ->groupby('a.gandengan_id');
+        $querystok = db::table($temprekapall)->from(db::raw($temprekapall . " a "))
+            ->select(
+                'a.stok_id',
+                'a.gudang_id',
+                'a.trado_id',
+                'a.gandengan_id',
+            )
+            ->groupby('a.stok_id')
+            ->groupby('a.gudang_id')
+            ->groupby('a.trado_id')
+            ->groupby('a.gandengan_id');
 
         DB::table($tempstok)->insertUsing([
             'stok_id',
@@ -202,27 +201,27 @@ class LaporanStok extends MyModel
         and isnull(a.trado_id,0)=isnull(b.trado_id,0) and isnull(a.gandengan_id,0)=isnull(b.gandengan_id,0) and isnull(b.nobukti,'')='SALDO AWAL'
         "));
 
-        $querysaldoawal=db::table($tempstok)->from(db::raw($tempstok ." a "))
-        ->select (
-            'a.stok_id',
-            'a.gudang_id',
-            'a.trado_id',
-            'a.gandengan_id',
-            db::raw("'' as lokasi"),
-            db::raw("isnull(b.namastok,'') as kodebarang"),
-            db::raw("isnull(b.namastok,'') as namabarang"),
-            db::raw("'". $tgldari ."' as tglbukti"),
-            db::raw("'SALDO AWAL' as nobukti"),
-            db::raw("'' as kategori_id"),
-            db::raw("0 as qtymasuk"),
-            db::raw("0 as nilaimasuk"),
-            db::raw("0 as qtykeluar"),
-            db::raw("0 as nilaikeluar"),
-            db::raw("0 as qtysaldo"),
-            db::raw("0 as nilaisaldo"),
-            db::raw("0 as modifiedby"),
-        )
-        ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id');
+        $querysaldoawal = db::table($tempstok)->from(db::raw($tempstok . " a "))
+            ->select(
+                'a.stok_id',
+                'a.gudang_id',
+                'a.trado_id',
+                'a.gandengan_id',
+                db::raw("'' as lokasi"),
+                db::raw("isnull(b.namastok,'') as kodebarang"),
+                db::raw("isnull(b.namastok,'') as namabarang"),
+                db::raw("'" . $tgldari . "' as tglbukti"),
+                db::raw("'SALDO AWAL' as nobukti"),
+                db::raw("'' as kategori_id"),
+                db::raw("0 as qtymasuk"),
+                db::raw("0 as nilaimasuk"),
+                db::raw("0 as qtykeluar"),
+                db::raw("0 as nilaikeluar"),
+                db::raw("0 as qtysaldo"),
+                db::raw("0 as nilaisaldo"),
+                db::raw("0 as modifiedby"),
+            )
+            ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id');
 
 
         DB::table($temprekapall)->insertUsing([
@@ -282,115 +281,180 @@ class LaporanStok extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
-        $query = DB::table($temprekapall)->from(
-            DB::raw($temprekapall . " a")
-        )
-            ->select(
-                DB::raw("'Laporan Saldo Inventory' as header"),
-                'a.lokasi',
-                'a.lokasi as namalokasi',
-                DB::raw("'' as kategori"),
-                DB::raw("'" . $tgldari . "' as tgldari"),
-                DB::raw("'" . $tglsampai . "' as tglsampai"),
-                DB::raw("'' as vulkanisirke"),
-                DB::raw("isnull(c.keterangan,isnull(d.keterangan,'')) as keterangan"),
-                'a.nobukti as nobukti',
-                db::raw("isnull(c1.kodekelompok,'')+' - '+trim(b.namastok) as id"),
-                db::raw("isnull(c1.kodekelompok,'')+' - '+trim(b.namastok) as kodebarang"),
-                db::raw("trim(b.namastok) as namabarang"),
-                // db::raw("(case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end) as namabarang"),
-                'a.tglbukti as tglbukti',
-                db::raw("(isnull(a.qtymasuk,0)+
-                (case when a.nobukti='SALDO AWAL' then 
-                isnull(a.qtysaldo,0) else 0 end)
-                ) as qtymasuk"),
-                db::raw("isnull(a.nilaimasuk,0)  as nominalmasuk"),
-                'a.qtykeluar as qtykeluar',
-                'a.nilaikeluar as nominalkeluar',
-                // 'a.qtysaldo as qtysaldo',
-                // 'a.nilaisaldo as nominalsaldo',
-                // db::raw("(case when (row_number() Over(partition BY a.namabarang Order By a.namabarang,a.tglbukti,a.tglinput))=1 then a.qtysaldo else 0 end) as qtysaldo"),
-                // db::raw("(case when (row_number() Over(partition BY a.namabarang Order By a.namabarang,a.tglbukti,a.tglinput))=1 then a.nilaisaldo else 0 end) as nominalsaldo"),
-                db::raw("(case when (row_number() Over(partition BY b.namastok Order By b.namastok,a.tglbukti,a.tglinput))=1 then a.qtysaldo else 0 end) as qtysaldo"),
-                db::raw("(case when (row_number() Over(partition BY b.namastok Order By b.namastok,a.tglbukti,a.tglinput))=1 then a.nilaisaldo else 0 end) as nominalsaldo"),
-                // db::raw("0 as qtysaldo"),
-                // db::raw("0 as nominalsaldo"),
-                db::raw("'" . $disetujui . "' as disetujui"),
-                db::raw("'" . $diperiksa . "' as diperiksa"),
-                // db::raw("(case when (row_number() Over(partition BY a.stok_id Order By a.namabarang,a.stok_id,a.tglbukti,a.tglinput))=1 then 1 else 0 end) as baris"),
-                db::raw("(case when (row_number() Over(partition BY a.stok_id Order By b.namastok,a.stok_id,a.tglbukti,a.tglinput))=1 then 1 else 0 end) as baris"),
-                // db::raw("(case when a.nobukti='SALDO AWAL' then 1 else 0 end) as baris"),
-                DB::raw("'" . $getJudul->text . "' as judul"),
-                // 'a.stok_id',
-                // db::raw("row_number() Over(partition BY a.stok_id Order By a.namabarang,a.stok_id,a.tglbukti,a.tglinput) as baris_urut")
 
+        $getcabang = $parameter->cekText('CABANG', 'CABANG') ?? '';
+        if ($getcabang == 'MAKASSAR') {
+            $query = DB::table($temprekapall)->from(
+                DB::raw($temprekapall . " a")
             )
-            ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
-            ->join(db::raw("kelompok c1 with (readuncommitted)"),'b.kelompok_id','c1.id')
+                ->select(
+                    DB::raw("'Laporan Saldo Inventory' as header"),
+                    'a.lokasi',
+                    'a.lokasi as namalokasi',
+                    DB::raw("'' as kategori"),
+                    DB::raw("'" . $tgldari . "' as tgldari"),
+                    DB::raw("'" . $tglsampai . "' as tglsampai"),
+                    DB::raw("'' as vulkanisirke"),
+                    DB::raw("isnull(c.keterangan,isnull(d.keterangan,'')) as keterangan"),
+                    'a.nobukti as nobukti',
+                    db::raw("isnull(c1.kodekelompok,'')+' - '+trim(b.namastok) as id"),
+                    db::raw("isnull(c1.kodekelompok,'')+' - '+trim(b.namastok) as kodebarang"),
+                    // db::raw("isnull(c1.kodekelompok,'')+' - '+trim(b.namastok) as namabarang"),
+                    db::raw("(case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end) as namabarang"),
+                    'a.tglbukti as tglbukti',
+                    db::raw("(isnull(a.qtymasuk,0)+
+                        (case when a.nobukti='SALDO AWAL' then 
+                        isnull(a.qtysaldo,0) else 0 end)
+                        ) as qtymasuk"),
+                    db::raw("isnull(a.nilaimasuk,0)  as nominalmasuk"),
+                    'a.qtykeluar as qtykeluar',
+                    'a.nilaikeluar as nominalkeluar',
+                    // 'a.qtysaldo as qtysaldo',
+                    // 'a.nilaisaldo as nominalsaldo',
+                    db::raw("(case when (row_number() Over(partition BY (case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') Order By (case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,''),a.tglbukti,a.tglinput))=1 then a.qtysaldo else 0 end) as qtysaldo"),
+                    db::raw("(case when (row_number() Over(partition BY (case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') Order By (case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,''),a.tglbukti,a.tglinput))=1 then a.nilaisaldo else 0 end) as nominalsaldo"),
+                    // db::raw("(case when (row_number() Over(partition BY isnull(c1.kodekelompok,'')+' - '+b.namastok Order By isnull(c1.kodekelompok,'')+' - '+b.namastok,a.tglbukti,a.tglinput))=1 then a.qtysaldo else 0 end) as qtysaldo"),
+                    // db::raw("(case when (row_number() Over(partition BY isnull(c1.kodekelompok,'')+' - '+b.namastok Order By isnull(c1.kodekelompok,'')+' - '+b.namastok,a.tglbukti,a.tglinput))=1 then a.nilaisaldo else 0 end) as nominalsaldo"),
+                    // db::raw("0 as qtysaldo"),
+                    // db::raw("0 as nominalsaldo"),
+                    db::raw("'" . $disetujui . "' as disetujui"),
+                    db::raw("'" . $diperiksa . "' as diperiksa"),
+                    db::raw("(case when (row_number() Over(partition BY a.stok_id Order By (case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,''),a.stok_id,a.tglbukti,a.tglinput))=1 then 1 else 0 end) as baris"),
+                    // db::raw("(case when (row_number() Over(partition BY a.stok_id Order By isnull(c1.kodekelompok,'')+' - '+b.namastok,a.stok_id,a.tglbukti,a.tglinput))=1 then 1 else 0 end) as baris"),
+                    // db::raw("(case when a.nobukti='SALDO AWAL' then 1 else 0 end) as baris"),
+                    DB::raw("'" . $getJudul->text . "' as judul"),
+                    // 'a.stok_id',
+                    // db::raw("row_number() Over(partition BY a.stok_id Order By a.namabarang,a.stok_id,a.tglbukti,a.tglinput) as baris_urut")
 
-            ->leftjoin(db::raw("pengeluaranstokdetail c with (readuncommitted) "), function ($join) {
-                $join->on('a.nobukti', '=', 'c.nobukti');
-                $join->on('a.stok_id', '=', 'c.stok_id');
-            })            
-            ->leftjoin(db::raw("penerimaanstokdetail d with (readuncommitted) "), function ($join) {
-                $join->on('a.nobukti', '=', 'd.nobukti');
-                $join->on('a.stok_id', '=', 'd.stok_id');
-            })            
-            ->orderBy(db::raw("b.namastok"), 'asc')
-            // ->orderBy(db::raw("(case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end) "), 'asc')
-            ->orderBy('a.stok_id', 'asc')
-            ->orderBy('a.tglbukti', 'asc')
-            ->orderBy('a.tglinput', 'asc')
-            ->orderBy(db::raw("(case when UPPER(isnull(a.nobukti,''))='SALDO AWAL' then '' else isnull(a.nobukti,'') end)"), 'asc');
+                )
+                ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
+                ->join(db::raw("kelompok c1 with (readuncommitted)"), 'b.kelompok_id', 'c1.id')
+
+                ->leftjoin(db::raw("pengeluaranstokdetail c with (readuncommitted) "), function ($join) {
+                    $join->on('a.nobukti', '=', 'c.nobukti');
+                    $join->on('a.stok_id', '=', 'c.stok_id');
+                })
+                ->leftjoin(db::raw("penerimaanstokdetail d with (readuncommitted) "), function ($join) {
+                    $join->on('a.nobukti', '=', 'd.nobukti');
+                    $join->on('a.stok_id', '=', 'd.stok_id');
+                })
+                // ->orderBy(db::raw("isnull(c1.kodekelompok,'')+' - '+b.namastok"), 'asc')
+                ->orderBy(db::raw("(case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end) "), 'asc')
+                ->orderBy('a.stok_id', 'asc')
+                ->orderBy('a.tglbukti', 'asc')
+                ->orderBy('a.tglinput', 'asc')
+                ->orderBy(db::raw("(case when UPPER(isnull(a.nobukti,''))='SALDO AWAL' then '' else isnull(a.nobukti,'') end)"), 'asc');
+        } else {
+            $query = DB::table($temprekapall)->from(
+                DB::raw($temprekapall . " a")
+            )
+                ->select(
+                    DB::raw("'Laporan Saldo Inventory' as header"),
+                    'a.lokasi',
+                    'a.lokasi as namalokasi',
+                    DB::raw("'' as kategori"),
+                    DB::raw("'" . $tgldari . "' as tgldari"),
+                    DB::raw("'" . $tglsampai . "' as tglsampai"),
+                    DB::raw("'' as vulkanisirke"),
+                    DB::raw("isnull(c.keterangan,isnull(d.keterangan,'')) as keterangan"),
+                    'a.nobukti as nobukti',
+                    db::raw("isnull(c1.kodekelompok,'')+' - '+trim(b.namastok) as id"),
+                    db::raw("isnull(c1.kodekelompok,'')+' - '+trim(b.namastok) as kodebarang"),
+                    db::raw("isnull(c1.kodekelompok,'')+' - '+trim(b.namastok) as namabarang"),
+                    // db::raw("(case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end) as namabarang"),
+                    'a.tglbukti as tglbukti',
+                    db::raw("(isnull(a.qtymasuk,0)+
+                        (case when a.nobukti='SALDO AWAL' then 
+                        isnull(a.qtysaldo,0) else 0 end)
+                        ) as qtymasuk"),
+                    db::raw("isnull(a.nilaimasuk,0)  as nominalmasuk"),
+                    'a.qtykeluar as qtykeluar',
+                    'a.nilaikeluar as nominalkeluar',
+                    // 'a.qtysaldo as qtysaldo',
+                    // 'a.nilaisaldo as nominalsaldo',
+                    // db::raw("(case when (row_number() Over(partition BY a.namabarang Order By a.namabarang,a.tglbukti,a.tglinput))=1 then a.qtysaldo else 0 end) as qtysaldo"),
+                    // db::raw("(case when (row_number() Over(partition BY a.namabarang Order By a.namabarang,a.tglbukti,a.tglinput))=1 then a.nilaisaldo else 0 end) as nominalsaldo"),
+                    db::raw("(case when (row_number() Over(partition BY isnull(c1.kodekelompok,'')+' - '+b.namastok Order By isnull(c1.kodekelompok,'')+' - '+b.namastok,a.tglbukti,a.tglinput))=1 then a.qtysaldo else 0 end) as qtysaldo"),
+                    db::raw("(case when (row_number() Over(partition BY isnull(c1.kodekelompok,'')+' - '+b.namastok Order By isnull(c1.kodekelompok,'')+' - '+b.namastok,a.tglbukti,a.tglinput))=1 then a.nilaisaldo else 0 end) as nominalsaldo"),
+                    // db::raw("0 as qtysaldo"),
+                    // db::raw("0 as nominalsaldo"),
+                    db::raw("'" . $disetujui . "' as disetujui"),
+                    db::raw("'" . $diperiksa . "' as diperiksa"),
+                    // db::raw("(case when (row_number() Over(partition BY a.stok_id Order By a.namabarang,a.stok_id,a.tglbukti,a.tglinput))=1 then 1 else 0 end) as baris"),
+                    db::raw("(case when (row_number() Over(partition BY a.stok_id Order By isnull(c1.kodekelompok,'')+' - '+b.namastok,a.stok_id,a.tglbukti,a.tglinput))=1 then 1 else 0 end) as baris"),
+                    // db::raw("(case when a.nobukti='SALDO AWAL' then 1 else 0 end) as baris"),
+                    DB::raw("'" . $getJudul->text . "' as judul"),
+                    // 'a.stok_id',
+                    // db::raw("row_number() Over(partition BY a.stok_id Order By a.namabarang,a.stok_id,a.tglbukti,a.tglinput) as baris_urut")
+
+                )
+                ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
+                ->join(db::raw("kelompok c1 with (readuncommitted)"), 'b.kelompok_id', 'c1.id')
+
+                ->leftjoin(db::raw("pengeluaranstokdetail c with (readuncommitted) "), function ($join) {
+                    $join->on('a.nobukti', '=', 'c.nobukti');
+                    $join->on('a.stok_id', '=', 'c.stok_id');
+                })
+                ->leftjoin(db::raw("penerimaanstokdetail d with (readuncommitted) "), function ($join) {
+                    $join->on('a.nobukti', '=', 'd.nobukti');
+                    $join->on('a.stok_id', '=', 'd.stok_id');
+                })
+                ->orderBy(db::raw("isnull(c1.kodekelompok,'')+' - '+b.namastok"), 'asc')
+                // ->orderBy(db::raw("(case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end) "), 'asc')
+                ->orderBy('a.stok_id', 'asc')
+                ->orderBy('a.tglbukti', 'asc')
+                ->orderBy('a.tglinput', 'asc')
+                ->orderBy(db::raw("(case when UPPER(isnull(a.nobukti,''))='SALDO AWAL' then '' else isnull(a.nobukti,'') end)"), 'asc');
+        }
 
 
-            // $query = DB::table($temprekapall)->from(
-            //     DB::raw($temprekapall . " a")
-            // )
-            //     ->select(
-            //         DB::raw("'Laporan Saldo Inventory' as header"),
-            //         db::raw("max(a.lokasi) as lokasi"),
-            //         db::raw("max(a.lokasi) as namalokasi"),
-            //         DB::raw("'' as kategori"),
-            //         DB::raw("'" . $tgldari . "' as tgldari"),
-            //         DB::raw("'" . $tglsampai . "' as tglsampai"),
-            //         DB::raw("'' as vulkanisirke"),
-            //         DB::raw("max(isnull(c.keterangan,isnull(d.keterangan,''))) as keterangan"),
-            //         db::raw("max(a.nobukti) as nobukti"),
-            //         'a.kodebarang as id',
-            //         'a.kodebarang',
-            //         db::raw("max((case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end)) as namabarang"),
-            //         db::raw("max(a.tglbukti) as tglbukti"),
-            //         db::raw("sum((isnull(a.qtymasuk,0)+
-            //         (case when a.nobukti='SALDO AWAL' then 
-            //         isnull(a.qtysaldo,0) else 0 end)
-            //         )) as qtymasuk"),
-            //         db::raw("sum((isnull(a.nilaimasuk,0)+
-            //         (case when a.nobukti='SALDO AWAL' then 
-            //         isnull(a.nilaisaldo,0) else 0 end)
-            //         )) as nominalmasuk"),                    
-            //         // db::raw("sum(isnull(a.nilaimasuk,0))  as nominalmasuk"),
-            //         db::raw("sum(isnull(a.qtykeluar,0))  as qtykeluar"),
-            //         db::raw("sum(isnull(a.nilaikeluar,0))  as nominalkeluar"),
-            //         db::raw("sum(isnull(a.qtysaldo,0))  as qtysaldo"),
-            //         db::raw("sum(isnull(a.nilaisaldo,0))  as nominalsaldo"),
-            //         db::raw("'" . $disetujui . "' as disetujui"),
-            //         db::raw("'" . $diperiksa . "' as diperiksa"),
-            //         db::raw("0 as baris"),
-            //         DB::raw("'" . $getJudul->text . "' as judul"),
-    
-            //     )
-            //     ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
-            //     ->leftjoin(db::raw("pengeluaranstokdetail c with (readuncommitted) "), function ($join) {
-            //         $join->on('a.nobukti', '=', 'c.nobukti');
-            //         $join->on('a.stok_id', '=', 'c.stok_id');
-            //     })            
-            //     ->leftjoin(db::raw("penerimaanstokdetail d with (readuncommitted) "), function ($join) {
-            //         $join->on('a.nobukti', '=', 'd.nobukti');
-            //         $join->on('a.stok_id', '=', 'd.stok_id');
-            //     })            
-            //     ->groupBY('a.kodebarang');
-    
+        // $query = DB::table($temprekapall)->from(
+        //     DB::raw($temprekapall . " a")
+        // )
+        //     ->select(
+        //         DB::raw("'Laporan Saldo Inventory' as header"),
+        //         db::raw("max(a.lokasi) as lokasi"),
+        //         db::raw("max(a.lokasi) as namalokasi"),
+        //         DB::raw("'' as kategori"),
+        //         DB::raw("'" . $tgldari . "' as tgldari"),
+        //         DB::raw("'" . $tglsampai . "' as tglsampai"),
+        //         DB::raw("'' as vulkanisirke"),
+        //         DB::raw("max(isnull(c.keterangan,isnull(d.keterangan,''))) as keterangan"),
+        //         db::raw("max(a.nobukti) as nobukti"),
+        //         'a.kodebarang as id',
+        //         'a.kodebarang',
+        //         db::raw("max((case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end)) as namabarang"),
+        //         db::raw("max(a.tglbukti) as tglbukti"),
+        //         db::raw("sum((isnull(a.qtymasuk,0)+
+        //         (case when a.nobukti='SALDO AWAL' then 
+        //         isnull(a.qtysaldo,0) else 0 end)
+        //         )) as qtymasuk"),
+        //         db::raw("sum((isnull(a.nilaimasuk,0)+
+        //         (case when a.nobukti='SALDO AWAL' then 
+        //         isnull(a.nilaisaldo,0) else 0 end)
+        //         )) as nominalmasuk"),                    
+        //         // db::raw("sum(isnull(a.nilaimasuk,0))  as nominalmasuk"),
+        //         db::raw("sum(isnull(a.qtykeluar,0))  as qtykeluar"),
+        //         db::raw("sum(isnull(a.nilaikeluar,0))  as nominalkeluar"),
+        //         db::raw("sum(isnull(a.qtysaldo,0))  as qtysaldo"),
+        //         db::raw("sum(isnull(a.nilaisaldo,0))  as nominalsaldo"),
+        //         db::raw("'" . $disetujui . "' as disetujui"),
+        //         db::raw("'" . $diperiksa . "' as diperiksa"),
+        //         db::raw("0 as baris"),
+        //         DB::raw("'" . $getJudul->text . "' as judul"),
+
+        //     )
+        //     ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
+        //     ->leftjoin(db::raw("pengeluaranstokdetail c with (readuncommitted) "), function ($join) {
+        //         $join->on('a.nobukti', '=', 'c.nobukti');
+        //         $join->on('a.stok_id', '=', 'c.stok_id');
+        //     })            
+        //     ->leftjoin(db::raw("penerimaanstokdetail d with (readuncommitted) "), function ($join) {
+        //         $join->on('a.nobukti', '=', 'd.nobukti');
+        //         $join->on('a.stok_id', '=', 'd.stok_id');
+        //     })            
+        //     ->groupBY('a.kodebarang');
+
 
         // 'header' => 'Laporan Saldo Inventory',
         //         'lokasi' => 'GUDANG',
