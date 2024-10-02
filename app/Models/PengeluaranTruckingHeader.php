@@ -2644,10 +2644,10 @@ class PengeluaranTruckingHeader extends MyModel
                     'keterangan' => $posting_keterangan,
                 ];
 
-                $pinjaman = $this->storePinjamanPosting($pjtRequest);
+                // $pinjaman = $this->storePinjamanPosting($pjtRequest);
                 // throw new \Exception($pinjaman->nobukti);
 
-                $pengeluaranTruckingHeader->pengeluarantrucking_nobukti = $pinjaman->nobukti;
+                // $pengeluaranTruckingHeader->pengeluarantrucking_nobukti = $pinjaman->nobukti;
                 $pengeluaranTruckingHeader->save();
             } else {
                 $alatbayar = DB::table("alatbayar")->select('alatbayar.id', 'alatbayar.kodealatbayar')->join('bank', 'alatbayar.tipe', 'bank.tipe')->where('bank.id', $pengeluaranTruckingHeader->bank_id)->first();
