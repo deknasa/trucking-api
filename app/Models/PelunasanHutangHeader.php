@@ -56,7 +56,7 @@ class PelunasanHutangHeader extends MyModel
         ], $query);
 
         // dd(DB::table($temppelunasan)->get());
-        
+
         $this->setRequestParameters();
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
@@ -86,7 +86,7 @@ class PelunasanHutangHeader extends MyModel
                 'bank.namabank as bank_id',
                 'supplier.namasupplier as supplier_id',
                 'alatbayar.namaalatbayar as alatbayar_id',
-                'PelunasanHutangheader.tglcair',                
+                'PelunasanHutangheader.tglcair',
                 'PelunasanHutangheader.bank_id as pengeluaranbank_id',
                 db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
                 db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
@@ -243,9 +243,9 @@ class PelunasanHutangHeader extends MyModel
             $table->date('tglapproval')->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->string('statuscetak', 1000)->nullable();
-            $table->string('nominal',100)->nullable();
-            $table->string('potongan',100)->nullable();
-            $table->string('total',100)->nullable();
+            $table->string('nominal', 100)->nullable();
+            $table->string('potongan', 100)->nullable();
+            $table->string('total', 100)->nullable();
             $table->string('userbukacetak', 50)->nullable();
             $table->integer('jumlahcetak')->Length(11)->nullable();
             $table->string('nowarkat')->nullable();
@@ -269,7 +269,7 @@ class PelunasanHutangHeader extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','pengeluaran_nobukti','coa','userapproval','statusapproval','tglapproval','tglbukacetak','statuscetak','nominal','potongan','total','userbukacetak','jumlahcetak','nowarkat','bank_id','supplier_id','alatbayar_id','tglcair','modifiedby','created_at','updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluaran_nobukti', 'coa', 'userapproval', 'statusapproval', 'tglapproval', 'tglbukacetak', 'statuscetak', 'nominal', 'potongan', 'total', 'userbukacetak', 'jumlahcetak', 'nowarkat', 'bank_id', 'supplier_id', 'alatbayar_id', 'tglcair', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -895,8 +895,27 @@ class PelunasanHutangHeader extends MyModel
             $keterangan_detail[] = $data['keterangan'][$i];
         }
 
-        /*STORE PENGELUARAN*/
+        
         $supplier = Supplier::from(DB::raw("supplier with (readuncommitted)"))->where('id', $data['supplier_id'])->first();
+        $queryGetcoa = DB::table("pelunasanhutangdetail")->from(DB::raw("pelunasanhutangdetail as ph with (readuncommitted)"))
+            ->select(DB::raw("h.coakredit as coa,sum(ph.nominal) as nominal"))
+
+            ->join(db::raw("hutangheader as h with (readuncommitted)"), 'ph.hutang_nobukti', 'h.nobukti')
+            ->where('ph.nobukti', $PelunasanHutangHeader->nobukti)
+            ->groupBy('h.coakredit')
+            ->get();
+            
+
+        for ($i = 0; $i < count($queryGetcoa); $i++) {
+            $coadebet[] = $queryGetcoa[$i]->coa;
+            $coakredit[] = $coakredits;
+            $tgljatuhtempo[] = $data['tglcair'];
+            $nowarkat[] = $data['nowarkat'];
+            $nominal_detail[] = $queryGetcoa[$i]->nominal;
+            $statusketerangandefault[] = $statusketerangan . ' ' . $supplier->namasupplier . ' ' . $data['keterangan'][0];
+        }
+    
+        /*STORE PENGELUARAN*/
 
         if ($bayarhutang == $statusbayarhutang) {
             if ($bankid == 0) {
@@ -908,13 +927,7 @@ class PelunasanHutangHeader extends MyModel
                 }
             } else {
                 $getPengeluaran = DB::table("pengeluaranheader")->from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $PelunasanHutangHeader->pengeluaran_nobukti)->first();
-
-                $coadebet[] = $coa;
-                $coakredit[] = $coakredits;
-                $tgljatuhtempo[] = $data['tglcair'];
-                $nowarkat[] = $data['nowarkat'];
-                $nominal_detail[] = $total;
-                $statusketerangandefault[] = $statusketerangan . ' ' . $supplier->namasupplier . ' ' . $data['keterangan'][0];
+               
                 $pengeluaranRequest = [
                     'tglbukti' => $PelunasanHutangHeader->tglbukti,
                     'pelanggan_id' => 0,
