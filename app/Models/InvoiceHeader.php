@@ -1821,10 +1821,12 @@ class InvoiceHeader extends MyModel
                 "))
 
                 ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
+                ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'orderantrucking.nobukti')
                 ->leftJoin(DB::raw("otobon with (readuncommitted)"), 'invoiceheader.agen_id', 'otobon.agen_id')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'otobon.container_id', 'container.id')
                 ->whereBetween('invoiceheader.tglbukti', [$tgldari, $tglsampai])
-                ->where('otobon.agen_id', $agen_id)
+                ->where('orderantrucking.agen_id', $agen_id)
+                ->where('orderantrucking.container_id', 1)
                 ->where('otobon.container_id', 1)
                 ->whereRaw("isnull(invoicedetail.orderantrucking_nobukti, '') != ''");
 
@@ -1852,10 +1854,12 @@ class InvoiceHeader extends MyModel
                 "))
 
                 ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
+                ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'orderantrucking.nobukti')
                 ->leftJoin(DB::raw("otobon with (readuncommitted)"), 'invoiceheader.agen_id', 'otobon.agen_id')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'otobon.container_id', 'container.id')
                 ->whereBetween('invoiceheader.tglbukti', [$tgldari, $tglsampai])
-                ->where('otobon.agen_id', $agen_id)
+                ->where('orderantrucking.agen_id', $agen_id)
+                ->where('orderantrucking.container_id', 2)
                 ->where('otobon.container_id', 2)
                 ->whereRaw("isnull(invoicedetail.orderantrucking_nobukti, '') != ''");
 
@@ -1883,10 +1887,12 @@ class InvoiceHeader extends MyModel
                 "))
 
                 ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
+                ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'orderantrucking.nobukti')
                 ->leftJoin(DB::raw("otobon with (readuncommitted)"), 'invoiceheader.agen_id', 'otobon.agen_id')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'otobon.container_id', 'container.id')
                 ->whereBetween('invoiceheader.tglbukti', [$tgldari, $tglsampai])
-                ->where('otobon.agen_id', $agen_id)
+                ->where('orderantrucking.agen_id', $agen_id)
+                ->where('orderantrucking.container_id', 3)
                 ->where('otobon.container_id', 3)
                 ->whereRaw("isnull(invoicedetail.orderantrucking_nobukti, '') != ''");
 
@@ -2002,10 +2008,12 @@ class InvoiceHeader extends MyModel
                 "))
 
                 ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
+                ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'orderantrucking.nobukti')
                 ->leftJoin(DB::raw("lapangan with (readuncommitted)"), 'invoiceheader.agen_id', 'lapangan.agen_id')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'lapangan.container_id', 'container.id')
                 ->whereBetween('invoiceheader.tglbukti', [$tgldari, $tglsampai])
-                ->where('lapangan.agen_id', $agen_id)
+                ->where('orderantrucking.agen_id', $agen_id)
+                ->where('orderantrucking.container_id', 1)
                 ->where('lapangan.container_id', 1)
                 ->whereRaw("isnull(invoicedetail.orderantrucking_nobukti, '') != ''");
 
@@ -2033,10 +2041,12 @@ class InvoiceHeader extends MyModel
                 "))
 
                 ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
+                ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'orderantrucking.nobukti')
                 ->leftJoin(DB::raw("lapangan with (readuncommitted)"), 'invoiceheader.agen_id', 'lapangan.agen_id')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'lapangan.container_id', 'container.id')
                 ->whereBetween('invoiceheader.tglbukti', [$tgldari, $tglsampai])
-                ->where('lapangan.agen_id', $agen_id)
+                ->where('orderantrucking.agen_id', $agen_id)
+                ->where('orderantrucking.container_id', 2)
                 ->where('lapangan.container_id', 2)
                 ->whereRaw("isnull(invoicedetail.orderantrucking_nobukti, '') != ''");
 
@@ -2050,7 +2060,7 @@ class InvoiceHeader extends MyModel
                 'container_id_detail',
                 'nominal_detail',
             ], $query1);
-            
+
             // 2x20feet
             $query1 = InvoiceDetail::from(DB::raw("invoicedetail with (readuncommitted)"))
                 ->select(DB::raw("
@@ -2065,10 +2075,12 @@ class InvoiceHeader extends MyModel
                 "))
 
                 ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
+                ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'orderantrucking.nobukti')
                 ->leftJoin(DB::raw("lapangan with (readuncommitted)"), 'invoiceheader.agen_id', 'lapangan.agen_id')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'lapangan.container_id', 'container.id')
                 ->whereBetween('invoiceheader.tglbukti', [$tgldari, $tglsampai])
-                ->where('lapangan.agen_id', $agen_id)
+                ->where('orderantrucking.agen_id', $agen_id)
+                ->where('orderantrucking.container_id', 3)
                 ->where('lapangan.container_id', 3)
                 ->whereRaw("isnull(invoicedetail.orderantrucking_nobukti, '') != ''");
 
@@ -2119,7 +2131,7 @@ class InvoiceHeader extends MyModel
 
         return $data;
     }
-    
+
     public function filterOtobon($query, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
