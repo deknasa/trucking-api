@@ -1530,11 +1530,13 @@ class PengeluaranTruckingHeader extends MyModel
                 "))
 
                 ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
+                ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'orderantrucking.nobukti')
                 ->leftJoin(DB::raw("otobon with (readuncommitted)"), 'invoiceheader.agen_id', 'otobon.agen_id')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'otobon.container_id', 'container.id')
                 ->whereRaw("invoicedetail.orderantrucking_nobukti not in (select orderantrucking_nobukti from pengeluarantruckingdetail where orderantrucking_nobukti != '' and pengeluarantruckingdetail.pengeluarantruckingheader_id = $id and pengeluarantruckingdetail.container_id=1)")
                 ->whereBetween('invoiceheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
-                ->where('otobon.agen_id', $agen_id)
+                ->where('orderantrucking.agen_id', $agen_id)
+                ->where('orderantrucking.container_id', 1)
                 ->where('otobon.container_id', 1);
             DB::table($temp)->insertUsing(['pengeluarantrucking_id', 'noinvoice_detail', 'nojobtrucking_detail', 'container_detail', 'container_id_detail', 'nominal_detail'], $fetch);
             // 40"
@@ -1549,11 +1551,13 @@ class PengeluaranTruckingHeader extends MyModel
                 "))
 
                 ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
+                ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'orderantrucking.nobukti')
                 ->leftJoin(DB::raw("otobon with (readuncommitted)"), 'invoiceheader.agen_id', 'otobon.agen_id')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'otobon.container_id', 'container.id')
                 ->whereRaw("invoicedetail.orderantrucking_nobukti not in (select orderantrucking_nobukti from pengeluarantruckingdetail where orderantrucking_nobukti != '' and pengeluarantruckingdetail.pengeluarantruckingheader_id = $id and pengeluarantruckingdetail.container_id=2)")
                 ->whereBetween('invoiceheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
-                ->where('otobon.agen_id', $agen_id)
+                ->where('orderantrucking.agen_id', $agen_id)
+                ->where('orderantrucking.container_id', 2)
                 ->where('otobon.container_id', 2);
             DB::table($temp)->insertUsing(['pengeluarantrucking_id', 'noinvoice_detail', 'nojobtrucking_detail', 'container_detail', 'container_id_detail', 'nominal_detail'], $fetch);
             // 2x20"
@@ -1568,11 +1572,13 @@ class PengeluaranTruckingHeader extends MyModel
                 "))
 
                 ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
+                ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'orderantrucking.nobukti')
                 ->leftJoin(DB::raw("otobon with (readuncommitted)"), 'invoiceheader.agen_id', 'otobon.agen_id')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'otobon.container_id', 'container.id')
                 ->whereRaw("invoicedetail.orderantrucking_nobukti not in (select orderantrucking_nobukti from pengeluarantruckingdetail where orderantrucking_nobukti != '' and pengeluarantruckingdetail.pengeluarantruckingheader_id = $id and pengeluarantruckingdetail.container_id=3)")
                 ->whereBetween('invoiceheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
-                ->where('otobon.agen_id', $agen_id)
+                ->where('orderantrucking.agen_id', $agen_id)
+                ->where('orderantrucking.container_id', 3)
                 ->where('otobon.container_id', 3);
             DB::table($temp)->insertUsing(['pengeluarantrucking_id', 'noinvoice_detail', 'nojobtrucking_detail', 'container_detail', 'container_id_detail', 'nominal_detail'], $fetch);
         }
@@ -1630,11 +1636,13 @@ class PengeluaranTruckingHeader extends MyModel
                 "))
 
                 ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
+                ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'orderantrucking.nobukti')
                 ->leftJoin(DB::raw("lapangan with (readuncommitted)"), 'invoiceheader.agen_id', 'lapangan.agen_id')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'lapangan.container_id', 'container.id')
                 ->whereRaw("invoicedetail.orderantrucking_nobukti not in (select orderantrucking_nobukti from pengeluarantruckingdetail where orderantrucking_nobukti != '' and pengeluarantruckingdetail.pengeluarantruckingheader_id = $id and pengeluarantruckingdetail.container_id=1)")
                 ->whereBetween('invoiceheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
-                ->where('lapangan.agen_id', $agen_id)
+                ->where('orderantrucking.agen_id', $agen_id)
+                ->where('orderantrucking.container_id', 1)
                 ->where('lapangan.container_id', 1);
             DB::table($temp)->insertUsing(['pengeluarantrucking_id', 'noinvoice_detail', 'nojobtrucking_detail', 'container_detail', 'container_id_detail', 'nominal_detail'], $fetch);
 
@@ -1650,11 +1658,13 @@ class PengeluaranTruckingHeader extends MyModel
                 "))
 
                 ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
+                ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'orderantrucking.nobukti')
                 ->leftJoin(DB::raw("lapangan with (readuncommitted)"), 'invoiceheader.agen_id', 'lapangan.agen_id')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'lapangan.container_id', 'container.id')
                 ->whereRaw("invoicedetail.orderantrucking_nobukti not in (select orderantrucking_nobukti from pengeluarantruckingdetail where orderantrucking_nobukti != '' and pengeluarantruckingdetail.pengeluarantruckingheader_id = $id and pengeluarantruckingdetail.container_id=2)")
                 ->whereBetween('invoiceheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
-                ->where('lapangan.agen_id', $agen_id)
+                ->where('orderantrucking.agen_id', $agen_id)
+                ->where('orderantrucking.container_id', 2)
                 ->where('lapangan.container_id', 2);
             DB::table($temp)->insertUsing(['pengeluarantrucking_id', 'noinvoice_detail', 'nojobtrucking_detail', 'container_detail', 'container_id_detail', 'nominal_detail'], $fetch);
             //2x20"
@@ -1669,11 +1679,13 @@ class PengeluaranTruckingHeader extends MyModel
                 "))
 
                 ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
+                ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'orderantrucking.nobukti')
                 ->leftJoin(DB::raw("lapangan with (readuncommitted)"), 'invoiceheader.agen_id', 'lapangan.agen_id')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'lapangan.container_id', 'container.id')
                 ->whereRaw("invoicedetail.orderantrucking_nobukti not in (select orderantrucking_nobukti from pengeluarantruckingdetail where orderantrucking_nobukti != '' and pengeluarantruckingdetail.pengeluarantruckingheader_id = $id and pengeluarantruckingdetail.container_id=3)")
                 ->whereBetween('invoiceheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
-                ->where('lapangan.agen_id', $agen_id)
+                ->where('orderantrucking.agen_id', $agen_id)
+                ->where('orderantrucking.container_id', 3)
                 ->where('lapangan.container_id', 3);
             DB::table($temp)->insertUsing(['pengeluarantrucking_id', 'noinvoice_detail', 'nojobtrucking_detail', 'container_detail', 'container_id_detail', 'nominal_detail'], $fetch);
         }
