@@ -183,7 +183,7 @@ class Tarif extends MyModel
                     'parent.tujuan as parent_id',
                     'pelabuhan.kodekota as pelabuhan_id',
                     db::raw(" upahsupir.upahsupir as upahsupir"),
-                    'tarif.tujuan',
+                    'kota.kodekota as tujuan',
                     'tarif.penyesuaian',
                     'parameter.memo as statusaktif',
                     'parameter.text as statusaktiftext',
@@ -217,7 +217,7 @@ class Tarif extends MyModel
                 ->leftJoin(DB::raw("parameter AS posting with (readuncommitted)"), 'tarif.statuspostingtnl', '=', 'posting.id')
                 ->leftJoin(DB::raw("$tempupah as upahsupir with (readuncommitted)"), 'upahsupir.id', '=', 'tarif.id')
                 ->leftJoin(DB::raw("kota as pelabuhan with (readuncommitted)"), 'tarif.pelabuhan_id', '=', 'pelabuhan.id');
-                
+
 
             DB::table($temtabel)->insertUsing([
                 'id',
@@ -340,7 +340,7 @@ class Tarif extends MyModel
                 'tarif.usercetak',
                 'tarif.tujuanpenyesuaian',
             );
-            // dd($query->where('tarif.pelabuhan_id','PELABUHAN PARE-PARE')->get());
+        // dd($query->where('tarif.pelabuhan_id','PELABUHAN PARE-PARE')->get());
 
 
         // dd('test');
@@ -492,8 +492,25 @@ class Tarif extends MyModel
         });
 
         DB::table($temp)->insertUsing([
-            'id', 'parent_id','pelabuhan_id', 'tujuan', 'penyesuaian',  'statusaktif', 'statusaktiftext',  'statussistemton', 'kota_id', 'zona_id', 'jenisorder', 'tglmulaiberlaku',
-            'statuspenyesuaianharga', 'statuspostingtnl', 'keterangan', 'modifiedby', 'created_at', 'updated_at', 'upahsupir'
+            'id',
+            'parent_id',
+            'pelabuhan_id',
+            'tujuan',
+            'penyesuaian',
+            'statusaktif',
+            'statusaktiftext',
+            'statussistemton',
+            'kota_id',
+            'zona_id',
+            'jenisorder',
+            'tglmulaiberlaku',
+            'statuspenyesuaianharga',
+            'statuspostingtnl',
+            'keterangan',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+            'upahsupir'
         ], $query1);
 
         $query2 = db::table($temp)->from(db::raw($temp . " as tarif with (readuncommitted)"))
@@ -557,8 +574,25 @@ class Tarif extends MyModel
         // $models = $this->filter($query);
 
         DB::table($temp)->insertUsing([
-            'id', 'parent_id','pelabuhan_id', 'tujuan', 'penyesuaian',  'statusaktif', 'statusaktiftext',  'statussistemton', 'kota_id', 'zona_id', 'jenisorder', 'tglmulaiberlaku',
-            'statuspenyesuaianharga', 'statuspostingtnl', 'keterangan', 'modifiedby', 'created_at', 'updated_at', 'upahsupir'
+            'id',
+            'parent_id',
+            'pelabuhan_id',
+            'tujuan',
+            'penyesuaian',
+            'statusaktif',
+            'statusaktiftext',
+            'statussistemton',
+            'kota_id',
+            'zona_id',
+            'jenisorder',
+            'tglmulaiberlaku',
+            'statuspenyesuaianharga',
+            'statuspostingtnl',
+            'keterangan',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+            'upahsupir'
         ], $models);
 
         return  $temp;
@@ -677,58 +711,263 @@ class Tarif extends MyModel
     public function findAll($id)
     {
         $tempUpahsupir = (new static)->tempUpahsupir();
-        $query = Tarif::from(DB::raw("tarif with (readuncommitted)"))
-            ->select(
-                'tarif.id',
-                DB::raw("(case when tarif.parent_id=0 then null else tarif.parent_id end) as parent_id"),
-                'parent.tujuan as parent',
-                DB::raw("(case when tarif.pelabuhan_id=0 then null else tarif.pelabuhan_id end) as pelabuhan_id"),
-                'pelabuhan.kodekota as pelabuhan',
-                // DB::raw("(case when tarif.upahsupir_id=0 then null else tarif.upahsupir_id end) as upahsupir_id"),
-                // "$tempUpahsupir.kotasampai_id as upah",     
+        $getjenis = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))->where('id', $id)->first()->jenisorder_id ?? 0;
+        if ($getjenis == 0) {
 
-                db::raw("isnull(kotadari.keterangan,'')+(case when isnull(kotasampai.keterangan,'')='' then '' else ' - ' +isnull(kotasampai.keterangan,'') end)+ 
+            $query = Tarif::from(DB::raw("tarif with (readuncommitted)"))
+                ->select(
+                    'tarif.id',
+                    DB::raw("(case when tarif.parent_id=0 then null else tarif.parent_id end) as parent_id"),
+                    'parent.tujuan as parent',
+                    DB::raw("(case when tarif.pelabuhan_id=0 then null else tarif.pelabuhan_id end) as pelabuhan_id"),
+                    'pelabuhan.kodekota as pelabuhan',
+                    // DB::raw("(case when tarif.upahsupir_id=0 then null else tarif.upahsupir_id end) as upahsupir_id"),
+                    // "$tempUpahsupir.kotasampai_id as upah",     
+
+                    db::raw("isnull(kotadari.keterangan,'')+(case when isnull(kotasampai.keterangan,'')='' then '' else ' - ' +isnull(kotasampai.keterangan,'') end)+ 
                 (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as upah
                 "),
-                'kotadari.keterangan as dari',
-                'kotasampai.keterangan as sampai',
-                'upahsupir.penyesuaian as penyesuaianupah',
-                'upahsupir.id as upah_id',
-                DB::raw("TRIM(tarif.tujuan) as tujuan"),
-                'tarif.penyesuaian',
-                'tarif.statusaktif',
-                'tarif.statussistemton',
-                DB::raw("(case when tarif.kota_id=0 then null else tarif.kota_id end) as kota_id"),
-                'kota.keterangan as kota',
-                DB::raw("(case when tarif.zona_id=0 then null else tarif.zona_id end) as zona_id"),
-                'zona.keterangan as zona',
-                'jenisorder.id as jenisorder_id',
-                'jenisorder.keterangan as jenisorder',
-                'tarif.tglmulaiberlaku',
-                'tarif.statuspenyesuaianharga',
-                'tarif.statuslangsir',
-                'statuslangsir.text as statuslangsirnama',
-                DB::raw("(case when tarif.statuspostingtnl IS NULL then 0 else tarif.statuspostingtnl end) as statuspostingtnl"),
-                'tarif.keterangan',
-                'param_statusaktif.text as statusaktifnama',
-                'param_statussistemton.text as statussistemtonnama',
-            )
-            ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
-            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
-            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'tarif.jenisorder_id', '=', 'jenisorder.id')
-            ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
+                    'kotadari.keterangan as dari',
+                    'kotasampai.keterangan as sampai',
+                    'upahsupir.penyesuaian as penyesuaianupah',
+                    'upahsupir.id as upah_id',
+                    DB::raw("TRIM(tarif.tujuan) as tujuan"),
+                    'tarif.penyesuaian',
+                    'tarif.statusaktif',
+                    'tarif.statussistemton',
+                    DB::raw("(case when tarif.kota_id=0 then null else tarif.kota_id end) as kota_id"),
+                    'kota.keterangan as kota',
+                    DB::raw("(case when tarif.zona_id=0 then null else tarif.zona_id end) as zona_id"),
+                    'zona.keterangan as zona',
+                    'jenisorder.id as jenisorder_id',
+                    'jenisorder.keterangan as jenisorder',
+                    'tarif.tglmulaiberlaku',
+                    'tarif.statuspenyesuaianharga',
+                    'tarif.statuslangsir',
+                    'statuslangsir.text as statuslangsirnama',
+                    DB::raw("(case when tarif.statuspostingtnl IS NULL then 0 else tarif.statuspostingtnl end) as statuspostingtnl"),
+                    'tarif.keterangan',
+                    'param_statusaktif.text as statusaktifnama',
+                    'param_statussistemton.text as statussistemtonnama',
+                )
+                ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
+                ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
+                ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'tarif.jenisorder_id', '=', 'jenisorder.id')
+                ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
 
-            ->leftJoin(DB::raw("parameter as statuslangsir with (readuncommitted)"), 'tarif.statuslangsir', 'statuslangsir.id')
-            ->leftJoin(DB::raw("parameter as param_statusaktif with (readuncommitted)"), 'tarif.statusaktif', '=', 'param_statusaktif.id')
-            ->leftJoin(DB::raw("parameter as param_statussistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'param_statussistemton.id')
-            ->leftJoin(DB::raw("upahsupir as upahsupir with (readuncommitted)"), 'upahsupir.tarif_id', '=', 'tarif.id')
-            ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
-            ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
-            ->leftJoin(DB::raw("kota as pelabuhan with (readuncommitted)"), 'tarif.pelabuhan_id', '=', 'pelabuhan.id')
-            // ->leftJoin(DB::raw("$tempUpahsupir with (readuncommitted)"), 'tarif.upahsupir_id', '=', "$tempUpahsupir.id")
+                ->leftJoin(DB::raw("parameter as statuslangsir with (readuncommitted)"), 'tarif.statuslangsir', 'statuslangsir.id')
+                ->leftJoin(DB::raw("parameter as param_statusaktif with (readuncommitted)"), 'tarif.statusaktif', '=', 'param_statusaktif.id')
+                ->leftJoin(DB::raw("parameter as param_statussistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'param_statussistemton.id')
+                ->leftJoin(DB::raw("upahsupir as upahsupir with (readuncommitted)"), 'upahsupir.tarif_id', '=', 'tarif.id')
+                ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
+                ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
+                ->leftJoin(DB::raw("kota as pelabuhan with (readuncommitted)"), 'tarif.pelabuhan_id', '=', 'pelabuhan.id')
+                ->where('tarif.id', $id);
+        } else if($getjenis == 1){
+            $query = Tarif::from(DB::raw("tarif with (readuncommitted)"))
+                ->select(
+                    'tarif.id',
+                    DB::raw("(case when tarif.parent_id=0 then null else tarif.parent_id end) as parent_id"),
+                    'parent.tujuan as parent',
+                    DB::raw("(case when tarif.pelabuhan_id=0 then null else tarif.pelabuhan_id end) as pelabuhan_id"),
+                    'pelabuhan.kodekota as pelabuhan',
+                    // DB::raw("(case when tarif.upahsupir_id=0 then null else tarif.upahsupir_id end) as upahsupir_id"),
+                    // "$tempUpahsupir.kotasampai_id as upah",     
 
-            ->where('tarif.id', $id);
+                    db::raw("isnull(kotadari.keterangan,'')+(case when isnull(kotasampai.keterangan,'')='' then '' else ' - ' +isnull(kotasampai.keterangan,'') end)+ 
+                (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as upah
+                "),
+                    'kotadari.keterangan as dari',
+                    'kotasampai.keterangan as sampai',
+                    'upahsupir.penyesuaian as penyesuaianupah',
+                    'upahsupir.id as upah_id',
+                    DB::raw("TRIM(tarif.tujuan) as tujuan"),
+                    'tarif.penyesuaian',
+                    'tarif.statusaktif',
+                    'tarif.statussistemton',
+                    DB::raw("(case when tarif.kota_id=0 then null else tarif.kota_id end) as kota_id"),
+                    'kota.keterangan as kota',
+                    DB::raw("(case when tarif.zona_id=0 then null else tarif.zona_id end) as zona_id"),
+                    'zona.keterangan as zona',
+                    'jenisorder.id as jenisorder_id',
+                    'jenisorder.keterangan as jenisorder',
+                    'tarif.tglmulaiberlaku',
+                    'tarif.statuspenyesuaianharga',
+                    'tarif.statuslangsir',
+                    'statuslangsir.text as statuslangsirnama',
+                    DB::raw("(case when tarif.statuspostingtnl IS NULL then 0 else tarif.statuspostingtnl end) as statuspostingtnl"),
+                    'tarif.keterangan',
+                    'param_statusaktif.text as statusaktifnama',
+                    'param_statussistemton.text as statussistemtonnama',
+                )
+                ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
+                ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
+                ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'tarif.jenisorder_id', '=', 'jenisorder.id')
+                ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
 
+                ->leftJoin(DB::raw("parameter as statuslangsir with (readuncommitted)"), 'tarif.statuslangsir', 'statuslangsir.id')
+                ->leftJoin(DB::raw("parameter as param_statusaktif with (readuncommitted)"), 'tarif.statusaktif', '=', 'param_statusaktif.id')
+                ->leftJoin(DB::raw("parameter as param_statussistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'param_statussistemton.id')
+                ->leftJoin(DB::raw("upahsupir as upahsupir with (readuncommitted)"), 'upahsupir.tarifmuatan_id', '=', 'tarif.id')
+                ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
+                ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
+                ->leftJoin(DB::raw("kota as pelabuhan with (readuncommitted)"), 'tarif.pelabuhan_id', '=', 'pelabuhan.id')
+                ->where('tarif.id', $id);
+        
+        } else if($getjenis == 2){
+            $query = Tarif::from(DB::raw("tarif with (readuncommitted)"))
+                ->select(
+                    'tarif.id',
+                    DB::raw("(case when tarif.parent_id=0 then null else tarif.parent_id end) as parent_id"),
+                    'parent.tujuan as parent',
+                    DB::raw("(case when tarif.pelabuhan_id=0 then null else tarif.pelabuhan_id end) as pelabuhan_id"),
+                    'pelabuhan.kodekota as pelabuhan',
+                    // DB::raw("(case when tarif.upahsupir_id=0 then null else tarif.upahsupir_id end) as upahsupir_id"),
+                    // "$tempUpahsupir.kotasampai_id as upah",     
+
+                    db::raw("isnull(kotadari.keterangan,'')+(case when isnull(kotasampai.keterangan,'')='' then '' else ' - ' +isnull(kotasampai.keterangan,'') end)+ 
+                (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as upah
+                "),
+                    'kotadari.keterangan as dari',
+                    'kotasampai.keterangan as sampai',
+                    'upahsupir.penyesuaian as penyesuaianupah',
+                    'upahsupir.id as upah_id',
+                    DB::raw("TRIM(tarif.tujuan) as tujuan"),
+                    'tarif.penyesuaian',
+                    'tarif.statusaktif',
+                    'tarif.statussistemton',
+                    DB::raw("(case when tarif.kota_id=0 then null else tarif.kota_id end) as kota_id"),
+                    'kota.keterangan as kota',
+                    DB::raw("(case when tarif.zona_id=0 then null else tarif.zona_id end) as zona_id"),
+                    'zona.keterangan as zona',
+                    'jenisorder.id as jenisorder_id',
+                    'jenisorder.keterangan as jenisorder',
+                    'tarif.tglmulaiberlaku',
+                    'tarif.statuspenyesuaianharga',
+                    'tarif.statuslangsir',
+                    'statuslangsir.text as statuslangsirnama',
+                    DB::raw("(case when tarif.statuspostingtnl IS NULL then 0 else tarif.statuspostingtnl end) as statuspostingtnl"),
+                    'tarif.keterangan',
+                    'param_statusaktif.text as statusaktifnama',
+                    'param_statussistemton.text as statussistemtonnama',
+                )
+                ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
+                ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
+                ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'tarif.jenisorder_id', '=', 'jenisorder.id')
+                ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
+
+                ->leftJoin(DB::raw("parameter as statuslangsir with (readuncommitted)"), 'tarif.statuslangsir', 'statuslangsir.id')
+                ->leftJoin(DB::raw("parameter as param_statusaktif with (readuncommitted)"), 'tarif.statusaktif', '=', 'param_statusaktif.id')
+                ->leftJoin(DB::raw("parameter as param_statussistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'param_statussistemton.id')
+                ->leftJoin(DB::raw("upahsupir as upahsupir with (readuncommitted)"), 'upahsupir.tarifbongkaran_id', '=', 'tarif.id')
+                ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
+                ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
+                ->leftJoin(DB::raw("kota as pelabuhan with (readuncommitted)"), 'tarif.pelabuhan_id', '=', 'pelabuhan.id')
+                ->where('tarif.id', $id);
+        
+        } else if($getjenis == 3){
+            $query = Tarif::from(DB::raw("tarif with (readuncommitted)"))
+                ->select(
+                    'tarif.id',
+                    DB::raw("(case when tarif.parent_id=0 then null else tarif.parent_id end) as parent_id"),
+                    'parent.tujuan as parent',
+                    DB::raw("(case when tarif.pelabuhan_id=0 then null else tarif.pelabuhan_id end) as pelabuhan_id"),
+                    'pelabuhan.kodekota as pelabuhan',
+                    // DB::raw("(case when tarif.upahsupir_id=0 then null else tarif.upahsupir_id end) as upahsupir_id"),
+                    // "$tempUpahsupir.kotasampai_id as upah",     
+
+                    db::raw("isnull(kotadari.keterangan,'')+(case when isnull(kotasampai.keterangan,'')='' then '' else ' - ' +isnull(kotasampai.keterangan,'') end)+ 
+                (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as upah
+                "),
+                    'kotadari.keterangan as dari',
+                    'kotasampai.keterangan as sampai',
+                    'upahsupir.penyesuaian as penyesuaianupah',
+                    'upahsupir.id as upah_id',
+                    DB::raw("TRIM(tarif.tujuan) as tujuan"),
+                    'tarif.penyesuaian',
+                    'tarif.statusaktif',
+                    'tarif.statussistemton',
+                    DB::raw("(case when tarif.kota_id=0 then null else tarif.kota_id end) as kota_id"),
+                    'kota.keterangan as kota',
+                    DB::raw("(case when tarif.zona_id=0 then null else tarif.zona_id end) as zona_id"),
+                    'zona.keterangan as zona',
+                    'jenisorder.id as jenisorder_id',
+                    'jenisorder.keterangan as jenisorder',
+                    'tarif.tglmulaiberlaku',
+                    'tarif.statuspenyesuaianharga',
+                    'tarif.statuslangsir',
+                    'statuslangsir.text as statuslangsirnama',
+                    DB::raw("(case when tarif.statuspostingtnl IS NULL then 0 else tarif.statuspostingtnl end) as statuspostingtnl"),
+                    'tarif.keterangan',
+                    'param_statusaktif.text as statusaktifnama',
+                    'param_statussistemton.text as statussistemtonnama',
+                )
+                ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
+                ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
+                ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'tarif.jenisorder_id', '=', 'jenisorder.id')
+                ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
+
+                ->leftJoin(DB::raw("parameter as statuslangsir with (readuncommitted)"), 'tarif.statuslangsir', 'statuslangsir.id')
+                ->leftJoin(DB::raw("parameter as param_statusaktif with (readuncommitted)"), 'tarif.statusaktif', '=', 'param_statusaktif.id')
+                ->leftJoin(DB::raw("parameter as param_statussistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'param_statussistemton.id')
+                ->leftJoin(DB::raw("upahsupir as upahsupir with (readuncommitted)"), 'upahsupir.tarifimport_id', '=', 'tarif.id')
+                ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
+                ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
+                ->leftJoin(DB::raw("kota as pelabuhan with (readuncommitted)"), 'tarif.pelabuhan_id', '=', 'pelabuhan.id')
+                ->where('tarif.id', $id);
+        
+        } else if($getjenis == 4){
+            $query = Tarif::from(DB::raw("tarif with (readuncommitted)"))
+                ->select(
+                    'tarif.id',
+                    DB::raw("(case when tarif.parent_id=0 then null else tarif.parent_id end) as parent_id"),
+                    'parent.tujuan as parent',
+                    DB::raw("(case when tarif.pelabuhan_id=0 then null else tarif.pelabuhan_id end) as pelabuhan_id"),
+                    'pelabuhan.kodekota as pelabuhan',
+                    // DB::raw("(case when tarif.upahsupir_id=0 then null else tarif.upahsupir_id end) as upahsupir_id"),
+                    // "$tempUpahsupir.kotasampai_id as upah",     
+
+                    db::raw("isnull(kotadari.keterangan,'')+(case when isnull(kotasampai.keterangan,'')='' then '' else ' - ' +isnull(kotasampai.keterangan,'') end)+ 
+                (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as upah
+                "),
+                    'kotadari.keterangan as dari',
+                    'kotasampai.keterangan as sampai',
+                    'upahsupir.penyesuaian as penyesuaianupah',
+                    'upahsupir.id as upah_id',
+                    DB::raw("TRIM(tarif.tujuan) as tujuan"),
+                    'tarif.penyesuaian',
+                    'tarif.statusaktif',
+                    'tarif.statussistemton',
+                    DB::raw("(case when tarif.kota_id=0 then null else tarif.kota_id end) as kota_id"),
+                    'kota.keterangan as kota',
+                    DB::raw("(case when tarif.zona_id=0 then null else tarif.zona_id end) as zona_id"),
+                    'zona.keterangan as zona',
+                    'jenisorder.id as jenisorder_id',
+                    'jenisorder.keterangan as jenisorder',
+                    'tarif.tglmulaiberlaku',
+                    'tarif.statuspenyesuaianharga',
+                    'tarif.statuslangsir',
+                    'statuslangsir.text as statuslangsirnama',
+                    DB::raw("(case when tarif.statuspostingtnl IS NULL then 0 else tarif.statuspostingtnl end) as statuspostingtnl"),
+                    'tarif.keterangan',
+                    'param_statusaktif.text as statusaktifnama',
+                    'param_statussistemton.text as statussistemtonnama',
+                )
+                ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
+                ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
+                ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'tarif.jenisorder_id', '=', 'jenisorder.id')
+                ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
+
+                ->leftJoin(DB::raw("parameter as statuslangsir with (readuncommitted)"), 'tarif.statuslangsir', 'statuslangsir.id')
+                ->leftJoin(DB::raw("parameter as param_statusaktif with (readuncommitted)"), 'tarif.statusaktif', '=', 'param_statusaktif.id')
+                ->leftJoin(DB::raw("parameter as param_statussistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'param_statussistemton.id')
+                ->leftJoin(DB::raw("upahsupir as upahsupir with (readuncommitted)"), 'upahsupir.tarifexport_id', '=', 'tarif.id')
+                ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
+                ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
+                ->leftJoin(DB::raw("kota as pelabuhan with (readuncommitted)"), 'tarif.pelabuhan_id', '=', 'pelabuhan.id')
+                ->where('tarif.id', $id);
+        
+        }
         $data = $query->first();
         return $data;
     }
@@ -918,6 +1157,7 @@ class Tarif extends MyModel
             $datadetailsUpahSupir = $upahsupir->processUpdateTarif([
                 'tarif_id' => $tarif->id,
                 'id' => $upahsupir_id,
+                'jenisorder_id' => $tarif->jenisorder_id
             ]);
         }
         $logtrail = new LogTrail();
@@ -1015,6 +1255,7 @@ class Tarif extends MyModel
             $datadetailsUpahSupir = $upahsupir->processUpdateTarif([
                 'tarif_id' => $tarif->id,
                 'id' => $upahsupir_id,
+                'jenisorder_id' => $tarif->jenisorder_id
             ]);
         }
 
@@ -1060,10 +1301,10 @@ class Tarif extends MyModel
         }
         $logtrail->processStore([
             'namatabel' => strtoupper($datadetails->getTable()),
-            'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
+            'postingdari' => 'EDIT TARIF',
             'idtrans' =>  $storedLogTrail['id'],
             'nobuktitrans' => $tarif->id,
-            'aksi' => 'ENTRY',
+            'aksi' => 'EDIT',
             'datajson' => $detaillog,
         ]);
 
@@ -1168,11 +1409,11 @@ class Tarif extends MyModel
         $parameter = new Parameter();
         $statusaktif = $parameter->cekId('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF') ?? 0;
         $statusnonaktif = $parameter->cekId('STATUS AKTIF', 'STATUS AKTIF', 'NON AKTIF') ?? 0;
-        
+
         for ($i = 0; $i < count($data['Id']); $i++) {
             $Tarif = Tarif::find($data['Id'][$i]);
-            $statusaktif_id=$Tarif->statusaktif ?? 0;
-            if ($statusaktif_id==$statusaktif) {
+            $statusaktif_id = $Tarif->statusaktif ?? 0;
+            if ($statusaktif_id == $statusaktif) {
                 $Tarif->statusaktif = $statusnonaktif;
                 $aksi = 'NON AKTIF';
             } else {

@@ -42,7 +42,7 @@ class UpahSupir extends MyModel
     }
 
 
-    public function get($model=0)
+    public function get($model = 0)
     {
         $this->setRequestParameters();
 
@@ -143,7 +143,7 @@ class UpahSupir extends MyModel
                 ->select(
                     'upahsupir.id',
                     'parent.keterangan as parent_id',
-                    'tarif.tujuan as tarif',
+                    db::raw("tarif.tujuan + (case when isnull(tarif.penyesuaian,'')='' then '' else ' ('+tarif.penyesuaian+')' end) as tarif"),
                     'kotadari.kodekota as kotadari_id',
                     'kotasampai.kodekota as kotasampai_id',
                     'kotasampai.id as kotasampaiid',
@@ -298,11 +298,10 @@ class UpahSupir extends MyModel
 
         $this->sort($query);
         $this->paginate($query);
-        if ($model==1) {
+        if ($model == 1) {
             $data = $query;
         } else {
             $data = $query->get();
-
         }
         return $data;
     }
@@ -1351,7 +1350,7 @@ class UpahSupir extends MyModel
                     ->where('upahsupir_id', $getBelawanKandang->id)
                     ->get();
                 $jarakKandang = $data['jarak'] - $getBelawanKandang->jarak;
-                $jarakKandangFullEmpty = $jarakKandang *2;
+                $jarakKandangFullEmpty = $jarakKandang * 2;
 
                 $upahsupirKandang = new UpahSupir();
                 $upahsupirKandang->kotadari_id = $kandang->id;
@@ -1682,11 +1681,11 @@ class UpahSupir extends MyModel
         $parameter = new Parameter();
         $statusaktif = $parameter->cekId('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF') ?? 0;
         $statusnonaktif = $parameter->cekId('STATUS AKTIF', 'STATUS AKTIF', 'NON AKTIF') ?? 0;
-        
+
         for ($i = 0; $i < count($data['Id']); $i++) {
             $UpahSupir = UpahSupir::find($data['Id'][$i]);
-            $statusaktif_id=$UpahSupir->statusaktif ?? 0;
-            if ($statusaktif_id==$statusaktif) {
+            $statusaktif_id = $UpahSupir->statusaktif ?? 0;
+            if ($statusaktif_id == $statusaktif) {
                 $UpahSupir->statusaktif = $statusnonaktif;
                 $aksi = 'NON AKTIF';
             } else {
@@ -1722,14 +1721,14 @@ class UpahSupir extends MyModel
             $idstatuskandang = $parameter->cekId('STATUS KANDANG', 'STATUS KANDANG', 'KANDANG') ?? 0;
             $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
             // $idpelabuhan = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? 0;
-            $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
-                $idpelabuhan=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+            $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN', 'PELABUHAN') ?? 0;
+            $idpelabuhan = db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
                 ->select(
                     db::raw("STRING_AGG(id,',') as id"),
                 )
-                ->where('a.statuspelabuhan',$statuspelabuhan)
+                ->where('a.statuspelabuhan', $statuspelabuhan)
                 ->first()->id ?? 1;
-            
+
 
             $upahsupirkandnag = db::table("upahsupir")->from(db::raw("upahsupir a with (readuncommitted)"))
                 ->select(
@@ -1749,7 +1748,7 @@ class UpahSupir extends MyModel
                     'b.modifiedby',
                 )
                 ->join(db::raw("upahsupirrincian b with (readuncommitted)"), 'a.id', 'b.upahsupir_id')
-                ->whereraw("a.kotadari_id in (". $idpelabuhan. ")")
+                ->whereraw("a.kotadari_id in (" . $idpelabuhan . ")")
                 ->where('a.kotasampai_id', $idkandang)
                 ->where('b.container_id', $container_id)
                 ->where('b.statuscontainer_id', $statuscontainer_id)
@@ -1838,23 +1837,75 @@ class UpahSupir extends MyModel
         // dd($data['id']);
         $upahsupir = UpahSupir::find($data['id']);
         try {
-            $upahsupir->tarif_id = $data['tarif_id'] ?? 0;
-            $upahsupir->modifiedby = auth('api')->user()->user;
-            $upahsupir->info = html_entity_decode(request()->info);
-
+            if ($data['jenisorder_id'] != 0) {
+                if ($data['jenisorder_id'] == 1) {
+                    $upahsupir->tarifmuatan_id = $data['tarif_id'] ?? 0;
+                    $upahsupir->modifiedby = auth('api')->user()->user;
+                    $upahsupir->info = html_entity_decode(request()->info);
+                }
+                if ($data['jenisorder_id'] == 2) {
+                    $upahsupir->tarifbongkaran_id = $data['tarif_id'] ?? 0;
+                    $upahsupir->modifiedby = auth('api')->user()->user;
+                    $upahsupir->info = html_entity_decode(request()->info);
+                }
+                if ($data['jenisorder_id'] == 3) {
+                    $upahsupir->tarifimport_id = $data['tarif_id'] ?? 0;
+                    $upahsupir->modifiedby = auth('api')->user()->user;
+                    $upahsupir->info = html_entity_decode(request()->info);
+                }
+                if ($data['jenisorder_id'] == 4) {
+                    $upahsupir->tarifexport_id = $data['tarif_id'] ?? 0;
+                    $upahsupir->modifiedby = auth('api')->user()->user;
+                    $upahsupir->info = html_entity_decode(request()->info);
+                }
+            } else {
+                $upahsupir->tarif_id = $data['tarif_id'] ?? 0;
+                $upahsupir->modifiedby = auth('api')->user()->user;
+                $upahsupir->info = html_entity_decode(request()->info);
+            }
             if (!$upahsupir->save()) {
                 throw new \Exception("Error updating upah supir.");
             }
-
             $storedLogTrail = (new LogTrail())->processStore([
                 'namatabel' => strtoupper($upahsupir->getTable()),
-                'postingdari' => 'EDIT TARIF',
+                'postingdari' => 'EDIT UPAH DARI TARIF',
                 'idtrans' => $upahsupir->id,
                 'nobuktitrans' => $upahsupir->id,
                 'aksi' => 'EDIT',
                 'datajson' => $upahsupir->toArray(),
                 'modifiedby' => $upahsupir->modifiedby
             ]);
+
+            $isKandang = (new Parameter())->cekText('KANDANG', 'KANDANG');
+
+            if ($isKandang != '0') {
+                $query = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
+                    ->where('kotadari_id', $isKandang)
+                    ->where('kotasampai_id', $upahsupir->kotasampai_id)
+                    ->where('penyesuaian', $upahsupir->penyesuaian)
+                    ->first();
+
+                if ($query != '') {
+
+                    $upahsupir = UpahSupir::find($query->id);
+                    $upahsupir->tarif_id = $data['tarif_id'] ?? 0;
+                    $upahsupir->modifiedby = auth('api')->user()->user;
+                    $upahsupir->info = html_entity_decode(request()->info);
+                    if (!$upahsupir->save()) {
+                        throw new \Exception("Error updating upah supir.");
+                    }
+                    $storedLogTrail = (new LogTrail())->processStore([
+                        'namatabel' => strtoupper($upahsupir->getTable()),
+                        'postingdari' => 'EDIT UPAH DARI TARIF',
+                        'idtrans' => $upahsupir->id,
+                        'nobuktitrans' => $upahsupir->id,
+                        'aksi' => 'EDIT',
+                        'datajson' => $upahsupir->toArray(),
+                        'modifiedby' => $upahsupir->modifiedby
+                    ]);
+                }
+            }
+
 
             return $upahsupir;
         } catch (\Throwable $th) {
