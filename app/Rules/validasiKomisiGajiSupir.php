@@ -34,25 +34,27 @@ class validasiKomisiGajiSupir implements Rule
         $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
         if ($cabang == 'MEDAN') {
             $requestData = json_encode(request()->rincian_nobukti);
-            $query = db::table('a')->from(DB::raw("OPENJSON ('$requestData')"))
-                ->select(db::raw("[value]"))
-                ->groupBy('value');
+            if ($requestData != 'null') {
+                $query = db::table('a')->from(DB::raw("OPENJSON ('$requestData')"))
+                    ->select(db::raw("[value]"))
+                    ->groupBy('value');
 
-            $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($temp, function ($table) {
-                $table->string('value')->nullable();
-            });
-            DB::table($temp)->insertUsing(['value'], $query);
+                $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($temp, function ($table) {
+                    $table->string('value')->nullable();
+                });
+                DB::table($temp)->insertUsing(['value'], $query);
 
-            $final = db::table("suratpengantar")->from(db::raw("suratpengantar as a with (readuncommitted)"))
-                ->select(db::raw("STRING_AGG(a.nobukti, ', ') as nobukti"))
-                ->join(db::raw("$temp as b with (readuncommitted)"), 'a.nobukti', 'b.value')
-                ->join(db::raw("upahsupirrincian as c with (readuncommitted)"), 'a.upah_id', 'c.upahsupir_id')
-                ->whereRaw("c.container_id = a.container_id and c.statuscontainer_id=a.statuscontainer_id and a.komisisupir!=c.nominalkomisi")
-                ->first();
-            if ($final->nobukti != '') {
-                $this->notrip = $final->nobukti;
-                return false;
+                $final = db::table("suratpengantar")->from(db::raw("suratpengantar as a with (readuncommitted)"))
+                    ->select(db::raw("STRING_AGG(a.nobukti, ', ') as nobukti"))
+                    ->join(db::raw("$temp as b with (readuncommitted)"), 'a.nobukti', 'b.value')
+                    ->join(db::raw("upahsupirrincian as c with (readuncommitted)"), 'a.upah_id', 'c.upahsupir_id')
+                    ->whereRaw("c.container_id = a.container_id and c.statuscontainer_id=a.statuscontainer_id and a.komisisupir!=c.nominalkomisi")
+                    ->first();
+                if ($final->nobukti != '') {
+                    $this->notrip = $final->nobukti;
+                    return false;
+                }
             }
         }
         return true;
