@@ -2241,7 +2241,9 @@ class PengeluaranTruckingHeader extends MyModel
         $pengeluaranTruckingHeader->modifiedby = auth('api')->user()->name;
         $pengeluaranTruckingHeader->info = html_entity_decode(request()->info);
         $pengeluaranTruckingHeader->nobukti = (new RunningNumberService)->get($fetchGrp->grp, $fetchGrp->subgrp, $pengeluaranTruckingHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
-
+        if($data['pengeluarantrucking_id'] == $klaim->id){
+            $pengeluaranTruckingHeader->statusposting = null;
+        }
         if (!$pengeluaranTruckingHeader->save()) {
             throw new \Exception("Error storing pengeluaran Trucking Header.");
         }
@@ -2644,10 +2646,10 @@ class PengeluaranTruckingHeader extends MyModel
                     'keterangan' => $posting_keterangan,
                 ];
 
-                // $pinjaman = $this->storePinjamanPosting($pjtRequest);
+                $pinjaman = $this->storePinjamanPosting($pjtRequest);
                 // throw new \Exception($pinjaman->nobukti);
 
-                // $pengeluaranTruckingHeader->pengeluarantrucking_nobukti = $pinjaman->nobukti;
+                $pengeluaranTruckingHeader->pengeluarantrucking_nobukti = $pinjaman->nobukti;
                 $pengeluaranTruckingHeader->save();
             } else {
                 $alatbayar = DB::table("alatbayar")->select('alatbayar.id', 'alatbayar.kodealatbayar')->join('bank', 'alatbayar.tipe', 'bank.tipe')->where('bank.id', $pengeluaranTruckingHeader->bank_id)->first();
@@ -2903,9 +2905,9 @@ class PengeluaranTruckingHeader extends MyModel
                 $gandenganHeader = '';
             }
         }
-        if ($klaim->id == $data['pengeluarantrucking_id']) {
-            $pengeluaranTruckingHeader->statusposting = $data['statusposting'] ?? $statusPosting->id;
-        }
+        // if ($klaim->id == $data['pengeluarantrucking_id']) {
+        //     $pengeluaranTruckingHeader->statusposting = $data['statusposting'] ?? $statusPosting->id;
+        // }
         $pengeluaranTruckingHeader->coa = $data['coa'];
         $pengeluaranTruckingHeader->periodedari = $tgldari;
         $pengeluaranTruckingHeader->periodesampai = $tglsampai;
