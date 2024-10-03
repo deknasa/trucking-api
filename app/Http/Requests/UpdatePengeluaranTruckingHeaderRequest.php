@@ -299,7 +299,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
                 // 'statusposting' => 'required',
                 'agen' => ['required', new ValidasiDetail($jumlahdetail)],
-                'containerheader' => 'required',
+                // 'containerheader' => 'required',
                 'bank' => [$ruleBank],
                 'tgldari' => [
                     'required', 'date_format:d-m-Y',

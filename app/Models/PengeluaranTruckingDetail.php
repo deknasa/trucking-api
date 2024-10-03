@@ -177,7 +177,7 @@ class PengeluaranTruckingDetail extends MyModel
                 ->leftJoin(DB::raw("parameter as statustitipanemkl with (readuncommitted)"), 'pengeluarantruckingdetail.statustitipanemkl', 'statustitipanemkl.id')
                 ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'pengeluarantruckingdetail.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
                 ->leftJoin(DB::raw("penerimaanstokheader with (readuncommitted)"), 'pengeluarantruckingdetail.pengeluaranstok_nobukti', '=', 'penerimaanstokheader.nobukti')
-                ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id');
+                ->leftJoin(DB::raw("container with (readuncommitted)"), 'pengeluarantruckingdetail.container_id', 'container.id');
 
 
             $query->where($this->table . '.pengeluarantruckingheader_id', '=', request()->pengeluarantruckingheader_id);
@@ -384,6 +384,8 @@ class PengeluaranTruckingDetail extends MyModel
                                 $query = $query->where('karyawan.namakaryawan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'stok') {
                                 $query = $query->where('stok.namastok', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'container') {
+                                $query = $query->where('container.kodecontainer', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statustitipanemkl') {
                                 $query = $query->where('statustitipanemkl.text', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
@@ -404,6 +406,8 @@ class PengeluaranTruckingDetail extends MyModel
                                 $query = $query->orWhere('karyawan.namakaryawan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'stok') {
                                 $query = $query->orWhere('stok.namastok', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'container') {
+                                $query = $query->orWhere('container.kodecontainer', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statustitipanemkl') {
                                 $query = $query->orWhere('statustitipanemkl.text', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
@@ -478,6 +482,7 @@ class PengeluaranTruckingDetail extends MyModel
         $pengeluaranTruckingDetail->trado_id = $data['trado_id'] ?? 0;
         $pengeluaranTruckingDetail->keterangan = mb_convert_encoding($data['keterangan'],  'ISO-8859-1', 'UTF-8');
         $pengeluaranTruckingDetail->invoice_nobukti = $data['invoice_nobukti'];
+        $pengeluaranTruckingDetail->container_id = $data['container_detail'];
         $pengeluaranTruckingDetail->orderantrucking_nobukti = $data['orderantrucking_nobukti'];
         $pengeluaranTruckingDetail->nominal = $data['nominal'];
         $pengeluaranTruckingDetail->statustitipanemkl = $data['statustitipanemkl'];
