@@ -56,6 +56,7 @@ use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\Api\AkunPusatController;
 use App\Http\Controllers\Api\AkuntansiController;
 use App\Http\Controllers\Api\AlatBayarController;
+use App\Http\Controllers\Api\BiayaEmklController;
 use App\Http\Controllers\Api\ContainerController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ExportRicController;
@@ -75,7 +76,6 @@ use App\Http\Controllers\Api\UpahSupirController;
 use App\Http\Controllers\Api\AbsenTradoController;
 use App\Http\Controllers\Api\DataRitasiController;
 use App\Http\Controllers\Api\JenisOrderController;
-use App\Http\Controllers\Api\BiayaEmklController;
 use App\Http\Controllers\Api\JenisTradoController;
 use App\Http\Controllers\Api\LogAbsensiController;
 use App\Http\Controllers\Api\MandorTripController;
@@ -93,20 +93,20 @@ use App\Http\Controllers\Api\OrderanEmklController;
 use App\Http\Controllers\Api\ReminderOliController;
 
 use App\Http\Controllers\Api\ReminderSpkController;
+
 use App\Http\Controllers\Api\SubKelompokController;
-
 use App\Http\Controllers\Api\TarifTangkiController;
+
 use App\Http\Controllers\Api\HutangDetailController;
-
 use App\Http\Controllers\Api\HutangHeaderController;
+
 use App\Http\Controllers\Api\OpnameDetailController;
-
 use App\Http\Controllers\Api\OpnameHeaderController;
+
 use App\Http\Controllers\Api\ReminderStokController;
-
 use App\Http\Controllers\Api\ReportNeracaController;
-use App\Http\Controllers\Api\SaldoUmurAkiController;
 
+use App\Http\Controllers\Api\SaldoUmurAkiController;
 use App\Http\Controllers\Api\TarifRincianController;
 use App\Http\Controllers\Api\UbahPasswordController;
 use App\Http\Controllers\CustomValidationController;
@@ -172,6 +172,8 @@ use App\Http\Controllers\Api\HutangBayarDetailController;
 use App\Http\Controllers\Api\HutangBayarHeaderController;
 use App\Http\Controllers\Api\HutangExtraDetailController;
 use App\Http\Controllers\Api\HutangExtraHeaderController;
+use App\Http\Controllers\Api\InvoiceEmklDetailController;
+use App\Http\Controllers\Api\InvoiceEmklHeaderController;
 use App\Http\Controllers\Api\LaporanBiayaSupirController;
 use App\Http\Controllers\Api\LaporanDataJurnalController;
 use App\Http\Controllers\Api\LaporanHutangGiroController;
@@ -322,8 +324,6 @@ use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
-use App\Http\Controllers\Api\InvoiceEmklDetailController;
-use App\Http\Controllers\Api\InvoiceEmklHeaderController;
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
@@ -344,6 +344,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('token', [AuthController::class, 'token']);
 Route::get('cekIp', [AuthController::class, 'cekIp']);
+Route::get('location', [AuthController::class, 'locationRequest']);
 // Route::post('oauth/token', '\Laravel\Passport\Http\Controllers\AccessTokenController@issueToken');
 
 Route::resource('statusolitradodetail', StatusOliTradoDetailController::class)->whereNumber('statusolitradodetail');

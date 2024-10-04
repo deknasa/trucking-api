@@ -40,6 +40,13 @@ class AuthController extends Controller
         }
     }
 
+    public function locationRequest(Request $request) {
+        $info = $this->infoLocation($request->all());
+        return response([
+            'info' =>$info
+        ]);
+    }
+
     public function infoLocation( $data)
     {
 
