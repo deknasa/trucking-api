@@ -1676,24 +1676,24 @@ class SuratPengantar extends MyModel
                 ->first();
             // dd($queryutama);
 
-            $pelanggan_idtrip = $queryutama->pelanggan_id;
-            $penyesuaiantrip = $queryutama->penyesuaian;
-            $container_idtrip = $queryutama->container_id;
-            $trado_idtrip = $queryutama->trado_id;
-            $gandengan_idtrip = $queryutama->gandengan_id;
-            $agen_idtrip = $queryutama->agen_id;
-            $jenisorder_idtrip = $queryutama->jenisorder_id;
-            $tarif_idtrip = $queryutama->tarif_id;
-            $statusgerobaktrip = $queryutama->statusgerobak;
-            $noconttrip = $queryutama->nocont;
-            $nocont2trip = $queryutama->nocont2;
-            $nosealtrip = $queryutama->noseal;
-            $noseal2trip = $queryutama->noseal2;
-            $nojobtrip = $queryutama->nojob;
-            $nojob2trip = $queryutama->nojob2;
-            $jobtruckingtrip = $queryutama->jobtrucking;
-            $statuslongtrip = $queryutama->statuslongtrip;
-            $sampai_id = $queryutama->sampai_id;
+            $pelanggan_idtrip = $queryutama->pelanggan_id ?? 0;
+            $penyesuaiantrip = $queryutama->penyesuaian ?? '';
+            $container_idtrip = $queryutama->container_id ?? 0;
+            $trado_idtrip = $queryutama->trado_id ?? 0;
+            $gandengan_idtrip = $queryutama->gandengan_id ?? 0;
+            $agen_idtrip = $queryutama->agen_id ?? 0;
+            $jenisorder_idtrip = $queryutama->jenisorder_id ?? 0;
+            $tarif_idtrip = $queryutama->tarif_id ?? 0;
+            $statusgerobaktrip = $queryutama->statusgerobak ?? 0;
+            $noconttrip = $queryutama->nocont ?? '';
+            $nocont2trip = $queryutama->nocont2 ?? '';
+            $nosealtrip = $queryutama->noseal ?? '';
+            $noseal2trip = $queryutama->noseal2 ?? '';
+            $nojobtrip = $queryutama->nojob ?? '';
+            $nojob2trip = $queryutama->nojob2 ?? '';
+            $jobtruckingtrip = $queryutama->jobtrucking ?? '';
+            $statuslongtrip = $queryutama->statuslongtrip ?? 0;
+            $sampai_id = $queryutama->sampai_id ?? 0;
 
 
             // dd($pelanggan_idtrip, $penyesuaiantrip, $container_idtrip, $gandengan_idtrip, $agen_idtrip, $jenisorder_idtrip, $tarif_idtrip);

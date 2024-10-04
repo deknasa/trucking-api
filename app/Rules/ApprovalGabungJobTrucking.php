@@ -18,6 +18,7 @@ class ApprovalGabungJobTrucking implements Rule
      */
     public $trip;
     public $bjumlah;
+    public $bjumlahtidaksama;
     public $nocont;
     public $noinvoice;
     public $batal;
@@ -47,9 +48,10 @@ class ApprovalGabungJobTrucking implements Rule
             ->first()->id ?? 1;
 
         $bjumlah = 0;
-        $batal=0;
+        $batal = 0;
         $nocont = '';
         $noinvoice = '';
+        $nobuktitrippelabuhan = '';
         for ($i = 0; $i < count(request()->Id); $i++) {
             $nobukti = request()->Id[$i];
             // dd($nobukti);
@@ -85,6 +87,7 @@ class ApprovalGabungJobTrucking implements Rule
             $querypelabuhan = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
                 ->select(
                     'a.jobtrucking',
+                    'a.nobukti',
                     'a.nocont',
                     db::raw("isnull(b.nobukti,'') as noinvoice")
                 )
@@ -108,6 +111,7 @@ class ApprovalGabungJobTrucking implements Rule
                 $nocont = $querypelabuhan->nocont ?? '';
                 $noinvoice = $querypelabuhan->noinvoice ?? '';
                 $bjumlah = $bjumlah + 1;
+                $nobuktitrippelabuhan = $querypelabuhan->nobukti ?? '';
             }
             if (isset($querynonpelabuhan)) {
                 $batal = 1;
@@ -120,6 +124,93 @@ class ApprovalGabungJobTrucking implements Rule
         $this->batal = $batal;
         // dd($nocont);
 
+        $queryutama = db::table('suratpengantar')->from(db::raw("suratpengantar  a with (readuncommitted)"))
+            ->select(
+                'a.jobtrucking',
+                'a.nocont',
+                'a.nocont2',
+                'a.noseal',
+                'a.noseal2',
+                'a.nojob',
+                'a.nojob2',
+                'a.pelanggan_id',
+                db::raw("isnull(a.penyesuaian,'') as penyesuaian"),
+                'a.container_id',
+                'a.trado_id',
+                'a.gandengan_id',
+                'a.agen_id',
+                'a.jenisorder_id',
+                'a.tarif_id',
+                'a.sampai_id',
+                'a.statuslongtrip',
+                // 'a.statusgerobak'
+            )
+            ->where('a.nobukti', $nobuktitrippelabuhan)
+            ->first();
+            // dd($nobuktitrippelabuhan);
+        $penyesuaianutama = $queryutama->penyesuaian ?? '';
+        $container_idutama = $queryutama->container_id ?? 0;
+        $gandengan_idutama = $queryutama->gandengan_id ?? 0;
+        $agen_idutama = $queryutama->agen_id ?? 0;
+        $jenisorder_idutama = $queryutama->jenisorder_id ?? 0;
+        $tarif_idutama = $queryutama->tarif_id ?? 0;
+        $statusgerobakutama = $queryutama->statusgerobak ?? 0;
+        $gabungutama = $penyesuaianutama . $container_idutama  . $gandengan_idutama . $agen_idutama . $jenisorder_idutama . $tarif_idutama . $statusgerobakutama;
+
+        $bjumlahtidaksama = 0;
+        // dd($gabungutama);
+        if (isset($queryutama)) {
+            for ($i = 0; $i < count(request()->Id); $i++) {
+                $nobukticek = request()->Id[$i];
+                if ($nobukticek != $nobuktitrippelabuhan) {
+                    $querycek = db::table('suratpengantar')->from(db::raw("suratpengantar  a with (readuncommitted)"))
+                        ->select(
+                            'a.jobtrucking',
+                            'a.nocont',
+                            'a.nocont2',
+                            'a.noseal',
+                            'a.noseal2',
+                            'a.nojob',
+                            'a.nojob2',
+                            'a.pelanggan_id',
+                            db::raw("isnull(a.penyesuaian,'') as penyesuaian"),
+                            'a.container_id',
+                            'a.gandengan_id',
+                            'a.agen_id',
+                            'a.jenisorder_id',
+                            'a.tarif_id',
+                            'a.sampai_id',
+                            'a.statuslongtrip',
+                            // 'a.statusgerobak'
+                        )
+                        ->where('a.nobukti', $nobukticek)
+                        ->first();
+
+                    $penyesuaiancek = $querycek->penyesuaian ?? '';
+                    $container_idcek = $querycek->container_id ?? 0;
+                    $gandengan_idcek = $querycek->gandengan_id ?? 0;
+                    $agen_idcek = $querycek->agen_id ?? 0;
+                    $jenisorder_idcek = $querycek->jenisorder_id ?? 0;
+                    $tarif_idcek = $querycek->tarif_id ?? 0;
+                    $statusgerobakcek = $querycek->statusgerobak ?? 0;
+
+                    $gabungcek = $penyesuaiancek . $container_idcek . $gandengan_idcek . $agen_idcek . $jenisorder_idcek . $tarif_idcek . $statusgerobakcek;
+
+              
+                    if ($gabungcek != $gabungutama) {
+                        // dd($gabungcek,$gabungutama);
+                        // dd('uji');
+                        $bjumlahtidaksama = $bjumlahtidaksama + 1;
+                    }
+                }
+            }
+        }
+        // dd($bjumlahtidaksama);
+        $this->bjumlahtidaksama = $bjumlahtidaksama ?? 0;
+
+        if ($bjumlahtidaksama != 0) {
+            return false;
+        }
         if ($bjumlah == 0) {
             return false;
         }
@@ -162,6 +253,10 @@ class ApprovalGabungJobTrucking implements Rule
         }
         if ($this->noinvoice != '') {
             $keterangan = 'Job Trucking Sudah di Pakai di Bukti  <b>' . $this->noinvoice . '</b><br>' . app(ErrorController::class)->geterror('SATL')->keterangan;
+            return $keterangan;
+        }
+        if ($this->bjumlahtidaksama != 0) {
+            $keterangan = 'Trip  antara dari pelabuhan dengan data bukan pelabuhan ada data tidak sama ';
             return $keterangan;
         }
     }
