@@ -1346,9 +1346,6 @@ class UpahSupir extends MyModel
                 if ($connecTnl) {
                     $upahsupirrincianKandang->connection('srvtnl');
                 }
-                $getRincianBelawanKandang = DB::table("upahsupirrincian")->from(DB::raw("upahsupirrincian with (readuncommitted)"))
-                    ->where('upahsupir_id', $getBelawanKandang->id)
-                    ->get();
                 $jarakKandang = $data['jarak'] - $getBelawanKandang->jarak;
                 $jarakKandangFullEmpty = $jarakKandang * 2;
 
@@ -1402,11 +1399,17 @@ class UpahSupir extends MyModel
                 /* Store detail */
                 $detaillog = [];
                 for ($i = 0; $i < count($data['nominalsupir']); $i++) {
-                    $nomSupir = ($data['nominalsupir'][$i] == 0) ? 0 : $data['nominalsupir'][$i] - $getRincianBelawanKandang[$i]->nominalsupir;
-                    $nomKenek = ($data['nominalkenek'][$i] == 0) ? 0 : $data['nominalkenek'][$i] - $getRincianBelawanKandang[$i]->nominalkenek;
-                    $nomKomisi = ($data['nominalkomisi'][$i] == 0) ? 0 : $data['nominalkomisi'][$i] - $getRincianBelawanKandang[$i]->nominalkomisi;
-                    $nomTol = ($data['nominaltol'][$i] == 0) ? 0 : $data['nominaltol'][$i] - $getRincianBelawanKandang[$i]->nominaltol;
-                    $liter = ($data['liter'][$i] == 0) ? 0 : $data['liter'][$i] - $getRincianBelawanKandang[$i]->liter;
+
+                    $getRincianBelawanKandang = DB::table("upahsupirrincian")->from(DB::raw("upahsupirrincian with (readuncommitted)"))
+                        ->where('upahsupir_id', $getBelawanKandang->id)
+                        ->where("container_id", $data['container_id'][$i])
+                        ->where("statuscontainer_id", $data['statuscontainer_id'][$i])
+                        ->first();
+                    $nomSupir = ($data['nominalsupir'][$i] == 0) ? 0 : $data['nominalsupir'][$i] - $getRincianBelawanKandang->nominalsupir;
+                    $nomKenek = ($data['nominalkenek'][$i] == 0) ? 0 : $data['nominalkenek'][$i] - $getRincianBelawanKandang->nominalkenek;
+                    $nomKomisi = ($data['nominalkomisi'][$i] == 0) ? 0 : $data['nominalkomisi'][$i] - $getRincianBelawanKandang->nominalkomisi;
+                    $nomTol = ($data['nominaltol'][$i] == 0) ? 0 : $data['nominaltol'][$i] - $getRincianBelawanKandang->nominaltol;
+                    $liter = ($data['liter'][$i] == 0) ? 0 : $data['liter'][$i] - $getRincianBelawanKandang->liter;
 
                     $upahsupirDetail = new UpahSupirRincian();
                     if ($connecTnl) {
@@ -1421,7 +1424,7 @@ class UpahSupir extends MyModel
                         'nominalkomisi' => ($nomKomisi < 0) ? 0 : $nomKomisi,
                         'nominaltol' => ($nomTol < 0) ? 0 : $nomTol,
                         'liter' => ($liter < 0) ? 0 : $liter,
-                        'tas_id' => $getRincianBelawanKandang[$i]->tas_id ?? 0,
+                        'tas_id' => $getRincianBelawanKandang->tas_id ?? 0,
                     ];
 
 
