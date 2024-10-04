@@ -167,6 +167,35 @@ class PengeluaranStokDetail extends MyModel
                 ->leftJoin("parameter as statusban", "stok.statusban", "statusban.id");
             if($from == 'klaim')
             {
+                $tempfifo = '##tempfifo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempfifo, function ($table) {
+                    $table->Integer('stok_id')->nullable();
+                    $table->string('nobukti')->nullable();
+                    $table->double('harga')->nullable();
+                });
+        
+                $querySpkFifo = DB::table("pengeluaranstokdetailfifo")->from(DB::raw("pengeluaranstokdetailfifo with (readuncommitted)"));
+                $querySpkFifo->where("pengeluaranstokdetailfifo.pengeluaranstokheader_id", request()->pengeluaranstokheader_id);
+                $datafifo = $querySpkFifo->select(
+                    'stok_id',
+                    'nobukti',
+                    DB::raw("MAX(penerimaanstok_harga)"),
+                )
+                ->groupBy('stok_id','nobukti');
+                DB::table($tempfifo)->insertUsing([
+                    'stok_id',
+                    'nobukti',
+                    'harga',
+                ],$datafifo);
+
+                $query->leftJoin(DB::raw("$tempfifo  as b "), function ($join) {
+                    $join->on('b.nobukti', '=', "$this->table.nobukti");
+                    $join->on('b.stok_id', '=', "$this->table.stok_id");
+                });
+                $query->addSelect(DB::raw("isnull(b.harga,0) as harga"));
+
+
+                
                 $nobuktiStok = DB::table("pengeluaranstokheader")->where('id', request()->pengeluaranstokheader_id)->first()->nobukti ?? '';
                 if($nobuktiStok != ''){
                     $stok_id = request()->stok_id ?? 0;
