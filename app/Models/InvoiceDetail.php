@@ -224,7 +224,7 @@ class InvoiceDetail extends MyModel
 
             if ($cekStatus->text == 'FORMAT 2') {
                 $query->addSelect(
-                    DB::raw("(CASE WHEN isnull(invoicedetail.nominalextra, 0)=0 then '' 
+                    DB::raw("(CASE WHEN isnull(invoicedetail.nominalextra, 0)=0 then (case when isnull(invoicedetail.nominalretribusi, 0)!=0 then {$this->table}.keterangan else '' end) 
                             ELSE 
                             ({$this->table}.keterangan + (CASE WHEN isnull({$this->table}.keterangan, '')='' then '' else '. ' end)  + c.keterangan) end) as keterangan")
                 )
