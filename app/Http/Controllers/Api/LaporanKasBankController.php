@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 
 class LaporanKasBankController extends Controller
 {
@@ -233,20 +234,30 @@ class LaporanKasBankController extends Controller
                 $sheet->setCellValue("B$detail_start_row", $response_detail->nobukti);
                 $sheet->setCellValue("C$detail_start_row", $response_detail->keterangancoa);
                 $sheet->setCellValue("D$detail_start_row", $response_detail->keterangan);
-                $sheet->setCellValue("E$detail_start_row", $response_detail->debet);
-                $sheet->setCellValue("F$detail_start_row", $response_detail->kredit);
+                if ($response_detail->nilaikosongdebet == 1) { 
+                    $sheet->setCellValueExplicit("E$detail_start_row", null, DataType::TYPE_NULL);  
+                }else{ 
+                    $sheet->setCellValue("E$detail_start_row",  $response_detail->debet);
+                }
+                if ($response_detail->nilaikosongkredit == 1) { 
+                    $sheet->setCellValueExplicit("F$detail_start_row", null, DataType::TYPE_NULL);  
+                }else{ 
+                    $sheet->setCellValue("F$detail_start_row",  $response_detail->kredit);
+                }
 
                 if ($response_detail->nobukti == 'SALDO AWAL') {
                     $sheet->setCellValue('G' . $dataRow, $response_detail->saldo);
+                    $sheet->getStyle("E$detail_start_row:G$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
                 } else {
                     if ($dataRow > $detail_table_header_row + 1) {
                         $sheet->setCellValue('G' . $dataRow, '=(G' . $previousRow . '+E' . $dataRow . ')-F' . $dataRow);
                     }
+                    $sheet->getStyle("E$detail_start_row:G$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
                 }
 
                 $sheet->getStyle("A$detail_start_row:G$detail_start_row")->applyFromArray($styleArray);
-                
-                $sheet->getStyle("E$detail_start_row:G$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+
+                // $sheet->getStyle("E$detail_start_row:G$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
 
                 // $sheet->getStyle("D$detail_start_row")->getAlignment()->setWrapText(true);
                 $previousRow = $dataRow; // Update the previous row number
@@ -263,9 +274,9 @@ class LaporanKasBankController extends Controller
             $sheet->setCellValue("F$detail_start_row",  "=SUM(F9:F" . ($dataRow - 1) . ")")->getStyle("F$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
             $sheet->setCellValue("G$detail_start_row",  "=G" . ($dataRow - 1))->getStyle("G$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
 
-            $sheet->getStyle("E$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
-            $sheet->getStyle("F$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
-            $sheet->getStyle("G$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+            $sheet->getStyle("E$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->getStyle("F$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->getStyle("G$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
 
             $sheet->getColumnDimension('A')->setAutoSize(true);
             $sheet->getColumnDimension('B')->setAutoSize(true);

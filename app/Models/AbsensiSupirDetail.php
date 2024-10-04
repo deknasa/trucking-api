@@ -474,6 +474,7 @@ class AbsensiSupirDetail extends MyModel
                         'absensiId',
                     ], $getProsesUangjalan);
 
+                    $query->addSelect(DB::raw("(trim(trado.kodetrado)+' - '+trim(supir.namasupir)) as tradosupir"));
                     if ($aksi == 'add') {
                         $query->whereRaw("absensisupirdetail.supir_id not in (select supir_id from $tempProsesUangjalan)");
                     } else {

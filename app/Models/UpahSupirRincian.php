@@ -1459,6 +1459,8 @@ class UpahSupirRincian extends MyModel
                     $query->whereRaw("((a.kotadari_id = $dari_id and a.kotasampai_id=$sampai_id) or (a.kotadari_id = $sampai_id and a.kotasampai_id=$dari_id))");
                 }
 
+
+
                 DB::table($temtabel)->insertUsing([
                     'id',
                     'kotadari_id',
@@ -1486,7 +1488,13 @@ class UpahSupirRincian extends MyModel
                     'updated_at',
                     'kotadarisampai',
                 ], $query);
+
+   
+
             }
+            // dd(db::table($temtabel)->get());
+            // DB::delete(DB::raw("delete " . $temtabel . " from " . $temtabel . " as a inner join upahsupir b on a.tarif_id=b.tarif_id 
+            //         WHERE isnull(b.statusaktif,0)=2"));
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel with (readuncommitted)")

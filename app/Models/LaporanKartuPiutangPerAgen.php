@@ -27,39 +27,72 @@ class LaporanKartuPiutangPerAgen extends MyModel
     public function getReport($dari, $sampai, $agenDari, $agenSampai, $prosesneraca)
     {
         $prosesneraca = $prosesneraca ?? 0;
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
+        $pelangganDari = request()->pelanggandari_id;
+        $pelangganSampai = request()->pelanggansampai_id;
 
         $sampai = $dari;
         $tgl = '01-' . date('m', strtotime($dari)) . '-' . date('Y', strtotime($dari));
         $dari1 = date('Y-m-d', strtotime($tgl));
         $keteranganagen = '';
-        if ($agenDari == 0 || $agenSampai == 0) {
-            $keteranganagen = 'SEMUA';
+
+        if ($cabang != 'BITUNG-EMKL') {
+
+            if ($agenDari == 0 || $agenSampai == 0) {
+                $keteranganagen = 'SEMUA';
+            }
+
+            if ($agenDari == 0) {
+                $agenDari = db::table('agen')->from(db::raw("agen with (readuncommitted)"))
+                    ->select('id')->orderby('id', 'asc')->first()->id ?? 0;
+            }
+
+            if ($agenSampai == 0) {
+                $agenSampai = db::table('agen')->from(db::raw("agen with (readuncommitted)"))
+                    ->select('id')->orderby('id', 'desc')->first()->id ?? 0;
+            }
+
+            if ($agenDari > $agenSampai) {
+                $agenDari1 = $agenSampai;
+                $agenSampai1 = $agenDari;
+                $agenDari = $agenDari1;
+                $agenSampai = $agenSampai1;
+            }
+
+            $agendarinama = db::table('agen')->from(db::raw("agen with (readuncommitted)"))
+                ->select('namaagen')->orderby('id', 'asc')->where('id', $agenDari)->first()->namaagen ?? '';
+
+            $agensampainama = db::table('agen')->from(db::raw("agen with (readuncommitted)"))
+                ->select('namaagen')->orderby('id', 'asc')->where('id', $agenSampai)->first()->namaagen ?? '';
+        } else {
+
+            if ($pelangganDari == 0 || $pelangganSampai == 0) {
+                $keteranganagen = 'SEMUA';
+            }
+
+            if ($pelangganDari == 0) {
+                $pelangganDari = db::table('pelanggan')->from(db::raw("pelanggan with (readuncommitted)"))
+                    ->select('id')->orderby('id', 'asc')->first()->id ?? 0;
+            }
+
+            if ($pelangganSampai == 0) {
+                $pelangganSampai = db::table('pelanggan')->from(db::raw("pelanggan with (readuncommitted)"))
+                    ->select('id')->orderby('id', 'desc')->first()->id ?? 0;
+            }
+
+            if ($pelangganDari > $pelangganSampai) {
+                $pelangganDari1 = $pelangganSampai;
+                $pelangganSampai1 = $pelangganDari;
+                $pelangganDari = $pelangganDari1;
+                $pelangganSampai = $pelangganSampai1;
+            }
+
+            $agendarinama = db::table('pelanggan')->from(db::raw("pelanggan with (readuncommitted)"))
+                ->select('namapelanggan')->orderby('id', 'asc')->where('id', $agenDari)->first()->namapelanggan ?? '';
+
+            $agensampainama = db::table('pelanggan')->from(db::raw("pelanggan with (readuncommitted)"))
+                ->select('namapelanggan')->orderby('id', 'asc')->where('id', $agenSampai)->first()->namapelanggan ?? '';
         }
-
-        if ($agenDari == 0) {
-            $agenDari = db::table('agen')->from(db::raw("agen with (readuncommitted)"))
-                ->select('id')->orderby('id', 'asc')->first()->id ?? 0;
-        }
-
-        if ($agenSampai == 0) {
-            $agenSampai = db::table('agen')->from(db::raw("agen with (readuncommitted)"))
-                ->select('id')->orderby('id', 'desc')->first()->id ?? 0;
-        }
-
-        if ($agenDari > $agenSampai) {
-            $agenDari1 = $agenSampai;
-            $agenSampai1 = $agenDari;
-            $agenDari = $agenDari1;
-            $agenSampai = $agenSampai1;
-        }
-
-        $agendarinama = db::table('agen')->from(db::raw("agen with (readuncommitted)"))
-            ->select('namaagen')->orderby('id', 'asc')->where('id', $agenDari)->first()->namaagen ?? '';
-
-        $agensampainama = db::table('agen')->from(db::raw("agen with (readuncommitted)"))
-            ->select('namaagen')->orderby('id', 'asc')->where('id', $agenSampai)->first()->namaagen ?? '';
-
-
         $getJudul = DB::table('parameter')
             ->select('text')
             ->where('grp', 'JUDULAN LAPORAN')
@@ -99,9 +132,13 @@ class LaporanKartuPiutangPerAgen extends MyModel
                 db::raw("sum(b.nominal) as nominal"),
             )
             ->join(db::raw("piutangdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-            ->whereRaw("a.tglbukti<'" . $dari1 . "'")
-            ->whereRaw("(a.agen_id>=" . $agenDari . " and a.agen_id<=" . $agenSampai . ")")
-            ->groupby('a.nobukti');
+            ->whereRaw("a.tglbukti<'" . $dari1 . "'");
+        if ($cabang != 'BITUNG-EMKL') {
+            $querypiutangsaldo->whereRaw("(a.agen_id>=" . $agenDari . " and a.agen_id<=" . $agenSampai . ")");
+        } else {
+            $querypiutangsaldo->whereRaw("(a.pelanggan_id>=" . $pelangganDari . " and a.pelanggan_id<=" . $pelangganSampai . ")");
+        }
+        $querypiutangsaldo->groupby('a.nobukti');
         // dd($querypiutangsaldo->get());
 
         DB::table($temppiutangsaldo)->insertUsing([
@@ -153,9 +190,14 @@ class LaporanKartuPiutangPerAgen extends MyModel
                 db::raw("sum(isnull(b.nominal,0)) as nominal"),
             )
             ->leftjoin(db::raw("piutangdetail b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
-            ->whereRaw("(a.tglbukti>='" . $dari1 . "' and a.tglbukti<='" . $sampai . "')")
-            ->whereRaw("(a.agen_id>=" . $agenDari . " and a.agen_id<=" . $agenSampai . ")")
-            ->groupby('a.nobukti');
+            ->whereRaw("(a.tglbukti>='" . $dari1 . "' and a.tglbukti<='" . $sampai . "')");
+
+        if ($cabang != 'BITUNG-EMKL') {
+            $queryrekappiutang->whereRaw("(a.agen_id>=" . $agenDari . " and a.agen_id<=" . $agenSampai . ")");
+        } else {
+            $queryrekappiutang->whereRaw("(a.pelanggan_id>=" . $pelangganDari . " and a.pelanggan_id<=" . $pelangganSampai . ")");
+        }
+        $queryrekappiutang->groupby('a.nobukti');
 
         DB::table($temprekappiutang)->insertUsing([
             'nobukti',
@@ -183,7 +225,7 @@ class LaporanKartuPiutangPerAgen extends MyModel
 
         $queryrekapdata = db::table($temprekappiutang)->from(db::raw($temprekappiutang . " a  "))
             ->select(
-                'b.agen_id',
+                db::raw("(case when '$cabang' != 'BITUNG-EMKL' then b.agen_id else b.pelanggan_id end) as agen_id"),
                 'a.nobukti',
                 'b.tglbukti',
                 'a.nominal',
@@ -212,7 +254,7 @@ class LaporanKartuPiutangPerAgen extends MyModel
 
         $queryrekapdata = db::table($temprekappiutang)->from(db::raw($temprekappiutang . " a  "))
             ->select(
-                'b.agen_id',
+                db::raw("(case when '$cabang' != 'BITUNG-EMKL' then b.agen_id else b.pelanggan_id end) as agen_id"),
                 'd.nobukti',
                 db::raw("'1900/1/1' as tglbukti"),
                 db::raw("0 as nominal"),
@@ -245,7 +287,7 @@ class LaporanKartuPiutangPerAgen extends MyModel
         // get nota kredit pendapatan
         $queryrekapdata = db::table($temprekappiutang)->from(db::raw($temprekappiutang . " a  "))
             ->select(
-                'b.agen_id',
+                db::raw("(case when '$cabang' != 'BITUNG-EMKL' then b.agen_id else b.pelanggan_id end) as agen_id"),
                 'e.nobukti',
                 db::raw("'1900/1/1' as tglbukti"),
                 db::raw("0 as nominal"),
@@ -283,7 +325,7 @@ class LaporanKartuPiutangPerAgen extends MyModel
         // get nota kredit pph
         $queryrekapdata = db::table($temprekappiutang)->from(db::raw($temprekappiutang . " a  "))
             ->select(
-                'b.agen_id',
+                db::raw("(case when '$cabang' != 'BITUNG-EMKL' then b.agen_id else b.pelanggan_id end) as agen_id"),
                 'e.nobukti',
                 db::raw("'1900/1/1' as tglbukti"),
                 db::raw("0 as nominal"),
@@ -320,7 +362,7 @@ class LaporanKartuPiutangPerAgen extends MyModel
 
         $queryrekapdata = db::table($temprekappiutang)->from(db::raw($temprekappiutang . " a  "))
             ->select(
-                'b.agen_id',
+                db::raw("(case when '$cabang' != 'BITUNG-EMKL' then b.agen_id else b.pelanggan_id end) as agen_id"),
                 'e.nobukti',
                 db::raw("'1900/1/1' as tglbukti"),
                 db::raw("0 as nominal"),
@@ -370,7 +412,7 @@ class LaporanKartuPiutangPerAgen extends MyModel
 
         $queryrekaphasil = db::table($temprekapdata)->from(db::raw($temprekapdata . " a  "))
             ->select(
-                'b.namaagen as agen_id',
+                db::raw("(case when '$cabang' != 'BITUNG-EMKL' then b.namaagen else pelanggan.namapelanggan end) as agen_id"),
                 'a.nobukti',
                 db::raw("(case when year(a.tglbukti)=1900 then null else a.tglbukti end ) as tglbukti"),
                 'a.nominalpiutang',
@@ -378,15 +420,21 @@ class LaporanKartuPiutangPerAgen extends MyModel
                 'a.nominallunas',
                 'a.nobuktipiutang',
                 'a.tglberjalan',
-                db::raw("SUM(a.nominalpiutang-a.nominallunas) OVER (PARTITION BY a.jenispiutang,b.namaagen ORDER BY a.tglberjalan,a.nobuktipiutang,a.urut ASC) as saldo"),
+                db::raw("(case when '$cabang' != 'BITUNG-EMKL' then 
+                SUM(a.nominalpiutang-a.nominallunas) OVER (PARTITION BY a.jenispiutang,b.namaagen ORDER BY a.tglberjalan,a.nobuktipiutang,a.urut ASC) else 
+                SUM(a.nominalpiutang-a.nominallunas) OVER (PARTITION BY a.jenispiutang,pelanggan.namapelanggan ORDER BY a.tglberjalan,a.nobuktipiutang,a.urut ASC) end) as saldo"),
                 db::raw("a.nominalpiutang-a.nominallunas  as saldobayar"),
                 'a.jenispiutang',
                 'a.urut'
             )
             ->leftjoin(db::raw("agen b with (readuncommitted) "), 'a.agen_id', 'b.id')
-
-            ->orderby('b.namaagen', 'asc')
-            ->orderby('a.jenispiutang', 'asc')
+            ->leftjoin(db::raw("pelanggan with (readuncommitted) "), 'a.agen_id', 'pelanggan.id');
+        if ($cabang != 'BITUNG-EMKL') {
+            $queryrekaphasil->orderby('b.namaagen', 'asc');
+        } else {
+            $queryrekaphasil->orderby('pelanggan.namapelanggan', 'asc');
+        }
+        $queryrekaphasil->orderby('a.jenispiutang', 'asc')
             ->orderby('a.tglberjalan', 'asc')
             ->orderby('a.nobuktipiutang', 'asc')
             ->orderby('a.urut', 'asc');
@@ -466,9 +514,10 @@ class LaporanKartuPiutangPerAgen extends MyModel
                 'a.jenispiutang',
                 'a.urut',
                 DB::raw("'$getJudul->text' AS text"),
+                DB::raw("'$cabang' AS cabang"),
                 DB::raw("(case when '$keteranganagen'='' then '$agendarinama' else '$keteranganagen' end)  AS dari"),
                 DB::raw("(case when '$keteranganagen'='' then '$agensampainama' else '$keteranganagen' end)   AS sampai"),
-                DB::raw("'Laporan Kartu Piutang Per Customer' as judulLaporan"),
+                DB::raw("(case when '$cabang' != 'BITUNG-EMKL' then 'Laporan Kartu Piutang Per Customer' else 'Laporan Kartu Piutang Per Shipper' end) as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),

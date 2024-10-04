@@ -324,6 +324,10 @@ use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
+use App\Http\Controllers\Api\InvoiceEmklDetailController;
+use App\Http\Controllers\Api\InvoiceEmklHeaderController;
+use App\Http\Controllers\Api\LaporanKomisiSupirController;
+
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
@@ -2253,6 +2257,10 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('invoiceemklheader', InvoiceEmklHeaderController::class)->whereNumber('invoiceemklheader');
     Route::get('invoiceemkldetail/piutang', [InvoiceEmklDetailController::class, 'piutang']);
     Route::resource('invoiceemkldetail', InvoiceEmklDetailController::class)->whereNumber('invoiceemkldetail');
+    
+    Route::get('laporankomisisupir/report', [LaporanKomisiSupirController::class, 'report'])->name('laporankomisisupir.report');
+    Route::get('laporankomisisupir/export', [LaporanKomisiSupirController::class, 'export'])->name('laporankomisisupir.export');
+    Route::resource('laporankomisisupir', LaporanKomisiSupirController::class)->whereNumber('laporankomisisupir');
 
 
 });

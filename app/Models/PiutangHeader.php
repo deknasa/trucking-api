@@ -879,12 +879,29 @@ class PiutangHeader extends MyModel
                 'nominal_detail' => $nominal_detail,
                 'keterangan_detail' => $keterangan_detail
             ];
-            $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiOld)->first();
-            if ($getJurnal != '') {
 
-                $newJurnal = new JurnalUmumHeader();
-                $newJurnal = $newJurnal->find($getJurnal->id);
-                $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+            $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiOld)->first();
+            if ($data['jenis'] == 'emklutamabedabulan') {
+                if (array_sum($jurnalRequest['nominal_detail']) == 0) {
+                    if ($getJurnal != '') {
+                        $jurnalumumHeader = (new JurnalUmumHeader())->processDestroy($getJurnal->id, 'EDIT INVOICE EMKL DETAIL');
+                    }
+                }else{
+                    if ($getJurnal != '') {
+
+                        $newJurnal = new JurnalUmumHeader();
+                        $newJurnal = $newJurnal->find($getJurnal->id);
+                        $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+                    }
+                }
+            } else {
+
+                if ($getJurnal != '') {
+
+                    $newJurnal = new JurnalUmumHeader();
+                    $newJurnal = $newJurnal->find($getJurnal->id);
+                    $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+                }
             }
         }
         return $piutangHeader;

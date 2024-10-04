@@ -126,61 +126,121 @@ class PengeluaranTruckingDetail extends MyModel
                 }
             }
 
-            $query->select(
-                $this->table . '.nobukti',
-                $this->table . '.nominal',
-                $this->table . '.keterangan',
-                $this->table . '.invoice_nobukti',
-                $this->table . '.pengeluaranstok_nobukti',
-                $this->table . '.stok_id',
-                'stok.namastok as stok',
-                $this->table . '.qty',
-                $this->table . '.harga',
-                $this->table . '.total',
-                $this->table . '.nominaltambahan',
-                $this->table . '.keterangantambahan',
-                // 'pengeluaranstokheader.id as pengeluaranstokheader_id',
-                $this->table . '.orderantrucking_nobukti',
-                DB::raw("(case when pengeluarantruckingdetail.nominaltagih IS NULL then 0 else pengeluarantruckingdetail.nominaltagih end) as nominaltagih"),
-                $this->table . '.suratpengantar_nobukti',
-                $this->table . '.pengeluaranstok_nobukti',
-                $this->table . '.penerimaanstok_nobukti',
-                DB::raw("container.keterangan as container"),
-                'supir.namasupir as supir_id',
-                'karyawan.namakaryawan as karyawan_id',
-                'statustitipanemkl.text as statustitipanemkl',
-                $this->table . '.penerimaantruckingheader_nobukti',
-                db::raw("cast((format(penerimaantruckingheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaantruckingheader"),
-                db::raw("cast(cast(format((cast((format(penerimaantruckingheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaantruckingheader"),
-                db::raw("cast((format(ot.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderorderantrucking"),
-                db::raw("cast(cast(format((cast((format(ot.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderorderantrucking"),
-                db::raw("cast((format(pengeluaranstokheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranstokheader"),
-                db::raw("cast(cast(format((cast((format(pengeluaranstokheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranstokheader"),
-                db::raw("cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceheader"),
-                db::raw("cast(cast(format((cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceheader"),
-                db::raw("cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceextraheader"),
-                db::raw("cast(cast(format((cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceextraheader"),
-                db::raw("cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as date) as tgldarisuratpengantar"),
-                db::raw("cast(cast(format((cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaisuratpengantar"),
-                db::raw("cast((format(penerimaanstokheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaanstokheader"),
-                db::raw("cast(cast(format((cast((format(penerimaanstokheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanstokheader"),
-
-            )
-                ->leftJoin(DB::raw("invoiceheader as invoice with (readuncommitted)"), 'pengeluarantruckingdetail.invoice_nobukti', '=', 'invoice.nobukti')
-                ->leftJoin(DB::raw("invoiceextraheader as invoiceextra with (readuncommitted)"), 'pengeluarantruckingdetail.invoice_nobukti', '=', 'invoiceextra.nobukti')
-                ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.penerimaantruckingheader_nobukti', '=', 'penerimaantruckingheader.nobukti')
-                ->leftJoin(DB::raw("pengeluaranstokheader with (readuncommitted)"), 'pengeluarantruckingdetail.pengeluaranstok_nobukti', '=', 'pengeluaranstokheader.nobukti')
-                ->leftJoin(DB::raw("karyawan with (readuncommitted)"), $this->table . '.karyawan_id', 'karyawan.id')
-                ->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
-                ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'pengeluarantruckingdetail.orderantrucking_nobukti', 'ot.nobukti')
-                ->leftJoin(DB::raw("$tableStok as stok with (readuncommitted)"), "pengeluarantruckingdetail.$kolomStok", 'stok.id')
-                ->leftJoin(DB::raw("parameter as statustitipanemkl with (readuncommitted)"), 'pengeluarantruckingdetail.statustitipanemkl', 'statustitipanemkl.id')
-                ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'pengeluarantruckingdetail.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
-                ->leftJoin(DB::raw("penerimaanstokheader with (readuncommitted)"), 'pengeluarantruckingdetail.pengeluaranstok_nobukti', '=', 'penerimaanstokheader.nobukti')
-                ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id');
+            if ($pengeluaranId == 7) {
+                $query->select(
+                    $this->table . '.nobukti',
+                    $this->table . '.nominal',
+                    $this->table . '.keterangan',
+                    $this->table . '.invoice_nobukti',
+                    $this->table . '.pengeluaranstok_nobukti',
+                    $this->table . '.stok_id',
+                    'stok.namastok as stok',
+                    $this->table . '.qty',
+                    $this->table . '.harga',
+                    $this->table . '.total',
+                    $this->table . '.nominaltambahan',
+                    $this->table . '.keterangantambahan',
+                    // 'pengeluaranstokheader.id as pengeluaranstokheader_id',
+                    $this->table . '.orderantrucking_nobukti',
+                    DB::raw("(case when pengeluarantruckingdetail.nominaltagih IS NULL then 0 else pengeluarantruckingdetail.nominaltagih end) as nominaltagih"),
+                    $this->table . '.suratpengantar_nobukti',
+                    $this->table . '.pengeluaranstok_nobukti',
+                    $this->table . '.penerimaanstok_nobukti',
+                    DB::raw("container.keterangan as container"),
+                    'supir.namasupir as supir_id',
+                    'karyawan.namakaryawan as karyawan_id',
+                    'statustitipanemkl.text as statustitipanemkl',
+                    $this->table . '.penerimaantruckingheader_nobukti',
+                    db::raw("cast((format(penerimaantruckingheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaantruckingheader"),
+                    db::raw("cast(cast(format((cast((format(penerimaantruckingheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaantruckingheader"),
+                    db::raw("cast((format(ot.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderorderantrucking"),
+                    db::raw("cast(cast(format((cast((format(ot.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderorderantrucking"),
+                    db::raw("cast((format(pengeluaranstokheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranstokheader"),
+                    db::raw("cast(cast(format((cast((format(pengeluaranstokheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranstokheader"),
+                    db::raw("cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceheader"),
+                    db::raw("cast(cast(format((cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceheader"),
+                    db::raw("cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceextraheader"),
+                    db::raw("cast(cast(format((cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceextraheader"),
+                    db::raw("cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as date) as tgldarisuratpengantar"),
+                    db::raw("cast(cast(format((cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaisuratpengantar"),
+                    db::raw("cast((format(penerimaanstokheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaanstokheader"),
+                    db::raw("cast(cast(format((cast((format(penerimaanstokheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanstokheader"),
+    
+                )
+                    ->leftJoin(DB::raw("invoiceheader as invoice with (readuncommitted)"), 'pengeluarantruckingdetail.invoice_nobukti', '=', 'invoice.nobukti')
+                    ->leftJoin(DB::raw("invoiceextraheader as invoiceextra with (readuncommitted)"), 'pengeluarantruckingdetail.invoice_nobukti', '=', 'invoiceextra.nobukti')
+                    ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', '=', 'pengeluarantruckingheader.nobukti')
+                    ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.penerimaantruckingheader_nobukti', '=', 'penerimaantruckingheader.nobukti')
+                    ->leftJoin(DB::raw("pengeluaranstokheader with (readuncommitted)"), 'pengeluarantruckingdetail.pengeluaranstok_nobukti', '=', 'pengeluaranstokheader.nobukti')
+                    ->leftJoin(DB::raw("karyawan with (readuncommitted)"), 'pengeluarantruckingheader.karyawan_id', 'karyawan.id')
+                    ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingheader.supir_id', 'supir.id')
+                    ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'pengeluarantruckingdetail.orderantrucking_nobukti', 'ot.nobukti')
+                    ->leftJoin(DB::raw("$tableStok as stok with (readuncommitted)"), "pengeluarantruckingdetail.$kolomStok", 'stok.id')
+                    ->leftJoin(DB::raw("parameter as statustitipanemkl with (readuncommitted)"), 'pengeluarantruckingdetail.statustitipanemkl', 'statustitipanemkl.id')
+                    ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'pengeluarantruckingdetail.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
+                    ->leftJoin(DB::raw("penerimaanstokheader with (readuncommitted)"), 'pengeluarantruckingdetail.pengeluaranstok_nobukti', '=', 'penerimaanstokheader.nobukti')
+                    ->leftJoin(DB::raw("container with (readuncommitted)"), 'pengeluarantruckingdetail.container_id', 'container.id');
+// dd('test');
+            } else {
+                $query->select(
+                    $this->table . '.nobukti',
+                    $this->table . '.nominal',
+                    $this->table . '.keterangan',
+                    $this->table . '.invoice_nobukti',
+                    $this->table . '.pengeluaranstok_nobukti',
+                    $this->table . '.stok_id',
+                    'stok.namastok as stok',
+                    $this->table . '.qty',
+                    $this->table . '.harga',
+                    $this->table . '.total',
+                    $this->table . '.nominaltambahan',
+                    $this->table . '.keterangantambahan',
+                    // 'pengeluaranstokheader.id as pengeluaranstokheader_id',
+                    $this->table . '.orderantrucking_nobukti',
+                    DB::raw("(case when pengeluarantruckingdetail.nominaltagih IS NULL then 0 else pengeluarantruckingdetail.nominaltagih end) as nominaltagih"),
+                    $this->table . '.suratpengantar_nobukti',
+                    $this->table . '.pengeluaranstok_nobukti',
+                    $this->table . '.penerimaanstok_nobukti',
+                    DB::raw("container.keterangan as container"),
+                    'supir.namasupir as supir_id',
+                    'karyawan.namakaryawan as karyawan_id',
+                    'statustitipanemkl.text as statustitipanemkl',
+                    $this->table . '.penerimaantruckingheader_nobukti',
+                    db::raw("cast((format(penerimaantruckingheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaantruckingheader"),
+                    db::raw("cast(cast(format((cast((format(penerimaantruckingheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaantruckingheader"),
+                    db::raw("cast((format(ot.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderorderantrucking"),
+                    db::raw("cast(cast(format((cast((format(ot.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderorderantrucking"),
+                    db::raw("cast((format(pengeluaranstokheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranstokheader"),
+                    db::raw("cast(cast(format((cast((format(pengeluaranstokheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranstokheader"),
+                    db::raw("cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceheader"),
+                    db::raw("cast(cast(format((cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceheader"),
+                    db::raw("cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceextraheader"),
+                    db::raw("cast(cast(format((cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceextraheader"),
+                    db::raw("cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as date) as tgldarisuratpengantar"),
+                    db::raw("cast(cast(format((cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaisuratpengantar"),
+                    db::raw("cast((format(penerimaanstokheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaanstokheader"),
+                    db::raw("cast(cast(format((cast((format(penerimaanstokheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanstokheader"),
+    
+                )
+                    ->leftJoin(DB::raw("invoiceheader as invoice with (readuncommitted)"), 'pengeluarantruckingdetail.invoice_nobukti', '=', 'invoice.nobukti')
+                    ->leftJoin(DB::raw("invoiceextraheader as invoiceextra with (readuncommitted)"), 'pengeluarantruckingdetail.invoice_nobukti', '=', 'invoiceextra.nobukti')
+                    ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.penerimaantruckingheader_nobukti', '=', 'penerimaantruckingheader.nobukti')
+                    ->leftJoin(DB::raw("pengeluaranstokheader with (readuncommitted)"), 'pengeluarantruckingdetail.pengeluaranstok_nobukti', '=', 'pengeluaranstokheader.nobukti')
+                    ->leftJoin(DB::raw("karyawan with (readuncommitted)"), $this->table . '.karyawan_id', 'karyawan.id')
+                    ->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
+                    ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'pengeluarantruckingdetail.orderantrucking_nobukti', 'ot.nobukti')
+                    ->leftJoin(DB::raw("$tableStok as stok with (readuncommitted)"), "pengeluarantruckingdetail.$kolomStok", 'stok.id')
+                    ->leftJoin(DB::raw("parameter as statustitipanemkl with (readuncommitted)"), 'pengeluarantruckingdetail.statustitipanemkl', 'statustitipanemkl.id')
+                    ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'pengeluarantruckingdetail.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
+                    ->leftJoin(DB::raw("penerimaanstokheader with (readuncommitted)"), 'pengeluarantruckingdetail.pengeluaranstok_nobukti', '=', 'penerimaanstokheader.nobukti')
+                    ->leftJoin(DB::raw("container with (readuncommitted)"), 'pengeluarantruckingdetail.container_id', 'container.id');
+            }
+           
 
 
             $query->where($this->table . '.pengeluarantruckingheader_id', '=', request()->pengeluarantruckingheader_id);
+
+            // dd($query->get());
 
             $this->sort($query);
             $this->filter($query);
@@ -384,6 +444,8 @@ class PengeluaranTruckingDetail extends MyModel
                                 $query = $query->where('karyawan.namakaryawan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'stok') {
                                 $query = $query->where('stok.namastok', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'container') {
+                                $query = $query->where('container.kodecontainer', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statustitipanemkl') {
                                 $query = $query->where('statustitipanemkl.text', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
@@ -404,6 +466,8 @@ class PengeluaranTruckingDetail extends MyModel
                                 $query = $query->orWhere('karyawan.namakaryawan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'stok') {
                                 $query = $query->orWhere('stok.namastok', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'container') {
+                                $query = $query->orWhere('container.kodecontainer', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statustitipanemkl') {
                                 $query = $query->orWhere('statustitipanemkl.text', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
@@ -477,10 +541,11 @@ class PengeluaranTruckingDetail extends MyModel
         $pengeluaranTruckingDetail->keterangantambahan = $data['keterangantambahan'] ?? "";
         $pengeluaranTruckingDetail->trado_id = $data['trado_id'] ?? 0;
         $pengeluaranTruckingDetail->keterangan = mb_convert_encoding($data['keterangan'],  'ISO-8859-1', 'UTF-8');
-        $pengeluaranTruckingDetail->invoice_nobukti = $data['invoice_nobukti'];
-        $pengeluaranTruckingDetail->orderantrucking_nobukti = $data['orderantrucking_nobukti'];
+        $pengeluaranTruckingDetail->invoice_nobukti = $data['invoice_nobukti'] ?? '';
+        $pengeluaranTruckingDetail->container_id = $data['container_detail'] ?? 0;
+        $pengeluaranTruckingDetail->orderantrucking_nobukti = $data['orderantrucking_nobukti'] ?? '';
         $pengeluaranTruckingDetail->nominal = $data['nominal'];
-        $pengeluaranTruckingDetail->statustitipanemkl = $data['statustitipanemkl'];
+        $pengeluaranTruckingDetail->statustitipanemkl = $data['statustitipanemkl'] ?? 0;
         $pengeluaranTruckingDetail->suratpengantar_nobukti = $suratpengantar_nobukti;
         $pengeluaranTruckingDetail->trado_id = $trado_id;
         // $pengeluaranTruckingDetail->container_id = $container_id;

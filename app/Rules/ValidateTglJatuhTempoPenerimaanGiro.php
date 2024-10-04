@@ -32,7 +32,7 @@ class ValidateTglJatuhTempoPenerimaanGiro implements Rule
             $top = intval($agen->top);
             $dateNow = date('Y-m-d', strtotime(request()->tglbukti));
             $nextDay = date('d-m-Y', strtotime($dateNow . " +$top day"));
-            if ($value > $nextDay) {
+            if (strtotime($value) > strtotime($nextDay)) {
                 return false;
             } else {
                 return true;

@@ -25,8 +25,16 @@ class ImportDataCabangRequest extends FormRequest
     {
         return [
             "periode" => ["required"],
-            "cabang" => ["required"],
-            "import" => ["required"],
+            "cabangnama" => ["required"],
+            "importnama" => ["required"],
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'cabangnama' => 'cabang',
+            'importnama' => 'import'
         ];
     }
 }

@@ -29,6 +29,7 @@ class InvoiceEmklFifo extends Model
         $InvoiceEmklFifo->nominal = $data['nominal'];
         $InvoiceEmklFifo->nominalpelunasan = $data['nominalpelunasan'];
         $InvoiceEmklFifo->coadebet = $data['coadebet'];
+        $InvoiceEmklFifo->biayaemkl_id = $data['biayaemkl_id'] ?? 0;
         $InvoiceEmklFifo->modifiedby = auth('api')->user()->name;
         $InvoiceEmklFifo->info = html_entity_decode(request()->info);
 

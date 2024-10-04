@@ -81,6 +81,7 @@ class PengeluaranTruckingHeaderController extends Controller
             $keterangan = $request->keterangan;
             $nojobtrucking_detail = $request->nojobtrucking_detail;
             $noinvoice_detail = $request->noinvoice_detail;
+            $container_detail = $request->container_detail ?? 0;
             $nominal = $request->nominal;
 
             if ($fetchFormat->kodepengeluaran == "BST" || $fetchFormat->kodepengeluaran == "OTOK" || $fetchFormat->kodepengeluaran == "OTOL") {
@@ -90,6 +91,9 @@ class PengeluaranTruckingHeaderController extends Controller
                 $nojobtrucking_detail = $detail->nojobtrucking_detail;
                 $noinvoice_detail = $detail->noinvoice_detail;
                 $nominal = $detail->nominal;
+                if($fetchFormat->kodepengeluaran == "OTOK" || $fetchFormat->kodepengeluaran == "OTOL"){
+                    $container_detail = $detail->container_detail;
+                }
             }
             if ($fetchFormat->kodepengeluaran == "KLAIM") {
                 $statusPosting = DB::table(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'POSTING')->first();
@@ -156,6 +160,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 "coakredit" => $request->coakredit,
                 "keterangan" => $keterangan,
                 "noinvoice_detail" => $noinvoice_detail,
+                "container_detail" => $container_detail,
                 "nojobtrucking_detail" => $nojobtrucking_detail,
                 "bank_detail" => $request->bank_detail,
                 "pemutihansupir_nobukti" => $request->pemutihansupir_nobukti,
@@ -200,9 +205,11 @@ class PengeluaranTruckingHeaderController extends Controller
             $detail = $pengeluaranTrucking->getShowInvoice($id, $data->periodedari, $data->periodesampai);
         } else if ($data->kodepengeluaran == 'OTOK') {
             $pengeluaranTrucking = new PengeluaranTruckingHeader();
+            request()->limit = 0;
             $detail = $pengeluaranTrucking->getEditOtok('show', $id, $data->periodedari, $data->periodesampai, $data->agen_id, $data->containerheader_id);
         } else if ($data->kodepengeluaran == 'OTOL') {
             $pengeluaranTrucking = new PengeluaranTruckingHeader();
+            request()->limit = 0;
             $detail = $pengeluaranTrucking->getEditOtol('show', $id, $data->periodedari, $data->periodesampai, $data->agen_id, $data->containerheader_id);
         } else {
             $detail = PengeluaranTruckingDetail::getAll($id, $data->kodepengeluaran);
@@ -261,6 +268,7 @@ class PengeluaranTruckingHeaderController extends Controller
             $keterangan = $request->keterangan;
             $nojobtrucking_detail = $request->nojobtrucking_detail;
             $noinvoice_detail = $request->noinvoice_detail;
+            $container_detail = $request->container_detail ?? 0;
             $nominal = $request->nominal;
 
             if ($fetchFormat->kodepengeluaran == "BST" || $fetchFormat->kodepengeluaran == "OTOK" || $fetchFormat->kodepengeluaran == "OTOL") {
@@ -270,6 +278,9 @@ class PengeluaranTruckingHeaderController extends Controller
                 $nojobtrucking_detail = $detail->nojobtrucking_detail;
                 $noinvoice_detail = $detail->noinvoice_detail;
                 $nominal = $detail->nominal;
+                if($fetchFormat->kodepengeluaran == "OTOK" || $fetchFormat->kodepengeluaran == "OTOL"){
+                    $container_detail = $detail->container_detail;
+                }
             }
             if ($fetchFormat->kodepengeluaran == "KLAIM") {
                 $statusPosting = DB::table(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'POSTING')->first();
@@ -340,6 +351,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 "coakredit" => $request->coakredit,
                 "keterangan" => $keterangan,
                 "noinvoice_detail" => $noinvoice_detail,
+                "container_detail" => $container_detail,
                 "nojobtrucking_detail" => $nojobtrucking_detail,
                 "bank_detail" => $request->bank_detail,
             ]);

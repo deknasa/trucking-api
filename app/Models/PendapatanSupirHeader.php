@@ -651,10 +651,10 @@ class PendapatanSupirHeader extends MyModel
             ->join(DB::raw("gajisupirdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw("suratpengantar c with (readuncommitted)"), 'b.suratpengantar_nobukti', 'c.nobukti')
             
-            ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($tglsampai)) . "'")
+            ->whereRaw("c.tglbukti>='" . date('Y-m-d', strtotime($tgldari)) . "' and  c.tglbukti<='" . date('Y-m-d', strtotime($tglsampai)) . "'")
             ->whereRaw("(a.supir_id=" . $supir_id . " or " . $supir_id . "=0)")
             ->where('b.komisisupir', '!=', 0)
-            ->Orderby('a.tglbukti', 'asc')
+            ->Orderby('c.tglbukti', 'asc')
             ->Orderby('a.nobukti', 'asc');
 
         DB::table($tempAwal)->insertUsing([

@@ -111,7 +111,7 @@ class UpdateTarifRequest extends FormRequest
         }
 
         $rules = [
-            'tujuan' =>  ['required', ($check['kondisi']) ? Rule::in(trim($dataTarif->tujuan)) : ''],
+            // 'tujuan' =>  ['required', ($check['kondisi']) ? Rule::in(trim($dataTarif->tujuan)) : ''],
             'penyesuaian' => [new UniqueTarifEdit(), ($check['kondisi']) ? Rule::in(trim($dataTarif->penyesuaian)) : ''],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'statussistemton' => ['required', Rule::in($statusTon)],
@@ -120,6 +120,8 @@ class UpdateTarifRequest extends FormRequest
             'tglmulaiberlaku' => [
                 'required', 'date_format:d-m-Y',
             ],
+            'pelabuhan' => 'required',
+            'upah' => 'required',
             'kota' => ['required', ($check['kondisi']) ? Rule::in(trim($dataTarif->kota)) : ''],
         ];
 
@@ -146,6 +148,7 @@ class UpdateTarifRequest extends FormRequest
             'statuslangsir' => 'status langsir',
             'statuslangsirnama' => 'status langsir',
             'statuspenyesuaianharga' => 'Status Penyesuaian Harga',
+            'upah' => 'upah supir',
             'nominal.*' => 'nominal'
         ];
     }

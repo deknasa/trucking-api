@@ -840,6 +840,35 @@ class ListTrip extends MyModel
             // }
         }
 
+        // sebelumnya bukan longtrip, lalu diganti jadi longtrip, dan trip semula adalah trip dari pelabuhan
+        if ($trip->statuslongtrip != $data['statuslongtrip'] && $data['statuslongtrip'] == 65) {
+            if ($cekkota == $pelabuhan) {
+                $getJobtrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
+
+                if ($getJobtrucking != '') {
+                    $orderan = [
+                        'container_id' => $data['container_id'],
+                        'agen_id' => $data['agen_id'],
+                        'jenisorder_id' => $data['jenisorder_id'],
+                        'jenisorderemkl_id' => $getJobtrucking['jenisorderemkl_id'],
+                        'pelanggan_id' => $data['pelanggan_id'],
+                        'nojobemkl' => $getJobtrucking['nojobemkl'],
+                        'nocont' => $getJobtrucking['nocont'] ?? '',
+                        'noseal' => $getJobtrucking['noseal'] ?? '',
+                        'nojobemkl2' => $getJobtrucking['nojobemkl2'] ?? '',
+                        'nocont2' => $getJobtrucking['nocont2'] ?? '',
+                        'noseal2' => $getJobtrucking['noseal2'] ?? '',
+                        'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
+                        'gandengan_id' => $data['gandengan_id'],
+                        'statusperalihan' => $statusperalihan->id,
+                        'inputtripmandor' =>  'true',
+                    ];
+                    $orderanTrucking = (new OrderanTrucking())->processUpdate($getJobtrucking, $orderan);
+                }
+                goto trip;
+            }
+        }
+
         if ($trip->statuscontainer_id != 3) {
             // if ($trip->dari_id != 1 && $data['dari_id'] != $idkandang) {
             if ($cekkota != $pelabuhan && $data['dari_id'] != $idkandang) {
@@ -1234,7 +1263,7 @@ class ListTrip extends MyModel
                     $nominalkenek = $upahsupirRincian->nominalkenek;
                     $nominalkomisi = $upahsupirRincian->nominalkomisi;
                 } else {
-                    if($trip->upah_id != $data['upah_id']){
+                    if ($trip->upah_id != $data['upah_id']) {
                         $nominalspr = $nominalSupir;
                         $nominalkenek = $upahsupirRincian->nominalkenek;
                         $nominalkomisi = $upahsupirRincian->nominalkomisi;

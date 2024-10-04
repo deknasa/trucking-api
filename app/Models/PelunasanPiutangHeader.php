@@ -623,7 +623,7 @@ class PelunasanPiutangHeader extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluaran_nobukti', 'penerimaan_nobukti', 'penerimaangiro_nobukti', 'notadebet_nobukti', 'notakredit_nobukti', 'notakreditpph_nobukti', 'statuscetak', 'bank_id', 'agen_id','pelanggan_id', 'alatbayar_id', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluaran_nobukti', 'penerimaan_nobukti', 'penerimaangiro_nobukti', 'notadebet_nobukti', 'notakredit_nobukti', 'notakreditpph_nobukti', 'statuscetak', 'bank_id', 'agen_id', 'pelanggan_id', 'alatbayar_id', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -961,6 +961,7 @@ class PelunasanPiutangHeader extends MyModel
                 // START INVOICE EMKL FIFO UNTUK KE JURNAL
                 $kondisi = true;
                 $nominalbayarfifo = $data['bayar'][$i] + $potongan;
+                $a = 0;
                 while ($kondisi == true) {
 
                     // CEK FIFO
@@ -969,6 +970,8 @@ class PelunasanPiutangHeader extends MyModel
                         ->whereRaw("isnull(nominal,0) != isnull(nominalpelunasan,0)")
                         ->whereRaw("isnull(nominal,0) > 0")
                         ->first();
+
+                    $a++;
                     if ($cekfifo != '') {
                         $nominalsisa = $cekfifo->nominal - $cekfifo->nominalpelunasan;
                         if ($nominalbayarfifo <= $nominalsisa) {
@@ -977,11 +980,30 @@ class PelunasanPiutangHeader extends MyModel
                             $nominalemkl_jurnal[] = $nominalbayarfifo;
                             $coakreditemkl_jurnal[] = $cekfifo->coadebet;
                             $keteranganemkl_jurnal[] = $data['keterangan'][$i];
+                            if ($nominalbayarfifo == $nominalsisa) {
+
+                                $cekfifoselisihkurang = db::table("invoiceemklfifo")->from(db::raw("invoiceemklfifo with (readuncommitted)"))
+                                    ->where('jobemkl_nobukti', $cekfifo->jobemkl_nobukti)
+                                    ->where('status', 'selisih')
+                                    ->whereRaw("isnull(nominal,0) < 0")
+                                    ->whereRaw("biayaemkl_id = $cekfifo->biayaemkl_id")
+                                    ->whereRaw("isnull(nominal,0) != isnull(nominalpelunasan,0)")
+                                    ->first();
+
+                                if ($cekfifoselisihkurang != '') {
+                                    DB::update(DB::raw("UPDATE invoiceemklfifo SET nominalpelunasan=$cekfifoselisihkurang->nominal where id=$cekfifoselisihkurang->id"));
+
+                                    $nominalemkl_jurnal[] = $cekfifoselisihkurang->nominal;
+                                    $coakreditemkl_jurnal[] = $cekfifoselisihkurang->coadebet;
+                                    $keteranganemkl_jurnal[] = $data['keterangan'][$i];
+                                }
+                            }
 
                             $kondisi = false;
                         } else {
                             $nominalbayarfifo = $nominalbayarfifo - $nominalsisa;
-                            DB::update(DB::raw("UPDATE invoiceemklfifo SET nominalpelunasan=$nominalsisa where id=$cekfifo->id"));
+                            $nominalpelunasan = $cekfifo->nominalpelunasan + $nominalsisa;
+                            DB::update(DB::raw("UPDATE invoiceemklfifo SET nominalpelunasan=$nominalpelunasan where id=$cekfifo->id"));
 
                             $nominalemkl_jurnal[] = $nominalsisa;
                             $coakreditemkl_jurnal[] = $cekfifo->coadebet;
@@ -990,6 +1012,8 @@ class PelunasanPiutangHeader extends MyModel
                             $cekfifoselisihkurang = db::table("invoiceemklfifo")->from(db::raw("invoiceemklfifo with (readuncommitted)"))
                                 ->where('jobemkl_nobukti', $cekfifo->jobemkl_nobukti)
                                 ->where('status', 'selisih')
+                                ->whereRaw("isnull(nominal,0) < 0")
+                                ->whereRaw("biayaemkl_id = $cekfifo->biayaemkl_id")
                                 ->whereRaw("isnull(nominal,0) != isnull(nominalpelunasan,0)")
                                 ->first();
 
@@ -1001,7 +1025,7 @@ class PelunasanPiutangHeader extends MyModel
                                 $keteranganemkl_jurnal[] = $data['keterangan'][$i];
                             }
                         }
-                    } else { 
+                    } else {
                         $nominalemkl_jurnal[] = $data['bayar'][$i];
                         $keteranganemkl_jurnal[] = $data['keterangan'][$i];
                         if ($piutang->tglbukti == date('Y-m-d', strtotime($tglSaldo))) {
@@ -1030,7 +1054,7 @@ class PelunasanPiutangHeader extends MyModel
                     $coaKredit[] = $getcoainvoice->coadebet;
                 }
             }
-            // dd($piutang->coadebet,$piutang->invoice_nobukti);
+
             $keteranganDetail[] = $data['keterangan'][$i];
             $invoiceNobukti[] = $piutang->invoice_nobukti ?? '';
             $pelunasanNobukti[] = $pelunasanPiutangHeader->nobukti;
@@ -1468,7 +1492,7 @@ class PelunasanPiutangHeader extends MyModel
             if ($pelunasanPiutangHeader->agen_id != 0) {
                 $coaKredit[] =  $piutang->coadebet;
             } else {
-                
+
                 $nominalemkl_jurnal[] = $data['bayar'][$i];
                 $keteranganemkl_jurnal[] = $data['keterangan'][$i];
                 if ($piutang->tglbukti == date('Y-m-d', strtotime($tglSaldo))) {

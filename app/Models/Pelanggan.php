@@ -173,8 +173,9 @@ class Pelanggan extends MyModel
             'pelanggan.website',
             'pelanggan.contactperson',
             'pelanggan.telpcp',
-            'pelanggan.asuransitas',
-            'pelanggan.asuransisendiri',
+            // 'pelanggan.asuransitas',
+            // 'pelanggan.asuransisendiri',
+            'parameterasuransi.memo as statusasuransi',            
             'pelanggan.top',
             'pelanggan.prosedurpenagihan',
             'pelanggan.syaratpenagihan',
@@ -200,7 +201,8 @@ class Pelanggan extends MyModel
             DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
             DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
         )
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pelanggan.statusaktif', 'parameter.id');
+        ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pelanggan.statusaktif', 'parameter.id')
+        ->leftJoin(DB::raw("parameter as parameterasuransi with (readuncommitted)"), 'pelanggan.statusasuransi', 'parameterasuransi.id');
 
 
 
@@ -258,8 +260,9 @@ class Pelanggan extends MyModel
                 'pelanggan.website',
                 'pelanggan.contactperson',
                 'pelanggan.telpcp',
-                'pelanggan.asuransitas',
-                'pelanggan.asuransisendiri',
+                // 'pelanggan.asuransitas',
+                // 'pelanggan.asuransisendiri',
+                'parameterasuransi.memo as statusasuransi',                   
                 'pelanggan.top',
                 'pelanggan.prosedurpenagihan',
                 'pelanggan.syaratpenagihan',
@@ -280,6 +283,7 @@ class Pelanggan extends MyModel
                 'pelanggan.updated_at',
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pelanggan.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as parameterasuransi with (readuncommitted)"), 'pelanggan.statusasuransi', 'parameterasuransi.id')
             ->where('pelanggan.id', $id)->first();
 
         return $data;
@@ -317,8 +321,10 @@ class Pelanggan extends MyModel
             "$this->table.website",
             "$this->table.contactperson",
             "$this->table.telpcp",
-            "$this->table.asuransitas",
-            "$this->table.asuransisendiri",
+            'parameterasuransi.text as statusasuransi',
+
+            // "$this->table.asuransitas",
+            // "$this->table.asuransisendiri",
             "$this->table.top",
             "$this->table.prosedurpenagihan",
             "$this->table.syaratpenagihan",
@@ -333,7 +339,9 @@ class Pelanggan extends MyModel
             "$this->table.atasnama",
             "$this->table.norekening",
             "$this->table.bank",
-            )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pelanggan.statusaktif', '=', 'parameter.id');
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pelanggan.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as parameterasuransi with (readuncommitted)"), 'pelanggan.statusasuransi', '=', 'parameterasuransi.id');
     }
 
     public function createTemp(string $modelTable)
@@ -361,8 +369,9 @@ class Pelanggan extends MyModel
             $table->string('website',100)->nullable();
             $table->string('contactperson',100)->nullable();
             $table->string('telpcp',100)->nullable();
-            $table->string('asuransitas',100)->nullable();
-            $table->string('asuransisendiri',100)->nullable();
+            $table->string('statusasuransi', 500)->nullable();
+            // $table->string('asuransitas',100)->nullable();
+            // $table->string('asuransisendiri',100)->nullable();
             $table->double('top', 15,2)->nullable();
             $table->string('prosedurpenagihan',100)->nullable();
             $table->string('syaratpenagihan',100)->nullable();
@@ -390,7 +399,7 @@ class Pelanggan extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', "kodepelanggan","namapelanggan","namakontak","keterangan","telp","alamat","alamat2","kota","kodepos", "statusaktif","modifiedby","created_at","updated_at","npwp","noktp","alamatfakturpajak","alamatkantorpenagihan","namapemilik","telpkantor","faxkantor","website","contactperson","telpcp","asuransitas","asuransisendiri","top","prosedurpenagihan","syaratpenagihan","pickeuangan","telppickeuangan","jenisusaha","volumeperbulan","kompetitor","referensi","nominalplafon","danaditransferdari","atasnama","norekening","bank" ], $models);
+        DB::table($temp)->insertUsing(['id', "kodepelanggan","namapelanggan","namakontak","keterangan","telp","alamat","alamat2","kota","kodepos", "statusaktif","modifiedby","created_at","updated_at","npwp","noktp","alamatfakturpajak","alamatkantorpenagihan","namapemilik","telpkantor","faxkantor","website","contactperson","telpcp", "statusasuransi","top","prosedurpenagihan","syaratpenagihan","pickeuangan","telppickeuangan","jenisusaha","volumeperbulan","kompetitor","referensi","nominalplafon","danaditransferdari","atasnama","norekening","bank" ], $models);
 
 
         return  $temp;
@@ -408,6 +417,8 @@ class Pelanggan extends MyModel
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
             $table->string('statusaktifnama', 300)->nullable();
+            $table->unsignedBigInteger('statusasuransi')->nullable();
+            $table->string('statusasuransinama', 300)->nullable();
         });
 
         $statusaktif = Parameter::from(
@@ -422,14 +433,33 @@ class Pelanggan extends MyModel
             ->where('DEFAULT', '=', 'YA')
             ->first();
 
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id ?? 0, "statusaktifnama" => $statusaktif->text ?? ""]);
+            $statusasuransi = Parameter::from(
+                db::Raw("parameter with (readuncommitted)")
+            )
+                ->select(
+                    'id',
+                    'text'
+                )
+                ->where('grp', '=', 'STATUS ASURANSI')
+                ->where('subgrp', '=', 'STATUS ASURANSI')
+                ->where('DEFAULT', '=', 'YA')
+                ->first();            
+
+        DB::table($tempdefault)->insert([
+            "statusaktif" => $statusaktif->id ?? 0,
+            "statusaktifnama" => $statusaktif->text ?? "",
+            "statusasuransi" => $statusasuransi->id ?? 0,
+            "statusasuransinama" => $statusasuransi->text ?? ""
+        ]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
                 'statusaktif',
-                'statusaktifnama'
+                'statusaktifnama',
+                'statusasuransi',
+                'statusasuransinama',
             );
 
         $data = $query->first();
@@ -508,8 +538,10 @@ class Pelanggan extends MyModel
         $pelanggan->website = $data['website'] ?? '';
         $pelanggan->contactperson = $data['contactperson'] ?? '';
         $pelanggan->telpcp = $data['telpcp'] ?? '';
-        $pelanggan->asuransitas = $data['asuransitas'] ?? '';
-        $pelanggan->asuransisendiri = $data['asuransisendiri'] ?? '';
+        // $pelanggan->asuransitas = $data['asuransitas'] ?? '';
+        // $pelanggan->asuransisendiri = $data['asuransisendiri'] ?? '';
+        $pelanggan->statusasuransi = $data['statusasuransi'];
+
         $pelanggan->top = $data['top'] ?? 0;
         $pelanggan->prosedurpenagihan = $data['prosedurpenagihan'] ?? '';
         $pelanggan->syaratpenagihan = $data['syaratpenagihan'] ?? '';
@@ -570,8 +602,10 @@ class Pelanggan extends MyModel
         $pelanggan->website = $data['website'] ?? '';
         $pelanggan->contactperson = $data['contactperson'] ?? '';
         $pelanggan->telpcp = $data['telpcp'] ?? '';
-        $pelanggan->asuransitas = $data['asuransitas'] ?? '';
-        $pelanggan->asuransisendiri = $data['asuransisendiri'] ?? '';
+        $pelanggan->statusasuransi = $data['statusasuransi'];
+
+        // $pelanggan->asuransitas = $data['asuransitas'] ?? '';
+        // $pelanggan->asuransisendiri = $data['asuransisendiri'] ?? '';
         $pelanggan->top = $data['top'] ?? 0;
         $pelanggan->prosedurpenagihan = $data['prosedurpenagihan'] ?? '';
         $pelanggan->syaratpenagihan = $data['syaratpenagihan'] ?? '';
@@ -656,13 +690,21 @@ class Pelanggan extends MyModel
 
     public function processApprovalaktif(array $data)
     {
-        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+
+            $parameter = new Parameter();
+            $statusaktif = $parameter->cekId('STATUS AKTIF', 'STATUS AKTIF', 'AKTIF') ?? 0;
+            $statusnonaktif = $parameter->cekId('STATUS AKTIF', 'STATUS AKTIF', 'NON AKTIF') ?? 0;
+                      
         for ($i = 0; $i < count($data['Id']); $i++) {
             $Pelanggan = Pelanggan::find($data['Id'][$i]);
-
-            $Pelanggan->statusaktif = $statusaktif->id;
-            $aksi = $statusaktif->text;
+            $statusaktif_id=$UpahSupir->statusaktif ?? 0;
+            if ($statusaktif_id==$statusaktif) {
+                $Pelanggan->statusaktif = $statusnonaktif;
+                $aksi = 'NON AKTIF';
+            } else {
+                $Pelanggan->statusaktif = $statusaktif;
+                $aksi = 'AKTIF';
+            }
 
             // dd($Pelanggan);
             if ($Pelanggan->save()) {
