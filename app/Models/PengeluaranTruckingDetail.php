@@ -481,11 +481,11 @@ class PengeluaranTruckingDetail extends MyModel
         $pengeluaranTruckingDetail->keterangantambahan = $data['keterangantambahan'] ?? "";
         $pengeluaranTruckingDetail->trado_id = $data['trado_id'] ?? 0;
         $pengeluaranTruckingDetail->keterangan = mb_convert_encoding($data['keterangan'],  'ISO-8859-1', 'UTF-8');
-        $pengeluaranTruckingDetail->invoice_nobukti = $data['invoice_nobukti'];
-        $pengeluaranTruckingDetail->container_id = $data['container_detail'];
-        $pengeluaranTruckingDetail->orderantrucking_nobukti = $data['orderantrucking_nobukti'];
+        $pengeluaranTruckingDetail->invoice_nobukti = $data['invoice_nobukti'] ?? '';
+        $pengeluaranTruckingDetail->container_id = $data['container_detail'] ?? 0;
+        $pengeluaranTruckingDetail->orderantrucking_nobukti = $data['orderantrucking_nobukti'] ?? '';
         $pengeluaranTruckingDetail->nominal = $data['nominal'];
-        $pengeluaranTruckingDetail->statustitipanemkl = $data['statustitipanemkl'];
+        $pengeluaranTruckingDetail->statustitipanemkl = $data['statustitipanemkl'] ?? 0;
         $pengeluaranTruckingDetail->suratpengantar_nobukti = $suratpengantar_nobukti;
         $pengeluaranTruckingDetail->trado_id = $trado_id;
         // $pengeluaranTruckingDetail->container_id = $container_id;
