@@ -56,9 +56,9 @@ class LaporanKasBank extends MyModel
             ->where('subgrp', 'TUTUP BUKU')
             ->first()->text ?? '1900-01-01';
 
-        $tutupbuku = date('Y-m-', strtotime($tutupbuku . '-30 day')). '01';
+        $tutupbuku = date('Y-m-', strtotime($tutupbuku . '-30 day')) . '01';
         $awaldari = date('Y-m-', strtotime($dari)) . '01';
-        $awalcek = date('Y-m-d', strtotime($tutupbuku ));
+        $awalcek = date('Y-m-d', strtotime($tutupbuku));
         $akhircek = date('Y-m-d', strtotime($awaldari . ' -1 day'));
 
         $tgl3 = date('Y-m-d', strtotime($dari . ' +33 days'));
@@ -386,6 +386,8 @@ class LaporanKasBank extends MyModel
             $table->double('debet', 15, 2)->nullable();
             $table->double('kredit', 15, 2)->nullable();
             $table->double('saldo', 15, 2)->nullable();
+            $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+            $table->unsignedBigInteger('nilaikosongkredit')->nullable();
         });
 
 
@@ -558,6 +560,8 @@ class LaporanKasBank extends MyModel
                 "debet" => "0",
                 "kredit" => "0",
                 "saldo" => $saldoawal ?? 0,
+                "nilaikosongdebet" => "1",
+                "nilaikosongkredit" => "1",
             )
         );
         //   dd(db::table($tempsaldo)->get());
@@ -578,6 +582,8 @@ class LaporanKasBank extends MyModel
                 DB::raw("b.nominal  as debet "),
                 DB::raw("0  as kredit "),
                 DB::raw("0 as saldo"),
+                DB::raw("0  as nilaikosongdebet"),
+                DB::raw("1  as nilaikosongkredit"),
             )
             ->join(DB::raw("penerimaandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->where('a.tglbukti', '>=', $dari)
@@ -597,6 +603,8 @@ class LaporanKasBank extends MyModel
             'debet',
             'kredit',
             'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $querypenerimaan);
 
         $querypenerimaanpindahbuku = DB::table("pindahbuku")->from(
@@ -615,6 +623,8 @@ class LaporanKasBank extends MyModel
                 DB::raw("a.nominal  as debet "),
                 DB::raw("0 as kredit "),
                 DB::raw("0 as saldo"),
+                DB::raw("0  as nilaikosongdebet"),
+                DB::raw("1  as nilaikosongkredit"),
             )
             ->where('a.tglbukti', '>=', $dari)
             ->where('a.tglbukti', '<=', $sampai)
@@ -633,6 +643,8 @@ class LaporanKasBank extends MyModel
             'debet',
             'kredit',
             'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $querypenerimaanpindahbuku);
 
         $querypengeluaran = DB::table("pengeluaranheader")->from(
@@ -651,6 +663,8 @@ class LaporanKasBank extends MyModel
                 DB::raw(" 0  as debet "),
                 DB::raw("b.nominal  as kredit "),
                 DB::raw("0 as saldo"),
+                DB::raw("1  as nilaikosongdebet"),
+                DB::raw("0  as nilaikosongkredit"),
             )
             ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->whereraw("isnull(a.alatbayar_id,0) not in(3,4)")
@@ -671,6 +685,8 @@ class LaporanKasBank extends MyModel
             'debet',
             'kredit',
             'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $querypengeluaran);
 
         $querypengeluaran = DB::table("pengeluaranheader")->from(
@@ -689,6 +705,8 @@ class LaporanKasBank extends MyModel
                 DB::raw(" 0  as debet "),
                 DB::raw("b.nominal  as kredit "),
                 DB::raw("0 as saldo"),
+                DB::raw("1  as nilaikosongdebet"),
+                DB::raw("0  as nilaikosongkredit"),
             )
             ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw("pencairangiropengeluaranheader as c with (readuncommitted)"), 'a.nobukti', 'c.pengeluaran_nobukti')
@@ -710,6 +728,8 @@ class LaporanKasBank extends MyModel
             'debet',
             'kredit',
             'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $querypengeluaran);
         if (isset($bankpengembaliankepusat)) {
             $querypengeluaran = DB::table("pengeluaranheader")->from(
@@ -728,6 +748,8 @@ class LaporanKasBank extends MyModel
                     DB::raw("0  as debet "),
                     DB::raw("b.nominal  as kredit "),
                     DB::raw("0 as saldo"),
+                    DB::raw("1  as nilaikosongdebet"),
+                    DB::raw("0  as nilaikosongkredit"),
                 )
                 ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
                 ->where('b.tgljatuhtempo', '>=', $dari)
@@ -748,6 +770,8 @@ class LaporanKasBank extends MyModel
                 'debet',
                 'kredit',
                 'saldo',
+                'nilaikosongdebet',
+                'nilaikosongkredit'
             ], $querypengeluaran);
         }
 
@@ -767,6 +791,8 @@ class LaporanKasBank extends MyModel
                 DB::raw(" 0 as debet "),
                 DB::raw("a.nominal  as kredit "),
                 DB::raw("0 as saldo"),
+                DB::raw("1  as nilaikosongdebet"),
+                DB::raw("0  as nilaikosongkredit"),
             )
             ->where('a.tglbukti', '>=', $dari)
             ->where('a.tglbukti', '<=', $sampai)
@@ -785,6 +811,8 @@ class LaporanKasBank extends MyModel
             'debet',
             'kredit',
             'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $querypengeluaranpindahbuku);
 
 
@@ -801,6 +829,8 @@ class LaporanKasBank extends MyModel
             $table->double('debet', 15, 2)->nullable();
             $table->double('kredit', 15, 2)->nullable();
             $table->double('saldo', 15, 2)->nullable();
+            $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+            $table->unsignedBigInteger('nilaikosongkredit')->nullable();
         });
 
         // dd(db::table($tempsaldo)->get());
@@ -818,6 +848,8 @@ class LaporanKasBank extends MyModel
                 'a.debet',
                 'a.kredit',
                 'a.saldo',
+                'a.nilaikosongdebet',
+                'a.nilaikosongkredit',
             )
             ->orderBy('a.tglbukti', 'Asc')
             ->orderBy('a.urut', 'Asc')
@@ -837,6 +869,8 @@ class LaporanKasBank extends MyModel
             'debet',
             'kredit',
             'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit',
         ], $query);
 
 
@@ -956,6 +990,8 @@ class LaporanKasBank extends MyModel
                         'a.keterangan',
                         'a.debet',
                         'a.kredit',
+                        'a.nilaikosongdebet',
+                        'a.nilaikosongkredit',
                         'c.totaldebet',
                         'c.totalkredit',
                         DB::raw("sum ((isnull(a.saldo,0)+
@@ -991,6 +1027,8 @@ class LaporanKasBank extends MyModel
                         'a.keterangan',
                         'a.debet',
                         'a.kredit',
+                        'a.nilaikosongdebet',
+                        'a.nilaikosongkredit',
                         'c.totaldebet',
                         'c.totalkredit',
                         DB::raw("sum ((isnull(a.saldo,0)+isnull(a.debet,0))-isnull(a.Kredit,0)) over (order by a.tglbukti,a.urut,a.nobukti,a.id) as saldo"),
