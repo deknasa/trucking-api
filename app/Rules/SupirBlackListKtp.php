@@ -4,6 +4,8 @@ namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 use App\Models\BlackListSupir;
+use App\Models\Parameter;
+use Illuminate\Support\Facades\DB;
 
 class SupirBlackListKtp implements Rule
 {
@@ -28,9 +30,16 @@ class SupirBlackListKtp implements Rule
     {
         $blackListSupir =BlackListSupir::where('noktp',$value)->first();
         $allowed = true;
-        if($blackListSupir){
+        if($blackListSupir != ''){
             $allowed = false;
+        } else {
+            $status = (new Parameter())->cekId('BLACKLIST SUPIR', 'BLACKLIST SUPIR', 'SUPIR BLACKLIST');
+            $cekstatusblacklist = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))->where('noktp', $value)->where('statusblacklist', $status)->first();
+            if($cekstatusblacklist != ''){
+                $allowed = false;
+            }
         }
+
         return $allowed;
     }
 

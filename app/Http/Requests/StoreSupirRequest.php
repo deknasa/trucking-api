@@ -170,8 +170,8 @@ class StoreSupirRequest extends FormRequest
                 'statusaktifnama' => ['required'],
                 'tglmasuk' => 'required',
                 'tglexpsim' => [$ruleKeterangan],
-                'nosim' => [$ruleKeterangan, new ValidasiSimSupir(), 'min:12', 'max:15', 'nullable'],
-                'noktp' => ['required', new ValidasiKtpPemutihan(), 'min:16', 'max:16'],
+                'nosim' => [$ruleKeterangan, new ValidasiSimSupir(), new SupirBlackListSim(), 'min:12', 'max:15', 'nullable'],
+                'noktp' => ['required', new ValidasiKtpPemutihan(), new SupirBlackListKtp(), 'min:16', 'max:16'],
                 'nokk' => [$ruleKeterangan, 'min:16', 'max:16', 'nullable'],
                 'tgllahir' => [
                     $ruleKeterangan, 'date_format:d-m-Y',
