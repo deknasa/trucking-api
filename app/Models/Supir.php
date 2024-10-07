@@ -2027,9 +2027,11 @@ class Supir extends MyModel
             $supir = Supir::find($data['Id'][$i]);
             if ($supir->statusblacklist == $statusBlackList->id) {
                 $supir->statusblacklist = $statusBukanBlackList->id;
+                $supir->statusaktif = 1;
                 $aksi = $statusBukanBlackList->text;
             } else {
                 $supir->statusblacklist = $statusBlackList->id;
+                $supir->statusaktif = 2;
                 $aksi = $statusBlackList->text;
             }
 
