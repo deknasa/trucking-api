@@ -31,6 +31,7 @@ class PenerimaanStokDetailFifo extends MyModel
         $qty = $data['qty'] ?? 0;
 
         $penerimaanstok_id = $data['penerimaanstok_id'] ?? 0;
+        $pengeluaranstok_nobukti = $data['pengeluaranstok_nobukti'] ?? '';
 
         if ($penerimaanstok_id == 5) {
             $kondisipg = true;
@@ -43,34 +44,496 @@ class PenerimaanStokDetailFifo extends MyModel
         )
             ->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
 
+
+        if ($penerimaanstok_id = 8 || $penerimaanstok_id = 9) {
+            $tempfifo = '##tempfifo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempfifo, function ($table) {
+                $table->bigInteger('stok_id')->nullable();
+                $table->double('qty', 15, 2)->nullable();
+                $table->bigInteger('id')->nullable();
+                $table->string('pengeluaranstok_nobukti', 100)->nullable();
+                $table->double('penerimaanstokheader_totalterpakai', 15, 2)->nullable();
+            });
+
+            $temprekappengeluaranfifo = '##temprekappengeluaranfifo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temprekappengeluaranfifo, function ($table) {
+                $table->id();
+                $table->bigInteger('stokheader_id')->nullable();
+                $table->string('nobukti', 100)->nullable();
+                $table->bigInteger('stok_id')->nullable();
+                $table->bigInteger('gudang_id')->nullable();
+                $table->bigInteger('urut')->nullable();
+                $table->double('qty', 15, 2)->nullable();
+                $table->string('pengeluaranstokheader_nobukti', 100)->nullable();
+                $table->double('penerimaanstok_qty', 15, 2)->nullable();
+                $table->double('penerimaanstok_harga', 15, 2)->nullable();
+                $table->double('penerimaanstokheader_total', 15, 2)->nullable();
+                $table->double('penerimaanstokheader_totalterpakai', 15, 2)->nullable();
+                $table->integer('pengeluaranstokfifo_id')->nullable();
+            });
+
+            $queryfifo = db::table('penerimaanstokdetailfifo')->from(db::raw("penerimaanstokdetailfifo a with (readuncommitted)"))
+                ->select(
+                    'a.penerimaanstokheader_id as stokheader_id',
+                    'a.nobukti as nobukti',
+                    'a.stok_id as stok_id',
+                    'a.gudang_id as gudang_id',
+                    'a.urut as urut',
+                    'a.qty as qty',
+                    'a.pengeluaranstokheader_nobukti as pengeluaranstokheader_nobukti',
+                    'a.penerimaanstok_qty as penerimaanstokheader_qty',
+                    'a.penerimaanstok_harga as penerimaanstokheader_harga',
+                    'a.penerimaanstokheader_total as penerimaanstokheader_total',
+                    'a.penerimaanstokheader_totalterpakai as penerimaanstokheader_totalterpakai',
+                    'a.pengeluaranstokfifo_id as pengeluaranstokfifo_id',
+                )
+                ->where('a.stok_id', '=',   $data['stok_id'])
+                ->where('a.gudang_id', '=',   $data['gudang_id'])
+                ->where('a.pengeluaranstokheader_nobukti', '=',   $pengeluaranstok_nobukti)
+                ->orderby('a.id');
+
+
+            DB::table($temprekappengeluaranfifo)->insertUsing([
+                "stokheader_id",
+                "nobukti",
+                "stok_id",
+                "gudang_id",
+                "urut",
+                "qty",
+                "pengeluaranstokheader_nobukti",
+                "penerimaanstok_qty",
+                "penerimaanstok_harga",
+                "penerimaanstokheader_total",
+                "penerimaanstokheader_totalterpakai",
+                "pengeluaranstokfifo_id",
+            ], $queryfifo);
+
+
+            $a = 0;
+            $atotalharga = 0;
+            $kondisi = true;
+            $totalterpakai2 = 0;
+            while ($kondisi == true) {
+                DB::delete(DB::raw("delete " . $tempfifo));
+
+                $queryfifo = db::table($temprekappengeluaranfifo)->from(db::raw($temprekappengeluaranfifo . " a with (readuncommitted)"))
+                    ->select(
+                        'a.pengeluaranstokheader_nobukti as pengeluaranstok_nobukti',
+                        'a.stok_id as stok_id',
+                        db::raw("sum(a.qty) as qty"),
+                        db::raw("c.id as id"),
+                        db::raw("sum(a.penerimaanstokheader_totalterpakai) as penerimaanstokheader_totalterpakai"),
+
+                    )
+                    ->join(db::raw("pengeluaranstokdetailfifo c with (readuncommitted)"), 'a.pengeluaranstokfifo_id', 'c.id')
+                    ->where('c.stok_id', '=',   $data['stok_id'])
+                    ->groupBY('a.pengeluaranstokheader_nobukti')
+                    ->groupBY('a.stok_id')
+                    ->groupBY('c.id');
+
+                // dd($queryfifo->get());
+
+
+                DB::table($tempfifo)->insertUsing([
+                    'pengeluaranstok_nobukti',
+                    'stok_id',
+                    'qty',
+                    'id',
+                    'penerimaanstokheader_totalterpakai',
+                ], $queryfifo);
+                // dd('test');
+                $querysisa = db::table('pengeluaranstokdetailfifo')->from(db::raw("pengeluaranstokdetailfifo a with (readuncommitted)"))
+                    ->select(
+                        db::raw("(a.qty-isnull(B.qty,0)) as qtysisa"),
+                        'a.nobukti',
+                        'a.qty',
+                        'a.penerimaanstok_harga as harga',
+                        db::raw("(a.qty*a.penerimaanstok_harga) as total"),
+                        'c.id as penerimaanstok_id',
+                        db::raw("round((a.penerimaanstokheader_total-isnull(b.penerimaanstokheader_totalterpakai,0)),10) as totalsisa"),
+                        db::raw("isnull(a.id,0) as pengeluaranstokfifo_id"),
+                        'a.stok_id',
+                    )
+                    // ->leftjoin(db::raw($tempfifo . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti')
+                    ->leftjoin(db::raw($tempfifo . " b "), function ($join) {
+                        $join->on('a.nobukti', '=', 'b.pengeluaranstok_nobukti');
+                        $join->on('a.stok_id', '=', 'b.stok_id');
+                        $join->on('a.id', '=', 'b.id');
+                    })
+                    ->join(db::raw("pengeluaranstokheader c "), 'a.nobukti', 'c.nobukti')
+                    ->where('a.stok_id', '=',   $data['stok_id'])
+                    ->where('a.nobukti', '=',   $pengeluaranstok_nobukti)
+                    ->whereRaw("(a.qty-isnull(B.qty,0))<>0")
+                    ->orderBy('a.id', 'asc')
+                    ->first();
+
+                // dd($querysisa);
+                // 
+                if (isset($querysisa)) {
+                    $qtysisa = $querysisa->qtysisa ?? 0;
+                    if ($qty <= $qtysisa) {
+
+                        $totalterpakai = round((($querysisa->total / $querysisa->qty) * $qty), 2);
+                        $totalterpakai2 += $totalterpakai;
+                        $penerimaanStokDetailFifo = new penerimaanStokDetailFifo();
+                        $penerimaanStokDetailFifo->penerimaanstokheader_id = $data['penerimaanstokheader_id'] ?? 0;
+                        $penerimaanStokDetailFifo->nobukti = $data['nobukti'] ?? '';
+                        $penerimaanStokDetailFifo->stok_id = $data['stok_id'] ?? 0;
+                        $penerimaanStokDetailFifo->gudang_id = $data['gudang_id'] ?? 0;
+                        $penerimaanStokDetailFifo->urut = $a;
+                        $penerimaanStokDetailFifo->qty = $qty ?? 0;
+                        $penerimaanStokDetailFifo->pengeluaranstokheader_nobukti = $querysisa->nobukti ?? '';
+                        $penerimaanStokDetailFifo->penerimaanstok_qty = $querysisa->qty ?? 0;
+                        $penerimaanStokDetailFifo->penerimaanstok_harga = $kondisipg ? 0 : $querysisa->harga;
+                        $penerimaanStokDetailFifo->penerimaanstokheader_total = $kondisipg ? 0 : $querysisa->total;
+                        $penerimaanStokDetailFifo->penerimaanstokheader_totalterpakai = $totalterpakai ?? 0;
+                        $penerimaanStokDetailFifo->pengeluaranstokfifo_id = $querysisa->pengeluaranstokfifo_id ?? 0;
+                        $penerimaanStokDetailFifo->modifiedby = $data['modifiedby'] ?? '';
+
+                        DB::table($temprekappengeluaranfifo)->insert([
+                            'stokheader_id' => $data['penerimaanstokheader_id'] ?? 0,
+                            'nobukti' =>  $data['nobukti'] ?? '',
+                            'stok_id' => $data['stok_id'] ?? 0,
+                            'gudang_id' => $data['gudang_id'] ?? 0,
+                            'urut' =>  $a,
+                            'qty' =>  $qty ?? 0,
+                            'pengeluaranstokheader_nobukti' => $querysisa->nobukti ?? '',
+                            'penerimaanstok_qty' => $querysisa->qty ?? 0,
+                            'penerimaanstok_harga' => $kondisipg ? 0 : $querysisa->harga,
+                            'penerimaanstokheader_total' => $kondisipg ? 0 : $querysisa->total,
+                            'penerimaanstokheader_totalterpakai' => $totalterpakai ?? 0,
+                            'pengeluaranstokfifo_id' => $querysisa->pengeluaranstokfifo_id ?? 0,
+                        ]);
+
+                        $belitotalsisa = $querysisa->totalsisa ?? 0;
+                        $beliqtysisa = $querysisa->qtysisa ?? 0;
+
+                        $belitotal = $querysisa->total ?? 0;
+                        $beliqty = $querysisa->qty ?? 0;
+
+                        $zqty = $qty ?? 0;
+                        // $zharga = $querysisa->harga ?? 0;
+                        $zharga = round(($belitotalsisa / $beliqtysisa), 10) ?? 0;
+
+                        $atotalharga = $atotalharga + round(($zqty * (($belitotalsisa / $beliqtysisa))), 2);
+
+                        // $atotalharga = $atotalharga + ($zqty * ($belitotal / $beliqty));
+
+
+                        // 
+                        $ksqty = $qty ?? 0;
+                        // $ksharga = $querysisa->harga ?? 0;
+                        // $kstotal = $ksqty * ($belitotal / $beliqty);
+                        $ksharga = round(($belitotalsisa / $beliqtysisa), 10) ?? 0;
+                        $kstotal = round(($ksqty * ($belitotalsisa / $beliqtysisa)), 2);
+
+                        $ksnobukti = $data['nobukti'] ?? '';
+
+
+                        $penerimaanstok_id = db::table("penerimaanstokheader")->from(db::raw("penerimaanstokheader as a with (readuncommitted)"))
+                            ->select('a.penerimaanstok_id', 'a.tglbukti')->where('a.nobukti', $ksnobukti)->first();
+
+                        $kspenerimaanstok_id = $penerimaanstok_id->penerimaanstok_id ?? 0;
+                        $kstglbukti = $penerimaanstok_id->tglbukti ?? '1900/1/1';
+
+                        $urutfifo = db::table("penerimaanstok")->from(db::raw("penerimaanstok as a with (readuncommitted)"))
+                            ->select('a.urutfifo')->where('a.id', $kspenerimaanstok_id)->first()->urutfifo ?? 0;
+
+
+
+                        if ($kspenerimaanstok_id != 6) {
+                            if ($kspenerimaanstok_id == 8 || $kspenerimaanstok_id == 9) {
+
+                                $querybukti = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
+                                    ->select(
+                                        'a.gudang_id',
+                                        'a.trado_id',
+                                        'a.gandengan_id',
+                                    )
+                                    ->where('a.nobukti', $pengeluaranstok_nobukti)
+                                    ->first();
+                                $agudang_id = $querybukti->gudang_id ?? 0;
+                                $atrado_id = $querybukti->trado_id ?? 0;
+                                $agandengan_id = $querybukti->gandengan_id ?? 0;
+
+                                $kartuStok = (new KartuStok())->processStore([
+                                    "gudang_id" => $agudang_id ?? 0,
+                                    "trado_id" => $atrado_id ?? 0,
+                                    "gandengan_id" => $agandengan_id ?? 0,
+                                    "stok_id" => $data['stok_id'] ?? 0,
+                                    "nobukti" => $data['nobukti'] ?? '',
+                                    "tglbukti" => $kstglbukti,
+                                    "qtymasuk" => 0,
+                                    "nilaimasuk" =>  0,
+                                    "qtykeluar" => $qty ?? 0,
+                                    "nilaikeluar" => $kondisipg ? 0 : $totalterpakai,
+                                    "urutfifo" => $urutfifo,
+                                ]);
+                            } else {
+                                $kartuStok = (new KartuStok())->processStore([
+                                    "gudang_id" => $data['gudang_id'] ?? 0,
+                                    "trado_id" => 0,
+                                    "gandengan_id" => 0,
+                                    "stok_id" => $data['stok_id'] ?? 0,
+                                    "nobukti" => $data['nobukti'] ?? '',
+                                    "tglbukti" => $kstglbukti,
+                                    "qtymasuk" => 0,
+                                    "nilaimasuk" =>  0,
+                                    "qtykeluar" => $qty ?? 0,
+                                    "nilaikeluar" => $kondisipg ? 0 : $totalterpakai,
+                                    "urutfifo" => $urutfifo,
+                                ]);
+                            }
+
+                            if ($kspenerimaanstok_id == 8 || $kspenerimaanstok_id == 9) {
+                                $kartuStok = (new KartuStok())->processStore([
+                                    "gudang_id" => $data['gudang_id'] ?? 0,
+                                    "trado_id" => $data['trado_id'] ?? 0,
+                                    "gandengan_id" => $data['gandengan_id'] ?? 0,
+                                    "stok_id" => $data['stok_id'] ?? 0,
+                                    "nobukti" => $data['nobukti'] ?? '',
+                                    "tglbukti" => $kstglbukti,
+                                    "qtymasuk" => $qty ?? 0,
+                                    "nilaimasuk" =>  $kondisipg ? 0 : $totalterpakai,
+                                    "qtykeluar" => 0,
+                                    "nilaikeluar" => 0,
+                                    "urutfifo" => $urutfifo,
+                                ]);
+                            }
+                        }
+
+                        // if ($data['pengeluaranstok_id'] == $spk->text) {
+                        $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                            ->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'DEBET')->first();
+                        $memo = json_decode($getCoaDebet->memo, true);
+                        $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                            ->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
+                        $memokredit = json_decode($getCoaKredit->memo, true);
+                        // }
+
+                        $aksqty = $querysisa->qty ?? 0;
+                        // $aksharga = $querysisa->harga ?? 0;
+                        $aksharga = round(($belitotalsisa / $beliqtysisa), 10) ?? 0;
+
+
+                        $aksnobukti = $querysisa->nobukti ?? '';
+                        $aksstok_id = $data['stok_id'] ?? 0;
+
+                        $totalharga += round(($aksharga  * $aksqty), 2);
+
+
+
+                        // 
+
+                        $kondisi = false;
+                        if (!$penerimaanStokDetailFifo->save()) {
+                            throw new \Exception("Error Simpan Penerimaan Detail fifo.");
+                        }
+                    } else {
+                        // dd('test');
+                        $qty = $qty - $qtysisa;
+
+                        $totalterpakai = round((($querysisa->total / $querysisa->qty) * $qtysisa), 2);
+                        $totalterpakai2 += $totalterpakai;
+
+                        $penerimaanStokDetailFifo = new penerimaanStokDetailFifo();
+                        $penerimaanStokDetailFifo->penerimaanstokheader_id = $data['penerimaanstokheader_id'] ?? 0;
+                        $penerimaanStokDetailFifo->nobukti = $data['nobukti'] ?? '';
+                        $penerimaanStokDetailFifo->stok_id = $data['stok_id'] ?? 0;
+                        $penerimaanStokDetailFifo->gudang_id = $data['gudang_id'] ?? 0;
+                        $penerimaanStokDetailFifo->urut = $a;
+                        $penerimaanStokDetailFifo->qty = $qtysisa ?? 0;
+                        $penerimaanStokDetailFifo->pengeluaranstokheader_nobukti = $querysisa->nobukti ?? '';
+                        $penerimaanStokDetailFifo->penerimaanstok_qty = $querysisa->qty ?? 0;
+                        $penerimaanStokDetailFifo->penerimaanstok_harga = $kondisipg ? 0 : $querysisa->harga ?? 0;
+                        $penerimaanStokDetailFifo->penerimaanstokheader_total = $kondisipg ? 0 : $querysisa->total ?? 0;
+                        $penerimaanStokDetailFifo->penerimaanstokheader_totalterpakai = $totalterpakai ?? 0;
+                        $penerimaanStokDetailFifo->pengeluaranstokfifo_id = $querysisa->pengeluaranstokfifo_id ?? 0;
+                        $penerimaanStokDetailFifo->modifiedby = $data['modifiedby'] ?? '';
+
+                        DB::table($temprekappengeluaranfifo)->insert([
+                            'stokheader_id' => $data['penerimaanstokheader_id'] ?? 0,
+                            'nobukti' =>  $data['nobukti'] ?? '',
+                            'stok_id' => $data['stok_id'] ?? 0,
+                            'gudang_id' => $data['gudang_id'] ?? 0,
+                            'urut' =>  $a,
+                            'qty' => $qtysisa ?? 0,
+                            'pengeluaranstokheader_nobukti' => $querysisa->nobukti ?? '',
+                            'penerimaanstok_qty' => $querysisa->qty ?? 0,
+                            'penerimaanstok_harga' => $kondisipg ? 0 : $querysisa->harga ?? 0,
+                            'penerimaanstokheader_total' => $kondisipg ? 0 : $querysisa->total ?? 0,
+                            'penerimaanstokheader_totalterpakai' => $totalterpakai ?? 0,
+                            'pengeluaranstokfifo_id' => $querysisa->pengeluaranstokfifo_id ?? 0,
+
+
+                        ]);
+
+
+                        $belitotal = $querysisa->total ?? 0;
+                        $beliqty = $querysisa->qty ?? 0;
+
+                        $belitotalsisa = $querysisa->totalsisa ?? 0;
+                        $beliqtysisa = $querysisa->qtysisa ?? 0;
+
+
+                        $zqty = $qtysisa ?? 0;
+                        // $zharga = $querysisa->harga ?? 0;
+                        // $atotalharga = $atotalharga + ($zqty * ($belitotal / $beliqty));
+
+                        $zharga = round(($belitotalsisa / $beliqtysisa), 10) ?? 0;
+                        $atotalharga = $atotalharga + round(($zqty * ($belitotalsisa / $beliqtysisa)), 2);
+
+
+
+
+                        // 
+                        $ksqty = $qtysisa ?? 0;
+                        // $ksharga = $querysisa->harga ?? 0;
+                        // $kstotal = $ksqty * ($belitotal / $beliqty);
+
+                        $ksharga = round(($belitotalsisa / $beliqtysisa), 10) ?? 0;
+                        $kstotal = round($ksqty * ($belitotalsisa / $beliqtysisa), 2);
+
+                        $ksnobukti = $data['nobukti'] ?? '';
+
+                        $penerimaanstok_id = db::table("penerimaanstokheader")->from(db::raw("penerimaanstokheader as a with (readuncommitted)"))
+                            ->select('a.penerimaanstok_id', 'a.tglbukti')->where('a.nobukti', $ksnobukti)->first();
+
+                        $kspenerimaanstok_id = $penerimaanstok_id->penerimaanstok_id ?? 0;
+                        $kstglbukti = $penerimaanstok_id->tglbukti ?? '1900/1/1';
+
+                        $urutfifo = db::table("penerimaanstok")->from(db::raw("penerimaanstok as a with (readuncommitted)"))
+                            ->select('a.urutfifo')->where('a.id', $kspenerimaanstok_id)->first()->urutfifo ?? 0;
+
+
+
+                        if ($kspenerimaanstok_id != 6) {
+                            if ($kspenerimaanstok_id == 8 || $kspenerimaanstok_id == 9) {
+
+                                $querybukti = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
+                                    ->select(
+                                        'a.gudang_id',
+                                        'a.trado_id',
+                                        'a.gandengan_id',
+                                    )
+                                    ->where('a.nobukti', $pengeluaranstok_nobukti)
+                                    ->first();
+                                $agudang_id = $querybukti->gudang_id ?? 0;
+                                $atrado_id = $querybukti->trado_id ?? 0;
+                                $agandengan_id = $querybukti->gandengan_id ?? 0;
+
+                                $kartuStok = (new KartuStok())->processStore([
+                                    "gudang_id" => $agudang_id ?? 0,
+                                    "trado_id" => $atrado_id ?? 0,
+                                    "gandengan_id" => $agandengan_id ?? 0,
+                                    "stok_id" => $data['stok_id'] ?? 0,
+                                    "nobukti" => $data['nobukti'] ?? '',
+                                    "tglbukti" => $kstglbukti,
+                                    "qtymasuk" => 0,
+                                    "nilaimasuk" =>  0,
+                                    "qtykeluar" => $qty ?? 0,
+                                    "nilaikeluar" => $kondisipg ? 0 : $totalterpakai,
+                                    "urutfifo" => $urutfifo,
+                                ]);
+                            } else {
+                                $kartuStok = (new KartuStok())->processStore([
+                                    "gudang_id" => $data['gudang_id'] ?? 0,
+                                    "trado_id" => 0,
+                                    "gandengan_id" => 0,
+                                    "stok_id" => $data['stok_id'] ?? 0,
+                                    "nobukti" => $data['nobukti'] ?? '',
+                                    "tglbukti" => $kstglbukti,
+                                    "qtymasuk" => 0,
+                                    "nilaimasuk" =>  0,
+                                    "qtykeluar" => $qty ?? 0,
+                                    "nilaikeluar" => $kondisipg ? 0 : $totalterpakai,
+                                    "urutfifo" => $urutfifo,
+                                ]);
+                            }
+                            if ($kspenerimaanstok_id == 8 || $kspenerimaanstok_id == 9) {
+                                $kartuStok = (new KartuStok())->processStore([
+                                    "gudang_id" => $data['gudang_id'] ?? 0,
+                                    "trado_id" => $data['trado_id'] ?? 0,
+                                    "gandengan_id" => $data['gandengan_id'] ?? 0,
+                                    "stok_id" => $data['stok_id'] ?? 0,
+                                    "nobukti" => $data['nobukti'] ?? '',
+                                    "tglbukti" => $kstglbukti,
+                                    "qtymasuk" => $qty ?? 0,
+                                    "nilaimasuk" =>  $kondisipg ? 0 : $totalterpakai,
+                                    "qtykeluar" => 0,
+                                    "nilaikeluar" => 0,
+                                    "urutfifo" => $urutfifo,
+                                ]);
+                            }
+                        }
+
+                        $pengeluaranstok_id = $data['pengeluaranstok_id'] ?? 0;
+                        if ($pengeluaranstok_id == $spk->text) {
+                            $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                                ->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'DEBET')->first();
+                            $memo = json_decode($getCoaDebet->memo, true);
+                            $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                                ->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
+                            $memokredit = json_decode($getCoaKredit->memo, true);
+                        }
+
+                        $aksqty = $querysisa->qty ?? 0;
+                        // $aksharga = $querysisa->harga ?? 0;
+                        $aksharga = round(($querysisa->totalsisa / $querysisa->qtysisa), 10) ?? 0;
+
+                        $aksnobukti = $querysisa->nobukti ?? '';
+                        $aksstok_id = $data['stok_id'] ?? 0;
+
+                        $totalharga += round(($aksharga *  $aksqty), 2);
+
+
+
+
+
+
+                        if (!$penerimaanStokDetailFifo->save()) {
+                            throw new \Exception("Error Simpan pengeluaran detail fifo Detail fifo.");
+                        }
+                    }
+                }
+
+
+                // 
+            }
+            // dd('test11');
+            goto lanjut;
+        } else {
+            $tempfifo = '##tempfifo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempfifo, function ($table) {
+                $table->string('penerimaanstok_nobukti', 100)->nullable();
+                $table->bigInteger('stok_id')->nullable();
+
+                // $table->double('penerimaanstok_qty', 15, 2)->nullable();
+                $table->double('qty', 15, 2)->nullable();
+                $table->bigInteger('id')->nullable();
+                $table->double('penerimaanstokheader_totalterpakai', 15, 2)->nullable();
+            });
+
+            $temprekappengeluaranfifo = '##temprekappengeluaranfifo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temprekappengeluaranfifo, function ($table) {
+                $table->id();
+                $table->bigInteger('stokheader_id')->nullable();
+                $table->string('nobukti', 100)->nullable();
+                $table->bigInteger('stok_id')->nullable();
+                $table->bigInteger('gudang_id')->nullable();
+                $table->bigInteger('urut')->nullable();
+                $table->double('qty', 15, 2)->nullable();
+                $table->string('penerimaanstokheader_nobukti', 100)->nullable();
+                $table->double('penerimaanstok_qty', 15, 2)->nullable();
+                $table->double('penerimaanstok_harga', 15, 2)->nullable();
+                $table->double('penerimaanstokheader_total', 15, 2)->nullable();
+                $table->double('penerimaanstokheader_totalterpakai', 15, 2)->nullable();
+            });
+        }
+
+
         // dd($data);
 
-        $tempfifo = '##tempfifo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($tempfifo, function ($table) {
-            $table->string('penerimaanstok_nobukti', 100)->nullable();
-            $table->bigInteger('stok_id')->nullable();
-
-            // $table->double('penerimaanstok_qty', 15, 2)->nullable();
-            $table->double('qty', 15, 2)->nullable();
-            $table->bigInteger('id')->nullable();
-            $table->double('penerimaanstokheader_totalterpakai', 15, 2)->nullable();
-        });
-
-        $temprekappengeluaranfifo = '##temprekappengeluaranfifo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($temprekappengeluaranfifo, function ($table) {
-            $table->id();
-            $table->bigInteger('stokheader_id')->nullable();
-            $table->string('nobukti', 100)->nullable();
-            $table->bigInteger('stok_id')->nullable();
-            $table->bigInteger('gudang_id')->nullable();
-            $table->bigInteger('urut')->nullable();
-            $table->double('qty', 15, 2)->nullable();
-            $table->string('penerimaanstokheader_nobukti', 100)->nullable();
-            $table->double('penerimaanstok_qty', 15, 2)->nullable();
-            $table->double('penerimaanstok_harga', 15, 2)->nullable();
-            $table->double('penerimaanstokheader_total', 15, 2)->nullable();
-            $table->double('penerimaanstokheader_totalterpakai', 15, 2)->nullable();
-        });
 
 
         $queryfifo = db::table('pengeluaranstokdetailfifo')->from(db::raw("pengeluaranstokdetailfifo a with (readuncommitted)"))
@@ -126,6 +589,7 @@ class PenerimaanStokDetailFifo extends MyModel
             )
             ->where('a.stok_id', '=',   $data['stok_id'])
             ->where('a.gudang_id', '=',   $data['gudang_id'])
+            ->whereRaw("isnull(a.penerimaanstokheader_nobukti,'')<>''")
             ->orderby('a.id');
 
 
@@ -482,12 +946,15 @@ class PenerimaanStokDetailFifo extends MyModel
 
         $totalqtysisa = $qtyterimarekap + $qtyterimarekapklr;
 
-
         $penerimaanstokdetail  = PenerimaanStokDetail::lockForUpdate()->where("stok_id", $aksstok_id)
             ->where("nobukti", $aksnobukti)
             ->firstorFail();
         $penerimaanstokdetail->qtykeluar = $totalqtysisa;
         $penerimaanstokdetail->save();
+
+        lanjut:
+
+        // dd('abcd');
         //
         return $penerimaanStokDetailFifo;
     }

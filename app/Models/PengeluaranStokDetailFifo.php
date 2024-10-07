@@ -119,7 +119,9 @@ class PengeluaranStokDetailFifo extends MyModel
                 'a.penerimaanstokheader_total as penerimaanstokheader_total',
                 'a.penerimaanstokheader_totalterpakai as penerimaanstokheader_totalterpakai',
             )
+            ->join(db::raw("penerimaanstokheader b with (readuncommitted)"),'a.nobukti','b.nobukti')
             ->where('a.stok_id', '=',   $data['stok_id'])
+            ->whereraw("b.penerimaanstok_id not in(8,9)")
             ->where('a.gudang_id', '=',   $data['gudang_id'])
             ->orderby('a.id');
 
@@ -203,6 +205,7 @@ class PengeluaranStokDetailFifo extends MyModel
                 ->orderBy('a.id', 'asc')
 
                 ->first();
+                // dd($querysisa);
 
                 // if ($data['stok_id'] == 4735) {
                 //     $querysisa = db::table('penerimaanstokdetail')->from(db::raw("penerimaanstokdetail a with (readuncommitted)"))
@@ -275,8 +278,13 @@ class PengeluaranStokDetailFifo extends MyModel
             // }
 
 
+            // if ($kondisi == false) {
+            //        dd($querysisa);
+            // }
             if (isset($querysisa)) {
+             
                 $qtysisa = $querysisa->qtysisa ?? 0;
+                // dd($qty,$qtysisa);
                 if ($qty <= $qtysisa) {
 
                     // $hargatotalterpakai = ($querysisa->totalsisa / $querysisa->qtysisa);
@@ -433,11 +441,14 @@ class PengeluaranStokDetailFifo extends MyModel
                     // 
 
                     $kondisi = false;
+             
                     if (!$pengeluaranStokDetailFifo->save()) {
                         throw new \Exception("Error Simpan Pengeluaran Detail fifo.");
                     }
                 } else {
+                    // dd($data['stok_id']);
                     // dd('test');
+                    // dd('test1');
                     $qty = $qty - $qtysisa;
                     // $hargatotalterpakai = ($querysisa->totalsisa / $querysisa->qtysisa);
                     $totalsisa = round(($querysisa->total - $querysisa->totalterpakai), 2);

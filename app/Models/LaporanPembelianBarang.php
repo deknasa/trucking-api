@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Schema;
 
 class LaporanPembelianBarang extends MyModel
 {
-   
+
     protected $table = '';
 
     protected $casts = [
@@ -23,9 +23,18 @@ class LaporanPembelianBarang extends MyModel
         'updated_at',
     ];
 
-    public function getReport($bulan, $tahun)
+    public function getReport($bulan, $tahun, $jenislaporan)
     {
-
+        // dd('test');
+        $parameter = new Parameter();
+        $stokgantung = false;
+        $idincludestokgantung = $parameter->cekId('JENIS LAPORAN', 'JENIS LAPORAN', 'INCLUDE SPAREPART GANTUNG') ?? 0;
+        // dd($jenislaporan,$idincludestokgantung);
+        if ($jenislaporan == $idincludestokgantung) {
+            $stokgantung = true;
+        } else {
+            $stokgantung = false;
+        }
 
         $getJudul = DB::table('parameter')
             ->select('text')
@@ -49,55 +58,69 @@ class LaporanPembelianBarang extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->value('text');
 
-            $idgudangkantor=db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+        $idgudangkantor = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
             ->select('a.text')
-            ->where('grp','GUDANG KANTOR')
-            ->where('subgrp','GUDANG KANTOR')
+            ->where('grp', 'GUDANG KANTOR')
+            ->where('subgrp', 'GUDANG KANTOR')
             ->first()->text ?? 0;
 
-            $tempbukti = '##tempbukti' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($tempbukti, function ($table) {
-                $table->string('nobukti', 100);
-            });
+        $tempbukti = '##tempbukti' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempbukti, function ($table) {
+            $table->string('nobukti', 100);
+        });
 
-            $querybukti=db::table("penerimaanstokheader")->from(db::raw("penerimaanstokheader as a with (readuncommitted)"))
-             ->select(
-                'a.nobukti'
-             )
-             ->whereRaw("a.penerimaanstok_id in (3,6)")
-             ->whereRaw("MONTH(a.tglbukti) = " . $bulan . " AND YEAR(a.tglbukti) = " . $tahun);
-
-             DB::table($tempbukti)->insertUsing([
-                'nobukti',
-            ], $querybukti);     
-            
-            $querybukti=db::table("penerimaanstokheader")->from(db::raw("penerimaanstokheader as a with (readuncommitted)"))
+        $querybukti = db::table("penerimaanstokheader")->from(db::raw("penerimaanstokheader as a with (readuncommitted)"))
             ->select(
-               'a.nobukti'
+                'a.nobukti'
+            )
+            ->whereRaw("a.penerimaanstok_id in (3,6)")
+            ->whereRaw("MONTH(a.tglbukti) = " . $bulan . " AND YEAR(a.tglbukti) = " . $tahun);
+
+        DB::table($tempbukti)->insertUsing([
+            'nobukti',
+        ], $querybukti);
+
+        $querybukti = db::table("penerimaanstokheader")->from(db::raw("penerimaanstokheader as a with (readuncommitted)"))
+            ->select(
+                'a.nobukti'
             )
             ->whereRaw("a.penerimaanstok_id in (4,9)")
             ->whereRaw("a.gudang_id in (1)")
             ->whereRaw("MONTH(a.tglbukti) = " . $bulan . " AND YEAR(a.tglbukti) = " . $tahun);
 
-            DB::table($tempbukti)->insertUsing([
-               'nobukti',
-           ], $querybukti);   
+        DB::table($tempbukti)->insertUsing([
+            'nobukti',
+        ], $querybukti);
 
-            $querybukti=db::table("penerimaanstokheader")->from(db::raw("penerimaanstokheader as a with (readuncommitted)"))
-             ->select(
+        $querybukti = db::table("penerimaanstokheader")->from(db::raw("penerimaanstokheader as a with (readuncommitted)"))
+            ->select(
                 'a.nobukti'
-             )
-             ->join(db::raw("gudang b with (readuncommitted)"),'a.gudangke_id','b.id')
-             ->whereRaw("a.penerimaanstok_id in (5)")
-             ->whereRaw("MONTH(a.tglbukti) = " . $bulan . " AND YEAR(a.tglbukti) = " . $tahun)
-             ->where('b.id',$idgudangkantor);
+            )
+            ->join(db::raw("gudang b with (readuncommitted)"), 'a.gudangke_id', 'b.id')
+            ->whereRaw("a.penerimaanstok_id in (5)")
+            ->whereRaw("MONTH(a.tglbukti) = " . $bulan . " AND YEAR(a.tglbukti) = " . $tahun)
+            ->where('b.id', $idgudangkantor);
 
-             DB::table($tempbukti)->insertUsing([
-                'nobukti',
-            ], $querybukti);   
-            
-            
-            $query = DB::table($tempbukti)->from(DB::raw($tempbukti . "  AS a "))
+        DB::table($tempbukti)->insertUsing([
+            'nobukti',
+        ], $querybukti);
+
+        if ( $stokgantung == true) {
+            $querybukti = db::table("penerimaanstokheader")->from(db::raw("penerimaanstokheader as a with (readuncommitted)"))
+            ->select(
+                'a.nobukti'
+            )
+            ->join(db::raw("gudang b with (readuncommitted)"), 'a.gudang_id', 'b.id')
+            ->whereRaw("a.penerimaanstok_id in (8)")
+            ->whereRaw("MONTH(a.tglbukti) = " . $bulan . " AND YEAR(a.tglbukti) = " . $tahun)
+            ->where('b.id', $idgudangkantor);
+
+        DB::table($tempbukti)->insertUsing([
+            'nobukti',
+        ], $querybukti);
+        }
+
+        $query = DB::table($tempbukti)->from(DB::raw($tempbukti . "  AS a "))
             ->select(
                 'a.nobukti',
                 'b.tglbukti',
@@ -113,20 +136,20 @@ class LaporanPembelianBarang extends MyModel
                 db::raw("'" . $diperiksa . "' as diperiksa"),
                 db::raw("'" . $cmpy . "' as judul"),
 
-                
+
             )
             ->join(DB::raw("penerimaanstokheader as b with (readuncommitted)"), 'a.nobukti',  'b.nobukti')
             ->join(db::raw("penerimaanstokdetail as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
             ->join(db::raw("stok as d with (readuncommitted)"), 'c.stok_id', 'd.id')
-            ->join(db::raw("kelompok c1 with (readuncommitted)"),'d.kelompok_id','c1.id')
+            ->join(db::raw("kelompok c1 with (readuncommitted)"), 'd.kelompok_id', 'c1.id')
 
             ->leftjoin(db::raw("satuan as e with (readuncommitted)"), 'd.satuan_id', 'e.id')
-            ->OrderBy('b.tglbukti','asc')
-            ->OrderBy('b.nobukti','asc')
-            ->OrderBy('c.id','asc')
+            ->OrderBy('b.tglbukti', 'asc')
+            ->OrderBy('b.nobukti', 'asc')
+            ->OrderBy('c.id', 'asc')
             ->get();
-            
-            
+
+
 
 
 

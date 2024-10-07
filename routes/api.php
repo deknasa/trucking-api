@@ -324,8 +324,6 @@ use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
-use App\Http\Controllers\Api\InvoiceEmklDetailController;
-use App\Http\Controllers\Api\InvoiceEmklHeaderController;
 use App\Http\Controllers\Api\LaporanKomisiSupirController;
 
 
