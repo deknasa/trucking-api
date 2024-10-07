@@ -495,7 +495,6 @@ class PenerimaanStokHeader extends MyModel
                 $table->string('gudangke', 50)->nullable();
                 $table->integer('statusformat')->nullable();
                 $table->string('coa', 200)->nullable();
-                $table->longText('keterangan')->nullable();
                 $table->integer('kelompok_id')->nullable();
                 $table->integer('stok_id')->nullable();
                 $table->string('modifiedby', 200)->nullable();
@@ -529,6 +528,7 @@ class PenerimaanStokHeader extends MyModel
                 $table->date('tglsampaiheaderpengeluaranstok')->nullable();
                 $table->longText('judul')->nullable();
                 $table->double('nominal')->nullable();
+                $table->longtext('keterangan')->nullable();
             });
 
             // $temprole = '##temprole' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -616,13 +616,61 @@ class PenerimaanStokHeader extends MyModel
             if (request()->tgldari && request()->tglsampai) {
                 $getNominal->whereBetween('penerimaanstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
                 if (request()->pengeluaranheader_id) {
-                    $getNominal->where('pengeluaranstokheader.pengeluaranstok_id', request()->pengeluaranheader_id);
+                    $getNominal->where('penerimaanstokheader.penerimaanstok_id', request()->penerimaanheader_id);
                 }
             }
 
             DB::table($tempNominal)->insertUsing(['nobukti', 'nominal'], $getNominal);
 
-            // dd(db::table($tempNominal)->get());
+            // 
+            $tempKeteranganDetail = '##tempKeteranganDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempKeteranganDetail, function ($table) {
+                $table->string('nobukti')->nullable();
+                $table->longtext('keterangan')->nullable();
+                $table->index('nobukti');
+            });
+
+            $tempKeteranganDetaillist = '##tempKeteranganDetaillist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempKeteranganDetaillist, function ($table) {
+                $table->string('nobukti')->nullable();
+                $table->longtext('keterangan')->nullable();
+                $table->index('nobukti');
+            });
+
+            $getKeteranganDetaillist = DB::table("penerimaanstokdetail")->from(DB::raw("penerimaanstokdetail with (readuncommitted)"))
+                ->select(DB::raw("penerimaanstokheader.nobukti,penerimaanstokdetail.keterangan as keterangan"))
+                ->join(DB::raw("penerimaanstokheader with (readuncommitted)"), 'penerimaanstokheader.id', 'penerimaanstokdetail.penerimaanstokheader_id')
+                ->groupBy("penerimaanstokheader.nobukti")
+                ->groupBy("penerimaanstokdetail.keterangan");
+
+            if (request()->tgldari && request()->tglsampai) {
+                $getKeteranganDetaillist->whereBetween('penerimaanstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+                if (request()->penerimaanheader_id) {
+                    $getKeteranganDetaillist->where('penerimaanstokheader.penerimaanstok_id', request()->penerimaanheader_id);
+                }
+            }
+
+            DB::table($tempKeteranganDetaillist)->insertUsing(['nobukti', 'keterangan'], $getKeteranganDetaillist);
+
+
+            $getKeteranganDetail = DB::table($tempKeteranganDetaillist)->from(DB::raw($tempKeteranganDetaillist . " a"))
+                ->select(DB::raw("a.nobukti,STRING_AGG(a.keterangan,',') as keterangan"))
+                ->groupBy("a.nobukti");
+
+
+            DB::table($tempKeteranganDetail)->insert([
+                'nobukti' => '',
+                'keterangan' => '',
+            ]);
+
+            DB::table($tempKeteranganDetail)->insertUsing(['nobukti', 'keterangan'], $getKeteranganDetail);
+
+            // 
+
+            // 
+
+
+            // dd(db::table($tempKeteranganDetail)->get());
 
             // $query = DB::table($this->table);
             $query = DB::table($temtabelpenerimaan)->from(db::raw($temtabelpenerimaan . " penerimaanstokheader"));
@@ -650,7 +698,9 @@ class PenerimaanStokHeader extends MyModel
                 ->leftJoin('penerimaanstokheader as nobuktispb', 'penerimaanstokheader.nobukti', 'nobuktispb.penerimaanstok_nobukti')
                 ->leftJoin(db::raw($temtabelPg . " d1"), "penerimaanstokheader.id", "d1.id")
                 ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'penerimaanstokheader.nobukti', 'nominal.nobukti')
+                ->Join(DB::raw("$tempKeteranganDetail as keterangandetail with (readuncommitted)"), db::raw("isnull(penerimaanstokheader.nobukti,'')"), 'keterangandetail.nobukti')
                 ->leftJoin('supplier', 'penerimaanstokheader.supplier_id', 'supplier.id');
+
             // ->join(db::raw($temprole . " d "), 'penerimaanstok.aco_id', 'd.aco_id');
 
             if (request()->penerimaanstok_id == $spb->text) {
@@ -2198,7 +2248,6 @@ class PenerimaanStokHeader extends MyModel
             "ke.gudang as gudangke",
             "$this->table.statusformat",
             "akunpusat.keterangancoa as coa",
-            "$this->table.keterangan",
             "$this->table.modifiedby",
             "$this->table.created_at",
             "$this->table.updated_at",
@@ -2233,7 +2282,7 @@ class PenerimaanStokHeader extends MyModel
             DB::raw("'" . $getJudul->text . "' as judul"),
             db::raw("isnull(penerimaanstokheader.pengeluaranstokproses_nobukti,'') as pengeluaranstok_nobukti_proses"),
             'nominal.nominal',
-
+            db::raw("isnull(keterangandetail.keterangan,'') as keterangan")
         );
     }
 
@@ -2255,7 +2304,6 @@ class PenerimaanStokHeader extends MyModel
             $table->dateTime('tglbukti')->nullable();
             $table->integer('penerimaanstok_id')->nullable();
             $table->string('penerimaanstok', 50)->nullable();
-            $table->longText('keterangan')->nullable();
             $table->string('penerimaanstok_nobukti', 50)->nullable();
             $table->string('pengeluaranstok_nobukti', 50)->nullable();
             $table->string('gudang', 50)->nullable();
@@ -2275,6 +2323,8 @@ class PenerimaanStokHeader extends MyModel
             $table->longText('tradoke', 200)->nullable();
             $table->longText('gandengandari', 200)->nullable();
             $table->longText('gandenganke', 200)->nullable();
+            $table->longText('keterangan')->nullable();
+
         });
 
         $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
@@ -2300,6 +2350,51 @@ class PenerimaanStokHeader extends MyModel
         }
 
         DB::table($tempNominal)->insertUsing(['nobukti', 'nominal'], $getNominal);
+
+
+        $tempKeteranganDetail = '##tempKeteranganDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempKeteranganDetail, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->index('nobukti');
+        });
+
+        $tempKeteranganDetaillist = '##tempKeteranganDetaillist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempKeteranganDetaillist, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->index('nobukti');
+        });
+
+        $getKeteranganDetaillist = DB::table("penerimaanstokdetail")->from(DB::raw("penerimaanstokdetail with (readuncommitted)"))
+            ->select(DB::raw("penerimaanstokheader.nobukti,penerimaanstokdetail.keterangan as keterangan"))
+            ->join(DB::raw("penerimaanstokheader with (readuncommitted)"), 'penerimaanstokheader.id', 'penerimaanstokdetail.penerimaanstokheader_id')
+            ->groupBy("penerimaanstokheader.nobukti")
+            ->groupBy("penerimaanstokdetail.keterangan");
+
+        if (request()->tgldari && request()->tglsampai) {
+            $getKeteranganDetaillist->whereBetween('penerimaanstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            if (request()->penerimaanheader_id) {
+                $getKeteranganDetaillist->where('penerimaanstokheader.penerimaanstok_id', request()->penerimaanheader_id);
+            }
+        }
+
+        DB::table($tempKeteranganDetaillist)->insertUsing(['nobukti', 'keterangan'], $getKeteranganDetaillist);
+
+
+        $getKeteranganDetail = DB::table($tempKeteranganDetaillist)->from(DB::raw($tempKeteranganDetaillist . " a"))
+            ->select(DB::raw("a.nobukti,STRING_AGG(a.keterangan,',') as keterangan"))
+            ->groupBy("a.nobukti");
+
+
+        DB::table($tempKeteranganDetail)->insert([
+            'nobukti' => '',
+            'keterangan' => '',
+        ]);
+
+        DB::table($tempKeteranganDetail)->insertUsing(['nobukti', 'keterangan'], $getKeteranganDetail);
+
+
 
         $temppenerimaanstokheader2 = '##temppenerimaanstokheader2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temppenerimaanstokheader2, function ($table) {
@@ -2498,7 +2593,6 @@ class PenerimaanStokHeader extends MyModel
             "penerimaanstokheader.tglbukti",
             "penerimaanstokheader.penerimaanstok_id",
             "a.penerimaanstok_id as penerimaanstok",
-            "penerimaanstokheader.keterangan",
             $penerimaanstok_nobukti,
             "penerimaanstokheader.pengeluaranstok_nobukti",
             "a.gudang_id as gudang",
@@ -2518,7 +2612,7 @@ class PenerimaanStokHeader extends MyModel
             "a.tradoke_id as tradoke",
             "a.gandengandari_id as gandengandari",
             "a.gandenganke_id as gandenganke",
-
+            "keterangandetail.keterangan"
         )
             ->Join(db::raw("penerimaanstokheader with (readuncommitted)"), 'a.nobukti', 'penerimaanstokheader.nobukti')
             // ->leftJoin(db::raw("gudang as gudangs with (readuncommitted)"), 'penerimaanstokheader.gudang_id', 'gudangs.id')
@@ -2541,7 +2635,9 @@ class PenerimaanStokHeader extends MyModel
             // ->leftJoin(db::raw("pengeluaranstokheader as pengeluaranstok with (readuncommitted)"), 'penerimaanstokheader.pengeluaranstok_nobukti', 'pengeluaranstok.nobukti')
             // ->leftJoin(db::raw("penerimaanstokheader as nobuktipenerimaanstok with (readuncommitted)"), 'nobuktipenerimaanstok.nobukti', 'penerimaanstokheader.penerimaanstok_nobukti')
             // ->leftJoin(db::raw("penerimaanstokheader as nobuktispb with (readuncommitted)"), 'penerimaanstokheader.nobukti', 'nobuktispb.penerimaanstok_nobukti')
-            ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'penerimaanstokheader.nobukti', 'nominal.nobukti');
+            ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'penerimaanstokheader.nobukti', 'nominal.nobukti')
+            ->Join(DB::raw("$tempKeteranganDetail as keterangandetail with (readuncommitted)"), db::raw("isnull(a.nobukti,'')"), 'keterangandetail.nobukti');
+
         // ->leftJoin(db::raw("supplier with (readuncommitted)"), 'penerimaanstokheader.supplier_id', 'supplier.id');
 
 
@@ -2558,7 +2654,6 @@ class PenerimaanStokHeader extends MyModel
             'tglbukti',
             'penerimaanstok_id',
             'penerimaanstok',
-            'keterangan',
             'penerimaanstok_nobukti',
             'pengeluaranstok_nobukti',
             'gudang',
@@ -2578,6 +2673,7 @@ class PenerimaanStokHeader extends MyModel
             'tradoke',
             'gandengandari',
             'gandenganke',
+            'keterangan',
         ], $query);
         // dd('test');
         $query = DB::table($temptable)->from(DB::raw($temptable . " a "))
@@ -2593,7 +2689,6 @@ class PenerimaanStokHeader extends MyModel
                 'a.nobukti',
                 'a.tglbukti',
                 'a.penerimaanstok',
-                'a.keterangan',
                 'a.penerimaanstok_nobukti',
                 'a.pengeluaranstok_nobukti',
                 'a.gudang',
@@ -2612,6 +2707,7 @@ class PenerimaanStokHeader extends MyModel
                 'a.tradoke',
                 'a.gandengandari',
                 'a.gandenganke',
+                'a.keterangan',
             );
         return $query;
     }
@@ -2634,7 +2730,6 @@ class PenerimaanStokHeader extends MyModel
             $table->string('nobukti', 1000)->nullable();
             $table->dateTime('tglbukti')->nullable();
             $table->string('penerimaanstok', 50)->nullable();
-            $table->longText('keterangan')->nullable();
             $table->string('penerimaanstok_nobukti', 50)->nullable();
             $table->string('pengeluaranstok_nobukti', 50)->nullable();
             $table->string('gudang', 50)->nullable();
@@ -2653,10 +2748,13 @@ class PenerimaanStokHeader extends MyModel
             $table->longText('tradoke', 200)->nullable();
             $table->longText('gandengandari', 200)->nullable();
             $table->longText('gandenganke', 200)->nullable();
+            $table->longtext('keterangan')->nullable();
             $table->increments('position');
         });
 
+    
         $query = $this->selectColumnPostion();
+        // dd($query->get());
         $query = $this->sort($query);
         $models = $this->filter($query);
         if (request()->tgldariheader) {
@@ -2677,7 +2775,6 @@ class PenerimaanStokHeader extends MyModel
             'a.nobukti',
             'a.tglbukti',
             'a.penerimaanstok',
-            'a.keterangan',
             'a.penerimaanstok_nobukti',
             'a.pengeluaranstok_nobukti',
             'a.gudang',
@@ -2696,6 +2793,7 @@ class PenerimaanStokHeader extends MyModel
             'a.tradoke',
             'a.gandengandari',
             'a.gandenganke',
+            'a.keterangan',
         ], $models);
 
         return  $temp;
@@ -2841,6 +2939,47 @@ class PenerimaanStokHeader extends MyModel
 
         DB::table($tempNominal)->insertUsing(['nobukti', 'nominal'], $getNominal);
 
+        // 
+        $tempKeteranganDetail = '##tempKeteranganDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempKeteranganDetail, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->index('nobukti');
+        });
+
+        $tempKeteranganDetaillist = '##tempKeteranganDetaillist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempKeteranganDetaillist, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->index('nobukti');
+        });
+
+        $getKeteranganDetaillist = DB::table("penerimaanstokdetail")->from(DB::raw("penerimaanstokdetail with (readuncommitted)"))
+            ->select(DB::raw("penerimaanstokheader.nobukti,penerimaanstokdetail.keterangan as keterangan"))
+            ->join(DB::raw("penerimaanstokheader with (readuncommitted)"), 'penerimaanstokheader.id', 'penerimaanstokdetail.penerimaanstokheader_id')
+            ->groupBy("penerimaanstokheader.nobukti")
+            ->groupBy("penerimaanstokdetail.keterangan");
+
+        $getKeteranganDetaillist->where('penerimaanstokdetail.penerimaanstokheader_id', $id)->first();
+
+        DB::table($tempKeteranganDetaillist)->insertUsing(['nobukti', 'keterangan'], $getKeteranganDetaillist);
+
+
+        $getKeteranganDetail = DB::table($tempKeteranganDetaillist)->from(DB::raw($tempKeteranganDetaillist . " a"))
+            ->select(DB::raw("a.nobukti,STRING_AGG(a.keterangan,',') as keterangan"))
+            ->groupBy("a.nobukti");
+
+
+        DB::table($tempKeteranganDetail)->insert([
+            'nobukti' => '',
+            'keterangan' => '',
+        ]);
+
+        DB::table($tempKeteranganDetail)->insertUsing(['nobukti', 'keterangan'], $getKeteranganDetail);
+
+
+        // 
+
         $this->setRequestParameters();
         $temtabelPg = '##temppg' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
         Schema::create($temtabelPg, function (Blueprint $table) {
@@ -2888,7 +3027,7 @@ class PenerimaanStokHeader extends MyModel
             ->leftJoin('penerimaanstokheader as nobuktispb', 'penerimaanstokheader.nobukti', 'nobuktispb.penerimaanstok_nobukti')
             ->leftJoin(db::raw($temtabelPg . " d1"), "penerimaanstokheader.id", "d1.id")
             ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'penerimaanstokheader.nobukti', 'nominal.nobukti')
-
+            ->Join(DB::raw("$tempKeteranganDetail as keterangandetail with (readuncommitted)"), db::raw("isnull(penerimaanstokheader.nobukti,'')"), 'keterangandetail.nobukti')
             ->leftJoin('supplier', 'penerimaanstokheader.supplier_id', 'supplier.id');
         $data = $query->where("$this->table.id", $id)->first();
 
@@ -4174,6 +4313,10 @@ class PenerimaanStokHeader extends MyModel
                 }
 
                 (new PenerimaanStokDetailFifo())->processStore($penerimaanStokHeader, $datadetailfifo);
+
+                // if ($penerimaanstok_id == 9 || $penerimaanstok_id == 8) {
+                //     $querytotal
+                // }
                 if ((($gudangdari_id == $gudangkantor) && ($gudangke_id == $gudangsementara))) {
                     $isPostJurnal = false;
                     $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'DEBET')->first();
