@@ -38,10 +38,11 @@ class LaporanPembelianBarangController extends Controller
     {
         $bulan = substr($request->sampai, 0, 2);
         $tahun = substr($request->sampai, 3, 4);
+        $jenislaporan = $request->jenislaporan ?? 0;
 
         $laporanpembelianbarang = new LaporanPembelianBarang();
 
-        $laporan_pembelianbarang = $laporanpembelianbarang->getReport($bulan, $tahun);
+        $laporan_pembelianbarang = $laporanpembelianbarang->getReport($bulan, $tahun,$jenislaporan);
 
         if (count($laporan_pembelianbarang) == 0) {
             return response([
@@ -64,9 +65,9 @@ class LaporanPembelianBarangController extends Controller
     {
         $bulan = substr($request->sampai, 0, 2);
         $tahun = substr($request->sampai, -4);
-
+        $jenislaporan = $request->jenislaporan ?? 0;
         $laporanpembelianbarang = new LaporanPembelianBarang();
-        $laporan_pembelianbarang = $laporanpembelianbarang->getReport($bulan, $tahun);
+        $laporan_pembelianbarang = $laporanpembelianbarang->getReport($bulan, $tahun,$jenislaporan);
 
         $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
             ->select('cabang.namacabang')

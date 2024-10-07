@@ -124,15 +124,31 @@ class ExportLaporanMingguanSupir extends Model
 
         $parameter = new Parameter();
         $cabang = $parameter->cekText('CABANG', 'CABANG') ?? 0;
+
+        
+        $tempDataextrasp = '##tempDataextrasp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempDataextrasp, function ($table) {
+            $table->string('nobukti', 50)->nullable();
+            $table->longtext('keterangan')->nullable();
+        });
+
+        $tempDataextrasplist = '##tempDataextrasplist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempDataextrasplist, function ($table) {
+            $table->string('nobukti', 50)->nullable();
+            $table->longtext('keterangan')->nullable();
+        });
+
+        $tempDataextra = '##tempDataextra' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempDataextra, function ($table) {
+            $table->string('nobukti', 50)->nullable();
+            $table->longtext('biayaextrasupir_nobukti')->nullable();
+            $table->double('biayaextrasupir_nominal', 15, 2)->nullable();
+            $table->longtext('biayaextrasupir_keterangan')->nullable();
+        });        
+
         if ($statusjenislaporan == $jenislaporan) {
 
-            $tempDataextra = '##tempDataextra' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($tempDataextra, function ($table) {
-                $table->string('nobukti', 50)->nullable();
-                $table->longtext('biayaextrasupir_nobukti')->nullable();
-                $table->double('biayaextrasupir_nominal', 15, 2)->nullable();
-                $table->longtext('biayaextrasupir_keterangan')->nullable();
-            });
+
 
             $queryextra = db::table("gajisupirheader")->from(db::raw("gajisupirheader a with (readuncommitted)"))
                 ->select(
@@ -157,17 +173,6 @@ class ExportLaporanMingguanSupir extends Model
             ], $queryextra);
 
 
-            $tempDataextrasp = '##tempDataextrasp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($tempDataextrasp, function ($table) {
-                $table->string('nobukti', 50)->nullable();
-                $table->longtext('keterangan')->nullable();
-            });
-
-            $tempDataextrasplist = '##tempDataextrasplist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($tempDataextrasplist, function ($table) {
-                $table->string('nobukti', 50)->nullable();
-                $table->longtext('keterangan')->nullable();
-            });
 
 
             if ($cabang == 'MEDAN') {
