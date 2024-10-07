@@ -501,6 +501,27 @@ class PenerimaanStokDetailFifo extends MyModel
                 // 
             }
             // dd('test11');
+            $nobuktipenerimaan = $data['nobukti'] ?? '';
+            $stokidpenerimaan = $data['stok_id'] ?? 0;
+            $penerimaanstokdetail  = PenerimaanStokDetail::lockForUpdate()->where("stok_id", $stokidpenerimaan)
+                ->where("nobukti", $nobuktipenerimaan)
+                ->firstorFail();
+
+            // $totalharga = $atotalharga;
+            $totalharga = $totalterpakai2;
+
+            // dump($totalharga);
+            // dd($data['qty']);
+            $hrgsat = $totalharga / $data['qty'];
+
+            $selisih = 0;
+            $penerimaanstokdetail->harga =  $kondisipg ? 0 : $hrgsat;
+            $penerimaanstokdetail->total =  $kondisipg ? 0 : $totalharga;
+            // $pengeluaranstokdetail->save();
+            if (!$penerimaanstokdetail->save()) {
+                throw new \Exception("Error storing pengeluaran Stok Detail  update fifo. ");
+            }
+
             goto lanjut;
         } else {
             $tempfifo = '##tempfifo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -907,6 +928,7 @@ class PenerimaanStokDetailFifo extends MyModel
         }
         // 
 
+        // dd('test');
         $nobuktipenerimaan = $data['nobukti'] ?? '';
         $stokidpenerimaan = $data['stok_id'] ?? 0;
         $penerimaanstokdetail  = PenerimaanStokDetail::lockForUpdate()->where("stok_id", $stokidpenerimaan)
@@ -927,6 +949,7 @@ class PenerimaanStokDetailFifo extends MyModel
         if (!$penerimaanstokdetail->save()) {
             throw new \Exception("Error storing pengeluaran Stok Detail  update fifo. ");
         }
+
 
         $qtyterimarekap = DB::table("pengeluaranstokdetailfifo")->from(db::raw("pengeluaranstokdetailfifo a with (readuncommitted)"))
             ->select(
@@ -950,6 +973,7 @@ class PenerimaanStokDetailFifo extends MyModel
             ->where("nobukti", $aksnobukti)
             ->firstorFail();
         $penerimaanstokdetail->qtykeluar = $totalqtysisa;
+
         $penerimaanstokdetail->save();
 
         lanjut:
