@@ -288,6 +288,7 @@ class ServiceInHeader extends MyModel
             $this->table.tglmasuk,
             'statuscetak.memo as statuscetak',
             'statusserviceout.memo as statusserviceout',
+            'serviceout.nobukti as serviceout_nobukti',
 
 
             $this->table.modifiedby,
@@ -297,7 +298,8 @@ class ServiceInHeader extends MyModel
 
         )
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'serviceinheader.statuscetak', 'statuscetak.id')
-            ->leftJoin(DB::raw("parameter as statusserviceout with (readuncommitted)"), 'serviceinheader.statusserviceout', 'statusserviceout.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusserviceout with (readuncommitted)"), 'serviceinheader.statusserviceout', 'parameter_statusserviceout.id')
+            ->leftJoin(DB::raw("serviceoutdetail as serviceout with (readuncommitted)"), 'serviceinheader.nobukti', 'serviceout.servicein_nobukti')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceinheader.trado_id', 'trado.id');
     }
 
@@ -312,6 +314,7 @@ class ServiceInHeader extends MyModel
             $table->date('tglmasuk')->nullable();
             $table->string('statuscetak', 1000)->nullable();
             $table->string('statusserviceout', 1000)->nullable();
+            $table->string('serviceout_nobukti', 1000)->nullable();
 
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
@@ -325,12 +328,11 @@ class ServiceInHeader extends MyModel
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
-        if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
-        }
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti',  'trado_id', 'tglmasuk', 'statuscetak', 'statusserviceout', 'modifiedby', 'created_at', 'updated_at'], $models);
+        $models = $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+        
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti',  'trado_id', 'tglmasuk', 'statuscetak', 'statusserviceout','serviceout_nobukti', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -358,6 +360,8 @@ class ServiceInHeader extends MyModel
                                 $query = $query->where('statuscetak.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'trado_id') {
                                 $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'serviceout_nobukti') {
+                                $query = $query->where('serviceout.nobukti', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statusserviceout') {
                                 $query = $query->where('parameter_statusserviceout.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglmasuk') {
@@ -382,6 +386,8 @@ class ServiceInHeader extends MyModel
                                     $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
                                 } else if ($filters['field'] == 'trado_id') {
                                     $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'serviceout_nobukti') {
+                                    $query = $query->orWhere('serviceout.nobukti', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'statusserviceout') {
                                     $query = $query->orwhere('parameter_statusserviceout.text', '=', $filters['data']);
                                 } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglmasuk') {
