@@ -624,7 +624,7 @@ class PiutangHeader extends MyModel
             $piutangHeader->coadebet = $coa;
             $piutangHeader->coakredit = $coapendapatan;
             if ($getAgen != '') {
-                if ($getAgen->statusinvoiceextra == 1) {
+                if ($getAgen->statusinvoiceextra == 1 && $getAgen->coapendapatan != '') {
                     $piutangHeader->coakredit = $getAgen->coapendapatan;
                 }
             }
@@ -665,7 +665,7 @@ class PiutangHeader extends MyModel
                 $coakredit_detail[] = $getCoa->coapendapatan;
             } else {
                 if ($getAgen != '') {
-                    if ($getAgen->statusinvoiceextra == 1) {
+                    if ($getAgen->statusinvoiceextra == 1 && $getAgen->coapendapatan != '') {
                         $coakredit_detail[] = $getAgen->coapendapatan;
                     } else {
                         $coakredit_detail[] = $coapendapatan;
@@ -781,7 +781,7 @@ class PiutangHeader extends MyModel
             $piutangHeader->coadebet = $coa;
             $piutangHeader->coakredit = $coapendapatan;
             if ($getAgen != '') {
-                if ($getAgen->statusinvoiceextra == 1) {
+                if ($getAgen->statusinvoiceextra == 1 && $getAgen->coapendapatan != '') {
                     $piutangHeader->coakredit = $getAgen->coapendapatan;
                 }
             }
@@ -829,7 +829,7 @@ class PiutangHeader extends MyModel
             } else {
                 $coadebet_detail[] = $coa;
                 if ($getAgen != '') {
-                    if ($getAgen->statusinvoiceextra == 1) {
+                    if ($getAgen->statusinvoiceextra == 1 && $getAgen->coapendapatan != '') {
                         $coakredit_detail[] = $getAgen->coapendapatan;
                     } else {
                         $coakredit_detail[] = $coapendapatan;
