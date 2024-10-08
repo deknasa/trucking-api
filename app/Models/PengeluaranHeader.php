@@ -703,6 +703,20 @@ class PengeluaranHeader extends MyModel
     public function getRekapPengeluaranHeader($bank, $tglbukti)
     {
         $this->setRequestParameters();
+        
+        $tempawal = '##tempawal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempawal, function ($table) {
+            $table->string('pengeluaran_nobukti')->nullable();
+        });
+
+        $queryawal = DB::table("rekappengeluarandetail")->from(db::raw("rekappengeluarandetail as a with (readuncommitted)"))
+        ->select('a.pengeluaran_nobukti')
+        ->join(DB::raw("rekappengeluaranheader as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+        ->where('b.bank_id', $bank)
+        ->where('b.tgltransaksi', $tglbukti);
+        DB::table($tempawal)->insertUsing(['pengeluaran_nobukti'], $queryawal);
+
+
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         $query = DB::table("pengeluaranheader")->from(DB::raw("pengeluaranheader"))
@@ -713,9 +727,11 @@ class PengeluaranHeader extends MyModel
 
             )
             ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"), 'pengeluaranheader.nobukti', 'pengeluarandetail.nobukti')
+            ->leftJoin(DB::raw("$tempawal as b with (readuncommitted)"), 'pengeluaranheader.nobukti', 'b.pengeluaran_nobukti')
             ->where('pengeluaranheader.bank_id', $bank)
             ->where('pengeluaranheader.tglbukti', $tglbukti)
-            ->whereRaw("pengeluaranheader.nobukti not in (select pengeluaran_nobukti from rekappengeluarandetail)")
+            ->whereRaw("isnull(b.pengeluaran_nobukti,'')=''")
+            // ->whereRaw("pengeluaranheader.nobukti not in (select pengeluaran_nobukti from rekappengeluarandetail)")
             ->groupBy('pengeluaranheader.nobukti')
             ->groupBy('pengeluaranheader.tglbukti');
 
@@ -725,6 +741,19 @@ class PengeluaranHeader extends MyModel
             $table->double('nominal_detail', 15, 2)->nullable();
         });
 
+        DB::table($temp)->insertUsing(['nobukti_pengeluaran', 'tglbukti_pengeluaran', 'nominal_detail'], $query);
+
+        $query = DB::table("pindahbuku")->from(DB::raw("pindahbuku"))
+        ->select(
+            'pindahbuku.nobukti as nobukti_pengeluaran',
+            'pindahbuku.tglbukti as tglbukti_pengeluaran',
+            DB::raw("pindahbuku.nominal as nominal_detail")
+
+        )
+        ->leftJoin(DB::raw("$tempawal as b with (readuncommitted)"), 'pindahbuku.nobukti', 'b.pengeluaran_nobukti')
+        ->where('pindahbuku.bankdari_id', $bank)
+        ->where('pindahbuku.tglbukti', $tglbukti)
+        ->whereRaw("isnull(b.pengeluaran_nobukti,'')=''");
         DB::table($temp)->insertUsing(['nobukti_pengeluaran', 'tglbukti_pengeluaran', 'nominal_detail'], $query);
 
         $dataTemp =  DB::table("$temp")->from(DB::raw("$temp"))
