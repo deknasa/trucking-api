@@ -389,6 +389,7 @@ class ExportLaporanKasHarian extends MyModel
         $tempList = '##tempList' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempList, function ($table) {
             $table->integer('jenis')->nullable();
+            $table->integer('jenismasuk')->nullable();
             $table->dateTime('tgl')->nullable();
             $table->string('nobukti', 50)->nullable();
             $table->string('coa', 1000)->nullable();
@@ -404,6 +405,7 @@ class ExportLaporanKasHarian extends MyModel
         $tempList2 = '##tempList2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempList2, function ($table) {
             $table->integer('jenis')->nullable();
+            $table->integer('jenismasuk')->nullable();
             $table->dateTime('tgl')->nullable();
             $table->string('nobukti', 50)->nullable();
             $table->string('coa', 1000)->nullable();
@@ -416,6 +418,7 @@ class ExportLaporanKasHarian extends MyModel
 
         DB::table($tempList)->insert([
             'jenis' => 1,
+            'jenismasuk' => 0,
             'tgl' => date('Y-m-d', strtotime($tanggal)),
             'nobukti' => '',
             'coa' => '',
@@ -431,6 +434,7 @@ class ExportLaporanKasHarian extends MyModel
         while ($tgl1 <= $tgl2) {
             DB::table($tempList)->insert([
                 'jenis' => 1,
+                'jenismasuk' => 0,
                 'tgl' => date('Y-m-d', strtotime($tgl1)),
                 'nobukti' => '',
                 'coa' => '',
@@ -450,6 +454,7 @@ class ExportLaporanKasHarian extends MyModel
             ->select(
                 'a.coakredit as coa',
                 DB::raw("2 as jenis"),
+                DB::raw("1 as jenismasuk"),
                 'a.tgljatuhtempo',
                 'a.nobukti',
                 DB::raw("isnull(C.keterangancoa,'') as perkiraan"),
@@ -470,6 +475,7 @@ class ExportLaporanKasHarian extends MyModel
         DB::table($tempList)->insertUsing([
             'coa',
             'jenis',
+            'jenismasuk',
             'tgl',
             'nobukti',
             'perkiraan',
@@ -487,6 +493,7 @@ class ExportLaporanKasHarian extends MyModel
             ->select(
                 'a.coadebet as coa',
                 DB::raw("3 as jenis"),
+                DB::raw("1 as jenismasuk"),
                 'a.tgljatuhtempo',
                 'a.nobukti',
                 DB::raw("isnull(C.keterangancoa,'')  as perkiraan"),
@@ -504,6 +511,7 @@ class ExportLaporanKasHarian extends MyModel
         DB::table($tempList)->insertUsing([
             'coa',
             'jenis',
+            'jenismasuk',
             'tgl',
             'nobukti',
             'perkiraan',
@@ -519,6 +527,7 @@ class ExportLaporanKasHarian extends MyModel
             ->select(
                 'a.coadebet as coa',
                 DB::raw("4 as jenis"),
+                DB::raw("2 as jenismasuk"),
                 'a.tgljatuhtempo',
                 'a.nobukti',
                 DB::raw("isnull(C.keterangancoa,'') as perkiraan"),
@@ -539,6 +548,7 @@ class ExportLaporanKasHarian extends MyModel
         DB::table($tempList)->insertUsing([
             'coa',
             'jenis',
+            'jenismasuk',
             'tgl',
             'nobukti',
             'perkiraan',
@@ -589,6 +599,7 @@ class ExportLaporanKasHarian extends MyModel
             ->select(
                 'a.coadebet as coa',
                 DB::raw("4 as jenis"),
+                DB::raw("2 as jenismasuk"),
                 'a.tgljatuhtempo',
                 'a.nobukti',
                 DB::raw("isnull(C.keterangancoa,'') as perkiraan"),
@@ -610,6 +621,7 @@ class ExportLaporanKasHarian extends MyModel
         DB::table($tempList)->insertUsing([
             'coa',
             'jenis',
+            'jenismasuk',
             'tgl',
             'nobukti',
             'perkiraan',
@@ -626,6 +638,7 @@ class ExportLaporanKasHarian extends MyModel
             ->select(
                 'a.coakredit as coa',
                 DB::raw("5 as jenis"),
+                DB::raw("2 as jenismasuk"),
                 'a.tgljatuhtempo',
                 'a.nobukti',
                 DB::raw("isnull(C.keterangancoa,'') as perkiraan"),
@@ -643,6 +656,7 @@ class ExportLaporanKasHarian extends MyModel
         DB::table($tempList)->insertUsing([
             'coa',
             'jenis',
+            'jenismasuk',
             'tgl',
             'nobukti',
             'perkiraan',
@@ -674,6 +688,7 @@ class ExportLaporanKasHarian extends MyModel
                 ->select(
                     'a.coadebet as coa',
                     DB::raw("6 as jenis"),
+                    DB::raw("2 as jenismasuk"),
                     'a.tgljatuhtempo',
                     'a.nobukti',
                     DB::raw("isnull(C.keterangancoa,'') as perkiraan"),
@@ -694,6 +709,7 @@ class ExportLaporanKasHarian extends MyModel
             DB::table($tempList)->insertUsing([
                 'coa',
                 'jenis',
+                'jenismasuk',
                 'tgl',
                 'nobukti',
                 'perkiraan',
@@ -709,6 +725,7 @@ class ExportLaporanKasHarian extends MyModel
                 ->select(
                     'a.coadebet as coa',
                     DB::raw("6 as jenis"),
+                    DB::raw("2 as jenismasuk"),                    
                     'a.tgljatuhtempo',
                     'a.nobukti',
                     DB::raw("isnull(C.keterangancoa,'') as perkiraan"),
@@ -730,6 +747,7 @@ class ExportLaporanKasHarian extends MyModel
             DB::table($tempList)->insertUsing([
                 'coa',
                 'jenis',
+                'jenismasuk',
                 'tgl',
                 'nobukti',
                 'perkiraan',
@@ -753,6 +771,7 @@ class ExportLaporanKasHarian extends MyModel
         )
             ->select(
                 'jenis',
+                'jenismasuk',
                 'coa',
                 'tgl',
                 'nobukti',
@@ -766,6 +785,7 @@ class ExportLaporanKasHarian extends MyModel
 
         DB::table($tempList2)->insertUsing([
             'jenis',
+            'jenismasuk',
             'coa',
             'tgl',
             'nobukti',
@@ -787,6 +807,7 @@ class ExportLaporanKasHarian extends MyModel
             $table->bigIncrements('id');
             $table->string('jenislaporan', 100);
             $table->integer('jenis');
+            $table->integer('jenismasuk');
             $table->dateTime('tgl')->nullable();
             $table->string('nobukti', 50)->nullable();
             $table->string('perkiraan', 1000)->nullable();
@@ -802,6 +823,7 @@ class ExportLaporanKasHarian extends MyModel
             ->select(
                 DB::raw("'LAPORAN HARIAN' AS  jenislaporan"),
                 'jenis',
+                'jenismasuk',
                 'tgl',
                 'nobukti',
                 'perkiraan',
@@ -818,6 +840,7 @@ class ExportLaporanKasHarian extends MyModel
         DB::table($tempListRekap)->insertUsing([
             'jenislaporan',
             'jenis',
+            'jenismasuk',
             'tgl',
             'nobukti',
             'perkiraan',
@@ -831,6 +854,7 @@ class ExportLaporanKasHarian extends MyModel
         Schema::create($tempLaporan, function ($table) {
             $table->string('jenislaporan', 100);
             $table->integer('jenis');
+            $table->integer('jenismasuk');
             $table->dateTime('tgl')->nullable();
             $table->string('nobukti', 50)->nullable();
             $table->string('perkiraan', 1000)->nullable();
@@ -847,6 +871,7 @@ class ExportLaporanKasHarian extends MyModel
             ->select(
                 DB::raw("'LAPORAN HARIAN' AS  jenislaporan"),
                 'a.jenis',
+                'a.jenismasuk',
                 'a.tgl as tglbukti',
                 'a.nobukti',
                 'a.perkiraan',
@@ -864,6 +889,7 @@ class ExportLaporanKasHarian extends MyModel
         DB::table($tempLaporan)->insertUsing([
             'jenislaporan',
             'jenis',
+            'jenismasuk',
             'tgl',
             'nobukti',
             'perkiraan',
@@ -884,6 +910,7 @@ class ExportLaporanKasHarian extends MyModel
             $table->bigIncrements('id');
             $table->string('jenislaporan', 100);
             $table->integer('jenis');
+            $table->integer('jenismasuk');
             $table->dateTime('tgl')->nullable();
             $table->string('nobukti', 50)->nullable();
             $table->string('perkiraan', 1000)->nullable();
@@ -899,6 +926,7 @@ class ExportLaporanKasHarian extends MyModel
             ->select(
                 DB::raw("'LAPORAN REKAP' AS  jenislaporan"),
                 'jenis',
+                'jenismasuk',
                 'tgl',
                 'nobukti',
                 'perkiraan',
@@ -915,6 +943,7 @@ class ExportLaporanKasHarian extends MyModel
         DB::table($tempRekap)->insertUsing([
             'jenislaporan',
             'jenis',
+            'jenismasuk',
             'tgl',
             'nobukti',
             'perkiraan',
@@ -930,6 +959,7 @@ class ExportLaporanKasHarian extends MyModel
             ->select(
                 DB::raw("'LAPORAN REKAP' AS  jenislaporan"),
                 'a.jenis',
+                'a.jenismasuk',
                 'a.tgl as tglbukti',
                 'a.nobukti',
                 'a.perkiraan',
@@ -946,6 +976,7 @@ class ExportLaporanKasHarian extends MyModel
         DB::table($tempLaporan)->insertUsing([
             'jenislaporan',
             'jenis',
+            'jenismasuk',
             'tgl',
             'nobukti',
             'perkiraan',
@@ -977,6 +1008,7 @@ class ExportLaporanKasHarian extends MyModel
 
         DB::table($tempList)->insert([
             'jenis' => 1,
+            'jenismasuk' => 0,
             'tgl' => date('Y-m-d', strtotime($tanggal)),
             'nobukti' => '',
             'perkiraan' => '',
@@ -993,6 +1025,7 @@ class ExportLaporanKasHarian extends MyModel
             $table->bigIncrements('id');
             $table->string('jenislaporan', 100);
             $table->integer('jenis');
+            $table->integer('jenismasuk');
             $table->dateTime('tgl')->nullable();
             $table->string('nobukti', 50)->nullable();
             $table->string('perkiraan', 1000)->nullable();
@@ -1008,6 +1041,7 @@ class ExportLaporanKasHarian extends MyModel
             ->select(
                 DB::raw("'LAPORAN REKAP 01' AS  jenislaporan"),
                 'jenis',
+                'jenismasuk',
                 'tgl',
                 'nobukti',
                 'perkiraan',
@@ -1023,6 +1057,7 @@ class ExportLaporanKasHarian extends MyModel
         DB::table($tempRekap01)->insertUsing([
             'jenislaporan',
             'jenis',
+            'jenismasuk',
             'tgl',
             'nobukti',
             'perkiraan',
@@ -1041,6 +1076,7 @@ class ExportLaporanKasHarian extends MyModel
             ->select(
                 DB::raw("'LAPORAN REKAP 01' AS  jenislaporan"),
                 'a.jenis',
+                'a.jenismasuk',
                 'a.tgl as tglbukti',
                 'a.nobukti',
                 'a.perkiraan',
@@ -1057,6 +1093,7 @@ class ExportLaporanKasHarian extends MyModel
         DB::table($tempLaporan)->insertUsing([
             'jenislaporan',
             'jenis',
+            'jenismasuk',
             'tgl',
             'nobukti',
             'perkiraan',
@@ -1074,10 +1111,20 @@ class ExportLaporanKasHarian extends MyModel
             ->first();
 
         $getData = DB::table($tempLaporan)->select(
-            "*",
+            'jenislaporan',
+            'jenis',
+            'tgl',
+            'nobukti',
+            'perkiraan',
+            'keterangan',
+            'debet',
+            'kredit',
+            'saldo',
+            'id',
             DB::raw("'" . $getJudul->text . "' as judul")
         )
             ->orderBy('jenislaporan', 'asc')
+            ->orderBy('jenismasuk', 'asc')
             ->orderBy('id', 'asc')
             ->get();
 
@@ -1515,7 +1562,7 @@ class ExportLaporanKasHarian extends MyModel
         //     ->get();
 
 
-
+// dd($getData);
 
 
         return [$getData, $getData2];
