@@ -833,6 +833,7 @@ class LaporanNeraca extends MyModel
                 $table->string('jenispiutang', 50)->nullable();
                 $table->integer('urut')->nullable();
                 $table->string('text', 500)->nullable();
+                $table->string('cabang', 500)->nullable();
                 $table->string('dari', 500)->nullable();
                 $table->string('sampai', 500)->nullable();
                 $table->string('judullaporan', 500)->nullable();
@@ -859,6 +860,7 @@ class LaporanNeraca extends MyModel
                 'jenispiutang',
                 'urut',
                 'text',
+                'cabang',
                 'dari',
                 'sampai',
                 'judullaporan',
