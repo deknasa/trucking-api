@@ -150,10 +150,9 @@ class ServiceOutHeader extends MyModel
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
         $this->sort($query);
-        if (request()->tgldari) {
-            $query->whereBetween('serviceoutheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
-        }
         $models = $this->filter($query);
+        $models = $query->whereBetween('serviceoutheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+        
         DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti',  'trado_id', 'tglkeluar', 'statuscetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
