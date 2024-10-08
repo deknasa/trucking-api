@@ -118,6 +118,17 @@ class LaporanPembelianBarang extends MyModel
             DB::table($tempbukti)->insertUsing([
                 'nobukti',
             ], $querybukti);
+
+            $querybukti = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader as a with (readuncommitted)"))
+                ->select(
+                    'a.nobukti'
+                )
+                ->whereRaw("a.pengeluaranstok_id in (5)")
+                ->whereRaw("MONTH(a.tglbukti) = " . $bulan . " AND YEAR(a.tglbukti) = " . $tahun);
+
+            DB::table($tempbukti)->insertUsing([
+                'nobukti',
+            ], $querybukti);            
         }
 
         $temphasil = '##temphasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -228,6 +239,56 @@ class LaporanPembelianBarang extends MyModel
             'diperiksa',
             'judul',
         ], $queryhasil);
+
+        $queryhasil = DB::table($tempbukti)->from(DB::raw($tempbukti . "  AS a "))
+        ->select(
+            'c2.id',
+            'a.nobukti',
+            'b.tglbukti',
+            // 'd.namastok',
+            db::raw("isnull(c1.kodekelompok,'')+' - '+trim(d.namastok) as namastok"),
+            'c.qty',
+            db::raw("isnull(e.satuan,'') as satuan"),
+            db::raw("isnull(c.penerimaanstok_harga,0) as harga"),
+            db::raw("isnull(c.penerimaanstok_harga,0)*c.qty as nominal"),
+            'c2.keterangan',
+            db::raw("'" . $disetujui . "' as disetujui"),
+            db::raw("'" . $diperiksa . "' as diperiksa"),
+            db::raw("'" . $cmpy . "' as judul"),
+
+
+        )
+        ->join(DB::raw("pengeluaranstokheader as b with (readuncommitted)"), 'a.nobukti',  'b.nobukti')
+        ->join(db::raw("pengeluaranstokdetail as c2 with (readuncommitted)"), 'a.nobukti', 'c2.nobukti')
+        // ->join(db::raw("pengeluaranstokdetailfifo as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+        ->join(db::raw("pengeluaranstokdetailfifo as c "), function ($join) {
+            $join->on('b.nobukti', '=', 'c.nobukti');
+            $join->on('c2.stok_id', '=', 'c.stok_id');
+        })
+        ->join(db::raw("stok as d with (readuncommitted)"), 'c.stok_id', 'd.id')
+        ->join(db::raw("kelompok c1 with (readuncommitted)"), 'd.kelompok_id', 'c1.id')
+
+        ->leftjoin(db::raw("satuan as e with (readuncommitted)"), 'd.satuan_id', 'e.id')
+        ->whereraw("b.pengeluaranstok_id in(5)")
+        ->OrderBy('b.tglbukti', 'asc')
+        ->OrderBy('b.nobukti', 'asc')
+        ->OrderBy('c.id', 'asc');
+
+    DB::table($temphasil)->insertUsing([
+        'id',
+        'nobukti',
+        'tglbukti',
+        'namastok',
+        'qty',
+        'satuan',
+        'harga',
+        'nominal',
+        'keterangan',
+        'disetujui',
+        'diperiksa',
+        'judul',
+    ], $queryhasil);
+
 
         $query = DB::table($temphasil)->from(DB::raw($temphasil . "  AS a "))
             ->select(
