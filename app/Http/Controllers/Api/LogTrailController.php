@@ -343,7 +343,7 @@ class LogTrailController extends Controller
             Schema::create($temp, function ($table)  use ($fields, $table_name) {
                 if (count($fields) > 0) {
                     foreach ($fields as $field) {
-                        $table->{$field['type']}($field['name']);
+                        $table->{$field['type']}($field['name'])->nullable();
                     }
                 }
             });
