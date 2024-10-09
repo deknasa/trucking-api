@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class RekapPengeluaranDetail extends MyModel
 {
@@ -43,17 +44,42 @@ class RekapPengeluaranDetail extends MyModel
         // }
         if (isset(request()->forReport) && request()->forReport) {
             $cetakanBank1 = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('id')->where('grp', 'FORMAT CETAKAN BANK')->where('subgrp', 'FORMAT CETAKAN BANK 1')->first();
-            if ($cetakanBank1->id ==request()->formatcetakan) {
-                $query->select(
+            if ($cetakanBank1->id == request()->formatcetakan) {
+                $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($temp, function ($table) {
+                    $table->string('coadebet')->nullable();
+                    $table->string('keterangancoa')->nullable();
+                    $table->double('nominal', 15, 2)->nullable();
+                    $table->string('keterangan')->nullable();
+                });
+
+                $querytemp = DB::table("rekappengeluarandetail")->from(DB::raw("rekappengeluarandetail with (readuncommitted)"))->select(
                     'pengeluarandetail.coadebet',
                     DB::raw('MAX(akunpusat.keterangancoa) AS keterangancoa'),
                     DB::raw("sum(pengeluarandetail.nominal) as nominal"),
                     DB::raw("'' as keterangan"),
                 )
-                ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"), $this->table . '.pengeluaran_nobukti', 'pengeluarandetail.nobukti')
-                ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarandetail.coadebet', 'akunpusat.coa')
-                ->groupBy('pengeluarandetail.coadebet');
-            }else {
+                    ->Join(DB::raw("pengeluarandetail with (readuncommitted)"), $this->table . '.pengeluaran_nobukti', 'pengeluarandetail.nobukti')
+                    ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarandetail.coadebet', 'akunpusat.coa')
+                    ->where("rekappengeluarandetail.rekappengeluaran_id", request()->rekappengeluaran_id)
+                    ->groupBy('pengeluarandetail.coadebet');
+
+                DB::table($temp)->insertUsing(['coadebet', 'keterangancoa', 'nominal', 'keterangan'], $querytemp);
+
+                $querytemp = DB::table("rekappengeluarandetail")->from(DB::raw("rekappengeluarandetail with (readuncommitted)"))->select(
+                    'pindahbuku.coadebet',
+                    DB::raw('akunpusat.keterangancoa AS keterangancoa'),
+                    DB::raw("pindahbuku.nominal as nominal"),
+                    DB::raw("'' as keterangan"),
+                )
+                    ->Join(DB::raw("pindahbuku with (readuncommitted)"), $this->table . '.pengeluaran_nobukti', 'pindahbuku.nobukti')
+                    ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pindahbuku.coadebet', 'akunpusat.coa')
+                    ->where("rekappengeluarandetail.rekappengeluaran_id", request()->rekappengeluaran_id);
+
+                DB::table($temp)->insertUsing(['coadebet', 'keterangancoa', 'nominal', 'keterangan'], $querytemp);
+                $query = DB::table($temp)->from(DB::raw("$temp as a with (readuncommitted)"))
+                    ->select('coadebet', 'keterangancoa', 'nominal', 'keterangan');
+            } else {
                 $query->select(
                     'pengeluarandetail.coadebet',
                     "pengeluarandetail.nobukti",
@@ -61,14 +87,12 @@ class RekapPengeluaranDetail extends MyModel
                     DB::raw("sum(pengeluarandetail.nominal) as nominal"),
                     "pengeluarandetail.keterangan",
                 )
-                ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"), $this->table . '.pengeluaran_nobukti', 'pengeluarandetail.nobukti')
-                ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarandetail.coadebet', 'akunpusat.coa')
-                ->groupBy('pengeluarandetail.coadebet','pengeluarandetail.nobukti','pengeluarandetail.keterangan');
+                    ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"), $this->table . '.pengeluaran_nobukti', 'pengeluarandetail.nobukti')
+                    ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarandetail.coadebet', 'akunpusat.coa')
+                    ->groupBy('pengeluarandetail.coadebet', 'pengeluarandetail.nobukti', 'pengeluarandetail.keterangan');
             }
-
-
         } else {
-                
+
             $query->select(
                 "$this->table.id",
                 "$this->table.rekappengeluaran_id",
@@ -79,12 +103,12 @@ class RekapPengeluaranDetail extends MyModel
                 "$this->table.keterangan",
                 "$this->table.modifiedby",
                 db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
-                db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"), 
+                db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
                 db::raw("pengeluaranheader.bank_id as pengeluaranbank_id"),
 
             )
-            ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"), 'rekappengeluarandetail.pengeluaran_nobukti', '=', 'pengeluaranheader.nobukti')
-            ->leftJoin("rekappengeluaranheader", "$this->table.rekappengeluaran_id", "rekappengeluaranheader.id");
+                ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"), 'rekappengeluarandetail.pengeluaran_nobukti', '=', 'pengeluaranheader.nobukti')
+                ->leftJoin("rekappengeluaranheader", "$this->table.rekappengeluaran_id", "rekappengeluaranheader.id");
             // ->leftJoin("pengeluaranheader", "$this->table.pengeluaran_nobukti", "pengeluaranheader.nobukti");
             $this->sort($query);
             $this->filter($query);
@@ -102,13 +126,13 @@ class RekapPengeluaranDetail extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     $query->where(function ($query) {
-                        
+
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'nominal') {
                                 $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                            }else{
+                            } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            } 
+                            }
                         }
                     });
 
@@ -130,7 +154,7 @@ class RekapPengeluaranDetail extends MyModel
             }
         }
     }
-                
+
     public function sort($query)
     {
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
@@ -145,13 +169,13 @@ class RekapPengeluaranDetail extends MyModel
         $rekapPengeluaranDetail = new RekapPengeluaranDetail();
         $rekapPengeluaranDetail->rekappengeluaran_id = $rekapPengeluaranHeader->id;
         $rekapPengeluaranDetail->nobukti = $rekapPengeluaranHeader->nobukti;
-        $rekapPengeluaranDetail->tgltransaksi =  date('Y-m-d',strtotime($data['tgltransaksi']));
+        $rekapPengeluaranDetail->tgltransaksi =  date('Y-m-d', strtotime($data['tgltransaksi']));
         $rekapPengeluaranDetail->pengeluaran_nobukti = $data['pengeluaran_nobukti'];
         $rekapPengeluaranDetail->nominal = $data['nominal'];
         $rekapPengeluaranDetail->keterangan = $data['keterangan'];
         $rekapPengeluaranDetail->modifiedby = auth('api')->user()->name;
         $rekapPengeluaranDetail->info = html_entity_decode(request()->info);
-        
+
         if (!$rekapPengeluaranDetail->save()) {
             throw new \Exception("Error storing rekap pengeluaran detail.");
         }
