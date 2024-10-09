@@ -1633,6 +1633,20 @@ class Supir extends MyModel
         $parameter = new Parameter();
         $statusNonAktif = $parameter->cekId('STATUS AKTIF', 'STATUS AKTIF','NON AKTIF');
 
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temp, function ($table) {
+           $table->string('nobukti');
+           $table->bigInteger('supir_id')->nullable();       
+           $table->double('sisa',15,2)->nullable(); 
+        });
+        $fetch = DB::table("pengeluarantruckingdetail")->from(db::raw("pengeluarantruckingdetail with (readuncommitted)"))
+            ->select(DB::raw("pengeluarantruckingdetail.nobukti, pengeluarantruckingdetail.supir_id, (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"))
+            ->join(db::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', 'supir.id')
+            ->whereRaw("pengeluarantruckingdetail.nobukti like '%PJT%' and supir.noktp='$noktp'")
+            ->groupBy('pengeluarantruckingdetail.nobukti','pengeluarantruckingdetail.nominal','pengeluarantruckingdetail.supir_id');
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'supir_id', 'sisa',], $fetch);
+
+
         $query = Supir::from(DB::raw("supir with (readuncommitted)"))
             ->select(
                 'supir.id',
@@ -1675,7 +1689,9 @@ class Supir extends MyModel
                 DB::raw("'$nobuktiPemutihan' as pemutihansupir_nobukti")
             )
             ->where('supir.noktp', $noktp)
+            ->join(db::raw("$temp as b with (readuncommitted)"), 'supir.id', 'b.supir_id')
             ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id')
+            ->whereRaw("isnull(b.sisa,0) != 0")
             ->orderBy('supir.id', 'desc')
             ->first();
 
