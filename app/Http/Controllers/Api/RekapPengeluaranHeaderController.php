@@ -387,7 +387,9 @@ class RekapPengeluaranHeaderController extends Controller
     {
         $rekapPengeluaranHeader = new RekapPengeluaranHeader();
         $rekap_PengeluaranHeader = $rekapPengeluaranHeader->getExport($id);
-
+        if ($request->export == true) {
+            request()->formatcetakan = $rekap_PengeluaranHeader->formatcetakan;
+        }
         $rekapPengeluaranDetail = new RekapPengeluaranDetail();
         $rekap_PengeluaranDetail = $rekapPengeluaranDetail->get();
 
