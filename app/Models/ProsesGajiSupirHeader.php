@@ -128,7 +128,33 @@ class ProsesGajiSupirHeader extends MyModel
             ];
             goto selesai;
         }
+        //         select * from prosesgajisupirheader as a
+        // join penerimaantruckingheader as b on a.nobukti = b.prosesgajisupir_nobukti
+        // join pengeluarantruckingdetail as c on b.nobukti = c.penerimaantruckingheader_nobukti
+        // where a.nobukti='EBS 0010/IX/2024'
 
+        $pelunasanBBM = DB::table('prosesgajisupirheader')
+            ->from(
+                DB::raw("prosesgajisupirheader as a with (readuncommitted)")
+            )
+            ->select(
+                'c.nobukti'
+            )
+            ->join(DB::raw("penerimaantruckingheader b with (readuncommitted)"), 'a.nobukti', 'b.prosesgajisupir_nobukti')
+            ->join(DB::raw("pengeluarantruckingdetail c with (readuncommitted)"), 'b.nobukti', 'c.penerimaantruckingheader_nobukti')
+            ->where('a.nobukti', '=', $prosesGaji->nobukti)
+            ->first();
+
+        if (isset($pelunasanBBM)) {
+
+            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+            $data = [
+                'kondisi' => true,
+                'keterangan' =>  'No Bukti <b>' . $prosesGaji->nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Pelunasan BBM <b>' . $pelunasanBBM->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                'kodeerror' => 'SATL2'
+            ];
+            goto selesai;
+        }
         $data = [
             'kondisi' => false,
             'keterangan' => '',
@@ -4165,7 +4191,7 @@ class ProsesGajiSupirHeader extends MyModel
                             INNER JOIN gajisupirbbm b on a.nobukti=b.penerimaantrucking_nobukti 
                             INNER JOIN prosesgajisupirdetail c on b.gajisupir_nobukti=c.gajisupir_nobukti
                             where left(A.nobukti,3)='BBM'
-                            and c.nobukti='" . $prosesGajiSupirHeader->nobukti . "'"));        
+                            and c.nobukti='" . $prosesGajiSupirHeader->nobukti . "'"));
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($prosesGajiSupirDetail->getTable()),
