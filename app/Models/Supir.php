@@ -1621,7 +1621,7 @@ class Supir extends MyModel
     public function getSupirResignModel($noktp)
     {
         $getPemutihan = DB::table("pemutihansupirheader")->from(DB::raw("pemutihansupirheader with (readuncommitted)"))
-            ->select('pemutihansupirheader.nobukti')
+            ->select('pemutihansupirheader.nobukti','pemutihansupirheader.supir_id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pemutihansupirheader.supir_id', 'supir.id')
             ->where('supir.noktp', $noktp)
             ->orderBy('pemutihansupirheader.id', 'desc')
@@ -1647,7 +1647,7 @@ class Supir extends MyModel
         $tes = DB::table($temp)->insertUsing(['nobukti', 'supir_id', 'sisa',], $fetch);
 
 
-        $query = Supir::from(DB::raw("supir with (readuncommitted)"))
+        $query = DB::table('supir')->from(DB::raw("supir with (readuncommitted)"))
             ->select(
                 'supir.id',
                 'supir.namasupir',
@@ -1689,13 +1689,16 @@ class Supir extends MyModel
                 DB::raw("'$nobuktiPemutihan' as pemutihansupir_nobukti")
             )
             ->where('supir.noktp', $noktp)
-            ->join(db::raw("$temp as b with (readuncommitted)"), 'supir.id', 'b.supir_id')
-            ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id')
-            ->whereRaw("isnull(b.sisa,0) != 0")
-            ->orderBy('supir.id', 'desc')
-            ->first();
+            ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirlama_id', '=', 'supirlama.id');
+            if ($getPemutihan == '') {
+                $query->Join(db::raw("$temp as b with (readuncommitted)"), 'supir.id', 'b.supir_id')
+                ->whereRaw("isnull(b.sisa,0) != 0");
+            }else{
+                $query->where('supir.id', $getPemutihan->supir_id);
+            }
+            $query->orderBy('supir.id', 'desc');
 
-        return $query;
+        return $query->first();
     }
 
     public function validationSupirResign($noktp, $id = 0)
