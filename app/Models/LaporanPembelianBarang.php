@@ -144,15 +144,16 @@ class LaporanPembelianBarang extends MyModel
             $table->datetime('tglinput')->nullable();
         });
 
+        if ($bulan == 12) {
+            $priode = $tahun . '-01-01';
+        } else {
+            $ybulan = $bulan + 1;
+            $priode = $tahun . '-' . $ybulan . '-01';
+        }
+        $priodegantung = date("Y-m-d", strtotime("-1 day", strtotime($priode)));
         if ($stokgantung == true) {
 
-            if ($bulan == 12) {
-                $priode = $tahun . '-01-01';
-            } else {
-                $ybulan = $bulan + 1;
-                $priode = $tahun . '-' . $ybulan . '-01';
-            }
-            $priodegantung = date("Y-m-d", strtotime("-1 day", strtotime($priode)));
+
 
             // $bulan, $tahun
 
@@ -304,8 +305,8 @@ class LaporanPembelianBarang extends MyModel
             ->select(
                 'a.id',
                 'a.lokasi as nobukti',
-                db::raw("'".$priodegantung."' as tglbukti"),
-                
+                db::raw("'" . $priodegantung . "' as tglbukti"),
+
                 // 'd.namastok',
                 db::raw("isnull(c1.kodekelompok,'')+' - '+trim(d.namastok) as namastok"),
                 db::raw("isnull(a.qtymasuk,0) as qty"),
