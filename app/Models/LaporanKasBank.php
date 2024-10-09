@@ -653,7 +653,8 @@ class LaporanKasBank extends MyModel
             ->select(
                 DB::raw("4 as urut"),
                 DB::raw('ROW_NUMBER() OVER (PARTITION BY A.nobukti ORDER BY b.id) as urutdetail'),
-                'b.coadebet as coa',
+                db::raw("(case when b.coakredit='03.02.02.05' then b.coakredit else b.coadebet end) as coa"),
+                // 'b.coadebet as coa',
                 'b.tgljatuhtempo',
                 'b.tgljatuhtempo as tglbukti2',
                 'a.nobukti',
@@ -695,7 +696,9 @@ class LaporanKasBank extends MyModel
             ->select(
                 DB::raw("4 as urut"),
                 DB::raw('ROW_NUMBER() OVER (PARTITION BY A.nobukti ORDER BY b.id) as urutdetail'),
-                'b.coadebet as coa',
+                db::raw("(case when b.coakredit='03.02.02.05' then b.coakredit else b.coadebet end) as coa"),
+
+                // 'b.coadebet as coa',
                 'c.tglbukti',
                 'c.tglbukti as tglbukti2',
                 'a.nobukti',
@@ -738,7 +741,9 @@ class LaporanKasBank extends MyModel
                 ->select(
                     DB::raw("5 as urut"),
                     DB::raw('ROW_NUMBER() OVER (PARTITION BY A.nobukti ORDER BY b.id) as urutdetail'),
-                    'b.coadebet as coa',
+                    db::raw("(case when b.coakredit='03.02.02.05' then b.coakredit else b.coadebet end) as coa"),
+
+                    // 'b.coadebet as coa',
                     'b.tgljatuhtempo as tglbukti',
                     'b.tgljatuhtempo as  tglbukti2',
                     'a.nobukti',
