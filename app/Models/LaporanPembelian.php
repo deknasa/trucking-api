@@ -159,6 +159,7 @@ class LaporanPembelian extends MyModel
                         'b.harga',
                         'b.nominaldiscount',
                         DB::raw('(b.qty * b.harga - b.nominaldiscount) AS total'),
+                        DB::raw('((b.qty * b.harga) ) AS totalharga'), 
                         DB::raw("ISNULL(e.satuan, '') AS satuan"),
                         'b.keterangan',
                         DB::raw("'Laporan Pembelian' as judulLaporan"),
