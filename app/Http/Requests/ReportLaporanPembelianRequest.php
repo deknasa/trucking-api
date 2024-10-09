@@ -56,15 +56,15 @@ class ReportLaporanPembelianRequest extends FormRequest
                 'required', 'date_format:d-m-Y',
                 'after_or_equal:' . request()->dari
             ],
-            'supplierdari' => ['required'],
-            'suppliersampai' => ['required'],
+            // 'supplierdari' => ['required'],
+            // 'suppliersampai' => ['required'],
             'status' => ['required']
         ];
 
         $rule = array_merge(
             $rule,
-            $rulessupplierdari,
-            $rulessuppliersampai
+            // $rulessupplierdari,
+            // $rulessuppliersampai
         );
 
         return $rule;

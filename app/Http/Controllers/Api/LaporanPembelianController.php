@@ -40,10 +40,10 @@ class LaporanPembelianController extends Controller
     {
         $dari = date('Y-m-d', strtotime($request->dari));
         $sampai = date('Y-m-d', strtotime($request->sampai));
-        $supplierdari = $request->supplierdari;
-        $suppliersampai = $request->suppliersampai;
-        $supplierdari_id = $request->supplierdari_id;
-        $suppliersampai_id = $request->suppliersampai_id;
+        $supplierdari = $request->supplierdari ?? 0;
+        $suppliersampai = $request->suppliersampai ?? '';
+        $supplierdari_id = $request->supplierdari_id  ?? 0;
+        $suppliersampai_id = $request->suppliersampai_id ?? '';
         $status = $request->status;
 
         $laporanpembelian = new LaporanPembelian();
@@ -72,7 +72,7 @@ class LaporanPembelianController extends Controller
                 ->join("parameter", 'parameter.text', 'cabang.id')
                 ->where('parameter.grp', 'ID CABANG')
                 ->first();
-                
+
             return response([
                 'data' => $laporan_pembelian,
                 'namacabang' => 'CABANG ' . $getCabang->namacabang
@@ -190,8 +190,16 @@ class LaporanPembelianController extends Controller
                     'index' => 'namastok',
                 ],
                 [
-                    'label' => 'Qty',
-                    'index' => 'qty',
+                    'label' => 'Total',
+                    'index' => 'totalharga',
+                ],
+                [
+                    'label' => 'Discount',
+                    'index' => 'nominaldiscount',
+                ],
+                [
+                    'label' => 'Nominal',
+                    'index' => 'total',
                 ],
                 [
                     'label' => 'Satuan',
@@ -210,10 +218,38 @@ class LaporanPembelianController extends Controller
             $lastColumn = $alphabets[$data_columns_index];
             $sheet->getStyle("A$header_start_row:$lastColumn$header_start_row")->getFont()->setBold(true);
             $sheet->getStyle("A$header_start_row:$lastColumn$header_start_row")->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-
+            $namasupplier = '';
+            $hit = 0;
+            $awal = $detail_start_row;
+            $akhir = 0;
+            $kursorE = '';
+            $kursorF = '';
+            $kursorG = '';
+            $urutb = 0;
             if (is_array($pengeluaran) || is_iterable($pengeluaran)) {
                 foreach ($pengeluaran as $response_index => $response_detail) {
+                    $hit = $hit + 1;
+                    if ($response_detail->namasupplier != $namasupplier && $hit != 1) {
+                        $urutb = $urutb + 1;
+                        $akhir = $detail_start_row - 1;
 
+                        if ($urutb == 1) {
+                            $kursorE = $kursorE . 'E' . $detail_start_row;
+                            $kursorF = $kursorF . 'F' . $detail_start_row;
+                            $kursorG = $kursorG . 'G' . $detail_start_row;
+                        } else {
+                            $kursorE = $kursorE . '+E' . $detail_start_row;
+                            $kursorF = $kursorF . '+F' . $detail_start_row;
+                            $kursorG = $kursorG . '+G' . $detail_start_row;
+                        }
+                        $sheet->setCellValue("C$detail_start_row", 'SUB TOTAL');
+                        $sheet->setCellValue('E' . $detail_start_row, "=SUM(E$awal:E$akhir)")->getStyle("E$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00");
+                        $sheet->setCellValue('F' . $detail_start_row, "=SUM(F$awal:F$akhir)")->getStyle("F$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00");
+                        $sheet->setCellValue('G' . $detail_start_row, "=SUM(G$awal:G$akhir)")->getStyle("G$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00");
+                        $sheet->getStyle("A$detail_start_row:I$detail_start_row")->applyFromArray($styleArray)->getFont()->setBold(true);
+                        $detail_start_row++;
+                        $awal = $detail_start_row;
+                    }
                     // foreach ($header_columns as $detail_columns_index => $detail_column) {
                     //     // dd($detail_column);
 
@@ -228,12 +264,14 @@ class LaporanPembelianController extends Controller
                         ->setFormatCode('dd-mm-yyyy');
                     $sheet->setCellValue("C$detail_start_row", $response_detail->namasupplier);
                     $sheet->setCellValue("D$detail_start_row", $response_detail->namastok);
-                    $sheet->setCellValue("E$detail_start_row", $response_detail->qty);
-                    $sheet->setCellValue("F$detail_start_row", $response_detail->satuan);
-                    $sheet->setCellValue("G$detail_start_row", $response_detail->keterangan);
+                    $sheet->setCellValue("E$detail_start_row", $response_detail->totalharga);
+                    $sheet->setCellValue("F$detail_start_row", $response_detail->nominaldiscount);
+                    $sheet->setCellValue("G$detail_start_row", $response_detail->total);
+                    $sheet->setCellValue("H$detail_start_row", $response_detail->satuan);
+                    $sheet->setCellValue("I$detail_start_row", $response_detail->keterangan);
 
-                    $sheet->getStyle("A$detail_start_row:G$detail_start_row")->applyFromArray($styleArray);
-                    // $sheet->getStyle("C$detail_start_row:I$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00");
+                    $sheet->getStyle("A$detail_start_row:I$detail_start_row")->applyFromArray($styleArray);
+                    $sheet->getStyle("E$detail_start_row:G$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00");
                     // $sheet->getStyle("B$detail_start_row:B$detail_start_row")->getNumberFormat()->setFormatCode('dd-mm-yyyy');
                     // $sheet->getStyle("D$detail_start_row:D$detail_start_row")->getNumberFormat()->setFormatCode('dd-mm-yyyy');
 
@@ -241,9 +279,36 @@ class LaporanPembelianController extends Controller
                     //    $totalKredit += $response_detail['kredit'];
                     //     $totalDebet += $response_detail['debet'];
                     //     $totalSaldo += $response_detail['Saldo'];
+                    $namasupplier = $response_detail->namasupplier;
                     $detail_start_row++;
                 }
             }
+            // 
+            $urutb = $urutb + 1;
+            $akhir = $detail_start_row - 1;
+
+            if ($urutb == 1) {
+                $kursorE = $kursorE . 'E' . $detail_start_row;
+                $kursorF = $kursorF . 'F' . $detail_start_row;
+                $kursorG = $kursorG . 'G' . $detail_start_row;
+            } else {
+                $kursorE = $kursorE . '+E' . $detail_start_row;
+                $kursorF = $kursorF . '+F' . $detail_start_row;
+                $kursorG = $kursorG . '+G' . $detail_start_row;
+            }
+            $sheet->setCellValue("C$detail_start_row", 'SUB TOTAL');
+            $sheet->setCellValue('E' . $detail_start_row, "=SUM(E$awal:E$akhir)")->getStyle("E$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00");
+            $sheet->setCellValue('F' . $detail_start_row, "=SUM(F$awal:F$akhir)")->getStyle("F$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00");
+            $sheet->setCellValue('G' . $detail_start_row, "=SUM(G$awal:G$akhir)")->getStyle("G$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00");
+            $sheet->getStyle("A$detail_start_row:I$detail_start_row")->applyFromArray($styleArray)->getFont()->setBold(true);
+            $detail_start_row++;
+            $awal = $detail_start_row;
+            // 
+            $sheet->setCellValue("C$detail_start_row", 'GRAND TOTAL');
+            $sheet->setCellValue('E' . $detail_start_row, "=($kursorE)")->getStyle("E$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00");
+            $sheet->setCellValue('F' . $detail_start_row, "=($kursorF)")->getStyle("F$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00");
+            $sheet->setCellValue('G' . $detail_start_row, "=($kursorG)")->getStyle("G$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00");
+            $sheet->getStyle("A$detail_start_row:I$detail_start_row")->applyFromArray($styleArray)->getFont()->setBold(true);
 
             $ttd_start_row = $detail_start_row + 2;
             $sheet->setCellValue("A$ttd_start_row", 'Disetujui Oleh,');
@@ -260,8 +325,10 @@ class LaporanPembelianController extends Controller
             $sheet->getColumnDimension('C')->setWidth(22);
             $sheet->getColumnDimension('D')->setWidth(33);
             $sheet->getColumnDimension('E')->setAutoSize(true);
-            $sheet->getColumnDimension('F')->setWidth(8);
-            $sheet->getColumnDimension('G')->setWidth(72);
+            $sheet->getColumnDimension('F')->setAutoSize(true);
+            $sheet->getColumnDimension('G')->setAutoSize(true);
+            $sheet->getColumnDimension('H')->setWidth(8);
+            $sheet->getColumnDimension('I')->setWidth(72);
 
             $writer = new Xlsx($spreadsheet);
             $filename = 'LAPORAN PEMBELIAN PER SUPPLIER' . date('dmYHis');
