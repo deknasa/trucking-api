@@ -89,15 +89,15 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
             'bank' => 'required',
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
-                'before:' . $tglbatasakhir,
-                new DateTutupBuku(),
+                // 'before:' . $tglbatasakhir,
+                // new DateTutupBuku(),
                 new ValidasiHutangList($jumlahdetail),
                 new ValidasiPendapatanSupir(),
                 new validasiTripKomisi()
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',
-                'before:' . $tglbatasakhir,
+                // 'before:' . $tglbatasakhir,
                 'after_or_equal:' . $this->tgldari,
                 new ValidasiPendapatanSupir()
             ],

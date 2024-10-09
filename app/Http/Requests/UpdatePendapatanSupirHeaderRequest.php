@@ -80,7 +80,7 @@ class UpdatePendapatanSupirHeaderRequest extends FormRequest
             'bank' => 'required',
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
-                'before_or_equal:' . date('Y-m-t'),                
+                // 'before_or_equal:' . date('Y-m-t'),                
                 new ValidasiHutangList($jumlahdetail),
                 new ValidasiPendapatanSupir(),
                 new validasiTripKomisi()
@@ -88,7 +88,7 @@ class UpdatePendapatanSupirHeaderRequest extends FormRequest
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',
                 'after_or_equal:' . date('d-m-Y', strtotime($this->tgldari)),
-                'before_or_equal:' . date('Y-m-t'),
+                // 'before_or_equal:' . date('Y-m-t'),
                 new ValidasiPendapatanSupir()
 
 
