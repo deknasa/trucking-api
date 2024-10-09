@@ -28,6 +28,22 @@ class LaporanPembelian extends MyModel
     public function getReport($dari, $sampai, $supplierdari, $suppliersampai, $supplierdari_id, $suppliersampai_id, $status)
     {
 
+
+        if ($supplierdari_id == 0 || $suppliersampai_id == 0) {
+            $supplierdari_id = db::table("supplier")->from(db::raw("supplier a with (readuncommitted)"))
+                ->select(
+                    'a.id'
+                )
+                ->orderby('a.id', 'asc')
+                ->first()->id ?? 0;
+
+            $suppliersampai_id = db::table("supplier")->from(db::raw("supplier a with (readuncommitted)"))
+                ->select(
+                    'a.id'
+                )
+                ->orderby('a.id', 'desc')
+                ->first()->id ?? 0;
+        }
         $getJudul = DB::table('parameter')
             ->select('text')
             ->where('grp', 'JUDULAN LAPORAN')
@@ -44,6 +60,7 @@ class LaporanPembelian extends MyModel
             ->where('grp', 'DIPERIKSA')
             ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
+        // dd($status);
         if ($status == 'ORDER PEMBELIAN') {
             $getPOStok = DB::table('parameter')
                 ->where('grp', 'PO STOK')
@@ -165,7 +182,7 @@ class LaporanPembelian extends MyModel
                 // dd($result2->get());
 
             }
-        } elseif ($status == 'PEMBELIAN PER SUPPLIER') {
+        } elseif ($status == 'REKAP PEMBELIAN PER SUPPLIER') {
             $getPOStok = DB::table('parameter')
                 ->where('grp', 'SPB STOK')
                 ->where('subgrp', 'SPB STOK')
@@ -193,7 +210,7 @@ class LaporanPembelian extends MyModel
                     ->where('a.tglbukti', '<=', $sampai)
                     ->where('a.supplier_id', '>=', $supplierdari_id)
                     ->where('a.supplier_id', '<=', $suppliersampai_id)
-                    ->where('a.penerimaanstok_id', '=', $penerimaanstok_id)
+                    ->whereraw("a.penerimaanstok_id in(" . $penerimaanstok_id . ",6)")
                     ->groupBy('b.nobukti');
 
                 DB::table($Tempbeli)->insertUsing([
@@ -213,7 +230,8 @@ class LaporanPembelian extends MyModel
                         'b.qty',
                         'b.harga',
                         'b.nominaldiscount',
-                        DB::raw('(b.qty * b.harga - b.nominaldiscount) AS total'),
+                        DB::raw('((b.qty * b.harga) - b.nominaldiscount) AS total'),
+                        DB::raw('((b.qty * b.harga) ) AS totalharga'),
                         DB::raw("ISNULL(e.satuan, '') AS satuan"),
                         'b.keterangan',
 
@@ -236,8 +254,8 @@ class LaporanPembelian extends MyModel
                     ->where('a.tglbukti', '<=', $sampai)
                     ->where('a.supplier_id', '>=', $supplierdari_id)
                     ->where('a.supplier_id', '<=', $suppliersampai_id)
-                    ->where('a.penerimaanstok_id', '=', $penerimaanstok_id)
-                    ->orderBy('a.id', 'asc')
+                    ->whereraw("a.penerimaanstok_id in(" . $penerimaanstok_id . ",6)")
+                    ->orderBy('c.namasupplier', 'asc')
                     ->orderBy('b.id', 'asc');
 
                 // dd($result2->get());
@@ -288,6 +306,7 @@ class LaporanPembelian extends MyModel
         }
 
         $data = $result2->get();
+        // dd($data);
         return $data;
     }
 }
