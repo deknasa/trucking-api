@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\ReportLaporanPembelianRequest;
 use App\Models\LaporanHutangGiro;
+use App\Models\Parameter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -109,7 +110,8 @@ class LaporanHutangGiroController extends Controller
                 ->join("parameter", 'parameter.text', 'cabang.id')
                 ->where('parameter.grp', 'ID CABANG')
                 ->first();
-
+            $judul = (new Parameter())->cekText('JUDULAN LAPORAN','JUDULAN LAPORAN');
+            $judulLaporan = 'Laporan Hutang Giro';
             // return response([
             //     'data' => $laporan_hutanggiro,
             //     'namacabang' => 'CABANG ' . $getCabang->namacabang
@@ -126,7 +128,7 @@ class LaporanHutangGiroController extends Controller
             $sheet = $spreadsheet->getActiveSheet();
 
             $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
-            $sheet->setCellValue('A1', $pengeluaran[0]->judul);
+            $sheet->setCellValue('A1', $judul);
             $sheet->getStyle("A1")->getFont()->setSize(11)->setBold(true);
             $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
             $sheet->mergeCells('A1:F1');
@@ -141,7 +143,7 @@ class LaporanHutangGiroController extends Controller
 
             $tanggal = str_replace($englishMonths, $indonesianMonths, date('d - M - Y', strtotime($request->periode)));
 
-            $sheet->setCellValue('A3', $pengeluaran[0]->judulLaporan);
+            $sheet->setCellValue('A3', $judulLaporan);
             $sheet->setCellValue('A4', 'Periode : ' . $tanggal);
 
             // $sheet->getStyle("A1")->getFont()->setSize(20)->setBold(true);
