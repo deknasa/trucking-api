@@ -1282,7 +1282,7 @@ class ExportLaporanMingguanSupir extends Model
 
                     DB::raw("( case when isnull(c.invoice,'')='' then 0 else
                             (case when isnull(b.notripawal,'')='' then (isnull(e.omsettambahan,0) + isnull(b.omset,0)) else 
-                            (case when a.urutextra=1 then (isnull(e.omsettambahan,0) + isnull(b.omset,0))  end)
+                            (case when a.urutextra=1 then (isnull(e.omsettambahan,0) +isnull(b.retribusi,0) + isnull(b.omset,0))  end)
                                 end) 
                             end) as omsetmedan"),
                     DB::raw("0 as omsetextrabbm"),
@@ -1419,7 +1419,7 @@ class ExportLaporanMingguanSupir extends Model
 
                     DB::raw("( case when isnull(c.invoice,'')='' then 0 else
                             (case when isnull(b.notripawal,'')='' then (isnull(e.omsettambahan,0) + isnull(b.omset,0)) else 
-                            (case when a.urutextra=1 then (isnull(e.omsettambahan,0) + isnull(b.omset,0))  end)
+                            (case when a.urutextra=1 then (isnull(e.omsettambahan,0) +isnull(b.retribusi,0) + isnull(b.omset,0))  end)
                                 end) 
                             end) as omsetmedan"),
                     DB::raw("0 as omsetextrabbm"),
