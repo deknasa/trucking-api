@@ -633,7 +633,7 @@ class PengeluaranStokDetailFifo extends MyModel
         if ($data['pengeluaranstok_id'] == 2) {
             $totdetailharga = $data['detail_harga'];
             // $selisih = $hrgsat - $totdetailharga;
-            $selisih = $tharga - $totdetailharga;
+            $selisih = $data['qty'] * ($tharga - $totdetailharga);
             
 
             $hrgsat = $data['detail_harga'];

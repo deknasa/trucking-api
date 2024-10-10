@@ -3705,6 +3705,7 @@ class PengeluaranStokHeader extends MyModel
         }
 
         $summaryDetail = 0;
+        $summarySelisih = 0;
         $coadebet_detail = [];
         $coakredit_detail = [];
         $nominal_detail = [];
@@ -4031,9 +4032,9 @@ class PengeluaranStokHeader extends MyModel
 
                 $pengeluaranStokDetail = PengeluaranStokDetail::where('id', $pengeluaranStokDetail->id)->first();
 
-                $nominal_detail[] = $pengeluaranStokDetail->total;
+                $nominal_detail[] = $pengeluaranStokDetail->total - $pengeluaranStokDetail->selisihhargafifo;
                 $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
-                $summaryDetail += $pengeluaranStokDetail->total;
+                $summaryDetail += $pengeluaranStokDetail->total - $pengeluaranStokDetail->selisihhargafifo;
             }
         }
 

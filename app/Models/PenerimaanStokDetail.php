@@ -501,7 +501,7 @@ class PenerimaanStokDetail extends MyModel
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
             $this->sort($query);
-            $this->paginate($query);
+            // $this->paginate($query);
         }
 
         endTnl:
