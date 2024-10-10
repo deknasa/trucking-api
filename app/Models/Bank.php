@@ -298,9 +298,9 @@ class Bank extends MyModel
             $query->where('bank.statusaktif', '=', $statusaktif->id);
         }
         if ($alatBayar != 0) {
-            $getTipe = DB::table($this->table)->from(
-                DB::raw($this->table . " with (readuncommitted)")
-            )->where('bank.id', '=', $alatBayar)->first();
+            $getTipe = DB::table('alatbayar')->from(
+                DB::raw("alatbayar with (readuncommitted)")
+            )->where('id', '=', $alatBayar)->first();
             $tipe = $getTipe->tipe;
         }
         if ($tipe == 'KAS') {
