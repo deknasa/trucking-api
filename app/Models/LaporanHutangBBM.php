@@ -24,7 +24,17 @@ class LaporanHutangBBM extends MyModel
         'updated_at',
     ];
 
+    // public function getReport($sampai) {
+    //     $sampai = date("Y-m-d", strtotime($sampai));
 
+    //     $penerimaanTrucking = PenerimaanTrucking::where('kodepenerimaan', '=', 'BBM')->first();
+
+    //     $penerimaantrucking_id = $penerimaanTrucking->id;
+
+    //     $pengeluaranTrucking = PengeluaranTrucking::where('kodepengeluaran', '=', 'KBBM')->first();
+
+    //     $pengeluarantrucking_id = $pengeluaranTrucking->id; 
+    // }
 
     public function getReport($sampai)
     {
@@ -291,19 +301,26 @@ class LaporanHutangBBM extends MyModel
             DB::raw($penerimaanTruckingHeader . " as a")
         )
             ->select(
-                'a.tglbukti',
-                'a.tglbukti',
-                'c.nobukti',
-                'c.Keterangan',
+                DB::raw("max(a.tglbukti) as tglbukti"),
+                DB::raw("max(a.tglbukti) as tglbukti"),
+                DB::raw("(case when isnull(e.nobukti,'')='' then c.nobukti else  isnull(e.nobukti,'') end) as nobukti"),
+                // 'c.nobukti',
+                DB::raw("max((case when isnull(e.nobukti,'')='' then c.keterangan else  isnull(f.Keterangan,'') end)) as nobukti")                
+                ,
                 DB::raw("0 as flag"),
-                DB::raw("(c.nominal - isnull(B.nominal, 0)) as nominal"),
+                DB::raw("sum((c.nominal - isnull(B.nominal, 0))) as nominal"),
 
             )
             ->leftjoin(DB::raw($pengeluaranTruckingDetail . " as b "), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw($penerimaanTruckingDetail . " as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+            ->leftjoin(DB::raw("gajisupirbbm as d with (readuncommitted)"), 'c.nobukti', 'd.penerimaantrucking_nobukti')
+            ->leftjoin(DB::raw("prosesgajisupirdetail as e with (readuncommitted)"), 'd.gajisupir_nobukti', 'e.gajisupir_nobukti')
+            ->leftjoin(DB::raw("prosesgajisupirheader as f with (readuncommitted)"), 'e.nobukti', 'f.nobukti')
+
             ->whereRaw("(c.nominal - isnull(B.nominal, 0)) <> 0")
-            ->orderBy('a.tglbukti', 'ASC')
-            ->orderBy('c.nobukti', 'ASC');
+            ->groupby( DB::raw("(case when isnull(e.nobukti,'')='' then c.nobukti else  isnull(e.nobukti,'') end)"));
+            // ->orderBy('a.tglbukti', 'ASC')
+            // ->orderBy('c.nobukti', 'ASC');
 
         DB::table($tempLaporan)->insertUsing([
             'tglbuktibbm',
@@ -319,21 +336,33 @@ class LaporanHutangBBM extends MyModel
             DB::raw("pengeluarantruckingheader as a with (readuncommitted)")
         )
             ->select(
-                'a.tglbukti',
-                'a.tglbukti',
-                'c.nobukti',
-                'c.Keterangan',
+                DB::raw("max(a.tglbukti) as tglbukti"),
+                DB::raw("max(a.tglbukti) as tglbukti"),
+                DB::raw("(case when isnull(d.prosesgajisupir_nobukti,'')='' then d.nobukti else  isnull(d.prosesgajisupir_nobukti,'') end) as nobukti"),
+                // 'c.nobukti',
+                DB::raw("max((case when isnull(d.prosesgajisupir_nobukti,'')='' then d.keterangan else  isnull(e.Keterangan,'') end)) as nobukti"),
+                // 'e.Keterangan',
                 DB::raw("0 as flag"),
-                DB::raw("(c.nominal*-1) as nominal"),
+                DB::raw("sum((c.nominal*-1)) as nominal"),
 
             )
             ->join(DB::raw("pengeluarantruckingdetail as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+            ->join(DB::raw("penerimaantruckingheader as d with (readuncommitted)"), 'c.penerimaantruckingheader_nobukti', 'd.nobukti')
+            ->leftjoin(DB::raw("prosesgajisupirheader as e with (readuncommitted)"), 'd.prosesgajisupir_nobukti', 'e.nobukti')
             ->where('a.tglbukti',$sampai)
             ->where('a.pengeluarantrucking_id', '=', $pengeluarantrucking_id)            
-            ->orderBy('a.tglbukti', 'ASC')
-            ->orderBy('c.nobukti', 'ASC');
+            ->groupby(DB::raw("(case when isnull(d.prosesgajisupir_nobukti,'')='' then d.nobukti else  isnull(d.prosesgajisupir_nobukti,'') end)"));
+            // ->orderBy('a.tglbukti', 'ASC')
+            // ->orderBy('c.nobukti', 'ASC');
 
             // dd($queryTempLaporan->get());
+            // select (case when isnull(c.prosesgajisupir_nobukti,'')='' then c.nobukti else  isnull(c.prosesgajisupir_nobukti,'') end) as nobukti,sum(b .nominal) 
+            // from pengeluarantruckingheader a
+            // inner join pengeluarantruckingdetail b on a.nobukti=b.nobukti
+            // inner join penerimaantruckingheader c on b.penerimaantruckingheader_nobukti =c.nobukti
+            //  where a.pengeluarantrucking_id=5
+            //  group by (case when isnull(c.prosesgajisupir_nobukti,'')='' then c.nobukti else  isnull(c.prosesgajisupir_nobukti,'') end)
+            
 
         DB::table($tempLaporan)->insertUsing([
             'tglbuktibbm',
