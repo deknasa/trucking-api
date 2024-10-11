@@ -235,7 +235,19 @@ return [
             'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
-        ],     
+        ],           
+        'sqlsrvaws' => [
+            'driver' => 'sqlsrv',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_HOST_AWS', 'web.transporindo.com'),
+            'port' => env('DB_PORT_AWS', '1450'),
+            'database' => env('DB_DATABASE_AWS', 'truckingreplica'),
+            'username' => env('DB_USERNAME_AWS', 'sa'),
+            'password' => env('DB_PASSWORD_AWS', 'RFV$*)123wsx'),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+        ],    
 
     ],
 

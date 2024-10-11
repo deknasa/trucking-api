@@ -25,7 +25,7 @@ class BlackListSupir extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-        
+
         $query = BlackListSupir::from(
             DB::raw($this->table . " with (readuncommitted)")
         )->select(
@@ -37,9 +37,9 @@ class BlackListSupir extends MyModel
             "blacklistsupir.created_at",
             "blacklistsupir.updated_at",
         );
-            
-            
-            
+
+
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -111,14 +111,14 @@ class BlackListSupir extends MyModel
         $query = BlackListSupir::from(
             DB::raw($this->table . " with (readuncommitted)")
         )->select(
-                "blacklistsupir.id",
-                "blacklistsupir.namasupir",
-                "blacklistsupir.noktp",
-                "blacklistsupir.nosim",
-                // "blacklistsupir.modifiedby",
-                "blacklistsupir.created_at",
-                "blacklistsupir.updated_at",
-            );
+            "blacklistsupir.id",
+            "blacklistsupir.namasupir",
+            "blacklistsupir.noktp",
+            "blacklistsupir.nosim",
+            // "blacklistsupir.modifiedby",
+            "blacklistsupir.created_at",
+            "blacklistsupir.updated_at",
+        );
 
         $query = $this->sort($query);
         $models = $this->filter($query);
@@ -128,74 +128,105 @@ class BlackListSupir extends MyModel
             'noktp',
             'nosim',
             // 'modifiedby',
-            'created_at', 'updated_at'
+            'created_at',
+            'updated_at'
         ], $models);
 
         return $temp;
     }
-   
-    public function processStore(array $data): BlackListSupir
+
+    public function processStore(array $data)
     {
+
         $blackListSupir = new BlackListSupir();
-        $blackListSupir->namasupir = $data['namasupir'];
-        $blackListSupir->noktp = $data['noktp'];
-        $blackListSupir->nosim = $data['nosim'];
+        // $blackListSupir->namasupir = $data['namasupir'];
+        // $blackListSupir->noktp = $data['noktp'];
+        // $blackListSupir->nosim = $data['nosim'];
 
-        if (!$blackListSupir->save()) {
-            throw new \Exception("Error store Black List Supir");
-        }
+        // if (!$blackListSupir->save()) {
+        //     throw new \Exception("Error store Black List Supir");
+        // }
 
-        (new LogTrail())->processStore([
-            'namatabel' => strtoupper($blackListSupir->getTable()),
-            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY Black List Supir '),
-            'idtrans' => $blackListSupir->id,
-            'nobuktitrans' =>  $blackListSupir->id,
-            'aksi' => 'ENTRY',
-            'datajson' => $blackListSupir->toArray(),
-            'modifiedby' => $blackListSupir->modifiedby
-        ]);
-        
+        // (new LogTrail())->processStore([
+        //     'namatabel' => strtoupper($blackListSupir->getTable()),
+        //     'postingdari' => $data['postingdari'] ??strtoupper('ENTRY Black List Supir '),
+        //     'idtrans' => $blackListSupir->id,
+        //     'nobuktitrans' =>  $blackListSupir->id,
+        //     'aksi' => 'ENTRY',
+        //     'datajson' => $blackListSupir->toArray(),
+        //     'modifiedby' => $blackListSupir->modifiedby
+        // ]);
+
+        // return $blackListSupir;
+        $idcabang = (new Parameter())->cekText('ID CABANG','ID CABANG');
+        DB::connection('sqlsrvaws')->table('blacklistsupir')->insert(
+            [
+                'namasupir' => $data['namasupir'],
+                'noktp' => $data['noktp'],
+                'nosim' => $data['nosim'],
+                'modifiedby' => auth('api')->user()->name,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+                'info' => html_entity_decode(request()->info),
+                'editing_at' => null,
+                'editing_by' => null,
+                'cabang_id' => $idcabang
+            ]
+        );
         return $blackListSupir;
     }
 
-    public function processUpdate(BlackListSupir $blackListSupir ,array $data): BlackListSupir
+    public function processUpdate(BlackListSupir $blackListSupir, array $data): BlackListSupir
     {
-        $blackListSupir->namasupir = $data['namasupir'];
-        $blackListSupir->noktp = $data['noktp'];
-        $blackListSupir->nosim = $data['nosim'];
+        // $blackListSupir->namasupir = $data['namasupir'];
+        // $blackListSupir->noktp = $data['noktp'];
+        // $blackListSupir->nosim = $data['nosim'];
 
-        if (!$blackListSupir->save()) {
-            throw new \Exception("Error update Black List Supir.");
-        }
+        // if (!$blackListSupir->save()) {
+        //     throw new \Exception("Error update Black List Supir.");
+        // }
 
-        (new LogTrail())->processStore([
-            'namatabel' => strtoupper($blackListSupir->getTable()),
-            'postingdari' => $data['postingdari'] ??strtoupper('EDIT Black List Supir '),
-            'idtrans' => $blackListSupir->id,
-            'nobuktitrans' =>  $blackListSupir->id,
-            'aksi' => 'EDIT',
-            'datajson' => $blackListSupir->toArray(),
-            'modifiedby' => $blackListSupir->modifiedby
-        ]);
-        
+        // (new LogTrail())->processStore([
+        //     'namatabel' => strtoupper($blackListSupir->getTable()),
+        //     'postingdari' => $data['postingdari'] ?? strtoupper('EDIT Black List Supir '),
+        //     'idtrans' => $blackListSupir->id,
+        //     'nobuktitrans' =>  $blackListSupir->id,
+        //     'aksi' => 'EDIT',
+        //     'datajson' => $blackListSupir->toArray(),
+        //     'modifiedby' => $blackListSupir->modifiedby
+        // ]);
+        DB::connection('sqlsrvaws')->table('blacklistsupir')
+        ->where('id', $blackListSupir->id)
+        ->update(
+            [
+                'namasupir' => $data['namasupir'],
+                'noktp' => $data['noktp'],
+                'nosim' => $data['nosim'],
+                'modifiedby' => auth('api')->user()->name,
+                'updated_at' => date('Y-m-d H:i:s'),
+                'info' => html_entity_decode(request()->info),
+            ]
+        );
+
         return $blackListSupir;
     }
 
-    public function processDestroy($id,$postingdari =""): BlackListSupir
+    public function processDestroy($id, $postingdari = ""): BlackListSupir
     {
         $blackListSupir = BlackListSupir::findOrFail($id);
-        $dataHeader =  $blackListSupir->toArray();
-      
-        $blackListSupir = $blackListSupir->lockAndDestroy($id);
-        $hutangLogTrail = (new LogTrail())->processStore([
-            'namatabel' => $this->table,
-            'postingdari' => ($postingdari =="") ? $postingdari :strtoupper('DELETE Black List Supir'),
-            'idtrans' => $blackListSupir->id,
-            'nobuktitrans' =>  $blackListSupir->id,
-            'aksi' => 'DELETE',
-            'datajson' => $blackListSupir->toArray(),
-            'modifiedby' => auth('api')->user()->name
-        ]);
+        DB::connection('sqlsrvaws')->table('blacklistsupir')->where('id',$id)->delete();
+        // $dataHeader =  $blackListSupir->toArray();
+
+        // $blackListSupir = $blackListSupir->lockAndDestroy($id);
+        // $hutangLogTrail = (new LogTrail())->processStore([
+        //     'namatabel' => $this->table,
+        //     'postingdari' => ($postingdari == "") ? $postingdari : strtoupper('DELETE Black List Supir'),
+        //     'idtrans' => $blackListSupir->id,
+        //     'nobuktitrans' =>  $blackListSupir->id,
+        //     'aksi' => 'DELETE',
+        //     'datajson' => $blackListSupir->toArray(),
+        //     'modifiedby' => auth('api')->user()->name
+        // ]);
         return $blackListSupir;
     }
 }

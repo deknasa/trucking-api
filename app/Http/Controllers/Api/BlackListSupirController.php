@@ -106,12 +106,12 @@ class BlackListSupirController extends Controller
             /* Store header */
             $blackListSupir = (new BlackListSupir())->processStore($data);
             /* Set position and page */
-            $blackListSupir->position = $this->getPosition($blackListSupir, $blackListSupir->getTable())->position;
-            if ($request->limit==0) {
-                $blackListSupir->page = ceil($blackListSupir->position / (10));
-            } else {
-                $blackListSupir->page = ceil($blackListSupir->position / ($request->limit ?? 10));
-            }
+            // $blackListSupir->position = $this->getPosition($blackListSupir, $blackListSupir->getTable())->position;
+            // if ($request->limit==0) {
+            //     $blackListSupir->page = ceil($blackListSupir->position / (10));
+            // } else {
+            //     $blackListSupir->page = ceil($blackListSupir->position / ($request->limit ?? 10));
+            // }
 
             DB::commit();
             return response()->json([
@@ -157,12 +157,12 @@ class BlackListSupirController extends Controller
             $blackListSupir = BlackListSupir::findOrFail($id);
             $blackListSupir = (new BlackListSupir())->processUpdate($blackListSupir,$data);
             /* Set position and page */
-            $blackListSupir->position = $this->getPosition($blackListSupir, $blackListSupir->getTable())->position;
-            if ($request->limit==0) {
-                $blackListSupir->page = ceil($blackListSupir->position / (10));
-            } else {
-                $blackListSupir->page = ceil($blackListSupir->position / ($request->limit ?? 10));
-            }
+            // $blackListSupir->position = $this->getPosition($blackListSupir, $blackListSupir->getTable())->position;
+            // if ($request->limit==0) {
+            //     $blackListSupir->page = ceil($blackListSupir->position / (10));
+            // } else {
+            //     $blackListSupir->page = ceil($blackListSupir->position / ($request->limit ?? 10));
+            // }
 
             DB::commit();
             return response()->json([
@@ -187,12 +187,12 @@ class BlackListSupirController extends Controller
             // dd($blackListSupir);
             $blackListSupir = (new BlackListSupir())->processDestroy($id);
             /* Set position and page */
-            $blackListSupir->position = $this->getPosition($blackListSupir, $blackListSupir->getTable())->position;
-            if ($request->limit==0) {
-                $blackListSupir->page = ceil($blackListSupir->position / (10));
-            } else {
-                $blackListSupir->page = ceil($blackListSupir->position / ($request->limit ?? 10));
-            }
+            // $blackListSupir->position = $this->getPosition($blackListSupir, $blackListSupir->getTable())->position;
+            // if ($request->limit==0) {
+            //     $blackListSupir->page = ceil($blackListSupir->position / (10));
+            // } else {
+            //     $blackListSupir->page = ceil($blackListSupir->position / ($request->limit ?? 10));
+            // }
 
             DB::commit();
             return response()->json([
