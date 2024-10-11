@@ -1307,14 +1307,14 @@ class UpahSupirRincian extends MyModel
                             'a.id',
                             'kotaupah.dari_id as kotadari_id',
                             'kotaupah.sampai_id as kotasampai_id',
-                            'zonadari.id as zonadari_id',
-                            'zonasampai.id as zonasampai_id',
+                            // 'zonadari.id as zonadari_id',
+                            // 'zonasampai.id as zonasampai_id',
                             db::raw("0 as tarif_id"),
                             db::raw("'' as tarif"),
                             'dari.kodekota as kotadari',
                             'sampai.kodekota as kotasampai',
-                            'zonadari.zona as zonadari',
-                            'zonasampai.zona as zonasampai',
+                            // 'zonadari.zona as zonadari',
+                            // 'zonasampai.zona as zonasampai',
                             'a.penyesuaian',
                             'a.jarak',
                             'parameter.memo as statusaktif',
@@ -1335,8 +1335,8 @@ class UpahSupirRincian extends MyModel
                         ->join(DB::raw("$tempKotaUpah as kotaupah with (readuncommitted)"), 'a.id', 'kotaupah.id')
                         ->Join(DB::raw($tempkota . " as dari with (readuncommitted)"), db::raw("isnull(kotaupah.dari_id,0)"), 'dari.id')
                         ->Join(DB::raw($tempkota . " as sampai with (readuncommitted)"), db::raw("isnull(kotaupah.sampai_id,0)"), 'sampai.id')
-                        ->Join(DB::raw($tempzona . " as zonadari with (readuncommitted)"), db::raw("isnull(kotaupah.zonadari_id,0)"), 'zonadari.id')
-                        ->Join(DB::raw($tempzona . " as zonasampai with (readuncommitted)"), db::raw("isnull(kotaupah.zonasampai_id,0)"), 'zonasampai.id')
+                        // ->Join(DB::raw($tempzona . " as zonadari with (readuncommitted)"), db::raw("isnull(kotaupah.zonadari_id,0)"), 'zonadari.id')
+                        // ->Join(DB::raw($tempzona . " as zonasampai with (readuncommitted)"), db::raw("isnull(kotaupah.zonasampai_id,0)"), 'zonasampai.id')
 
 
                         // ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'kotaupah.dari_id', 'dari.id')
