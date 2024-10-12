@@ -220,7 +220,8 @@ class InvoiceDetail extends MyModel
                 ->leftJoin(DB::raw($tempsprekap . " as suratpengantar"), $this->table . '.orderantrucking_nobukti', 'suratpengantar.jobtrucking')
                 ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'suratpengantar.pelanggan_id', 'pelanggan.id')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'suratpengantar.container_id', 'container.id')
-                ->leftJoin(DB::raw("kota with (readuncommitted)"), 'suratpengantar.sampai_id', 'kota.id');
+                ->leftJoin(DB::raw("kota with (readuncommitted)"), 'suratpengantar.sampai_id', 'kota.id')
+                ->orderBy('invoicedetail.id');
 
             if ($cekStatus->text == 'FORMAT 2') {
                 $query->addSelect(
