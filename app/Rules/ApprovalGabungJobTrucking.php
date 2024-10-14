@@ -123,6 +123,7 @@ class ApprovalGabungJobTrucking implements Rule
         $this->noinvoice = $noinvoice ?? '';
         $this->batal = $batal;
         // dd($nocont);
+        $statuslongtrip=65;
 
         $queryutama = db::table('suratpengantar')->from(db::raw("suratpengantar  a with (readuncommitted)"))
             ->select(
@@ -147,7 +148,7 @@ class ApprovalGabungJobTrucking implements Rule
             )
             ->where('a.nobukti', $nobuktitrippelabuhan)
             ->first();
-            // dd($nobuktitrippelabuhan);
+            // dd($queryutama);
         $penyesuaianutama = $queryutama->penyesuaian ?? '';
         $container_idutama = $queryutama->container_id ?? 0;
         $gandengan_idutama = $queryutama->gandengan_id ?? 0;
@@ -155,14 +156,20 @@ class ApprovalGabungJobTrucking implements Rule
         $jenisorder_idutama = $queryutama->jenisorder_id ?? 0;
         $tarif_idutama = $queryutama->tarif_id ?? 0;
         $statusgerobakutama = $queryutama->statusgerobak ?? 0;
-        $gabungutama = $penyesuaianutama . $container_idutama  . $gandengan_idutama . $agen_idutama . $jenisorder_idutama . $tarif_idutama . $statusgerobakutama;
+        if ($queryutama->statuslongtrip==$statuslongtrip) {
+            $gabungutama = $penyesuaianutama . $container_idutama  . $gandengan_idutama . $agen_idutama . $jenisorder_idutama ;
+        } else {
+            $gabungutama = $penyesuaianutama . $container_idutama  . $gandengan_idutama . $agen_idutama . $jenisorder_idutama . $tarif_idutama . $statusgerobakutama;
+
+        }
 
         $bjumlahtidaksama = 0;
-        // dd($gabungutama);
+        // dd($queryutama);
         if (isset($queryutama)) {
             for ($i = 0; $i < count(request()->Id); $i++) {
                 $nobukticek = request()->Id[$i];
                 if ($nobukticek != $nobuktitrippelabuhan) {
+
                     $querycek = db::table('suratpengantar')->from(db::raw("suratpengantar  a with (readuncommitted)"))
                         ->select(
                             'a.jobtrucking',
@@ -194,7 +201,12 @@ class ApprovalGabungJobTrucking implements Rule
                     $tarif_idcek = $querycek->tarif_id ?? 0;
                     $statusgerobakcek = $querycek->statusgerobak ?? 0;
 
-                    $gabungcek = $penyesuaiancek . $container_idcek . $gandengan_idcek . $agen_idcek . $jenisorder_idcek . $tarif_idcek . $statusgerobakcek;
+                    if ($queryutama->statuslongtrip==$statuslongtrip) {
+                        $gabungcek = $penyesuaiancek . $container_idcek . $gandengan_idcek . $agen_idcek . $jenisorder_idcek ;
+                    } else {
+                        $gabungcek = $penyesuaiancek . $container_idcek . $gandengan_idcek . $agen_idcek . $jenisorder_idcek . $tarif_idcek . $statusgerobakcek;
+                    }
+
 
               
                     if ($gabungcek != $gabungutama) {
