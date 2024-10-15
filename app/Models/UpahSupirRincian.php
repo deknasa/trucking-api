@@ -2202,6 +2202,7 @@ class UpahSupirRincian extends MyModel
             $table->longText('tarif')->nullable();
             $table->longText('kotadari_id')->nullable();
             $table->longText('kotasampai_id')->nullable();
+            $table->longText('kotasampaiid')->nullable();
             $table->longText('zonadari_id')->nullable();
             $table->longText('zonasampai_id')->nullable();
             $table->longText('penyesuaian')->nullable();
@@ -2227,6 +2228,7 @@ class UpahSupirRincian extends MyModel
             'tarif',
             'kotadari_id',
             'kotasampai_id',
+            'kotasampaiid',
             'zonadari_id',
             'zonasampai_id',
             'penyesuaian',

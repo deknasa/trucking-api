@@ -62,7 +62,25 @@ class UpahSupirController extends Controller
 
     public function export()
     {
-       
+        if(request()->forReport == true){
+            $upahsupirrincian = new UpahSupirRincian();
+
+            $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select(
+                'text',
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+            return response([
+                'status' => true,
+                'data' => $upahsupirrincian->listpivot(),
+                'judul' => $getJudul
+            ]);
+        } else {
+            
         $upahsupirrincian = new UpahSupirRincian();
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select(
@@ -177,6 +195,7 @@ class UpahSupirController extends Controller
             ];
             $this->toExcel($judulLaporan, $upahsupirArray, $columns);
       
+        }
     }
     public function export2()
     {
