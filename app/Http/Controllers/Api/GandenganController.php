@@ -15,11 +15,12 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 
+use App\Models\MandorAbsensiSupir;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Schema;
 
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StoreGandenganRequest;
@@ -165,9 +166,14 @@ class GandenganController extends Controller
                 'jumlahroda' => $request->jumlahroda,
                 'jumlahbanserap' => $request->jumlahbanserap,
                 'statusaktif' => $request->statusaktif,
+                'statusjeniskendaraan' => $request->statusjeniskendaraan,
                 'tas_id' => $request->tas_id ?? '',
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
+
+            if(!(new MandorAbsensiSupir)->activeKolomJenisKendaraan()){
+                $data['statusjeniskendaraan'] = (new MandorAbsensiSupir)->defaultJenis()->id;
+            }
             // $gandengan = (new Gandengan())->processStore($data);
             $gandengan = new Gandengan();
             $gandengan->processStore($data, $gandengan);            
@@ -235,9 +241,12 @@ class GandenganController extends Controller
                 'jumlahroda' => $request->jumlahroda,
                 'jumlahbanserap' => $request->jumlahbanserap,
                 'statusaktif' => $request->statusaktif,
+                'statusjeniskendaraan' => $request->statusjeniskendaraan,
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
-            
+            if(!(new MandorAbsensiSupir)->activeKolomJenisKendaraan()){
+                $data['statusjeniskendaraan'] = (new MandorAbsensiSupir)->defaultJenis()->id;
+            }
             // $gandengan = (new Gandengan())->processUpdate($gandengan, $data);
             $gandengan = new Gandengan();
             $gandengans = $gandengan->findOrFail($id);

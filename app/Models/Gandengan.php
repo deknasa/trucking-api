@@ -172,6 +172,7 @@ class Gandengan extends MyModel
                 'gandengan.jumlahroda',
                 'gandengan.jumlahbanserap',
                 'parameter.memo as statusaktif',
+                'jeniskendaraan.memo as statusjeniskendaraan',
                 'gandengan.modifiedby',
                 'gandengan.created_at',
                 'gandengan.updated_at',
@@ -181,6 +182,7 @@ class Gandengan extends MyModel
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gandengan.statusaktif', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as jeniskendaraan with (readuncommitted)"), 'gandengan.statusjeniskendaraan', 'parameter.id')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'gandengan.container_id', '=', 'container.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'gandengan.trado_id', '=', 'trado.id');
         if ($aktif == 'AKTIF') {
@@ -304,6 +306,7 @@ class Gandengan extends MyModel
                 'gandengan.jumlahroda',
                 'gandengan.jumlahbanserap',
                 'parameter.memo as statusaktif',
+                'jeniskendaraan.memo as statusjeniskendaraan',
                 'gandengan.modifiedby',
                 'gandengan.created_at',
                 'gandengan.updated_at',
@@ -313,6 +316,7 @@ class Gandengan extends MyModel
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gandengan.statusaktif', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as jeniskendaraan with (readuncommitted)"), 'gandengan.statusjeniskendaraan', 'parameter.id')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'gandengan.container_id', '=', 'container.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'gandengan.trado_id', '=', 'trado.id');
         if ($aktif == 'AKTIF') {
@@ -449,6 +453,8 @@ class Gandengan extends MyModel
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
             $table->string('statusaktifnama', 300)->nullable();
+            $table->unsignedBigInteger('statusjeniskendaraan')->nullable();
+            $table->string('statusjeniskendaraannama', 300)->nullable();
         });
 
         $statusaktif = Parameter::from(
@@ -462,15 +468,29 @@ class Gandengan extends MyModel
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
+        
+            $statusjeniskendaraan = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id',
+                'text'
+            )
+            ->where('grp', '=', 'STATUS JENIS KENDARAAN')
+            ->where('subgrp', '=', 'STATUS JENIS KENDARAAN')
+            ->where('default', '=', 'YA')
+            ->first();
 
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id, "statusaktifnama" => $statusaktif->text]);
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id, "statusaktifnama" => $statusaktif->text,"statusjeniskendaraan" => $statusjeniskendaraan->id, "statusjeniskendaraannama" => $statusjeniskendaraan->text]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
                 'statusaktif',
-                'statusaktifnama'
+                'statusaktifnama',
+                'statusjeniskendaraan',
+                'statusjeniskendaraannama'
             );
 
         $data = $query->first();
@@ -495,15 +515,18 @@ class Gandengan extends MyModel
                 'gandengan.jumlahroda',
                 'gandengan.jumlahbanserap',
                 'gandengan.statusaktif',
+                'gandengan.statusjeniskendaraan',
                 'gandengan.modifiedby',
                 'gandengan.created_at',
                 'gandengan.updated_at',
-                'parameter.text as statusaktifnama'
+                'parameter.text as statusaktifnama',
+                'jeniskendaraan.text as statusjeniskendaraannama'
             )
 
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'gandengan.trado_id', '=', 'trado.id')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'gandengan.container_id', '=', 'container.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gandengan.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as jeniskendaraan with (readuncommitted)"), 'gandengan.statusjeniskendaraan', '=', 'jeniskendaraan.id')
             ->where('gandengan.id', $id)
             ->first();
 
@@ -527,10 +550,12 @@ class Gandengan extends MyModel
                 "$this->table.jumlahroda",
                 "$this->table.jumlahbanserap",
                 "parameter.text as statusaktif",
+                "jeniskendaraan.text as statusjeniskendaraan",
                 "$this->table.modifiedby",
                 "$this->table.created_at",
                 "$this->table.updated_at",
             )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gandengan.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as jeniskendaraan with (readuncommitted)"), 'gandengan.statusjeniskendaraan', '=', 'jeniskendaraan.id')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'gandengan.container_id', '=', 'container.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'gandengan.trado_id', '=', 'trado.id');
         
@@ -551,6 +576,7 @@ class Gandengan extends MyModel
             $table->integer('jumlahroda')->length(11)->nullable();
             $table->integer('jumlahbanserap')->length(11)->nullable();
             $table->string('statusaktif', 500)->nullable();
+            $table->string('statusjeniskendaraan', 500)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -571,6 +597,7 @@ class Gandengan extends MyModel
             'jumlahroda',
             'jumlahbanserap',
             'statusaktif',
+            'statusjeniskendaraan',
             'modifiedby',
             'created_at',
             'updated_at'
@@ -663,6 +690,7 @@ class Gandengan extends MyModel
         $gandengan->jumlahroda = $data['jumlahroda'];
         $gandengan->jumlahbanserap = $data['jumlahbanserap'];
         $gandengan->statusaktif = $data['statusaktif'];
+        $gandengan->statusjeniskendaraan = $data['statusjeniskendaraan'];
         $gandengan->modifiedby = auth('api')->user()->name;
         $gandengan->tas_id = $data['tas_id'] ?? '';
         $gandengan->info = html_entity_decode(request()->info);
@@ -741,6 +769,7 @@ class Gandengan extends MyModel
         $gandengan->jumlahroda = $data['jumlahroda'];
         $gandengan->jumlahbanserap = $data['jumlahbanserap'];
         $gandengan->statusaktif = $data['statusaktif'];
+        $gandengan->statusjeniskendaraan = $data['statusjeniskendaraan'];
         $gandengan->modifiedby = auth('api')->user()->user;
         $gandengan->info = html_entity_decode(request()->info);
 
