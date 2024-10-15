@@ -3735,7 +3735,7 @@ class PengeluaranStokHeader extends MyModel
                     $kelompokBAN = DB::table('kelompok')->from(DB::raw("kelompok with (readuncommitted)"))->where('kodekelompok', 'BAN')->first();
                     $stok = (new Stok())->find($data['detail_stok_id'][$i]);
                     if (($kelompokAKI->id == $stok->kelompok_id) || ($kelompokBAN->id == $stok->kelompok_id)) {
-                        $stok->statusaktif = $statusNonAktif->id;
+                        // $stok->statusaktif = $statusNonAktif->id;
                     }
                     $stok->statusban_old = $stok->statusban;
                     $stok->statusban = $statusafkir->id;
@@ -4566,7 +4566,7 @@ class PengeluaranStokHeader extends MyModel
                 $stok = (new Stok())->find($data['detail_stok_id'][$i]);
                 $stok->statusban = $statusafkir->id;
                 if (($kelompokAKI->id == $stok->kelompok_id) || ($kelompokBAN->id == $stok->kelompok_id)) {
-                    $stok->statusaktif = $statusNonAktif->id;
+                    // $stok->statusaktif = $statusNonAktif->id;
                 }
                 $stok->save();
                 $data['detail_qty'][$i] = 0;
