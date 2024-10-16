@@ -76,7 +76,38 @@ class InvoiceEmklDetail extends MyModel
                         $paramlain = $parameter->cekText('BIAYA EMKL', 'LAIN') ?? 0;
                         if ($getinfoinvoice->statusinvoice == 'UTAMA') {
             
+                            $tempbiaya = '##tempbiaya' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                            Schema::create($tempbiaya, function ($table) {
+                                $table->string('nobukti', 1000)->nullable();
+                                $table->bigInteger('invoiceemkldetail_id')->nullable();
+                                $table->bigInteger('biayaemkl_id')->nullable();
+                                $table->double('nominal',15,2)->nullable();
+                                $table->longtext('keterangan')->nullable();
+                            });
     
+                            $querybiaya=db::table("invoiceemkldetailrincianbiaya")->from(db::raw("invoiceemkldetailrincianbiaya a with (readuncommitted)"))
+                            ->select(
+                                'a.nobukti',
+                                'a.invoiceemkldetail_id',
+                                'a.biayaemkl_id',
+                                db::raw("sum(a.nominal) as nominal"),
+                                db::raw("string_agg(cast(a.keterangan as nvarchar(max)),',' ) as keterangan")
+                            )
+                            ->groupBy('a.nobukti')
+                            ->groupBy('a.invoiceemkldetail_id')
+                            ->groupBy('a.biayaemkl_id');
+
+                            // dd($querybiaya->tosql());
+
+                            DB::table($tempbiaya)->insertUsing([
+                                'nobukti',
+                                'invoiceemkldetail_id',
+                                'biayaemkl_id',
+                                'nominal',
+                                'keterangan',
+                            ], $querybiaya);
+                            
+                            
                             $query->select(
                                 db::raw("b.nocont +' / '+b.noseal as keterangan"),
                                 db::raw("b.lokasibongkarmuat as lokasi"),
@@ -91,32 +122,32 @@ class InvoiceEmklDetail extends MyModel
                             )
                                 ->join(db::raw("jobemkl as b with (readuncommitted)"), 'invoiceemkldetail.jobemkl_nobukti', 'b.nobukti')
                                 // ->join(db::raw("invoiceemkldetailrincianbiaya as c with (readuncommitted)"), 'invoiceemkldetail.id', 'c.id')
-                                ->leftJoin(db::raw("invoiceemkldetailrincianbiaya door with (readuncommitted)"), function ($join)  use ($paramdoor) {
+                                ->leftJoin(db::raw($tempbiaya ." door with (readuncommitted)"), function ($join)  use ($paramdoor) {
                                     $join->on('invoiceemkldetail.nobukti', '=', 'door.nobukti');
                                     $join->on('invoiceemkldetail.id', '=', 'door.invoiceemkldetail_id');
                                     $join->on('door.biayaemkl_id', '=', DB::raw($paramdoor));
                                 })                            
-                                ->leftJoin(db::raw("invoiceemkldetailrincianbiaya kawal with (readuncommitted)"), function ($join)  use ($paramkawal) {
+                                ->leftJoin(db::raw($tempbiaya ." kawal with (readuncommitted)"), function ($join)  use ($paramkawal) {
                                     $join->on('invoiceemkldetail.nobukti', '=', 'kawal.nobukti');
                                     $join->on('invoiceemkldetail.id', '=', 'kawal.invoiceemkldetail_id');
                                     $join->on('kawal.biayaemkl_id', '=', DB::raw($paramkawal));
                                 })                            
-                                ->leftJoin(db::raw("invoiceemkldetailrincianbiaya buruh with (readuncommitted)"), function ($join)  use ($paramburuh) {
+                                ->leftJoin(db::raw($tempbiaya ." buruh with (readuncommitted)"), function ($join)  use ($paramburuh) {
                                     $join->on('invoiceemkldetail.nobukti', '=', 'buruh.nobukti');
                                     $join->on('invoiceemkldetail.id', '=', 'buruh.invoiceemkldetail_id');
                                     $join->on('buruh.biayaemkl_id', '=', DB::raw($paramburuh));
                                 })                            
-                                ->leftJoin(db::raw("invoiceemkldetailrincianbiaya cleaning with (readuncommitted)"), function ($join)  use ($paramcleaning) {
+                                ->leftJoin(db::raw($tempbiaya ." cleaning with (readuncommitted)"), function ($join)  use ($paramcleaning) {
                                     $join->on('invoiceemkldetail.nobukti', '=', 'cleaning.nobukti');
                                     $join->on('invoiceemkldetail.id', '=', 'cleaning.invoiceemkldetail_id');
                                     $join->on('cleaning.biayaemkl_id', '=', DB::raw($paramcleaning));
                                 })                            
-                                ->leftJoin(db::raw("invoiceemkldetailrincianbiaya dokumen with (readuncommitted)"), function ($join)  use ($paramdokumen) {
+                                ->leftJoin(db::raw($tempbiaya ." dokumen with (readuncommitted)"), function ($join)  use ($paramdokumen) {
                                     $join->on('invoiceemkldetail.nobukti', '=', 'dokumen.nobukti');
                                     $join->on('invoiceemkldetail.id', '=', 'dokumen.invoiceemkldetail_id');
                                     $join->on('dokumen.biayaemkl_id', '=', DB::raw($paramdokumen));
                                 })                              
-                                ->leftJoin(db::raw("invoiceemkldetailrincianbiaya lain with (readuncommitted)"), function ($join)  use ($paramlain) {
+                                ->leftJoin(db::raw($tempbiaya ." lain with (readuncommitted)"), function ($join)  use ($paramlain) {
                                     $join->on('invoiceemkldetail.nobukti', '=', 'lain.nobukti');
                                     $join->on('invoiceemkldetail.id', '=', 'lain.invoiceemkldetail_id');
                                     $join->on('lain.biayaemkl_id', '=', DB::raw($paramlain));

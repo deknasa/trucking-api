@@ -43,12 +43,12 @@ class StoreInvoiceEmklHeaderRequest extends FormRequest
                 'statuspajak' => [
                     'required', 
                 ],
-                'kapal' => [
-                    'required', 
-                ],
-                'destination' => [
-                    'required', 
-                ],
+                // 'kapal' => [
+                //     'required', 
+                // ],
+                // 'destination' => [
+                //     'required', 
+                // ],
                 // 'nobuktiinvoicepajak' => [
                 //     new validasiNoInvoicePajakEmkl()
                 // ],
