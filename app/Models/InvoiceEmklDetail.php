@@ -158,7 +158,7 @@ class InvoiceEmklDetail extends MyModel
                             // dd('test');
                             $query->select(
                                 db::raw("b.nocont +' / '+b.noseal as keterangan"),
-                                db::raw("b.lokasibongkarmuat as lokasi"),
+                                db::raw("(case when isnull(b.penerima,'')='' then b.lokasibongkarmuat else  b.penerima end) as lokasi"),
                                 db::raw("isnull(lain.nominal,0) as biayalain"),
                                 db::raw("isnull(lain.keterangan,'') as keteranganbiayalain"),
                                 db::raw("invoiceemkldetail.nominal as nominal"),
