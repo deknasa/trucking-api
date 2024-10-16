@@ -684,8 +684,8 @@ class InvoiceEmklHeader extends MyModel
         $invoiceHeader->statusppn = $data['statusppn'] ?? $statusPPN->id;
         // $invoiceHeader->nobuktiinvoicepajak = $data['nobuktiinvoicepajak'] ?? '';
         $invoiceHeader->keterangan = $data['keterangan'] ?? '';
-        $invoiceHeader->destination = $data['destination'] ?? '';
-        $invoiceHeader->kapal = $data['kapal'] ?? '';
+        // $invoiceHeader->destination = $data['destination'] ?? '';
+        // $invoiceHeader->kapal = $data['kapal'] ?? '';
         $invoiceHeader->statusapproval = $statusApproval->id;
         $invoiceHeader->userapproval = '';
         $invoiceHeader->tglapproval = '';
@@ -1122,11 +1122,11 @@ class InvoiceEmklHeader extends MyModel
 
                         for ($j = 0; $j < count($getSelisihBiaya); $j++) {
                             if ($getSelisihBiaya[$j]->nominalrincian > $getSelisihBiaya[$j]->nominalawal) {
-                              
+
                                 $coadebetdetail = $coadebetdetailkelebihan;
                                 $coakreditdetail = $coakreditdetailkelebihan;
                                 $selisih = $getSelisihBiaya[$j]->nominalrincian - $getSelisihBiaya[$j]->nominalawal;
-                                
+
                                 $nominaljurnal[] = $selisih;
                                 $coadebetjurnal[] = $coadebetdetail;
                                 $coakreditjurnal[] = $coakreditdetail;
@@ -1270,6 +1270,62 @@ class InvoiceEmklHeader extends MyModel
             }
         }
 
+        $tempkapal = '##tempkapal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempkapal, function ($table) {
+            $table->longtext('kapal')->nullable();
+        });
+
+        $tempdestination = '##tempdestination' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdestination, function ($table) {
+            $table->longtext('destination')->nullable();
+        });
+
+        $querykapal = db::table("invoiceemkldetail")->from(db::raw("invoiceemkldetail a with (readuncommitted)"))
+            ->select(
+                'b.kapal'
+            )
+            ->join(db::raw("jobemkl b"), 'a.jobemkl_nobukti', 'b.nobukti')
+            ->join(db::raw("invoiceemklheader c"), 'a.nobukti', 'c.nobukti')
+            ->where('c.nobukti', $invoiceHeader->nobukti)
+            ->groupby('b.kapal');
+
+
+        DB::table($tempkapal)->insertUsing([
+            'kapal',
+        ], $querykapal);
+
+        $querydestination = db::table("invoiceemkldetail")->from(db::raw("invoiceemkldetail a with (readuncommitted)"))
+            ->select(
+                'b.destination'
+            )
+            ->join(db::raw("jobemkl b"), 'a.jobemkl_nobukti', 'b.nobukti')
+            ->join(db::raw("invoiceemklheader c"), 'a.nobukti', 'c.nobukti')
+            ->where('c.nobukti', $invoiceHeader->nobukti)
+            ->groupby('b.destination');
+
+
+        DB::table($tempdestination)->insertUsing([
+            'destination',
+        ], $querydestination);
+
+        $kapal = db::table($tempkapal)->from(db::raw($tempkapal . " a "))
+            ->select(
+                db::raw("string_agg(cast(a.kapal as nvarchar(max)),', ') as kapal"),
+            )
+            ->first()->kapal ?? '';
+
+        $destination = db::table($tempdestination)->from(db::raw($tempdestination . " a "))
+            ->select(
+                db::raw("string_agg(cast(a.destination as nvarchar(max)),', ') as destination"),
+            )
+            ->first()->destination ?? '';
+
+        // dd($kapal,$destination, $invoiceHeader->nobukti);
+        $invoiceHeader->destination = $destination ?? '';
+        $invoiceHeader->kapal = $kapal ?? '';
+        // db::update("update invoiceemklheader set kapal='" . $kapal . "',destination='".$destination."' where nobukti='" . $invoiceHeader->nobukti . "'");
+
+
         if ($data['statusinvoice'] == $statusInvoice->id) {
             $keteranganDetail[] = "TAGIHAN INVOICE EMKL " . $invoiceHeader->nobukti . " " . $nojobs;
         } else {
@@ -1396,8 +1452,8 @@ class InvoiceEmklHeader extends MyModel
         $invoiceHeader->pelanggan_id = $data['pelanggan_id'];
         $invoiceHeader->jenisorder_id = $data['jenisorder_id'];
         // $invoiceHeader->nobuktiinvoicepajak = $data['nobuktiinvoicepajak'] ?? '';
-        $invoiceHeader->keterangan = $data['keterangan'] ?? '';
-        $invoiceHeader->destination = $data['destination'] ?? '';
+        // $invoiceHeader->keterangan = $data['keterangan'] ?? '';
+        // $invoiceHeader->destination = $data['destination'] ?? '';
         $invoiceHeader->kapal = $data['kapal'] ?? '';
         $invoiceHeader->tujuan_id = $data['tujuan_id'];
         $invoiceHeader->tgldari = ($data['tgldari'] != '') ? date('Y-m-d', strtotime($data['tgldari'])) : null;
@@ -1937,6 +1993,60 @@ class InvoiceEmklHeader extends MyModel
                 }
             }
         }
+        $tempkapal = '##tempkapal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempkapal, function ($table) {
+            $table->longtext('kapal')->nullable();
+        });
+
+        $tempdestination = '##tempdestination' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdestination, function ($table) {
+            $table->longtext('destination')->nullable();
+        });
+
+        $querykapal = db::table("invoiceemkldetail")->from(db::raw("invoiceemkldetail a with (readuncommitted)"))
+            ->select(
+                'b.kapal'
+            )
+            ->join(db::raw("jobemkl b"), 'a.jobemkl_nobukti', 'b.nobukti')
+            ->join(db::raw("invoiceemklheader c"), 'a.nobukti', 'c.nobukti')
+            ->where('c.nobukti', $invoiceHeader->nobukti)
+            ->groupby('b.kapal');
+
+
+        DB::table($tempkapal)->insertUsing([
+            'kapal',
+        ], $querykapal);
+
+        $querydestination = db::table("invoiceemkldetail")->from(db::raw("invoiceemkldetail a with (readuncommitted)"))
+            ->select(
+                'b.destination'
+            )
+            ->join(db::raw("jobemkl b"), 'a.jobemkl_nobukti', 'b.nobukti')
+            ->join(db::raw("invoiceemklheader c"), 'a.nobukti', 'c.nobukti')
+            ->where('c.nobukti', $invoiceHeader->nobukti)
+            ->groupby('b.destination');
+
+
+        DB::table($tempdestination)->insertUsing([
+            'destination',
+        ], $querydestination);
+
+        $kapal = db::table($tempkapal)->from(db::raw($tempkapal . " a "))
+            ->select(
+                db::raw("string_agg(cast(a.kapal as nvarchar(max)),', ') as kapal"),
+            )
+            ->first()->kapal ?? '';
+
+        $destination = db::table($tempdestination)->from(db::raw($tempdestination . " a "))
+            ->select(
+                db::raw("string_agg(cast(a.destination as nvarchar(max)),', ') as destination"),
+            )
+            ->first()->destination ?? '';
+
+        // dd($kapal,$destination, $invoiceHeader->nobukti);
+        $invoiceHeader->destination = $destination ?? '';
+        $invoiceHeader->kapal = $kapal ?? '';
+        
 
         if ($invoiceHeader->statusinvoice == $statusInvoice->id) {
             $keteranganDetail[] =  "TAGIHAN INVOICE EMKL " . $invoiceHeader->nobukti . " " . $nojobs;
