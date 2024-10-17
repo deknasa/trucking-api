@@ -148,7 +148,14 @@ class PengeluaranStokDetail extends MyModel
                 "$this->table.persentasediscount",
                 "$this->table.nominaldiscount",
                 // "$this->table.total",
-                db::raw("(isnull(pengeluaranStokdetail.harga,0) * isnull(pengeluaranStokdetail.qty,0)) - isnull(pengeluaranStokdetail.selisihhargafifo,0) as total"),
+                db::raw("
+                    (CASE WHEN pengeluaranStokdetail.selisihhargafifo <> 0 THEN 
+                        (isnull(pengeluaranStokdetail.harga,0) * isnull(pengeluaranStokdetail.qty,0)) - isnull(pengeluaranStokdetail.selisihhargafifo,0)
+                    ELSE
+                        $this->table.total
+                    END) AS total
+                "),
+                // db::raw("(isnull(pengeluaranStokdetail.harga,0) * isnull(pengeluaranStokdetail.qty,0)) - isnull(pengeluaranStokdetail.selisihhargafifo,0) as total"),
                 "$this->table.keterangan",
                 "$this->table.vulkanisirke",
                 "$this->table.statusban",
