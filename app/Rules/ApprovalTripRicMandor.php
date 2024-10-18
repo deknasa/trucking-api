@@ -56,7 +56,9 @@ class ApprovalTripRicMandor implements Rule
             $cekric = DB::table("$temp")->from(DB::raw("$temp as a with (readuncommitted)"))
                 ->select(DB::raw("STRING_AGG(a.value, ', ') as datatrip"))
                 ->leftJoin(DB::raw("gajisupirdetail as b with (readuncommitted)"), 'b.suratpengantar_nobukti', 'a.value')
+                ->join(DB::raw("suratpengantar as c with (readuncommitted)"), 'a.value', 'c.nobukti')
                 ->whereRaw("isnull(b.nobukti,'')=''")
+                ->whereRaw("isnull(c.statusapprovalmandor,4)=4")
                 ->first();
             if ($cekric->datatrip != '') {
                 $this->trip = $cekric->datatrip;
@@ -66,17 +68,19 @@ class ApprovalTripRicMandor implements Rule
                 ->select(db::raw("[key],[value]"))
                 ->whereRaw("[value] like '%RTT%'");
 
-            $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($temp, function ($table) {
+            $tempritasi = '##tempritasi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempritasi, function ($table) {
                 $table->bigInteger('key')->nullable();
                 $table->string('value')->nullable();
             });
-            DB::table($temp)->insertUsing(['key', 'value'], $query2);
+            DB::table($tempritasi)->insertUsing(['key', 'value'], $query2);
 
-            $cekric = DB::table("$temp")->from(DB::raw("$temp as a with (readuncommitted)"))
+            $cekric = DB::table("$tempritasi")->from(DB::raw("$tempritasi as a with (readuncommitted)"))
                 ->select(DB::raw("STRING_AGG(a.value, ', ') as datatrip"))
                 ->leftJoin(DB::raw("gajisupirdetail as b with (readuncommitted)"), 'b.ritasi_nobukti', 'a.value')
+                ->join(DB::raw("ritasi as c with (readuncommitted)"), 'a.value', 'c.nobukti')
                 ->whereRaw("isnull(b.nobukti,'')=''")
+                ->whereRaw("isnull(c.statusapprovalmandor,4)=4")
                 ->first();
             if ($cekric->datatrip != '') {
                 if ($this->trip != '') {
@@ -163,6 +167,7 @@ class ApprovalTripRicMandor implements Rule
                      return true;
                 }
             } else {
+
                 $this->error = app(ErrorController::class)->geterror('NRIC')->keterangan . ' (<b>' . $this->trip . '</b>)';
                 return false;
             }
