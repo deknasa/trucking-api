@@ -269,7 +269,7 @@ class App
 
         if (isset($sqlcek)) {
             $lasRownext = $lastRow + 1;
-            $result = $this->runningNumber($format, $lasRownext, $bulan, $tglbukti, $table);
+            $result = $this->runningNumber($format, $lasRownext, $bulan, $tglbukti, $table,$tujuan, $cabang, $jenisbiaya, $marketing);
             // dd($result);
         }
 
