@@ -212,6 +212,7 @@ class SuratPengantarController extends Controller
                 'sampai_id' => $request->sampai_id,
                 'statuscontainer_id' => $request->statuscontainer_id,
                 'statusgandengan' => $request->statusgandengan,
+                'statuslangsir' => $request->statuslangsir,
                 'trado_id' => $request->trado_id,
                 'supir_id' => $request->supir_id,
                 'pelanggan_id' => $request->pelanggan_id,

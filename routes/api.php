@@ -373,6 +373,8 @@ route::middleware(['auth:api'])->group(function () {
 });
 
 route::middleware(['auth:api'])->group(function () {
+    Route::post('listtrip/approval', [ListTripController::class, 'approval'])->name('listtrip.approval');
+
     Route::get('approvalkirimberkas/combo', [ApprovalKirimBerkasController::class, 'combo']);
     Route::resource('approvalkirimberkas', ApprovalKirimBerkasController::class)->whereNumber('approvalkirimberkas');
 
@@ -2259,7 +2261,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporankomisisupir/report', [LaporanKomisiSupirController::class, 'report'])->name('laporankomisisupir.report');
     Route::get('laporankomisisupir/export', [LaporanKomisiSupirController::class, 'export'])->name('laporankomisisupir.export');
     Route::resource('laporankomisisupir', LaporanKomisiSupirController::class)->whereNumber('laporankomisisupir');
-
+    
 
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
