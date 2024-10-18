@@ -140,6 +140,7 @@ class JobEmkl extends MyModel
                 "jenisorder.keterangan as jenisorder",
                 "jobemkl.kapal",
                 "jobemkl.voy",
+                "jobemkl.penerima",
                 "jobemkl.nominal",
                 "jobemkl.lokasibongkarmuat",
                 "jobemkl.destination",
