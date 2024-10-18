@@ -445,6 +445,7 @@ class InputTrip extends MyModel
             'statuslongtrip' => $data['statuslongtrip'],
             'statusgandengan' => $data['statusgandengan'],
             'statusupahzona' => $data['statusupahzona'],
+            'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
             'omset' => $tarifrincian->nominal ?? 0,
             'gajisupir' => $nominalspr,
             'gajikenek' => $nominalkenek,

@@ -435,15 +435,15 @@ class UpdateListTripRequest extends FormRequest
                 if ($trip->jobtrucking != '') {
                     if ($trip->dari_id != 1) {
                         $cekjobtrucking = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $trip->jobtrucking)->where('id', '<>', request()->id)->first();
-                        if ($cekjobtrucking != '') {
-                            $idUpahSupir = $trip->upah_id;
-                            $ruleAgen = Rule::in($trip->agen);
-                            $ruleContainer = Rule::in($trip->container);
-                            $ruleStatusContainer = Rule::in($trip->statuscontainer);
-                            $ruleJenisorder = Rule::in($trip->jenisorder);
-                            $rulePelanggan = Rule::in($trip->pelanggan);
-                            $ruleGudang = Rule::in($trip->gudang);
-                        }
+                        // if ($cekjobtrucking != '') {
+                        //     $idUpahSupir = $trip->upah_id;
+                        //     $ruleAgen = Rule::in($trip->agen);
+                        //     $ruleContainer = Rule::in($trip->container);
+                        //     $ruleStatusContainer = Rule::in($trip->statuscontainer);
+                        //     $ruleJenisorder = Rule::in($trip->jenisorder);
+                        //     $rulePelanggan = Rule::in($trip->pelanggan);
+                        //     $ruleGudang = Rule::in($trip->gudang);
+                        // }
                     }
                 }
             }
