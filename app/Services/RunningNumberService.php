@@ -180,7 +180,7 @@ class RunningNumberService
                         ->where(DB::raw($fieldstatusformat), '=', $statusformat)
                         ->first();
                 } else {
-                    $queryCheck = DB::table($table)->where('nobukti', $nobukti)
+                    $queryCheck = DB::table($table)->where("$fieldnobukti", $nobukti)
                         ->where(DB::raw('month(tglbukti)'), '=', $bulan)
                         ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                         ->where(DB::raw($fieldstatusformat), '=', $statusformat)
@@ -369,7 +369,7 @@ class RunningNumberService
                         } else {
                             $ulang = true;
                             $tgluji = $tgltransaksi;
-                            // dd($nobukticek);
+
                             while ($ulang == true) {
 
                                 $queryData = DB::table($table)
@@ -391,13 +391,13 @@ class RunningNumberService
                             }
 
                             // dd($tgltransaksi);
-                            $queryCheckprev = DB::table($table)->where('nobukti', $nobukticek)
+                            $queryCheckprev = DB::table($table)->where("$fieldnobukti", $nobukticek)
                                 ->where(DB::raw('month(tglbukti)'), '=', $bulan)
                                 ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                                 ->whereRaw("tglbukti = '$tgltransaksi'")
                                 ->where(DB::raw($fieldstatusformat), '=', $statusformat)
                                 ->orderby('tglbukti', 'desc')
-                                ->orderby('nobukti', 'desc')
+                                ->orderby("$fieldnobukti", 'desc')
                                 ->first();
                         }
 
@@ -814,8 +814,7 @@ class RunningNumberService
 
         // dd($tgl);
 
-        $runningNumber = (new App)->runningNumber($text, $lastRow, $bulan, $tgl, $table, $tujuan, $cabang, $jenisbiaya, $marketing);
-        // dd($runningNumber);
+        $runningNumber = (new App)->runningNumber($text, $lastRow, $bulan, $tgl, $table, $tujuan, $cabang, $jenisbiaya, $marketing, $fieldnobukti);
         // $nilai = 0;
         // $nomor = $lastRow;
         // while ($nilai < 1) {
