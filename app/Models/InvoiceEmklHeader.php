@@ -958,11 +958,11 @@ class InvoiceEmklHeader extends MyModel
 
                         if ($statusPPN->text == 'PPN 1.1%') {
                             $nom = $data['nominal'][$i];
-                            $nilaippn = db::select("select round(($nom * 0.011), 0, 1) as ppn");
+                            $nilaippn = db::select("select (case when (($nom * 0.011) - floor(($nom * 0.011))) >= 0.51 then round(($nom * 0.011),0) else round(($nom * 0.011),0,1) end) as ppn");
                             $nominalppn = $nilaippn[0]->ppn;
                         } else {
                             $nom = $data['nominal'][$i];
-                            $nilaippn = db::select("select round(($nom * 0.11), 0, 1) as ppn");
+                            $nilaippn = db::select("select (case when (($nom * 0.11) - floor(($nom * 0.11))) >= 0.51 then round(($nom * 0.11),0) else round(($nom * 0.11),0,1) end) as ppn");
                             $nominalppn = $nilaippn[0]->ppn;
                         }
 
@@ -1003,11 +1003,11 @@ class InvoiceEmklHeader extends MyModel
                             $coakreditdetail = '';
                             if ($statusPPN->text == 'PPN 1.1%') {
                                 $nom = $data['nominal'][$i];
-                                $nilaippn = db::select("select round(($nom * 0.011), 0, 1) as ppn");
+                                $nilaippn = db::select("select (case when (($nom * 0.011) - floor(($nom * 0.011))) >= 0.51 then round(($nom * 0.011),0) else round(($nom * 0.011),0,1) end) as ppn");
                                 $nominalppn = $nilaippn[0]->ppn;
                             } else {
                                 $nom = $data['nominal'][$i];
-                                $nilaippn = db::select("select round(($nom * 0.11), 0, 1) as ppn");
+                                $nilaippn = db::select("select (case when (($nom * 0.11) - floor(($nom * 0.11))) >= 0.51 then round(($nom * 0.11),0) else round(($nom * 0.11),0,1) end) as ppn");
                                 $nominalppn = $nilaippn[0]->ppn;
                             }
                             $status[] = 'normal';
@@ -1343,11 +1343,11 @@ class InvoiceEmklHeader extends MyModel
                 $nominalDetail = [];
                 if ($statusPPN->text == 'PPN 1.1%') {
 
-                    $nilaippn = db::select("select round(($total * 0.011), 0, 1) as ppn");
+                    $nilaippn = db::select("select (case when (($total * 0.011) - floor(($total * 0.011))) >= 0.51 then round(($total * 0.011),0) else round(($total * 0.011),0,1) end) as ppn");
                     $nominalppn = $nilaippn[0]->ppn;
                     $nominalDetail[] = $total + $nominalppn;
                 } else {
-                    $nilaippn = db::select("select round(($total * 0.11), 0, 1) as ppn");
+                    $nilaippn = db::select("select (case when (($total * 0.11) - floor(($total * 0.11))) >= 0.51 then round(($total * 0.11),0) else round(($total * 0.11),0,1) end) as ppn");
                     $nominalppn = $nilaippn[0]->ppn;
                     $nominalDetail[] = $total + $nominalppn;
                 }
@@ -1683,11 +1683,11 @@ class InvoiceEmklHeader extends MyModel
                         // }
                         if ($statusPPN->text == 'PPN 1.1%') {
                             $nom = $data['nominal'][$i];
-                            $nilaippn = db::select("select round(($nom * 0.011), 0, 1) as ppn");
+                            $nilaippn = db::select("select (case when (($nom * 0.011) - floor(($nom * 0.011))) >= 0.51 then round(($nom * 0.011),0) else round(($nom * 0.011),0,1) end) as ppn");
                             $nominalppn = $nilaippn[0]->ppn;
                         } else {
                             $nom = $data['nominal'][$i];
-                            $nilaippn = db::select("select round(($nom * 0.11), 0, 1) as ppn");
+                            $nilaippn = db::select("select (case when (($nom * 0.11) - floor(($nom * 0.11))) >= 0.51 then round(($nom * 0.11),0) else round(($nom * 0.11),0,1) end) as ppn");
                             $nominalppn = $nilaippn[0]->ppn;
                         }
 
@@ -1728,11 +1728,11 @@ class InvoiceEmklHeader extends MyModel
                             $coakreditdetail = '';
                             if ($statusPPN->text == 'PPN 1.1%') {
                                 $nom = $data['nominal'][$i];
-                                $nilaippn = db::select("select round(($nom * 0.011), 0, 1) as ppn");
+                                $nilaippn = db::select("select (case when (($nom * 0.011) - floor(($nom * 0.011))) >= 0.51 then round(($nom * 0.011),0) else round(($nom * 0.011),0,1) end) as ppn");
                                 $nominalppn = $nilaippn[0]->ppn;
                             } else {
                                 $nom = $data['nominal'][$i];
-                                $nilaippn = db::select("select round(($nom * 0.11), 0, 1) as ppn");
+                                $nilaippn = db::select("select (case when (($nom * 0.11) - floor(($nom * 0.11))) >= 0.51 then round(($nom * 0.11),0) else round(($nom * 0.11),0,1) end) as ppn");
                                 $nominalppn = $nilaippn[0]->ppn;
                             }
                             $status[] = 'normal';
@@ -2065,11 +2065,11 @@ class InvoiceEmklHeader extends MyModel
             if ($invoiceHeader->jenisorder_id == $idMuatan->id) {
                 $nominalDetail = [];
                 if ($statusPPN->text == 'PPN 1.1%') {
-                    $nilaippn = db::select("select round(($total * 0.011), 0, 1) as ppn");
+                    $nilaippn = db::select("select (case when (($total * 0.011) - floor(($total * 0.011))) >= 0.51 then round(($total * 0.011),0) else round(($total * 0.011),0,1) end) as ppn");
                     $nominalppn = $nilaippn[0]->ppn;
                     $nominalDetail[] = $total + $nominalppn;
                 } else {
-                    $nilaippn = db::select("select round(($total * 0.11), 0, 1) as ppn");
+                    $nilaippn = db::select("select (case when (($total * 0.11) - floor(($total * 0.11))) >= 0.51 then round(($total * 0.11),0) else round(($total * 0.11),0,1) end) as ppn");
                     $nominalppn = $nilaippn[0]->ppn;
                     $nominalDetail[] = $total + $nominalppn;
                 }
