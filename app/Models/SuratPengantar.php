@@ -106,6 +106,21 @@ class SuratPengantar extends MyModel
         if ($cabang == 'MEDAN') {
             $statusCetak = (new Parameter())->cekId('STATUSCETAK', 'STATUSCETAK', 'CETAK');
 
+            $querytrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+                ->where('nobukti', $nobukti)
+                ->where('statusapprovalmandor', 3)
+                ->first();
+            if ($querytrip != '') {
+                $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => 'No Bukti <b>' . $querytrip->nobukti . '</b> ' . $keteranganerror . ' mandor',
+                    'kodeerror' => 'SAP',
+                ];
+
+                goto selesai;
+            }
+
             $gajiSupir = DB::table('gajisupirdetail')
                 ->from(
                     DB::raw("gajisupirdetail as a with (readuncommitted)")
@@ -143,21 +158,6 @@ class SuratPengantar extends MyModel
                         goto selesai;
                     }
                 }
-            }
-
-            $querytrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-                ->where('nobukti', $nobukti)
-                ->where('statusapprovalmandor', 3)
-                ->first();
-            if ($querytrip != '') {
-                $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
-                $data = [
-                    'kondisi' => true,
-                    'keterangan' => 'No Bukti <b>' . $querytrip->nobukti . '</b> ' . $keteranganerror . ' mandor',
-                    'kodeerror' => 'SAP',
-                ];
-
-                goto selesai;
             }
         } else {
             $gajiSupir = DB::table('gajisupirdetail')
