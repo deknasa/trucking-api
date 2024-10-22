@@ -208,8 +208,14 @@ class InvoiceLunasKePusatController extends Controller
      */
     public function export(Request $request)
     {
+        $requestData = json_decode($request->data, true);
+        $data = [
+            'id' => $requestData['id'],
+            'nobukti' => $requestData['nobukti']
+        ];
+
         $invoicelunaskepusat = new InvoiceLunasKePusat();
-        $invoice_lunaskepusat = $invoicelunaskepusat->get();
+        $invoice_lunaskepusat = $invoicelunaskepusat->getExport($data);
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
