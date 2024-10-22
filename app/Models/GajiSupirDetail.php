@@ -337,7 +337,7 @@ class GajiSupirDetail extends MyModel
                 DB::raw("isnull(gajisupirdetail.nominalbiayaextrasupir, 0) as biayaextrasupir_nominal"),
                 'gajisupirdetail.keteranganbiayaextrasupir as biayaextrasupir_keterangan',
                 DB::raw("(case when isnull(suratpengantar.statusapprovalmandor,'')='' then 4 else suratpengantar.statusapprovalmandor end) as statusapprovaltrip"),
-                DB::raw("(case when isnull(ritasi.statusapprovalritasi,'')='' then 4 else ritasi.statusapprovalritasi end) as statusapprovalritasi")
+                DB::raw("(case when isnull(ritasi.statusapprovalritasi,'')='' then '' else ritasi.statusapprovalritasi end) as statusapprovalritasi")
 
             )
             ->join(DB::raw("suratpengantar with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
@@ -400,7 +400,7 @@ class GajiSupirDetail extends MyModel
                 'gajisupirdetail.keteranganbiayatambahan',
                 db::raw("(gajisupirdetail.gajisupir+gajisupirdetail.gajikenek+gajisupirdetail.komisisupir+gajisupirdetail.biayatambahan) as total"),
                 db::raw("4 as statusapprovaltrip"),
-                db::raw("4 as statusapprovalritasi")
+                // db::raw("4 as statusapprovalritasi")
 
             )
             ->join(DB::raw("saldosuratpengantar with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'saldosuratpengantar.nobukti')
@@ -410,7 +410,7 @@ class GajiSupirDetail extends MyModel
 
             ->where('gajisupirdetail.suratpengantar_nobukti', '!=', '-')
             ->where('gajisupirdetail.gajisupir_id', request()->gajisupir_id);
-        $tes = DB::table($temp)->insertUsing(['nobukti', 'suratpengantar_nobukti', 'tglsp', 'dari', 'sampai', 'trado', 'nocont', 'nosp', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'biayaextra', 'keteranganbiayatambahan', 'total', 'statusapprovaltrip', 'statusapprovalritasi'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'suratpengantar_nobukti', 'tglsp', 'dari', 'sampai', 'trado', 'nocont', 'nosp', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'biayaextra', 'keteranganbiayatambahan', 'total', 'statusapprovaltrip'], $fetch);
 
         $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
             ->select(
@@ -431,7 +431,7 @@ class GajiSupirDetail extends MyModel
                 'gajisupirdetail.biayatambahan as biayaextra',
                 'gajisupirdetail.keteranganbiayatambahan',
                 db::raw("(gajisupirdetail.gajisupir+gajisupirdetail.gajikenek+gajisupirdetail.komisisupir+gajisupirdetail.biayatambahan) as total"),
-                db::raw("(case when isnull(ritasi.statusapprovalmandor,'')='' then 4 else ritasi.statusapprovalmandor end) as statusapprovalritasi")
+                db::raw("(case when isnull(ritasi.statusapprovalmandor,'')='' then '' else ritasi.statusapprovalmandor end) as statusapprovalritasi")
 
 
             )

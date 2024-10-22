@@ -235,14 +235,17 @@ class Ritasi extends MyModel
         $tempspric = '##tempspric' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempspric, function ($table) {
             $table->string('nobukti', 50)->nullable();
+            $table->string('ebsnobukti', 50)->nullable();
             $table->string('suratpengantar_nobukti', 50)->nullable();
         });
         $queryric = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail a with (readuncommitted)"))
             ->select(
                 db::raw("max(a.nobukti) as nobukti"),
+                db::raw("max(d.nobukti) as ebsnobukti"),
                 'a.suratpengantar_nobukti'
             )
             ->join(db::raw("suratpengantar as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.nobukti')
+            ->leftjoin(db::raw("prosesgajisupirdetail d with (readuncommitted)"), 'a.nobukti', 'd.gajisupir_nobukti')
             ->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])
             ->groupBy('a.suratpengantar_nobukti');
 
@@ -251,6 +254,7 @@ class Ritasi extends MyModel
         }
         DB::table($tempspric)->insertUsing([
             'nobukti',
+            'ebsnobukti',
             'suratpengantar_nobukti',
         ], $queryric);
 
@@ -300,6 +304,7 @@ class Ritasi extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->integer('flag')->nullable();
             $table->string('gajisupir_nobukti', 500)->nullable();
+            $table->string('prosesgajisupir_nobukti', 500)->nullable();
             $table->unsignedBigInteger('statusgajisupir')->nullable();
         });
         $query = DB::table('suratpengantar')->select(
@@ -344,7 +349,7 @@ class Ritasi extends MyModel
             'suratpengantar.created_at',
             'suratpengantar.updated_at',
             DB::raw("1 as flag"),
-            db::raw("isnull(gajisupir.nobukti,'') as gajisupir_nobukti, (case when isnull(gajisupir.nobukti,'')='' then " . $getBelumbuka->id . " else " . $getSudahbuka->id . " end) as statusgajisupir")
+            db::raw("isnull(gajisupir.nobukti,'') as gajisupir_nobukti, isnull(gajisupir.ebsnobukti,'') as prosesgajisupir_nobukti, (case when isnull(gajisupir.nobukti,'')='' then " . $getBelumbuka->id . " else " . $getSudahbuka->id . " end) as statusgajisupir")
 
         )
 
@@ -423,19 +428,23 @@ class Ritasi extends MyModel
             'updated_at',
             'flag',
             'gajisupir_nobukti',
+            'prosesgajisupir_nobukti',
             'statusgajisupir'
         ], $query);
         $tempspric = '##tempspric' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempspric, function ($table) {
             $table->string('nobukti', 50)->nullable();
+            $table->string('ebsnobukti', 50)->nullable();
             $table->string('ritasi_nobukti', 50)->nullable();
         });
         $queryric = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail a with (readuncommitted)"))
             ->select(
                 db::raw("max(a.nobukti) as nobukti"),
+                db::raw("max(d.nobukti) as ebsnobukti"),
                 'a.ritasi_nobukti'
             )
             ->join(db::raw("ritasi as b with (readuncommitted)"), 'a.ritasi_nobukti', 'b.nobukti')
+            ->leftjoin(db::raw("prosesgajisupirdetail as d with (readuncommitted)"), 'a.nobukti', 'd.gajisupir_nobukti')
             ->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])
             ->groupBy('a.ritasi_nobukti');
 
@@ -444,6 +453,7 @@ class Ritasi extends MyModel
         }
         DB::table($tempspric)->insertUsing([
             'nobukti',
+            'ebsnobukti',
             'ritasi_nobukti',
         ], $queryric);
 
@@ -490,7 +500,7 @@ class Ritasi extends MyModel
             'suratpengantar.created_at',
             'suratpengantar.updated_at',
             DB::raw("2 as flag"),
-            db::raw("isnull(gajisupir.nobukti,'') as gajisupir_nobukti, 
+            db::raw("isnull(gajisupir.nobukti,'') as gajisupir_nobukti, isnull(gajisupir.ebsnobukti,'') as prosesgajisupir_nobukti, 
                     (case when isnull(gajisupir.nobukti,'')='' then " . $getBelumbuka->id . " else " . $getSudahbuka->id . " end) as statusgajisupir")
 
         )
@@ -574,6 +584,7 @@ class Ritasi extends MyModel
             'updated_at',
             'flag',
             'gajisupir_nobukti',
+            'prosesgajisupir_nobukti',
             'statusgajisupir'
         ], $query);
 
@@ -623,6 +634,7 @@ class Ritasi extends MyModel
                 'suratpengantar.updated_at',
                 'suratpengantar.flag',
                 'suratpengantar.gajisupir_nobukti',
+                'suratpengantar.prosesgajisupir_nobukti',
                 'statusgajisupir.memo as statusgajisupir'
             )
             ->leftJoin('parameter as statusgajisupir', 'suratpengantar.statusgajisupir', 'statusgajisupir.id');
@@ -678,6 +690,7 @@ class Ritasi extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->integer('flag')->nullable();
             $table->string('gajisupir_nobukti', 500)->nullable();
+            $table->string('prosesgajisupir_nobukti', 500)->nullable();
             $table->longText('statusgajisupir')->nullable();
             $table->increments('position');
         });
@@ -741,6 +754,7 @@ class Ritasi extends MyModel
             'updated_at',
             'flag',
             'gajisupir_nobukti',
+            'prosesgajisupir_nobukti',
             'statusgajisupir'
         ], $models);
 

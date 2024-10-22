@@ -1495,9 +1495,11 @@ class ListTrip extends MyModel
         } else {
             $cekRitasi = DB::table("ritasi")->from(db::raw("ritasi with (readuncommitted)"))
                 ->where('suratpengantar_nobukti', $suratPengantar->nobukti)
-                ->first();
-            if ($cekRitasi != '') {
-                Ritasi::where('suratpengantar_nobukti', $suratPengantar->nobukti)->lockForUpdate()->delete();
+                ->get();
+            if (count($cekRitasi) > 0) {
+                foreach ($cekRitasi as $row => $value) {
+                    (new Ritasi())->processDestroy($value->id);
+                }
             }
         }
 
