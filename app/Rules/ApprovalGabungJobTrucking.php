@@ -52,6 +52,8 @@ class ApprovalGabungJobTrucking implements Rule
         $nocont = '';
         $noinvoice = '';
         $nobuktitrippelabuhan = '';
+        $bulanpelabuhan = '';
+        $bulannonpelabuhan = '';
         for ($i = 0; $i < count(request()->Id); $i++) {
             $nobukti = request()->Id[$i];
             // dd($nobukti);
@@ -201,8 +203,8 @@ class ApprovalGabungJobTrucking implements Rule
                     $tarif_idcek = $querycek->tarif_id ?? 0;
                     $statusgerobakcek = $querycek->statusgerobak ?? 0;
 
-                    if ($queryutama->statuslongtrip==$statuslongtrip) {
-                        $gabungcek = $penyesuaiancek . $container_idcek . $gandengan_idcek . $agen_idcek . $jenisorder_idcek ;
+                    if ($queryutama->statuslongtrip == $statuslongtrip) {
+                        $gabungcek = $penyesuaiancek . $container_idcek . $gandengan_idcek . $agen_idcek . $jenisorder_idcek;
                     } else {
                         $gabungcek = $penyesuaiancek . $container_idcek . $gandengan_idcek . $agen_idcek . $jenisorder_idcek . $tarif_idcek . $statusgerobakcek;
                     }
@@ -239,7 +241,9 @@ class ApprovalGabungJobTrucking implements Rule
         if ($noinvoice != ''  && $bulanpelabuhan == $bulannonpelabuhan) {
             return false;
         }
-
+        if ($noinvoice != '') {
+            return false;
+        }
 
         return true;
     }

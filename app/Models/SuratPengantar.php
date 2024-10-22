@@ -3420,9 +3420,12 @@ class SuratPengantar extends MyModel
                 $table->dateTime('updated_at')->nullable();
                 $table->integer('flag')->nullable();
                 $table->string('gajisupir_nobukti', 500)->nullable();
+                $table->string('prosesgajisupir_nobukti', 500)->nullable();
                 $table->longText('statusgajisupir')->nullable();
                 $table->date('tgldarigajisupirheader')->nullable();
                 $table->date('tglsampaigajisupirheader')->nullable();
+                $table->date('tgldariebs')->nullable();
+                $table->date('tglsampaiebs')->nullable();
             });
             $query = DB::table($this->table)->select(
                 'suratpengantar.id',
@@ -3550,6 +3553,7 @@ class SuratPengantar extends MyModel
                     $table->dateTime('updated_at')->nullable();
                     $table->integer('flag')->nullable();
                     $table->string('gajisupir_nobukti', 500)->nullable();
+                    $table->string('prosesgajisupir_nobukti', 500)->nullable();
                     $table->unsignedBigInteger('statusgajisupir')->nullable();
                     $table->date('tgldarigajisupirheader')->nullable();
                     $table->date('tglsampaigajisupirheader')->nullable();
@@ -3558,17 +3562,20 @@ class SuratPengantar extends MyModel
                 $tempspric = '##tempspric' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                 Schema::create($tempspric, function ($table) {
                     $table->string('nobukti', 50)->nullable();
+                    $table->string('ebsnobukti', 50)->nullable();
                     $table->string('suratpengantar_nobukti', 50)->nullable();
                     $table->date('tglbukti')->nullable();
                 });
                 $queryric = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail a with (readuncommitted)"))
                     ->select(
                         db::raw("max(a.nobukti) as nobukti"),
+                        db::raw("max(d.nobukti) as ebsnobukti"),
                         'a.suratpengantar_nobukti',
                         db::raw("max(c.tglbukti) as tglbukti")
                     )
                     ->join(db::raw("suratpengantar as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.nobukti')
                     ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+                    ->leftjoin(db::raw("prosesgajisupirdetail d with (readuncommitted)"), 'a.nobukti', 'd.gajisupir_nobukti')
                     ->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
                     ->groupBy('a.suratpengantar_nobukti');
 
@@ -3577,10 +3584,11 @@ class SuratPengantar extends MyModel
                 }
                 DB::table($tempspric)->insertUsing([
                     'nobukti',
+                    'ebsnobukti',
                     'suratpengantar_nobukti',
                     'tglbukti'
                 ], $queryric);
-                $query->addSelect(db::raw("isnull(gajisupir.nobukti,'') as gajisupir_nobukti, (case when isnull(gajisupir.nobukti,'')='' then " . $getBelumbuka->id . " else " . $getSudahbuka->id . " end) as statusgajisupir, cast((format(gajisupir.tglbukti,'yyyy/MM')+'/1') as date) as tgldarigajisupirheader, cast(cast(format((cast((format(gajisupir.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaigajisupirheader"))
+                $query->addSelect(db::raw("isnull(gajisupir.nobukti,'') as gajisupir_nobukti,isnull(gajisupir.ebsnobukti,'') as prosesgajisupir_nobukti, (case when isnull(gajisupir.nobukti,'')='' then " . $getBelumbuka->id . " else " . $getSudahbuka->id . " end) as statusgajisupir, cast((format(gajisupir.tglbukti,'yyyy/MM')+'/1') as date) as tgldarigajisupirheader, cast(cast(format((cast((format(gajisupir.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaigajisupirheader"))
                     ->leftJoin(DB::raw("$tempspric as gajisupir with (readuncommitted)"), 'suratpengantar.nobukti', 'gajisupir.suratpengantar_nobukti');
 
                 DB::table($tempsuratpengantarrinci)->insertUsing([
@@ -3626,6 +3634,7 @@ class SuratPengantar extends MyModel
                     'updated_at',
                     'flag',
                     'gajisupir_nobukti',
+                    'prosesgajisupir_nobukti',
                     'statusgajisupir',
                     'tgldarigajisupirheader',
                     'tglsampaigajisupirheader'
@@ -3634,17 +3643,20 @@ class SuratPengantar extends MyModel
                 $tempspric = '##tempspric' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                 Schema::create($tempspric, function ($table) {
                     $table->string('nobukti', 50)->nullable();
+                    $table->string('ebsnobukti', 50)->nullable();
                     $table->string('ritasi_nobukti', 50)->nullable();
                     $table->date('tglbukti')->nullable();
                 });
                 $queryric = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail a with (readuncommitted)"))
                     ->select(
                         db::raw("max(a.nobukti) as nobukti"),
+                        db::raw("max(d.nobukti) as ebsnobukti"),
                         'a.ritasi_nobukti',
                         db::raw("max(c.tglbukti) as tglbukti")
                     )
                     ->join(db::raw("ritasi as b with (readuncommitted)"), 'a.ritasi_nobukti', 'b.nobukti')
                     ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+                    ->leftjoin(db::raw("prosesgajisupirdetail as d with (readuncommitted)"), 'a.nobukti', 'd.gajisupir_nobukti')
                     ->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
                     ->groupBy('a.ritasi_nobukti');
 
@@ -3653,6 +3665,7 @@ class SuratPengantar extends MyModel
                 }
                 DB::table($tempspric)->insertUsing([
                     'nobukti',
+                    'ebsnobukti',
                     'ritasi_nobukti',
                     'tglbukti'
                 ], $queryric);
@@ -3700,7 +3713,7 @@ class SuratPengantar extends MyModel
                     'suratpengantar.created_at',
                     'suratpengantar.updated_at',
                     DB::raw("2 as flag"),
-                    db::raw("isnull(gajisupir.nobukti,'') as gajisupir_nobukti, 
+                    db::raw("isnull(gajisupir.nobukti,'') as gajisupir_nobukti, isnull(gajisupir.ebsnobukti,'') as prosesgajisupir_nobukti, 
                     (case when isnull(gajisupir.nobukti,'')='' then " . $getBelumbuka->id . " else " . $getSudahbuka->id . " end) as statusgajisupir,  cast((format(gajisupir.tglbukti,'yyyy/MM')+'/1') as date) as tgldarigajisupirheader, cast(cast(format((cast((format(gajisupir.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaigajisupirheader")
 
                 )
@@ -3784,6 +3797,7 @@ class SuratPengantar extends MyModel
                     'updated_at',
                     'flag',
                     'gajisupir_nobukti',
+                    'prosesgajisupir_nobukti',
                     'statusgajisupir',
                     'tgldarigajisupirheader',
                     'tglsampaigajisupirheader'
@@ -3835,10 +3849,13 @@ class SuratPengantar extends MyModel
                         'a.updated_at',
                         'a.flag',
                         'a.gajisupir_nobukti',
+                        'a.prosesgajisupir_nobukti',
                         'statusgajisupir.memo as statusgajisupir',
                         'a.tgldarigajisupirheader',
-                        'a.tglsampaigajisupirheader'
+                        'a.tglsampaigajisupirheader',
+                        DB::raw("cast((format(prosesgajisupirheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariebs, cast(cast(format((cast((format(prosesgajisupirheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiebs")
                     )
+                    ->leftJoin(DB::raw("prosesgajisupirheader with (readuncommitted)"), 'a.prosesgajisupir_nobukti', 'prosesgajisupirheader.nobukti')
                     ->leftJoin('parameter as statusgajisupir', 'a.statusgajisupir', 'statusgajisupir.id');
                 // dd($queryfinal->get());
                 DB::table($tempsuratpengantar)->insertUsing([
@@ -3886,9 +3903,12 @@ class SuratPengantar extends MyModel
                     'updated_at',
                     'flag',
                     'gajisupir_nobukti',
+                    'prosesgajisupir_nobukti',
                     'statusgajisupir',
                     'tgldarigajisupirheader',
-                    'tglsampaigajisupirheader'
+                    'tglsampaigajisupirheader',
+                    'tgldariebs',
+                    'tglsampaiebs'
                 ], $queryfinal);
             } else {
 
@@ -3997,9 +4017,12 @@ class SuratPengantar extends MyModel
                 'suratpengantar.updated_at',
                 'suratpengantar.flag',
                 'suratpengantar.gajisupir_nobukti',
+                'suratpengantar.prosesgajisupir_nobukti',
                 'suratpengantar.statusgajisupir',
                 'suratpengantar.tgldarigajisupirheader',
-                'suratpengantar.tglsampaigajisupirheader'
+                'suratpengantar.tglsampaigajisupirheader',
+                'suratpengantar.tgldariebs',
+                'suratpengantar.tglsampaiebs'
 
             );
 
