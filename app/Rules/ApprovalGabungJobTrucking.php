@@ -158,6 +158,9 @@ class ApprovalGabungJobTrucking implements Rule
         $jenisorder_idutama = $queryutama->jenisorder_id ?? 0;
         $tarif_idutama = $queryutama->tarif_id ?? 0;
         $statusgerobakutama = $queryutama->statusgerobak ?? 0;
+        if($queryutama == ''){            
+            return false;
+        }
         if ($queryutama->statuslongtrip==$statuslongtrip) {
             $gabungutama = $penyesuaianutama . $container_idutama  . $gandengan_idutama . $agen_idutama . $jenisorder_idutama ;
         } else {
