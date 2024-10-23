@@ -998,9 +998,9 @@ class InvoiceEmklHeader extends MyModel
                             $nominalfifo[] = -$selisih;
                             $coadebetfifo[] = $coadebetdetail;
                         }
-                        if ($data['nominal'][$i] == $nominalawal) {
-                            $coadebetdetail = '';
-                            $coakreditdetail = '';
+                        if ($data['nominal'][$i] == $nominalawal) {                        
+                            $coadebetdetail = $coadebet;
+                            $coakreditdetail = $coakredit;
                             if ($statusPPN->text == 'PPN 1.1%') {
                                 $nom = $data['nominal'][$i];
                                 $nilaippn = db::select("select (case when (($nom * 0.011) - floor(($nom * 0.011))) >= 0.51 then round(($nom * 0.011),0) else round(($nom * 0.011),0,1) end) as ppn");
@@ -1723,9 +1723,9 @@ class InvoiceEmklHeader extends MyModel
                             $nominalfifo[] = -$selisih;
                             $coadebetfifo[] = $coadebetdetail;
                         }
-                        if ($data['nominal'][$i] == $nominalawal) {
-                            $coadebetdetail = '';
-                            $coakreditdetail = '';
+                        if ($data['nominal'][$i] == $nominalawal) {                            
+                            $coadebetdetail = $coadebet;
+                            $coakreditdetail = $coakredit;
                             if ($statusPPN->text == 'PPN 1.1%') {
                                 $nom = $data['nominal'][$i];
                                 $nilaippn = db::select("select (case when (($nom * 0.011) - floor(($nom * 0.011))) >= 0.51 then round(($nom * 0.011),0) else round(($nom * 0.011),0,1) end) as ppn");
