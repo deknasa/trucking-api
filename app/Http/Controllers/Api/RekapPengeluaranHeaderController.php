@@ -71,8 +71,8 @@ class RekapPengeluaranHeaderController extends Controller
                 } else {
                     $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($request->limit ?? 10));
                 }
-                $rekapPengeluaranHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $rekapPengeluaranHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $rekapPengeluaranHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $rekapPengeluaranHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
             DB::commit();
 
@@ -121,8 +121,8 @@ class RekapPengeluaranHeaderController extends Controller
             } else {
                 $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($request->limit ?? 10));
             }
-            $rekapPengeluaranHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $rekapPengeluaranHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $rekapPengeluaranHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $rekapPengeluaranHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 
@@ -153,8 +153,8 @@ class RekapPengeluaranHeaderController extends Controller
             } else {
                 $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($request->limit ?? 10));
             }
-            $rekapPengeluaranHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $rekapPengeluaranHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $rekapPengeluaranHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $rekapPengeluaranHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 

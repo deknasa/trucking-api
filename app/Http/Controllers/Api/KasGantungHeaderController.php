@@ -111,8 +111,8 @@ class KasGantungHeaderController extends Controller
                 } else {
                     $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
                 }
-                $kasgantungHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $kasgantungHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $kasgantungHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $kasgantungHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
 
             DB::commit();
@@ -179,8 +179,8 @@ class KasGantungHeaderController extends Controller
             } else {
                 $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
             }
-            $kasgantungHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $kasgantungHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $kasgantungHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $kasgantungHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             DB::commit();
 
             return response()->json([
@@ -210,8 +210,8 @@ class KasGantungHeaderController extends Controller
             } else {
                 $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
             }
-            $kasgantungHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $kasgantungHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $kasgantungHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $kasgantungHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 

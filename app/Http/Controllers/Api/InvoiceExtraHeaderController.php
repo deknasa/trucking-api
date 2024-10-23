@@ -76,8 +76,8 @@ class InvoiceExtraHeaderController extends Controller
                 } else {
                     $invoiceExtra->page = ceil($invoiceExtra->position / ($request->limit ?? 10));
                 }
-                $invoiceExtra->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $invoiceExtra->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $invoiceExtra->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $invoiceExtra->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
             DB::commit();
 
@@ -127,8 +127,8 @@ class InvoiceExtraHeaderController extends Controller
             } else {
                 $invoiceExtraHeader->page = ceil($invoiceExtraHeader->position / ($request->limit ?? 10));
             }
-            $invoiceExtraHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $invoiceExtraHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $invoiceExtraHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $invoiceExtraHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 
@@ -161,8 +161,8 @@ class InvoiceExtraHeaderController extends Controller
             } else {
                 $invoiceExtraHeader->page = ceil($invoiceExtraHeader->position / ($request->limit ?? 10));
             }
-            $invoiceExtraHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $invoiceExtraHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $invoiceExtraHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $invoiceExtraHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 

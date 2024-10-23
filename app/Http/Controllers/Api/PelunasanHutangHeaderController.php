@@ -96,8 +96,8 @@ class PelunasanHutangHeaderController extends Controller
                 } else {
                     $PelunasanHutangHeader->page = ceil($PelunasanHutangHeader->position / ($request->limit ?? 10));
                 }
-                $PelunasanHutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $PelunasanHutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $PelunasanHutangHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $PelunasanHutangHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
 
             DB::commit();
@@ -160,8 +160,8 @@ class PelunasanHutangHeaderController extends Controller
             } else {
                 $PelunasanHutangHeader->page = ceil($PelunasanHutangHeader->position / ($request->limit ?? 10));
             }
-            $PelunasanHutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $PelunasanHutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $PelunasanHutangHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $PelunasanHutangHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
 
             DB::commit();
@@ -196,8 +196,8 @@ class PelunasanHutangHeaderController extends Controller
             } else {
                 $PelunasanHutangHeader->page = ceil($PelunasanHutangHeader->position / ($request->limit ?? 10));
             }
-            $PelunasanHutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $PelunasanHutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $PelunasanHutangHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $PelunasanHutangHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             DB::commit();
 
             return response()->json([

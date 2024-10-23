@@ -140,8 +140,8 @@ class PengeluaranStokHeaderController extends Controller
                 } else {
                     $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
                 }
-                $pengeluaranStokHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $pengeluaranStokHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $pengeluaranStokHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $pengeluaranStokHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
 
             DB::commit();
@@ -226,8 +226,8 @@ class PengeluaranStokHeaderController extends Controller
                 $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
             }
 
-            $pengeluaranStokHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $pengeluaranStokHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $pengeluaranStokHeader->tgldariheader = date('Y-m-d', strtotime(request()->tglbukti));
+            $pengeluaranStokHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglbukti));
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
@@ -258,8 +258,8 @@ class PengeluaranStokHeaderController extends Controller
             } else {
                 $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
             }
-            $pengeluaranStokHeader->tgldariheader = date('Y-m-01', strtotime($pengeluaranStokHeader->tglbukti));
-            $pengeluaranStokHeader->tglsampaiheader = date('Y-m-t', strtotime($pengeluaranStokHeader->tglbukti));
+            $pengeluaranStokHeader->tgldariheader = date('Y-m-d', strtotime($pengeluaranStokHeader->tglbukti));
+            $pengeluaranStokHeader->tglsampaiheader = date('Y-m-d', strtotime($pengeluaranStokHeader->tglbukti));
 
             DB::commit();
 
