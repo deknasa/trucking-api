@@ -236,6 +236,7 @@ class ExportLaporanKasHarian extends MyModel
                 'a.id as bank_id',
                 'a.coa as coa',
             )
+            ->where('a.statusaktif', 1)
             ->whereraw("left(a.kodebank,12)<>'PENGEMBALIAN'");
 
         DB::table($tempnonpengembaliankepusat)->insertUsing([
@@ -249,6 +250,7 @@ class ExportLaporanKasHarian extends MyModel
                 'a.id as bankpengembalian_id',
             )
             ->join(db::raw($tempnonpengembaliankepusat . " b"), 'a.coa', 'b.coa')
+            ->where('a.statusaktif', 1)
             ->whereraw("left(a.kodebank,12)='PENGEMBALIAN'");
 
         DB::table($temppengembaliankepusat)->insertUsing([
@@ -398,6 +400,8 @@ class ExportLaporanKasHarian extends MyModel
             $table->double('debet', 15, 2)->nullable();
             $table->double('kredit', 15, 2)->nullable();
             $table->double('saldo', 15, 2)->nullable();
+            $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+            $table->unsignedBigInteger('nilaikosongkredit')->nullable();
         });
 
 
@@ -414,6 +418,8 @@ class ExportLaporanKasHarian extends MyModel
             $table->double('debet', 15, 2)->nullable();
             $table->double('kredit', 15, 2)->nullable();
             $table->double('saldo', 15, 2)->nullable();
+            $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+            $table->unsignedBigInteger('nilaikosongkredit')->nullable();
         });
 
         DB::table($tempList)->insert([
@@ -426,7 +432,9 @@ class ExportLaporanKasHarian extends MyModel
             'keterangan' => 'SALDO AWAL',
             'debet' => 0,
             'kredit' => 0,
-            'saldo' => $saldoAwal
+            'saldo' => $saldoAwal,
+            "nilaikosongdebet" => "1",
+            "nilaikosongkredit" => "1",
         ]);
 
         // dd(db::table($tempList)->get());
@@ -442,7 +450,9 @@ class ExportLaporanKasHarian extends MyModel
                 'keterangan' => 'SALDO AWAL',
                 'debet' => 0,
                 'kredit' => 0,
-                'saldo' => 0
+                'saldo' => 0,
+                "nilaikosongdebet" => "1",
+                "nilaikosongkredit" => "1",
             ]);
 
             $tgl1 = date('Y-m-d', strtotime($tgl1 . ' +1 day'));
@@ -464,6 +474,8 @@ class ExportLaporanKasHarian extends MyModel
                 db::raw("nominal as debet"),
                 DB::raw("0  as kredit"),
                 DB::raw("0 as saldo"),
+                DB::raw("0  as nilaikosongdebet"),
+                DB::raw("1  as nilaikosongkredit"),
 
             )
             ->join(DB::raw("penerimaanheader as b "), 'a.nobukti', 'b.nobukti')
@@ -482,7 +494,9 @@ class ExportLaporanKasHarian extends MyModel
             'keterangan',
             'debet',
             'kredit',
-            'saldo'
+            'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $queryTempList);
 
         // disini
@@ -501,6 +515,8 @@ class ExportLaporanKasHarian extends MyModel
                 'nominal as debet',
                 DB::raw("0 as kredit"),
                 DB::raw("0 as saldo"),
+                DB::raw("0  as nilaikosongdebet"),
+                DB::raw("1  as nilaikosongkredit"),
 
             )
             ->leftjoin(DB::raw("akunpusat as c "), 'a.coakredit', 'c.coa')
@@ -518,7 +534,9 @@ class ExportLaporanKasHarian extends MyModel
             'keterangan',
             'debet',
             'kredit',
-            'saldo'
+            'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $queryTempPindahBuku);
 
         $queryTempPengeluaran = DB::table('pengeluarandetail')->from(
@@ -537,6 +555,8 @@ class ExportLaporanKasHarian extends MyModel
                 DB::raw("0  as debet"),
                 DB::raw("nominal  as kredit"),
                 DB::raw("0 as saldo"),
+                DB::raw("1  as nilaikosongdebet"),
+                DB::raw("0  as nilaikosongkredit"),
             )
             ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
             ->leftjoin(DB::raw("akunpusat as c "), db::raw("(case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end)"), 'c.coa')
@@ -555,7 +575,9 @@ class ExportLaporanKasHarian extends MyModel
             'keterangan',
             'debet',
             'kredit',
-            'saldo'
+            'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $queryTempPengeluaran);
 
         // $queryTempPengeluaran = DB::table('pengeluarandetail')->from(
@@ -609,6 +631,8 @@ class ExportLaporanKasHarian extends MyModel
                 DB::raw("0  as debet"),
                 DB::raw("nominal  as kredit"),
                 DB::raw("0 as saldo"),
+                DB::raw("1  as nilaikosongdebet"),
+                DB::raw("0  as nilaikosongkredit"),
             )
             ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
             ->leftjoin(DB::raw("akunpusat as c "), db::raw("(case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end)"), 'c.coa')
@@ -628,7 +652,9 @@ class ExportLaporanKasHarian extends MyModel
             'keterangan',
             'debet',
             'kredit',
-            'saldo'
+            'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $queryTempPengeluaran);
 
 
@@ -646,6 +672,8 @@ class ExportLaporanKasHarian extends MyModel
                 DB::raw("0 as debet"),
                 DB::raw("nominal as kredit"),
                 DB::raw("0 as saldo"),
+                DB::raw("1  as nilaikosongdebet"),
+                DB::raw("0  as nilaikosongkredit"),
             )
 
             ->leftjoin(DB::raw("akunpusat as c "), 'a.coadebet', 'c.coa')
@@ -663,7 +691,9 @@ class ExportLaporanKasHarian extends MyModel
             'keterangan',
             'debet',
             'kredit',
-            'saldo'
+            'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $queryTempPindahBukuDua);
 
         // pengembalian kepusat
@@ -678,6 +708,7 @@ class ExportLaporanKasHarian extends MyModel
         $bankpengembaliankepusat = db::table('bank')->from(db::raw("bank a with (readuncommitted)"))
             ->select('a.id')
             ->where('a.coa', $coabank)
+            ->where('a.statusaktif', 1)
             ->whereRaw("a.id<>" . $jenis)
             ->first();
 
@@ -698,6 +729,8 @@ class ExportLaporanKasHarian extends MyModel
                     DB::raw("0 as debet"),
                     DB::raw("nominal as kredit"),
                     DB::raw("0 as saldo"),
+                    DB::raw("1  as nilaikosongdebet"),
+                    DB::raw("0  as nilaikosongkredit"),
                 )
                 ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
                 ->leftjoin(DB::raw("akunpusat as c "), db::raw("(case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end)"), 'c.coa')
@@ -716,7 +749,9 @@ class ExportLaporanKasHarian extends MyModel
                 'keterangan',
                 'debet',
                 'kredit',
-                'saldo'
+                'saldo',
+                'nilaikosongdebet',
+                'nilaikosongkredit'
             ], $queryTempPengeluaran);
 
             $queryTempPengeluaran = DB::table('pengeluarandetail')->from(
@@ -735,6 +770,8 @@ class ExportLaporanKasHarian extends MyModel
                     DB::raw("0 as debet"),
                     DB::raw("nominal as kredit"),
                     DB::raw("0 as saldo"),
+                    DB::raw("1  as nilaikosongdebet"),
+                    DB::raw("0  as nilaikosongkredit"),
                 )
                 ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
                 ->leftjoin(DB::raw("akunpusat as c "), db::raw("(case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end)"), 'c.coa')
@@ -754,7 +791,9 @@ class ExportLaporanKasHarian extends MyModel
                 'keterangan',
                 'debet',
                 'kredit',
-                'saldo'
+                'saldo',
+                'nilaikosongdebet',
+                'nilaikosongkredit'
             ], $queryTempPengeluaran);
         }
 
@@ -780,6 +819,8 @@ class ExportLaporanKasHarian extends MyModel
                 'debet',
                 'kredit',
                 'saldo',
+                'nilaikosongdebet',
+                'nilaikosongkredit'
             );
 
 
@@ -794,6 +835,8 @@ class ExportLaporanKasHarian extends MyModel
             'debet',
             'kredit',
             'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $queryTempList2);
 
         DB::table($tempList2)
@@ -815,6 +858,8 @@ class ExportLaporanKasHarian extends MyModel
             $table->double('debet', 15, 2)->nullable();
             $table->double('kredit', 15, 2)->nullable();
             $table->double('saldo', 15, 2)->nullable();
+            $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+            $table->unsignedBigInteger('nilaikosongkredit')->nullable();
         });
 
         $queryTempListRekap = DB::table($tempList)->from(
@@ -830,7 +875,9 @@ class ExportLaporanKasHarian extends MyModel
                 'keterangan',
                 'debet',
                 'kredit',
-                'saldo'
+                'saldo',
+                'nilaikosongdebet',
+                'nilaikosongkredit'
 
             )
             ->orderBy('tgl', 'ASC')
@@ -848,6 +895,8 @@ class ExportLaporanKasHarian extends MyModel
             'debet',
             'kredit',
             'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $queryTempListRekap);
 
         $tempLaporan = '##tempLaporan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -863,6 +912,8 @@ class ExportLaporanKasHarian extends MyModel
             $table->double('kredit', 15, 2)->nullable();
             $table->double('saldo', 15, 2)->nullable();
             $table->integer('id')->nullable();
+            $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+            $table->unsignedBigInteger('nilaikosongkredit')->nullable();
         });
 
         $queryTempLaporan = DB::table($tempListRekap)->from(
@@ -879,7 +930,9 @@ class ExportLaporanKasHarian extends MyModel
                 'a.debet',
                 'a.kredit',
                 DB::raw("sum ((isnull(A.saldo,0)+A.debet)-A.Kredit) over (order by id asc) as Saldo"),
-                'a.id'
+                'a.id',
+                'a.nilaikosongdebet',
+                'a.nilaikosongkredit'
 
             )
             ->where('a.jenislaporan', 'LAPORAN HARIAN')
@@ -897,7 +950,9 @@ class ExportLaporanKasHarian extends MyModel
             'debet',
             'kredit',
             'saldo',
-            'id'
+            'id',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $queryTempLaporan);
 
         DB::table($tempList)
@@ -918,6 +973,8 @@ class ExportLaporanKasHarian extends MyModel
             $table->double('debet', 15, 2)->nullable();
             $table->double('kredit', 15, 2)->nullable();
             $table->double('saldo', 15, 2)->nullable();
+            $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+            $table->unsignedBigInteger('nilaikosongkredit')->nullable();
         });
 
         $queryTempRekap = DB::table($tempList)->from(
@@ -933,7 +990,9 @@ class ExportLaporanKasHarian extends MyModel
                 'keterangan',
                 'debet',
                 'kredit',
-                'saldo'
+                'saldo',
+                'nilaikosongdebet',
+                'nilaikosongkredit'
 
             )
             ->orderBy('tgl', 'ASC')
@@ -951,6 +1010,8 @@ class ExportLaporanKasHarian extends MyModel
             'debet',
             'kredit',
             'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $queryTempRekap);
 
         $queryTempLaporanRekap = DB::table($tempRekap)->from(
@@ -967,7 +1028,9 @@ class ExportLaporanKasHarian extends MyModel
                 'a.debet',
                 'a.kredit',
                 DB::raw("sum ((isnull(A.saldo,0)+A.debet)-A.Kredit) over (order by id asc) as Saldo"),
-                'a.id'
+                'a.id',
+                'a.nilaikosongdebet',
+                'a.nilaikosongkredit'
 
             )
             ->where('a.jenislaporan', 'LAPORAN REKAP')
@@ -984,7 +1047,9 @@ class ExportLaporanKasHarian extends MyModel
             'debet',
             'kredit',
             'saldo',
-            'id'
+            'id',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $queryTempLaporanRekap);
 
         // dd(db::table($tempList)->get());
@@ -1033,6 +1098,8 @@ class ExportLaporanKasHarian extends MyModel
             $table->double('debet', 15, 2)->nullable();
             $table->double('kredit', 15, 2)->nullable();
             $table->double('saldo', 15, 2)->nullable();
+            $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+            $table->unsignedBigInteger('nilaikosongkredit')->nullable();
         });
 
         $queryLaporanRekap01 = DB::table($tempList)->from(
@@ -1048,7 +1115,9 @@ class ExportLaporanKasHarian extends MyModel
                 'keterangan',
                 'debet',
                 'kredit',
-                'saldo'
+                'saldo',
+                'nilaikosongdebet',
+                'nilaikosongkredit'
             )
             ->orderBy('tgl', 'ASC')
             ->orderBy('jenis', 'ASC')
@@ -1065,6 +1134,8 @@ class ExportLaporanKasHarian extends MyModel
             'debet',
             'kredit',
             'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $queryLaporanRekap01);
 
         // dd(db::table($tempRekap01)->whereraw("tgl='2024/1/1'")->get());
@@ -1084,7 +1155,9 @@ class ExportLaporanKasHarian extends MyModel
                 'a.debet',
                 'a.kredit',
                 DB::raw("sum ((isnull(A.saldo,0)+A.debet)-A.Kredit) over (order by id asc) as Saldo"),
-                'a.id'
+                'a.id',
+                'a.nilaikosongdebet',
+                'a.nilaikosongkredit'
             )
             ->where('a.jenislaporan', '=', 'LAPORAN REKAP 01')
             ->orderBy('a.id', 'ASC');
@@ -1101,7 +1174,9 @@ class ExportLaporanKasHarian extends MyModel
             'debet',
             'kredit',
             'saldo',
-            'id'
+            'id',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $queryLaporanRekap01Dua);
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
@@ -1121,7 +1196,9 @@ class ExportLaporanKasHarian extends MyModel
             'kredit',
             'saldo',
             'id',
-            DB::raw("'" . $getJudul->text . "' as judul")
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         )
             ->orderBy('jenislaporan', 'asc')
             ->orderBy('jenismasuk', 'asc')

@@ -9,6 +9,7 @@ use App\Models\ExportLaporanKasHarian;
 use App\Http\Requests\ValidasiExportKasHairanRequest;
 use App\Http\Requests\ValidasiExportKasHarianRequest;
 use App\Http\Requests\ValidasiReportKasHarianRequest;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
@@ -261,7 +262,21 @@ class ExportLaporanKasHarianController extends Controller
                             $dateValue = ($value != null) ? Date::PHPToExcel(date('Y-m-d', strtotime($value))) : '';
                             $sheet->setCellValue($alphabets[$columnIndex] . $dataRow, $dateValue);
                         } else {
-                            $sheet->setCellValue($alphabets[$columnIndex] . $dataRow, $value);
+                            if($index == 'debet'){
+                                if ($row->nilaikosongdebet == 1) { 
+                                    $sheet->setCellValueExplicit($alphabets[$columnIndex] . $dataRow, null, DataType::TYPE_NULL);  
+                                }else{ 
+                                    $sheet->setCellValue($alphabets[$columnIndex] . $dataRow,  $value);
+                                }
+                            } else if($index == 'kredit'){
+                                if ($row->nilaikosongkredit == 1) { 
+                                    $sheet->setCellValueExplicit($alphabets[$columnIndex] . $dataRow, null, DataType::TYPE_NULL);  
+                                }else{ 
+                                    $sheet->setCellValue($alphabets[$columnIndex] . $dataRow,  $value);
+                                }
+                            } else {
+                                $sheet->setCellValue($alphabets[$columnIndex] . $dataRow, $value);
+                            }
                         }
                         // $sheet->getStyle($alphabets[$columnIndex] . $dataRow)->applyFromArray($borderStyle);
 
@@ -270,7 +285,7 @@ class ExportLaporanKasHarianController extends Controller
                             // if ($value == 0) {
                             //     $sheet->getStyle($alphabets[$columnIndex] . $dataRow)->getNumberFormat()->setFormatCode(";-0;;@");
                             // } else {
-                                $sheet->getStyle($alphabets[$columnIndex] . $dataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+                                $sheet->getStyle($alphabets[$columnIndex] . $dataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
                             // }
 
 
@@ -312,12 +327,12 @@ class ExportLaporanKasHarianController extends Controller
                 $sheet->setCellValue('F' . $dataRow, "=SUM(F6:F" . ($dataRow - 1) . ")");
                 // $sheet->getStyle('F' . $dataRow)->applyFromArray($borderStyle);
                 $sheet->getStyle('F' . $dataRow)->applyFromArray($boldStyle);
-                $sheet->getStyle('F' . $dataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+                $sheet->getStyle('F' . $dataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
 
                 $sheet->setCellValue('G' . $dataRow, "=SUM(G6:G" . ($dataRow - 1) . ")");
                 // $sheet->getStyle('G' . $dataRow)->applyFromArray($borderStyle);
                 $sheet->getStyle('G' . $dataRow)->applyFromArray($boldStyle);
-                $sheet->getStyle('G' . $dataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+                $sheet->getStyle('G' . $dataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
 
                 // Merge cells untuk menampilkan teks "TOTAL"
                 $sheet->mergeCells('A' . $dataRow . ':E' . $dataRow);
@@ -415,14 +430,28 @@ class ExportLaporanKasHarianController extends Controller
                         $dateValue = ($value != null) ? Date::PHPToExcel(date('Y-m-d', strtotime($value))) : '';
                         $rekapSheet->setCellValue($alphabets[$rekapColumnIndex] . $rekapDataRow, $dateValue);
                     } else {
-                        $rekapSheet->setCellValue($alphabets[$rekapColumnIndex] . $rekapDataRow, $value);
+                        if($index == 'debet'){
+                            if ($row->nilaikosongdebet == 1) { 
+                                $rekapSheet->setCellValueExplicit($alphabets[$rekapColumnIndex] . $rekapDataRow, null, DataType::TYPE_NULL);  
+                            }else{ 
+                                $rekapSheet->setCellValue($alphabets[$rekapColumnIndex] . $rekapDataRow,  $value);
+                            }
+                        } else if($index == 'kredit'){
+                            if ($row->nilaikosongkredit == 1) { 
+                                $rekapSheet->setCellValueExplicit($alphabets[$rekapColumnIndex] . $rekapDataRow, null, DataType::TYPE_NULL);  
+                            }else{ 
+                                $rekapSheet->setCellValue($alphabets[$rekapColumnIndex] . $rekapDataRow,  $value);
+                            }
+                        } else {
+                            $rekapSheet->setCellValue($alphabets[$rekapColumnIndex] . $rekapDataRow, $value);
+                        }
                     }
                     // Apply number format to debet, kredit, and saldo columns
                     if ($index == 'debet' || $index == 'kredit' || $index == 'saldo') {
                         // if ($value == 0) {
                         //     $rekapSheet->getStyle($alphabets[$rekapColumnIndex] . $rekapDataRow)->getNumberFormat()->setFormatCode(";-0;;@");
                         // } else {
-                            $rekapSheet->getStyle($alphabets[$rekapColumnIndex] . $rekapDataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+                            $rekapSheet->getStyle($alphabets[$rekapColumnIndex] . $rekapDataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
                         // }
                     }
 
@@ -453,11 +482,11 @@ class ExportLaporanKasHarianController extends Controller
             // Setelah perulangan selesai, tambahkan total ke sheet
             $rekapSheet->setCellValue('E' . $rekapDataRow, "=SUM(E6:E" . ($rekapDataRow - 1) . ")");
             $rekapSheet->getStyle('E' . $rekapDataRow)->applyFromArray($boldStyle);
-            $rekapSheet->getStyle('E' . $rekapDataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+            $rekapSheet->getStyle('E' . $rekapDataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
 
             $rekapSheet->setCellValue('F' . $rekapDataRow, "=SUM(F6:F" . ($rekapDataRow - 1) . ")");
             $rekapSheet->getStyle('F' . $rekapDataRow)->applyFromArray($boldStyle);
-            $rekapSheet->getStyle('F' . $rekapDataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+            $rekapSheet->getStyle('F' . $rekapDataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
 
             // Merge cells untuk menampilkan teks "TOTAL"
             $rekapSheet->mergeCells('A' . $rekapDataRow . ':D' . $rekapDataRow);
@@ -543,7 +572,21 @@ class ExportLaporanKasHarianController extends Controller
                         $dateValue = ($value != null) ? Date::PHPToExcel(date('Y-m-d', strtotime($value))) : '';
                         $rekap01Sheet->setCellValue($alphabets[$rekap01ColumnIndex] . $rekap01DataRow, $dateValue);
                     } else {
-                        $rekap01Sheet->setCellValue($alphabets[$rekap01ColumnIndex] . $rekap01DataRow, $value);
+                        if($index == 'debet'){
+                            if ($row->nilaikosongdebet == 1) { 
+                                $rekap01Sheet->setCellValueExplicit($alphabets[$rekap01ColumnIndex] . $rekap01DataRow, null, DataType::TYPE_NULL);  
+                            }else{ 
+                                $rekap01Sheet->setCellValue($alphabets[$rekap01ColumnIndex] . $rekap01DataRow,  $value);
+                            }
+                        } else if($index == 'kredit'){
+                            if ($row->nilaikosongkredit == 1) { 
+                                $rekap01Sheet->setCellValueExplicit($alphabets[$rekap01ColumnIndex] . $rekap01DataRow, null, DataType::TYPE_NULL);  
+                            }else{ 
+                                $rekap01Sheet->setCellValue($alphabets[$rekap01ColumnIndex] . $rekap01DataRow,  $value);
+                            }
+                        } else {
+                            $rekap01Sheet->setCellValue($alphabets[$rekap01ColumnIndex] . $rekap01DataRow, $value);
+                        }                        
                         // $rekap01Sheet->getStyle($alphabets[$rekap01ColumnIndex] . $rekap01DataRow)->applyFromArray($borderStyle);
                     }
                     // Apply number format to debet, kredit, and saldo columns
@@ -551,7 +594,7 @@ class ExportLaporanKasHarianController extends Controller
                         // if ($value == 0) {
                         //     $rekap01Sheet->getStyle($alphabets[$rekap01ColumnIndex] . $rekap01DataRow)->getNumberFormat()->setFormatCode(";-0;;@");
                         // } else {
-                            $rekap01Sheet->getStyle($alphabets[$rekap01ColumnIndex] . $rekap01DataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+                            $rekap01Sheet->getStyle($alphabets[$rekap01ColumnIndex] . $rekap01DataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
                         // }
                     }
                     // Apply date format to tgl column
@@ -574,13 +617,13 @@ class ExportLaporanKasHarianController extends Controller
             // Setelah perulangan selesai, tambahkan total ke sheet
             $rekap01Sheet->setCellValue('E' . $rekap01DataRow, "=SUM(E6:E" . ($rekap01DataRow - 1) . ")");
             $rekap01Sheet->getStyle('E' . $rekap01DataRow)->applyFromArray($boldStyle);
-            $rekap01Sheet->getStyle('E' . $rekap01DataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+            $rekap01Sheet->getStyle('E' . $rekap01DataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
 
 
             $rekap01Sheet->setCellValue('F' . $rekap01DataRow, "=SUM(F6:F" . ($rekap01DataRow - 1) . ")");
             // $rekap01Sheet->getStyle('G' . $rekap01DataRow)->applyFromArray($borderStyle);
             $rekap01Sheet->getStyle('F' . $rekap01DataRow)->applyFromArray($boldStyle);
-            $rekap01Sheet->getStyle('F' . $rekap01DataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)-0;;@");
+            $rekap01Sheet->getStyle('F' . $rekap01DataRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
 
             // Merge cells untuk menampilkan teks "TOTAL"
             $rekap01Sheet->mergeCells('A' . $rekap01DataRow . ':D' . $rekap01DataRow);
