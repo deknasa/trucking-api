@@ -78,7 +78,9 @@ class OpnameHeader extends MyModel
 
     public function getInventory($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter, $prosesneraca, $kelompok)
     {
-        $inventory = (new LaporanSaldoInventory())->getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter, $prosesneraca);
+        $jenislaporan = (new Parameter)->cekId('JENIS LAPORAN', 'JENIS LAPORAN', 'NORMAL');
+
+        $inventory = (new LaporanSaldoInventory())->getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter, $prosesneraca, $jenislaporan);
         // dd($inventory->get());
         $tempinevtory = '##tempinevtory' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempinevtory, function ($table) {
@@ -188,10 +190,10 @@ class OpnameHeader extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
-        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
-            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-        }
+        // if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+        //     request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+        //     request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        // }
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);

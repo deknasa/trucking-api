@@ -279,6 +279,8 @@ class OrderanTruckingController extends Controller
             } else {
                 $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
             }
+            $orderanTrucking->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $orderanTrucking->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 
@@ -348,6 +350,8 @@ class OrderanTruckingController extends Controller
             } else {
                 $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
             }
+            $orderanTrucking->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $orderanTrucking->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 
@@ -405,6 +409,8 @@ class OrderanTruckingController extends Controller
             } else {
                 $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
             }
+            $orderanTrucking->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $orderanTrucking->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 
@@ -435,6 +441,8 @@ class OrderanTruckingController extends Controller
             } else {
                 $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
             }
+            $orderanTrucking->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $orderanTrucking->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             DB::commit();
 
             return response()->json([

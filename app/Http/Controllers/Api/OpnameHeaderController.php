@@ -66,8 +66,8 @@ class OpnameHeaderController extends Controller
                 } else {
                     $opnameHeader->page = ceil($opnameHeader->position / ($request->limit ?? 10));
                 }
-                $opnameHeader->tgldariheader = date('Y-m-01', strtotime($request->tglbukti));
-                $opnameHeader->tglsampaiheader = date('Y-m-t', strtotime($request->tglbukti));
+                $opnameHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $opnameHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
             DB::commit();
 
@@ -116,8 +116,8 @@ class OpnameHeaderController extends Controller
             } else {
                 $opnameHeader->page = ceil($opnameHeader->position / ($request->limit ?? 10));
             }
-            $opnameHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $opnameHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $opnameHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $opnameHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             DB::commit();
 
             return response()->json([
@@ -149,8 +149,8 @@ class OpnameHeaderController extends Controller
             } else {
                 $opnameHeader->page = ceil($opnameHeader->position / ($request->limit ?? 10));
             }
-            $opnameHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $opnameHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $opnameHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $opnameHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             DB::commit();
 
             return response()->json([
