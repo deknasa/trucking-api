@@ -162,7 +162,7 @@ class InvoiceLunasKePusatController extends Controller
     public function cekValidasi(Request $request, $invoiceheader_id)
     {
         $cekInvoicePusat = DB::table("invoicelunaskepusat")->from(DB::raw("invoicelunaskepusat with (readuncommitted)"))
-            ->where('invoiceheader_id', $invoiceheader_id)->first();
+            ->where('invoiceheader_id', $invoiceheader_id)->where('nobukti', $request->nobukti)->first();
         if ($cekInvoicePusat != '') {
             return response([
                 'errors' => false
@@ -183,7 +183,7 @@ class InvoiceLunasKePusatController extends Controller
     {
 
         // $now = date("Y-m-d");
-        $getinvoice = db::table("invoicelunaskepusat")->from(DB::raw("invoicelunaskepusat with (readuncommitted)"))->where('invoiceheader_id', $invoiceheader_id)->first();
+        $getinvoice = db::table("invoicelunaskepusat")->from(DB::raw("invoicelunaskepusat with (readuncommitted)"))->where('invoiceheader_id', $invoiceheader_id)->where('nobukti', $request->nobukti)->first();
 
         if ($getinvoice != null) {
             $getError = Error::from(DB::raw("error with (readuncommitted)"))
@@ -208,8 +208,14 @@ class InvoiceLunasKePusatController extends Controller
      */
     public function export(Request $request)
     {
+        $requestData = json_decode($request->data, true);
+        $data = [
+            'id' => $requestData['id'],
+            'nobukti' => $requestData['nobukti']
+        ];
+
         $invoicelunaskepusat = new InvoiceLunasKePusat();
-        $invoice_lunaskepusat = $invoicelunaskepusat->get();
+        $invoice_lunaskepusat = $invoicelunaskepusat->getExport($data);
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')

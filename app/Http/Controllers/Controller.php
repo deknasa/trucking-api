@@ -360,6 +360,8 @@ class Controller extends BaseController
         } else {
             if ($modelTable == 'acl') {
                 $query = DB::table($temporaryTable)->select('position')->where('id', $model->role_id)->orderBy('position');
+            } else if ($modelTable == 'ritasi') {
+                $query = DB::table($temporaryTable)->select('position')->where('idoriginal', $model->id)->orderBy('position');                
             } else {
                 $query = DB::table($temporaryTable)->select('position')->where('id', $model->id)->orderBy('position');
             }

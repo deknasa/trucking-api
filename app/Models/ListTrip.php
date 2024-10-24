@@ -17,6 +17,7 @@ class ListTrip extends MyModel
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $cekTanpaBatas = (new Parameter())->cekText('TANPA BATAS TRIP', 'TANPA BATAS TRIP');
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
 
         $jobmanual = (new Parameter())->cekText('JOB TRUCKING MANUAL', 'JOB TRUCKING MANUAL') ?? 'TIDAK';
         $aksi = request()->aksi;
@@ -119,28 +120,86 @@ class ListTrip extends MyModel
 
             goto selesai;
         }
-        $gajiSupir = DB::table('gajisupirdetail')
-            ->from(
-                DB::raw("gajisupirdetail as a with (readuncommitted)")
-            )
-            ->select(
-                'a.suratpengantar_nobukti',
-                'a.nobukti'
-            )
-            ->where('a.suratpengantar_nobukti', '=', $nobukti)
-            ->first();
+        if ($cabang == 'MEDAN') {
+            $statusCetak = (new Parameter())->cekId('STATUSCETAK', 'STATUSCETAK', 'CETAK');
+
+            $gajiSupir = DB::table('gajisupirdetail')
+                ->from(
+                    DB::raw("gajisupirdetail as a with (readuncommitted)")
+                )
+                ->select(
+                    'a.suratpengantar_nobukti',
+                    'a.nobukti',
+                    'b.statuscetak',
+                    db::raw("isnull(c.nobukti,'') as nobuktiebs")
+                )
+                ->join(DB::raw("gajisupirheader as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                ->join(DB::raw("prosesgajisupirdetail as c with (readuncommitted)"), 'b.nobukti', 'c.gajisupir_nobukti')
+                ->where('a.suratpengantar_nobukti', '=', $nobukti)
+                ->first();
+
+            if (isset($gajiSupir)) {
+                if ($gajiSupir->statuscetak == $statusCetak) {
+                    $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+                    $data = [
+                        'kondisi' => true,
+                        'keterangan' => 'No Bukti gaji supir <b>' . $gajiSupir->nobukti . '</b> ' . $keteranganerror,
+                        'kodeerror' => 'SDC',
+                    ];
+
+                    goto selesai;
+                } else {
+                    if ($gajiSupir->nobuktiebs != '') {
+                        $keteranganerror = $error->cekKeteranganError('SPOST') ?? '';
+                        $data = [
+                            'kondisi' => true,
+                            'keterangan' => 'No Bukti gaji supir <b>' . $gajiSupir->nobukti . '</b> ' . $keteranganerror . '<br> No Bukti Posting <b>' . $gajiSupir->nobuktiebs . '</b>',
+                            'kodeerror' => 'SPOST',
+                        ];
+
+                        goto selesai;
+                    }
+                }
+            }
+
+            $querytrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+                ->where('nobukti', $nobukti)
+                ->where('statusapprovalmandor', 3)
+                ->first();
+            if ($querytrip != '') {
+                $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => 'No Bukti <b>' . $querytrip->nobukti . '</b> ' . $keteranganerror . ' mandor',
+                    'kodeerror' => 'SAP',
+                ];
+
+                goto selesai;
+            }
+        } else {
+            $gajiSupir = DB::table('gajisupirdetail')
+                ->from(
+                    DB::raw("gajisupirdetail as a with (readuncommitted)")
+                )
+                ->select(
+                    'a.suratpengantar_nobukti',
+                    'a.nobukti'
+                )
+                ->where('a.suratpengantar_nobukti', '=', $nobukti)
+                ->first();
 
 
-        if (isset($gajiSupir)) {
-            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti gaji supir <b>' . $gajiSupir->nobukti . '</b> <br> ' . $keterangantambahanerror,
-                'kodeerror' => 'SATL2',
-            ];
+            if (isset($gajiSupir)) {
+                $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti gaji supir <b>' . $gajiSupir->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                    'kodeerror' => 'SATL2',
+                ];
 
 
-            goto selesai;
+                goto selesai;
+            }
         }
 
         $tempinvdetail = '##tempinvdetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -386,7 +445,9 @@ class ListTrip extends MyModel
                     'suratpengantar.statuskandang',
                     'suratpengantar.statuslongtrip',
                     'suratpengantar.statusupahzona',
-                    'orderantrucking.statuslangsir',
+                    DB::raw("(case when isnull(suratpengantar.statuslangsir,0)=0 then 80 else
+                        suratpengantar.statuslangsir
+                    end) as statuslangsir"),
                     DB::raw("(case when isnull(suratpengantar.statuspenyesuaian,'')='' then
                         (case when suratpengantar.penyesuaian='' then 663 ELSE 662 end) else
                         suratpengantar.statuspenyesuaian
@@ -451,7 +512,9 @@ class ListTrip extends MyModel
                     'suratpengantar.statusjeniskendaraan',
                     'suratpengantar.statusupahzona',
                     // 'orderantrucking.statuslangsir',
-                    DB::raw("(case when isnull(orderantrucking.statuslangsir,'')='' then saldoorderantrucking.statuslangsir else orderantrucking.statuslangsir end) as statuslangsir"),
+                    // DB::raw("(case when isnull(orderantrucking.statuslangsir,'')='' then saldoorderantrucking.statuslangsir else orderantrucking.statuslangsir end) as statuslangsir"),
+                    DB::raw("(case when isnull(suratpengantar.statuslangsir,0)=0 then 80 else
+                    suratpengantar.statuslangsir end) as statuslangsir"),
                     DB::raw("(case when isnull(suratpengantar.statuspenyesuaian,'')='' then
                             (case when suratpengantar.penyesuaian='' then 663 ELSE 662 end) else
                             suratpengantar.statuspenyesuaian
@@ -588,7 +651,7 @@ class ListTrip extends MyModel
     {
 
         $query = DB::table("ritasi")->from(DB::raw("ritasi with (readuncommitted)"))
-            ->select(DB::raw("ritasi.id, parameter.text as jenisritasi, ritasi.dataritasi_id as jenisritasi_id, ritasi.dari_id as ritasidari_id, dari.kodekota as ritasidari, ritasi.sampai_id as ritasike_id, sampai.kodekota as ritasike"))
+            ->select(DB::raw("ritasi.id, parameter.text as jenisritasi, ritasi.dataritasi_id as jenisritasi_id, ritasi.dari_id as ritasidari_id, dari.kodekota as ritasidari, ritasi.sampai_id as ritasike_id, sampai.kodekota as ritasike, isnull(ritasi.statusapprovalmandor, 4) as statusapprovalmandor"))
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'ritasi.statusritasi', 'parameter.id')
             ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'ritasi.dari_id', 'dari.id')
             ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"), 'ritasi.sampai_id', 'sampai.id')
@@ -602,6 +665,7 @@ class ListTrip extends MyModel
         $trip = SuratPengantar::findOrFail($id);
         $isDifferent = false;
         $isTripPulang = false;
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
         $jenisTangki = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
             ->select('a.id')
             ->where('a.grp', '=', 'STATUS JENIS KENDARAAN')
@@ -723,19 +787,19 @@ class ListTrip extends MyModel
                     if ($getId != '') {
                         (new OrderanTrucking())->processDestroy($getId->id);
                     }
-                    DB::update(DB::raw("UPDATE SURATPENGANTAR SET jobtrucking='',nocont='',nocont2='',noseal='',noseal2='' where jobtrucking='$trip->jobtrucking'"));
+                    DB::update(DB::raw("UPDATE SURATPENGANTAR SET jobtrucking='' where jobtrucking='$trip->jobtrucking'"));
 
                     $trip->jobtrucking = '';
-                    $trip->nocont = '';
-                    $trip->nocont2 = '';
-                    $trip->noseal = '';
-                    $trip->noseal2 = '';
+                    // $trip->nocont = '';
+                    // $trip->nocont2 = '';
+                    // $trip->noseal = '';
+                    // $trip->noseal2 = '';
 
                     goto trip;
                 }
                 // jika kota sampai berbeda dari sebelumnya, job di trip dihilangkan
                 if ($data['sampai_id'] != $trip->sampai_id) {
-                    DB::update(DB::raw("UPDATE SURATPENGANTAR SET jobtrucking='',nocont='',nocont2='',noseal='',noseal2='' where jobtrucking='$trip->jobtrucking' and id!=$trip->id"));
+                    DB::update(DB::raw("UPDATE SURATPENGANTAR SET jobtrucking='' where jobtrucking='$trip->jobtrucking' and id!=$trip->id"));
 
                     goto trip;
                 }
@@ -765,12 +829,16 @@ class ListTrip extends MyModel
                         ];
                         $orderanTrucking = (new OrderanTrucking())->processStore($orderan);
                         $trip->jobtrucking = $orderanTrucking->nobukti;
-                        $trip->nocont = '';
-                        $trip->nocont2 = '';
-                        $trip->noseal = '';
-                        $trip->noseal2 = '';
+                        // $trip->nocont = '';
+                        // $trip->nocont2 = '';
+                        // $trip->noseal = '';
+                        // $trip->noseal2 = '';
                     } else {
-                        DB::update(DB::raw("UPDATE SURATPENGANTAR SET jobtrucking='',nocont='',nocont2='',noseal='',noseal2='' where id=$trip->id"));
+                        if ($cabang == 'MEDAN') {
+                            DB::update(DB::raw("UPDATE SURATPENGANTAR SET jobtrucking='' where id=$trip->id"));
+                        } else {
+                            DB::update(DB::raw("UPDATE SURATPENGANTAR SET jobtrucking='',nocont='',nocont2='',noseal='',noseal2='' where id=$trip->id"));
+                        }
                     }
 
                     goto trip;
@@ -1319,6 +1387,7 @@ class ListTrip extends MyModel
             'statuslongtrip' => $data['statuslongtrip'],
             'statusgandengan' => $data['statusgandengan'],
             'statusupahzona' => $data['statusupahzona'],
+            'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
             'omset' => $tarifrincian->nominal ?? 0,
             'komisisupir' => $nominalkomisi,
             'gajikenek' => $nominalkenek,
@@ -1368,20 +1437,69 @@ class ListTrip extends MyModel
             }
         }
         if ($jenisRitasi) {
-            Ritasi::where('suratpengantar_nobukti', $suratPengantar->nobukti)->lockForUpdate()->delete();
+            // Ritasi::where('suratpengantar_nobukti', $suratPengantar->nobukti)->lockForUpdate()->delete();
 
+            $requestData = json_encode($data['ritasi_id']);
+            if ($requestData != 'null') {
+                $queryIdRitasi = db::table('a')->from(DB::raw("OPENJSON ('$requestData')"))
+                    ->select(db::raw("[value]"))
+                    ->whereRaw("isnull([value],0) != 0")
+                    ->groupBy('value');
+                $tempritasi = '##tempritasi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempritasi, function ($table) {
+                    $table->string('value')->nullable();
+                });
+                DB::table($tempritasi)->insertUsing(['value'], $queryIdRitasi);
 
+                $cekDataDeleteRitasi = DB::table('ritasi as a')
+                    ->select('a.id', 'b.value')
+                    ->leftJoin("$tempritasi as b", 'a.id', '=', 'b.value')
+                    ->whereNull('b.value')
+                    ->where('a.suratpengantar_nobukti', "=", $suratPengantar->nobukti)
+                    ->get();
+            }
+            if (count($cekDataDeleteRitasi) > 0) {
+                foreach ($cekDataDeleteRitasi as $row => $value) {
+                    (new Ritasi())->processDestroy($value->id);
+                }
+            }
             for ($i = 0; $i < count($data['jenisritasi_id']); $i++) {
-                $ritasiData = [
-                    'tglbukti' => $suratPengantar->tglbukti,
-                    'statusritasi_id' => $data['jenisritasi_id'][$i],
-                    'suratpengantar_nobukti' => $suratPengantar->nobukti,
-                    'supir_id' => $data['supir_id'],
-                    'trado_id' => $data['trado_id'],
-                    'dari_id' => $data['ritasidari_id'][$i],
-                    'sampai_id' => $data['ritasike_id'][$i],
-                ];
-                (new Ritasi())->processStore($ritasiData);
+                $ritasi_id = $data['ritasi_id'][$i] ?? 0;
+
+                if ($ritasi_id == 0) {
+                    $ritasiData = [
+                        'tglbukti' => $suratPengantar->tglbukti,
+                        'statusritasi_id' => $data['jenisritasi_id'][$i],
+                        'suratpengantar_nobukti' => $suratPengantar->nobukti,
+                        'supir_id' => $data['supir_id'],
+                        'trado_id' => $data['trado_id'],
+                        'dari_id' => $data['ritasidari_id'][$i],
+                        'sampai_id' => $data['ritasike_id'][$i],
+                    ];
+                    (new Ritasi())->processStore($ritasiData);
+                } else {
+                    $ritasiData = [
+                        'tglbukti' => $suratPengantar->tglbukti,
+                        'statusritasi_id' => $data['jenisritasi_id'][$i],
+                        'suratpengantar_nobukti' => $suratPengantar->nobukti,
+                        'supir_id' => $data['supir_id'],
+                        'trado_id' => $data['trado_id'],
+                        'dari_id' => $data['ritasidari_id'][$i],
+                        'sampai_id' => $data['ritasike_id'][$i],
+                    ];
+                    $newRitasi = new Ritasi();
+                    $newRitasi = $newRitasi->findOrFail($ritasi_id);
+                    (new Ritasi())->processUpdate($newRitasi, $ritasiData);
+                }
+            }
+        } else {
+            $cekRitasi = DB::table("ritasi")->from(db::raw("ritasi with (readuncommitted)"))
+                ->where('suratpengantar_nobukti', $suratPengantar->nobukti)
+                ->get();
+            if (count($cekRitasi) > 0) {
+                foreach ($cekRitasi as $row => $value) {
+                    (new Ritasi())->processDestroy($value->id);
+                }
             }
         }
 
@@ -1431,5 +1549,123 @@ class ListTrip extends MyModel
 
 
         return $suratPengantar;
+    }
+
+    public function approval(array $data)
+    {
+        $statusApproval = (new Parameter())->cekId('STATUS APPROVAL', 'STATUS APPROVAL', 'APPROVAL');
+        $statusNonApproval = (new Parameter())->cekId('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
+        $buktiNon = [];
+        for ($i = 0; $i < count($data['nobukti']); $i++) {
+            $nobukti = $data['nobukti'][$i];
+            $nomor = substr($data['nobukti'][$i], 0, 3);
+            // dd($nomor);
+            if ($nomor == 'RTT') {
+                $getRitasi = DB::table("ritasi")->from(DB::raw("ritasi with (readuncommitted)"))->where('nobukti', $nobukti)->first()->id ?? 0;
+                if ($getRitasi != 0) {
+                    $ritasi = Ritasi::lockForUpdate()->findOrFail($getRitasi);
+
+                    if ($ritasi->statusapprovalmandor == $statusApproval) {
+                        $ritasi->statusapprovalmandor = $statusNonApproval;
+                        $buktiNon[] = $ritasi->nobukti;
+                    } else {
+                        $ritasi->statusapprovalmandor = $statusApproval;
+                    }
+                    $ritasi->userapprovalmandor = auth('api')->user()->name;
+                    $ritasi->tglapprovalmandor = date('Y-m-d H:i:s');
+                    if ($ritasi->save()) {
+                        (new LogTrail())->processStore([
+                            'namatabel' => strtoupper($ritasi->getTable()),
+                            'postingdari' =>  "APPROVAL/UN MANDOR",
+                            'idtrans' => $ritasi->id,
+                            'nobuktitrans' => $ritasi->nobukti,
+                            'aksi' => 'APPROVAL/UN MANDOR',
+                            'datajson' => $ritasi->toArray(),
+                            'modifiedby' => auth('api')->user()->user
+                        ]);
+                    }
+                }
+            } else {
+                $getSuratpengantar = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('nobukti', $nobukti)->first()->id ?? 0;
+                if ($getSuratpengantar != 0) {
+                    $suratPengantar = SuratPengantar::lockForUpdate()->findOrFail($getSuratpengantar);
+
+                    if ($suratPengantar->statusapprovalmandor == $statusApproval) {
+                        $suratPengantar->statusapprovalmandor = $statusNonApproval;
+                        $buktiNon[] = $suratPengantar->nobukti;
+                    } else {
+                        $suratPengantar->statusapprovalmandor = $statusApproval;
+                    }
+                    $suratPengantar->userapprovalmandor = auth('api')->user()->name;
+                    $suratPengantar->tglapprovalmandor = date('Y-m-d H:i:s');
+                    if ($suratPengantar->save()) {
+                        (new LogTrail())->processStore([
+                            'namatabel' => strtoupper($suratPengantar->getTable()),
+                            'postingdari' =>  "APPROVAL/UN MANDOR",
+                            'idtrans' => $suratPengantar->id,
+                            'nobuktitrans' => $suratPengantar->nobukti,
+                            'aksi' => 'APPROVAL/UN MANDOR',
+                            'datajson' => $suratPengantar->toArray(),
+                            'modifiedby' => auth('api')->user()->user
+                        ]);
+                    }
+                }
+            }
+        }
+
+        if (count($buktiNon) > 0) {
+
+
+            $requestData = json_encode($data['nobukti']);
+            $query = db::table('a')->from(DB::raw("OPENJSON ('$requestData')"))
+                ->select(db::raw("[value]"))
+                ->groupBy('value');
+
+            $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temp, function ($table) {
+                $table->string('value')->nullable();
+            });
+            DB::table($temp)->insertUsing(['value'], $query);
+
+            $trip = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
+                ->select('a.nobukti')
+                ->join(db::raw("$temp as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.value')
+                ->groupBy('a.nobukti');
+
+            $temptrip = '##temptrip' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temptrip, function ($table) {
+                $table->string('nobukti')->nullable();
+            });
+            DB::table($temptrip)->insertUsing(['nobukti'], $trip);
+
+            $ritasi = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
+                ->select('a.nobukti')
+                ->join(db::raw("$temp as b with (readuncommitted)"), 'a.ritasi_nobukti', 'b.value')
+                ->leftJoin(db::raw("$temptrip as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+                ->whereRaw("isnull(c.nobukti,'')=''")
+                ->groupBy('a.nobukti');
+            DB::table($temptrip)->insertUsing(['nobukti'], $ritasi);
+
+            $statusCetak = (new Parameter())->cekId('STATUSCETAK', 'STATUSCETAK', 'CETAK');
+            $getRic = DB::table("gajisupirheader")->from(DB::raw("gajisupirheader as a with (readuncommitted)"))
+                ->select('a.id', 'a.nobukti')
+                ->join(DB::raw("$temptrip as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                ->where('a.statuscetak', $statusCetak)
+                ->get();
+
+            if (count($getRic) > 0) {
+                foreach ($getRic as $row => $value) {
+                    $tableId[] = $value->id;
+                    $bukti[] = $value->nobukti;
+                }
+                $dataBukaCetak = [
+                    'tableId' => $tableId,
+                    'bukti' => $bukti,
+                    'table' => 'GAJISUPIRHEADER'
+                ];
+                (new ApprovalBukaCetak())->processStore($dataBukaCetak);
+            }
+        }
+        return $data;
     }
 }

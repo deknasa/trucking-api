@@ -156,8 +156,6 @@ class GajiSupirHeaderController extends Controller
                 'rincian_biayaextrasupir_keterangan' => $request->rincian_biayaextrasupir_keterangan,
             ];
             $gajiSupirHeader = (new GajiSupirHeader())->processStore($data);
-            $gajiSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $gajiSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             if ($request->button == 'btnSubmit') {
                 $gajiSupirHeader->position = $this->getPosition($gajiSupirHeader, $gajiSupirHeader->getTable())->position;
@@ -168,6 +166,8 @@ class GajiSupirHeaderController extends Controller
                     $gajiSupirHeader->page = ceil($gajiSupirHeader->position / ($request->limit ?? 10));
                 }
             }
+            $gajiSupirHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $gajiSupirHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             DB::commit();
 
             return response()->json([
@@ -257,8 +257,6 @@ class GajiSupirHeaderController extends Controller
                 'rincian_biayaextrasupir_keterangan' => $request->rincian_biayaextrasupir_keterangan,
             ];
             $gajiSupirHeader = (new GajiSupirHeader())->processUpdate($gajisupirheader, $data);
-            $gajiSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $gajiSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             $gajiSupirHeader->position = $this->getPosition($gajiSupirHeader, $gajiSupirHeader->getTable())->position;
             if ($request->limit == 0) {
@@ -266,6 +264,8 @@ class GajiSupirHeaderController extends Controller
             } else {
                 $gajiSupirHeader->page = ceil($gajiSupirHeader->position / ($request->limit ?? 10));
             }
+            $gajiSupirHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $gajiSupirHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             DB::commit();
 
             return response()->json([
@@ -289,8 +289,6 @@ class GajiSupirHeaderController extends Controller
         try {
             $gajiSupirHeader = (new GajiSupirHeader())->processDestroy($id, 'DELETE GAJI SUPIR');
             $selected = $this->getPosition($gajiSupirHeader, $gajiSupirHeader->getTable(), true);
-            $gajiSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $gajiSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             $gajiSupirHeader->position = $selected->position;
             $gajiSupirHeader->id = $selected->id;
@@ -299,6 +297,8 @@ class GajiSupirHeaderController extends Controller
             } else {
                 $gajiSupirHeader->page = ceil($gajiSupirHeader->position / ($request->limit ?? 10));
             }
+            $gajiSupirHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $gajiSupirHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 
@@ -438,6 +438,7 @@ class GajiSupirHeaderController extends Controller
         $statusdatacetak = $gajisupir->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
 
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
@@ -510,6 +511,19 @@ class GajiSupirHeaderController extends Controller
             }
         } else {
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                if($aksi == 'PRINTER' && $cabang == 'MEDAN'){
+                    $cekApproval = (new GajiSupirHeader())->cekApprovalMandor($gajisupir->nobukti);
+                    if($cekApproval['kondisi'] == true) {
+                        $data = [
+                            'error' => true,
+                            'message' => $cekApproval['keterangan'],
+                            'kodeerror' => 'BAP',
+                            'statuspesan' => 'warning',
+                        ];
+                        
+                        return response($data);
+                    }
+                }
                 (new MyModel())->createLockEditing($id, 'gajisupirheader', $useredit);
             }
 

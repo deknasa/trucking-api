@@ -90,7 +90,7 @@ class GajiSupirDetail extends MyModel
 
                 $query->where($this->table . '.gajisupir_id', '=', request()->gajisupir_id)
                     ->orderBy('gajisupirdetail.id');
-            } else if($formatCetak == 'FORMAT 3') {
+            } else if ($formatCetak == 'FORMAT 3') {
                 $temptrip = '##temptrip' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
                 $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
@@ -114,32 +114,32 @@ class GajiSupirDetail extends MyModel
                     $table->string('qty')->nullable();
                     $table->longText('nocontseal')->nullable();
                     $table->longText('emkl')->nullable();
-                    $table->string('spfull',255)->nullable();
-                    $table->string('spempty',255)->nullable();
+                    $table->string('spfull', 255)->nullable();
+                    $table->string('spempty', 255)->nullable();
                     $table->double('liter', 15, 2)->nullable();
                     $table->double('borongan', 15, 2)->nullable();
                     $table->double('gajiritasi', 15, 2)->nullable();
                     $table->double('biayaextra', 15, 2)->nullable();
                 });
-                DB::table($temptrip)->insertUsing(['nobukti','suratpengantar_nobukti', 'ritasi_nobukti','tglbukti', 'tujuan','liter', 'gajiritasi'], $fetch);
+                DB::table($temptrip)->insertUsing(['nobukti', 'suratpengantar_nobukti', 'ritasi_nobukti', 'tglbukti', 'tujuan', 'liter', 'gajiritasi'], $fetch);
 
 
                 $fetch = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail with (readuncommitted)"))
-                ->select(
-                    db::raw("gajisupirdetail.nobukti, sp.nobukti as suratpengantar_nobukti, sp.tglbukti,dari.kodekota+' - '+sampai.kodekota + (case when isnull(sp.penyesuaian,'') != '' then ' ('+sp.penyesuaian+')' else '' end) as tujuan, container.kodecontainer as qty, sp.nocont + (case when isnull(sp.nocont2,'')!='' then ','+sp.nocont2 else '' end) as nocontseal, agen.kodeagen as emkl, (case when sp.statuscontainer_id = 1 then sp.nosp else '' end) as spfull,(case when sp.statuscontainer_id = 2 then sp.nosp else '' end) as spempty, sp.liter, (gajisupirdetail.gajisupir + gajisupirdetail.gajikenek) as borongan, 0 as gajiritasi, gajisupirdetail.biayatambahan as biayaextra")
-                )
-                ->leftJoin(DB::raw("suratpengantar as sp with (readuncommitted)"), $this->table . '.suratpengantar_nobukti', 'sp.nobukti')
-                ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
-                ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'sp.dari_id', 'dari.id')
-                ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"), 'sp.sampai_id', 'sampai.id')
-                ->leftJoin(DB::raw("container with (readuncommitted)"), 'sp.container_id', 'container.id')
-                ->leftJoin(DB::raw("agen with (readuncommitted)"), 'sp.agen_id', 'agen.id')
-                ->where('gajisupirdetail.gajisupir', '!=', 0)
-                ->where('gajisupirdetail.gajisupir_id', '=', request()->gajisupir_id)
-                ->orderBy('gajisupirdetail.id');
-                
-                DB::table($temptrip)->insertUsing(['nobukti','suratpengantar_nobukti', 'tglbukti', 'tujuan','qty','nocontseal','emkl','spfull','spempty','liter','borongan', 'gajiritasi','biayaextra'], $fetch);
-                $query = DB::table($temptrip)->orderBy($temptrip.'.suratpengantar_nobukti');
+                    ->select(
+                        db::raw("gajisupirdetail.nobukti, sp.nobukti as suratpengantar_nobukti, sp.tglbukti,dari.kodekota+' - '+sampai.kodekota + (case when isnull(sp.penyesuaian,'') != '' then ' ('+sp.penyesuaian+')' else '' end) as tujuan, container.kodecontainer as qty, sp.nocont + (case when isnull(sp.nocont2,'')!='' then ','+sp.nocont2 else '' end) as nocontseal, agen.kodeagen as emkl, (case when sp.statuscontainer_id = 1 then sp.nosp else '' end) as spfull,(case when sp.statuscontainer_id = 2 then sp.nosp else '' end) as spempty, sp.liter, (gajisupirdetail.gajisupir + gajisupirdetail.gajikenek) as borongan, 0 as gajiritasi, gajisupirdetail.biayatambahan as biayaextra")
+                    )
+                    ->leftJoin(DB::raw("suratpengantar as sp with (readuncommitted)"), $this->table . '.suratpengantar_nobukti', 'sp.nobukti')
+                    ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
+                    ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'sp.dari_id', 'dari.id')
+                    ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"), 'sp.sampai_id', 'sampai.id')
+                    ->leftJoin(DB::raw("container with (readuncommitted)"), 'sp.container_id', 'container.id')
+                    ->leftJoin(DB::raw("agen with (readuncommitted)"), 'sp.agen_id', 'agen.id')
+                    ->where('gajisupirdetail.gajisupir', '!=', 0)
+                    ->where('gajisupirdetail.gajisupir_id', '=', request()->gajisupir_id)
+                    ->orderBy('gajisupirdetail.id');
+
+                DB::table($temptrip)->insertUsing(['nobukti', 'suratpengantar_nobukti', 'tglbukti', 'tujuan', 'qty', 'nocontseal', 'emkl', 'spfull', 'spempty', 'liter', 'borongan', 'gajiritasi', 'biayaextra'], $fetch);
+                $query = DB::table($temptrip)->orderBy($temptrip . '.suratpengantar_nobukti');
                 // dd(DB::table($temptrip)->orderBy($temptrip.'.suratpengantar_nobukti')->get());
             } else {
                 $tempbiaya = '##tempbiaya' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -230,11 +230,15 @@ class GajiSupirDetail extends MyModel
                 db::raw("cast((format(biayaextrasupirheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderbiayaextrasupir"),
                 db::raw("cast(cast(format((cast((format(biayaextrasupirheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderbiayaextrasupir"),
                 db::raw("$tempDetail.total"),
+                db::raw("statusapprovaltrip.memo as statusapprovaltrip"),
+                db::raw("statusapprovalritasi.memo as statusapprovalritasi"),
 
             )
                 ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), $tempDetail . '.suratpengantar_nobukti', 'suratpengantar.nobukti')
                 ->leftJoin(DB::raw("biayaextrasupirheader with (readuncommitted)"), $tempDetail . '.biayaextrasupir_nobukti', 'biayaextrasupirheader.nobukti')
-                ->leftJoin(DB::raw("ritasi with (readuncommitted)"), $tempDetail . '.ritasi_nobukti', 'ritasi.nobukti');
+                ->leftJoin(DB::raw("ritasi with (readuncommitted)"), $tempDetail . '.ritasi_nobukti', 'ritasi.nobukti')
+                ->leftJoin(db::raw("parameter as statusapprovaltrip with (readuncommitted)"), $tempDetail.'.statusapprovaltrip', 'statusapprovaltrip.id')
+                ->leftJoin(db::raw("parameter as statusapprovalritasi with (readuncommitted)"), $tempDetail.'.statusapprovalritasi', 'statusapprovalritasi.id');
             $tempQuery->orderBy($tempDetail . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
 
             $this->filter($tempQuery, $tempDetail);
@@ -296,16 +300,17 @@ class GajiSupirDetail extends MyModel
         Schema::create($tempritasi, function ($table) {
             $table->string('nobukti')->nullable();
             $table->string('statusritasi')->nullable();
+            $table->bigInteger('statusapprovalritasi')->nullable();
         });
         $queryRitasi = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as gsd with (readuncommitted)"))
-            ->select(db::raw("ritasi.nobukti,(parameter.text + ' ' + dari.kodekota + ' - '+sampai.kodekota) as statusritasi"))
+            ->select(db::raw("ritasi.nobukti,(parameter.text + ' ' + dari.kodekota + ' - '+sampai.kodekota) as statusritasi, (case when isnull(ritasi.statusapprovalmandor,'')='' then 4 else ritasi.statusapprovalmandor end) as statusapprovalritasi"))
             ->join(db::raw("ritasi with (readuncommitted)"), 'ritasi.nobukti', 'gsd.ritasi_nobukti')
             ->leftJoin(db::raw("parameter with (readuncommitted)"), 'ritasi.statusritasi', 'parameter.id')
             ->leftJoin(db::raw("kota as dari with (readuncommitted)"), 'ritasi.dari_id', 'dari.id')
             ->leftJoin(db::raw("kota as sampai with (readuncommitted)"), 'ritasi.sampai_id', 'sampai.id')
             ->where('gsd.gajisupir_id', request()->gajisupir_id);
 
-        DB::table($tempritasi)->insertUsing(['nobukti', 'statusritasi'], $queryRitasi);
+        DB::table($tempritasi)->insertUsing(['nobukti', 'statusritasi', 'statusapprovalritasi'], $queryRitasi);
 
         $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
             ->select(
@@ -331,6 +336,8 @@ class GajiSupirDetail extends MyModel
                 'gajisupirdetail.biayaextrasupir_nobukti',
                 DB::raw("isnull(gajisupirdetail.nominalbiayaextrasupir, 0) as biayaextrasupir_nominal"),
                 'gajisupirdetail.keteranganbiayaextrasupir as biayaextrasupir_keterangan',
+                DB::raw("(case when isnull(suratpengantar.statusapprovalmandor,'')='' then 4 else suratpengantar.statusapprovalmandor end) as statusapprovaltrip"),
+                DB::raw("(case when isnull(ritasi.statusapprovalritasi,'')='' then '' else ritasi.statusapprovalritasi end) as statusapprovalritasi")
 
             )
             ->join(DB::raw("suratpengantar with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
@@ -366,9 +373,11 @@ class GajiSupirDetail extends MyModel
             $table->string('biayaextrasupir_nobukti')->nullable();
             $table->float('biayaextrasupir_nominal')->nullable();
             $table->longText('biayaextrasupir_keterangan')->nullable();
+            $table->bigInteger('statusapprovaltrip')->nullable();
+            $table->bigInteger('statusapprovalritasi')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['nobukti', 'suratpengantar_nobukti', 'tglsp', 'dari', 'sampai', 'trado', 'nocont', 'nosp', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiayatambahan', 'total', 'biayaextrasupir_nobukti', 'biayaextrasupir_nominal', 'biayaextrasupir_keterangan'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'suratpengantar_nobukti', 'tglsp', 'dari', 'sampai', 'trado', 'nocont', 'nosp', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiayatambahan', 'total', 'biayaextrasupir_nobukti', 'biayaextrasupir_nominal', 'biayaextrasupir_keterangan', 'statusapprovaltrip', 'statusapprovalritasi'], $fetch);
 
 
         $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
@@ -390,6 +399,8 @@ class GajiSupirDetail extends MyModel
                 'gajisupirdetail.biayatambahan as biayaextra',
                 'gajisupirdetail.keteranganbiayatambahan',
                 db::raw("(gajisupirdetail.gajisupir+gajisupirdetail.gajikenek+gajisupirdetail.komisisupir+gajisupirdetail.biayatambahan) as total"),
+                db::raw("4 as statusapprovaltrip"),
+                // db::raw("4 as statusapprovalritasi")
 
             )
             ->join(DB::raw("saldosuratpengantar with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'saldosuratpengantar.nobukti')
@@ -399,7 +410,7 @@ class GajiSupirDetail extends MyModel
 
             ->where('gajisupirdetail.suratpengantar_nobukti', '!=', '-')
             ->where('gajisupirdetail.gajisupir_id', request()->gajisupir_id);
-        $tes = DB::table($temp)->insertUsing(['nobukti', 'suratpengantar_nobukti', 'tglsp', 'dari', 'sampai', 'trado', 'nocont', 'nosp', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'biayaextra', 'keteranganbiayatambahan', 'total'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'suratpengantar_nobukti', 'tglsp', 'dari', 'sampai', 'trado', 'nocont', 'nosp', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'biayaextra', 'keteranganbiayatambahan', 'total', 'statusapprovaltrip'], $fetch);
 
         $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
             ->select(
@@ -420,6 +431,7 @@ class GajiSupirDetail extends MyModel
                 'gajisupirdetail.biayatambahan as biayaextra',
                 'gajisupirdetail.keteranganbiayatambahan',
                 db::raw("(gajisupirdetail.gajisupir+gajisupirdetail.gajikenek+gajisupirdetail.komisisupir+gajisupirdetail.biayatambahan) as total"),
+                db::raw("(case when isnull(ritasi.statusapprovalmandor,'')='' then '' else ritasi.statusapprovalmandor end) as statusapprovalritasi")
 
 
             )
@@ -432,7 +444,7 @@ class GajiSupirDetail extends MyModel
             ->where('gajisupirdetail.suratpengantar_nobukti', '-')
             ->where('gajisupirdetail.gajisupir_id', request()->gajisupir_id);
 
-        $tes = DB::table($temp)->insertUsing(['nobukti', 'suratpengantar_nobukti', 'tglsp', 'dari', 'sampai', 'trado', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiayatambahan', 'total'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'suratpengantar_nobukti', 'tglsp', 'dari', 'sampai', 'trado', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiayatambahan', 'total', 'statusapprovalritasi'], $fetch);
 
         return $temp;
     }
@@ -454,6 +466,10 @@ class GajiSupirDetail extends MyModel
                                 $query = $tempQuery->whereRaw("format(" . $this->tempTable . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglsp') {
                                 $query = $tempQuery->whereRaw("format(" . $this->tempTable . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'statusapprovaltrip') {
+                                $query = $tempQuery->where('statusapprovaltrip.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusapprovalritasi') {
+                                $query = $tempQuery->where('statusapprovalritasi.text', '=', "$filters[data]");
                             } else {
                                 $tempQuery = $tempQuery->where($this->tempTable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -469,6 +485,10 @@ class GajiSupirDetail extends MyModel
                                 $query = $tempQuery->orWhereRaw("format(" . $this->tempTable . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglsp') {
                                 $query = $tempQuery->orWhereRaw("format(" . $this->tempTable . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            }  else if ($filters['field'] == 'statusapprovaltrip') {
+                                $query = $tempQuery->orWhere('statusapprovaltrip.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusapprovalritasi') {
+                                $query = $tempQuery->orWhere('statusapprovalritasi.text', '=', "$filters[data]");
                             } else {
                                 $tempQuery = $tempQuery->orWhere($this->tempTable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

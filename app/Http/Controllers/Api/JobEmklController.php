@@ -58,6 +58,7 @@ class JobEmklController extends Controller
                 "noseal" => $request->noseal ?? '',
                 "marketing_id" => $request->marketing_id ?? '',
                 "lokasibongkarmuat" => $request->lokasibongkarmuat ?? '',
+                "penerima" => $request->penerima ?? '',
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
             $jobEmkl = new JobEmkl();
@@ -129,6 +130,7 @@ class JobEmklController extends Controller
                 "noseal" => $request->noseal ?? '',
                 "marketing_id" => $request->marketing_id ?? '',
                 "lokasibongkarmuat" => $request->lokasibongkarmuat ?? '',
+                "penerima" => $request->penerima ?? '',
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
 
             ];

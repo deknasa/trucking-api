@@ -149,7 +149,7 @@ class App
     }
     
 
-    public function runningNumber(string $format, int $lastRow, int $bulan, string  $tglbukti, string $table, int  $tujuan = 0, int  $cabang = 0, int  $jenisbiaya = 0, int $marketing = 0): string
+    public function runningNumber(string $format, int $lastRow, int $bulan, string  $tglbukti, string $table, int  $tujuan = 0, int  $cabang = 0, int  $jenisbiaya = 0, int $marketing = 0, string $fieldnobukti = 'nobukti'): string
     {
 
         $totalSeparator = 0;
@@ -263,13 +263,13 @@ class App
         $result = join($separatedResults);
 
         $sqlcek = db::table($table)->from(db::raw("$table  a with (readuncommitted)"))
-            ->select('a.nobukti')
-            ->where('a.nobukti', $result)
+            ->select('a.' . $fieldnobukti)
+            ->where('a.' . $fieldnobukti, $result)
             ->first();
 
         if (isset($sqlcek)) {
             $lasRownext = $lastRow + 1;
-            $result = $this->runningNumber($format, $lasRownext, $bulan, $tglbukti, $table);
+            $result = $this->runningNumber($format, $lasRownext, $bulan, $tglbukti, $table,$tujuan, $cabang, $jenisbiaya, $marketing, $fieldnobukti);
             // dd($result);
         }
 

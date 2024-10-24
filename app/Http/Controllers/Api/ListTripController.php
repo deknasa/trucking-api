@@ -7,6 +7,7 @@ use App\Models\UpahSupir;
 use App\Models\Tarifrincian;
 use App\Models\UpahSupirRincian;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalTripRicMandorRequest;
 use App\Http\Requests\DestroyListTripRequest;
 use App\Http\Requests\GetIndexRangeRequest;
 use Illuminate\Http\Request;
@@ -87,18 +88,23 @@ class ListTripController extends Controller
                 'jobtrucking' => $request->jobtrucking,
                 'gudang' => $request->gudang,
                 'lokasibongkarmuat' => $request->lokasibongkarmuat,
+                'ritasi_id' => $request->ritasi_id,
                 'jenisritasi_id' => $request->jenisritasi_id,
                 'ritasidari_id' => $request->ritasidari_id,
                 'ritasike_id' => $request->ritasike_id,
             ];
             $trip = (new ListTrip())->processUpdate($id, $data);
             $suratPengantar = (new SuratPengantar());
-            $trip->position = $this->getPosition($suratPengantar, $suratPengantar->getTable())->position;
-            if ($request->limit == 0) {
-                $trip->page = ceil($trip->position / (10));
-            } else {
-                $trip->page = ceil($trip->position / ($request->limit ?? 10));
-            }
+            // $trip->position = $this->getPosition($suratPengantar, $suratPengantar->getTable())->position;
+            // if ($request->limit == 0) {
+            //     $trip->page = ceil($trip->position / (10));
+            // } else {
+            //     $trip->page = ceil($trip->position / ($request->limit ?? 10));
+            // }
+
+            $trip->page = request()->page;
+            $trip->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $trip->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             DB::commit();
 
@@ -190,7 +196,7 @@ class ListTripController extends Controller
             return response($data);
         } else {
 
-            (new MyModel())->createLockEditing($id, 'suratpengantar',$useredit); 
+            (new MyModel())->createLockEditing($id, 'suratpengantar', $useredit);
             $data = [
                 'status' => false,
                 'message' => '',
@@ -199,6 +205,31 @@ class ListTripController extends Controller
             ];
 
             return response($data);
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APPROVAL MANDOR
+     */
+    public function approval(ApprovalTripRicMandorRequest $request)
+    {
+        DB::beginTransaction();
+        try {
+
+            $requestData = json_decode($request->detail, true);
+            $data = [
+                'nobukti' => $requestData['nobukti'],
+            ];
+            (new ListTrip())->approval($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
     }
 }

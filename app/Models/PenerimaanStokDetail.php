@@ -379,6 +379,7 @@ class PenerimaanStokDetail extends MyModel
                 as stok"),
                 "$this->table.qty",
                 "$this->table.harga",
+                "satuan.satuan as satuan",
                 "$this->table.persentasediscount",
                 "$this->table.penerimaanstok_nobukti",
                 "$this->table.nominaldiscount",
@@ -393,6 +394,7 @@ class PenerimaanStokDetail extends MyModel
             )
                 ->leftJoin(db::raw($temtabelpenerimaan . " penerimaanstokheader"), "$this->table.nobukti", "penerimaanstokheader.nobukti")
                 ->leftJoin("stok", "$this->table.stok_id", "stok.id")
+                ->leftJoin("satuan", "stok.satuan_id", "satuan.id")
                 ->leftJoin("parameter", "stok.statusban", "parameter.id")
                 ->leftJoin(db::raw($tempumuraki . " c"), "$this->table.stok_id", "c.stok_id")
                 ->leftJoin(db::raw($tempvulkan . " d"), "$this->table.stok_id", "d.stok_id");

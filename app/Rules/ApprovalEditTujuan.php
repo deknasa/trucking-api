@@ -3,6 +3,7 @@
 namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
 use App\Models\SuratPengantar;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\DB;
@@ -31,18 +32,22 @@ class ApprovalEditTujuan implements Rule
     {
         $false = 0;
         $trip = '';
-        for ($i = 0; $i < count(request()->Id); $i++) {
-            $nobukti = request()->Id[$i];
-            $getjob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('jobtrucking','statusjeniskendaraan')->where('nobukti', $nobukti)->first();
-            if ($getjob != '') {
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
+        if ($cabang != 'MEDAN') {
 
-                $cek = (new SuratPengantar())->cekvalidasihapus($nobukti, $getjob->jobtrucking, $getjob);
-                if ($cek['kondisi'] == true) {
-                    $false++;
-                    if ($trip == '') {
-                        $trip = $nobukti . ' di ' . $cek['keterangan'];
-                    } else {
-                        $trip = $trip . ', ' . $nobukti . ' di ' . $cek['keterangan'];
+            for ($i = 0; $i < count(request()->Id); $i++) {
+                $nobukti = request()->Id[$i];
+                $getjob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('jobtrucking', 'statusjeniskendaraan')->where('nobukti', $nobukti)->first();
+                if ($getjob != '') {
+
+                    $cek = (new SuratPengantar())->cekvalidasihapus($nobukti, $getjob->jobtrucking, $getjob);
+                    if ($cek['kondisi'] == true) {
+                        $false++;
+                        if ($trip == '') {
+                            $trip = $nobukti . ' di ' . $cek['keterangan'];
+                        } else {
+                            $trip = $trip . ', ' . $nobukti . ' di ' . $cek['keterangan'];
+                        }
                     }
                 }
             }

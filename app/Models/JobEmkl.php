@@ -140,6 +140,7 @@ class JobEmkl extends MyModel
                 "jenisorder.keterangan as jenisorder",
                 "jobemkl.kapal",
                 "jobemkl.voy",
+                "jobemkl.penerima",
                 "jobemkl.nominal",
                 "jobemkl.lokasibongkarmuat",
                 "jobemkl.destination",
@@ -403,6 +404,7 @@ class JobEmkl extends MyModel
         $jobEmkl->container_id = $data['container_id'];
         $jobEmkl->jenisorder_id = $data['jenisorder_id'];
         $jobEmkl->lokasibongkarmuat = $data['lokasibongkarmuat'];
+        $jobEmkl->penerima = $data['penerima'];
         $jobEmkl->kapal = $data['kapal'];
         $jobEmkl->voy = $data['voy'];
         $jobEmkl->destination = $data['destination'];
@@ -454,6 +456,7 @@ class JobEmkl extends MyModel
         $jobEmkl->container_id = $data['container_id'];
         $jobEmkl->jenisorder_id = $data['jenisorder_id'];
         $jobEmkl->lokasibongkarmuat = $data['lokasibongkarmuat'];
+        $jobEmkl->penerima = $data['penerima'];
         $jobEmkl->kapal = $data['kapal'];
         $jobEmkl->voy = $data['voy'];
         $jobEmkl->destination = $data['destination'];

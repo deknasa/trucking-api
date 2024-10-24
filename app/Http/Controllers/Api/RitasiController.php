@@ -78,15 +78,15 @@ class RitasiController extends Controller
                 'sampai_id' => $request->sampai_id,
             ];
             $ritasi = (new Ritasi())->processStore($data);
-            if ($request->button == 'btnSubmit') {
+            if ($request->button == 'btnSubmitRitasi') {
                 $ritasi->position = $this->getPosition($ritasi, $ritasi->getTable())->position;
                 if ($request->limit == 0) {
                     $ritasi->page = ceil($ritasi->position / (10));
                 } else {
                     $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
                 }
-                $ritasi->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $ritasi->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                // $ritasi->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                // $ritasi->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
             DB::commit();
 
@@ -133,8 +133,9 @@ class RitasiController extends Controller
             } else {
                 $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
             }
-            $ritasi->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $ritasi->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            // $ritasi->page = request()->page;
+            // $ritasi->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            // $ritasi->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             DB::commit();
 
@@ -165,8 +166,9 @@ class RitasiController extends Controller
             } else {
                 $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
             }
-            $ritasi->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $ritasi->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            // $ritasi->page = request()->page;
+            // $ritasi->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            // $ritasi->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             DB::commit();
 
@@ -438,16 +440,16 @@ class RitasiController extends Controller
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         if ($cekdata['kondisi'] == true) {
-            $query = DB::table('error')
-                ->select(
-                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
-                )
-                ->where('kodeerror', '=', $cekdata['kodeerror'])
-                ->first();
+            // $query = DB::table('error')
+            //     ->select(
+            //         DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+            //     )
+            //     ->where('kodeerror', '=', $cekdata['kodeerror'])
+            //     ->first();
 
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $cekdata['keterangan'],
                 'statuspesan' => 'warning',
             ];
 
