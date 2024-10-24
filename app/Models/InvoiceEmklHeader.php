@@ -713,6 +713,7 @@ class InvoiceEmklHeader extends MyModel
 
         if ($invoiceHeader->tujuan_id != 0) {
             $pelangggan = db::table("tujuan")->from(db::raw("tujuan with (readuncommitted)"))->where('id', $invoiceHeader->tujuan_id)->first()->pelanggan_id ?? 0;
+            $data['pelanggan_id'] = $pelangggan;
 
             $invoiceHeader->pelanggan_id = $pelangggan;
         }
@@ -1464,7 +1465,7 @@ class InvoiceEmklHeader extends MyModel
         $invoiceHeader->editing_at = null;
         if ($invoiceHeader->tujuan_id != 0) {
             $pelangggan = db::table("tujuan")->from(db::raw("tujuan with (readuncommitted)"))->where('id', $invoiceHeader->tujuan_id)->first()->pelanggan_id ?? 0;
-
+            $data['pelanggan_id'] = $pelangggan;
             $invoiceHeader->pelanggan_id = $pelangggan;
         }
 
