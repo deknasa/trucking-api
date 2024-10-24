@@ -3495,7 +3495,9 @@ class ProsesGajiSupirHeader extends MyModel
             $cekFetchPS = $fetchPS->first();
 
             if ($cekFetchPS != null) {
-                $dataFetchPS = $fetchPS->get();
+
+                $fetchPSAll = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $data['nobuktiRIC'][$i])->where('supir_id', '0');
+                $dataFetchPS = $fetchPSAll->get();
                 $getNominal = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
                     ->where('nobukti', $cekFetchPS->penerimaantrucking_nobukti)->get();
                 $totalPotSemua = $totalPotSemua + $getNominal->sum('nominal');
