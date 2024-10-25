@@ -879,7 +879,7 @@ class InvoiceEmklHeader extends MyModel
         if ($prosesReimburse != 0) {
             $idthc = (new Parameter())->cekId('BIAYA REIMBURSE EMKL', 'BIAYA REIMBURSE EMKL', 'THC');
             $idstorage = (new Parameter())->cekId('BIAYA REIMBURSE EMKL', 'BIAYA REIMBURSE EMKL', 'STO');
-            $iddemurage = (new Parameter())->cekId('BIAYA REIMBURSE EMKL', 'BIAYA REIMBURSE EMKL', 'DEM');
+            $iddemurage = (new Parameter())->cekId('BIAYA REIMBURSE EMKL', 'BIAYA REIMBURSE EMKL', 'STO-DEM');
             if ($data['biaya'] == $idthc) {
                 $paramcoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL INVOICE REIMBURSE OPT')
                     ->where('subgrp', 'DEBET')
@@ -1607,7 +1607,7 @@ class InvoiceEmklHeader extends MyModel
         if ($prosesReimburse != 0) {
             $idthc = (new Parameter())->cekId('BIAYA REIMBURSE EMKL', 'BIAYA REIMBURSE EMKL', 'THC');
             $idstorage = (new Parameter())->cekId('BIAYA REIMBURSE EMKL', 'BIAYA REIMBURSE EMKL', 'STO');
-            $iddemurage = (new Parameter())->cekId('BIAYA REIMBURSE EMKL', 'BIAYA REIMBURSE EMKL', 'DEM');
+            $iddemurage = (new Parameter())->cekId('BIAYA REIMBURSE EMKL', 'BIAYA REIMBURSE EMKL', 'STO-DEM');
             if ($data['biaya'] == $idthc) {
                 $paramcoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL INVOICE REIMBURSE OPT')
                     ->where('subgrp', 'DEBET')
