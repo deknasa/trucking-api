@@ -1284,20 +1284,21 @@ class PenerimaanHeader extends MyModel
                 'modifiedby' => auth('api')->user()->name,
             ]);
             $penerimaanDetails[] = $penerimaanDetail->toArray();
-            if ($pelunasanemkl != 0) {
-                for ($a = 0; $a < count($data['nominalemkl_jurnal']); $a++) {
-                    $coakredit_detail[] = $data['coakreditemkl_jurnal'][$a];
-                    $nominal_detail[] = $data['nominalemkl_jurnal'][$a];
-                    $coadebet_detail[] = $querysubgrppenerimaan->coa;
-                    $keterangan_detail[] = $data['keteranganemkl_jurnal'][$a];
-                }
-            } else {
+            if ($pelunasanemkl == 0) {
                 $coakredit_detail[] = $data['coakredit'][$i];
                 $nominal_detail[] = $data['nominal_detail'][$i];
                 $coadebet_detail[] = $querysubgrppenerimaan->coa;
                 $keterangan_detail[] = $data['keterangan_detail'][$i];
             }
         }
+        if ($pelunasanemkl != 0) {
+            for ($a = 0; $a < count($data['nominalemkl_jurnal']); $a++) {
+                $coakredit_detail[] = $data['coakreditemkl_jurnal'][$a];
+                $nominal_detail[] = $data['nominalemkl_jurnal'][$a];
+                $coadebet_detail[] = $querysubgrppenerimaan->coa;
+                $keterangan_detail[] = $data['keteranganemkl_jurnal'][$a];
+            }
+        } 
 
         $penerimaanDetailLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($penerimaanDetail->getTable()),

@@ -892,6 +892,10 @@ class PiutangHeader extends MyModel
                         $newJurnal = new JurnalUmumHeader();
                         $newJurnal = $newJurnal->find($getJurnal->id);
                         $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+                    } else {
+                        if (array_sum($jurnalRequest['nominal_detail']) > 0) {
+                            (new JurnalUmumHeader())->processStore($jurnalRequest);
+                        }
                     }
                 }
             } else {
