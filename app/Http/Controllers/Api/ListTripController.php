@@ -219,13 +219,15 @@ class ListTripController extends Controller
 
             $requestData = json_decode($request->detail, true);
             $data = [
-                'nobukti' => $requestData['nobukti'],
+                'rincian_nobukti' => $requestData['rincian_nobukti'],
+                'rincian_ritasi' => $requestData['rincian_ritasi'],
             ];
-            (new ListTrip())->approval($data);
+            $approval = (new ListTrip())->approval($data);
 
             DB::commit();
             return response([
-                'message' => 'Berhasil'
+                'message' => 'Berhasil',
+                'data' => $approval
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
