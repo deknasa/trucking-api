@@ -174,8 +174,8 @@ class PengeluaranTruckingHeaderController extends Controller
                 } else {
                     $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
                 }
-                $pengeluaranTruckingHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $pengeluaranTruckingHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $pengeluaranTruckingHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $pengeluaranTruckingHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
 
             DB::commit();
@@ -362,8 +362,8 @@ class PengeluaranTruckingHeaderController extends Controller
             } else {
                 $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
             }
-            $pengeluaranTruckingHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $pengeluaranTruckingHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $pengeluaranTruckingHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $pengeluaranTruckingHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
 
             DB::commit();
@@ -442,8 +442,8 @@ class PengeluaranTruckingHeaderController extends Controller
             } else {
                 $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
             }
-            $pengeluaranTruckingHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $pengeluaranTruckingHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $pengeluaranTruckingHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $pengeluaranTruckingHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
 
             DB::commit();

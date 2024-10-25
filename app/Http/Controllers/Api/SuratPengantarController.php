@@ -260,7 +260,8 @@ class SuratPengantarController extends Controller
             }
             // $suratPengantar->position = $suratpengantar->id;
             // $suratPengantar->page = 1;
-
+            $suratPengantar->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $suratPengantar->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 
@@ -302,6 +303,8 @@ class SuratPengantarController extends Controller
             } else {
                 $suratPengantar->page = ceil($suratPengantar->position / ($request->limit ?? 10));
             }
+            $suratPengantar->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $suratPengantar->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 

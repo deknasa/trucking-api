@@ -177,10 +177,10 @@ class InvoiceExtraHeader extends MyModel
             ->leftJoin(DB::raw("pelunasanpiutangheader as pelunasanpiutangheader with (readuncommitted)"), 'pelunasanpiutangheader.nobukti', '=', 'pelunasanpiutang.nobukti')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceextraheader.agen_id', 'agen.id');
 
-        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
-            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-        }
+        // if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+        //     request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+        //     request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        // }
         $query = $this->sort($query);
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);

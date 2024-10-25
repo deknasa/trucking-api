@@ -77,8 +77,8 @@ class RekapPenerimaanHeaderController extends Controller
                 } else {
                     $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / ($request->limit ?? 10));
                 }
-                $rekapPenerimaanHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $rekapPenerimaanHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $rekapPenerimaanHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $rekapPenerimaanHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
 
             DB::commit();
@@ -131,8 +131,8 @@ class RekapPenerimaanHeaderController extends Controller
             } else {
                 $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / ($request->limit ?? 10));
             }
-            $rekapPenerimaanHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $rekapPenerimaanHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $rekapPenerimaanHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $rekapPenerimaanHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 
@@ -163,8 +163,8 @@ class RekapPenerimaanHeaderController extends Controller
             } else {
                 $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / ($request->limit ?? 10));
             }
-            $rekapPenerimaanHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $rekapPenerimaanHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $rekapPenerimaanHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $rekapPenerimaanHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 

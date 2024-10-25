@@ -354,10 +354,10 @@ class NotaDebetHeader extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
-        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
-            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-        }
+        // if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+        //     request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+        //     request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        // }
 
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);

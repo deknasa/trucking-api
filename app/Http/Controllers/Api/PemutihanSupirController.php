@@ -93,8 +93,8 @@ class PemutihanSupirController extends Controller
             } else {
                 $pemutihanSupir->page = ceil($pemutihanSupir->position / ($request->limit ?? 10));
             }
-            $pemutihanSupir->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $pemutihanSupir->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $pemutihanSupir->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $pemutihanSupir->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 
@@ -163,8 +163,8 @@ class PemutihanSupirController extends Controller
                 } else {
                     $pemutihanSupir->page = ceil($pemutihanSupir->position / ($request->limit ?? 10));
                 }
-                $pemutihanSupir->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $pemutihanSupir->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $pemutihanSupir->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $pemutihanSupir->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
 
             DB::commit();
@@ -197,8 +197,8 @@ class PemutihanSupirController extends Controller
             } else {
                 $pemutihanSupir->page = ceil($pemutihanSupir->position / ($request->limit ?? 10));
             }
-            $pemutihanSupir->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $pemutihanSupir->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $pemutihanSupir->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $pemutihanSupir->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 

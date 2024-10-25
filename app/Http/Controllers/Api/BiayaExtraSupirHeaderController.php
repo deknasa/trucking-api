@@ -62,8 +62,8 @@ class BiayaExtraSupirHeaderController extends Controller
                 } else {
                     $biayaExtraSupir->page = ceil($biayaExtraSupir->position / ($request->limit ?? 10));
                 }
-                $biayaExtraSupir->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $biayaExtraSupir->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $biayaExtraSupir->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $biayaExtraSupir->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
 
             DB::commit();
@@ -115,8 +115,8 @@ class BiayaExtraSupirHeaderController extends Controller
             } else {
                 $biayaExtraSupir->page = ceil($biayaExtraSupir->position / ($request->limit ?? 10));
             }
-            $biayaExtraSupir->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $biayaExtraSupir->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $biayaExtraSupir->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $biayaExtraSupir->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
 
             DB::commit();
@@ -149,8 +149,8 @@ class BiayaExtraSupirHeaderController extends Controller
             } else {
                 $biayaExtraSupir->page = ceil($biayaExtraSupir->position / ($request->limit ?? 10));
             }
-            $biayaExtraSupir->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $biayaExtraSupir->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $biayaExtraSupir->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $biayaExtraSupir->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 

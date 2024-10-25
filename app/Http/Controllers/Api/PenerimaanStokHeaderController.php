@@ -133,8 +133,8 @@ class PenerimaanStokHeaderController extends Controller
                 } else {
                     $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
                 }
-                $penerimaanStokHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $penerimaanStokHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $penerimaanStokHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $penerimaanStokHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
 
             DB::commit();
@@ -218,8 +218,8 @@ class PenerimaanStokHeaderController extends Controller
             } else {
                 $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
             }
-            $penerimaanStokHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $penerimaanStokHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $penerimaanStokHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $penerimaanStokHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
@@ -250,8 +250,8 @@ class PenerimaanStokHeaderController extends Controller
             } else {
                 $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
             }
-            $penerimaanStokHeader->tgldariheader = date('Y-m-01', strtotime($penerimaanStokHeader->tglbukti));
-            $penerimaanStokHeader->tglsampaiheader = date('Y-m-t', strtotime($penerimaanStokHeader->tglbukti));
+            $penerimaanStokHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $penerimaanStokHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             DB::commit();
 
             return response()->json([
@@ -447,7 +447,7 @@ class PenerimaanStokHeaderController extends Controller
             ->first()->aco_id ?? 0;
 
         $user_id = auth('api')->user()->id;
-        $user = auth('api')->user()->user;
+        $user = auth('api')->user()->name;
         $role = db::table("userrole")->from(db::raw("userrole a with (readuncommitted)"))
             ->select(
                 'a.id'

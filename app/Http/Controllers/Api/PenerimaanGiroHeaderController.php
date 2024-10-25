@@ -106,8 +106,8 @@ class PenerimaanGiroHeaderController extends Controller
                 } else {
                     $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / ($request->limit ?? 10));
                 }
-                $penerimaanGiroHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $penerimaanGiroHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $penerimaanGiroHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $penerimaanGiroHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
             DB::commit();
 
@@ -165,8 +165,8 @@ class PenerimaanGiroHeaderController extends Controller
             } else {
                 $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / ($request->limit ?? 10));
             }
-            $penerimaanGiroHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $penerimaanGiroHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $penerimaanGiroHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $penerimaanGiroHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
             return response()->json([
@@ -197,8 +197,8 @@ class PenerimaanGiroHeaderController extends Controller
             } else {
                 $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / ($request->limit ?? 10));
             }
-            $penerimaanGiroHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $penerimaanGiroHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $penerimaanGiroHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $penerimaanGiroHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             DB::commit();
 
             return response()->json([

@@ -76,8 +76,8 @@ class JurnalUmumHeaderController extends Controller
                 } else {
                     $jurnalUmumHeader->page = ceil($jurnalUmumHeader->position / ($request->limit ?? 10));
                 }
-                $jurnalUmumHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $jurnalUmumHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $jurnalUmumHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $jurnalUmumHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
             DB::commit();
 
@@ -129,8 +129,8 @@ class JurnalUmumHeaderController extends Controller
             } else {
                 $jurnalumumHeader->page = ceil($jurnalumumHeader->position / ($request->limit ?? 10));
             }
-            $jurnalumumHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $jurnalumumHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $jurnalumumHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $jurnalumumHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 
@@ -163,8 +163,8 @@ class JurnalUmumHeaderController extends Controller
             } else {
                 $jurnalUmumHeader->page = ceil($jurnalUmumHeader->position / ($request->limit ?? 10));
             }
-            $jurnalUmumHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $jurnalUmumHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $jurnalUmumHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $jurnalUmumHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 

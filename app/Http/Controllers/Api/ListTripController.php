@@ -103,8 +103,8 @@ class ListTripController extends Controller
             // }
 
             $trip->page = request()->page;
-            $trip->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $trip->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $trip->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $trip->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 
@@ -138,6 +138,8 @@ class ListTripController extends Controller
             } else {
                 $trip->page = ceil($trip->position / ($request->limit ?? 10));
             }
+            $trip->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $trip->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 

@@ -344,6 +344,8 @@ class AbsensiSupirHeaderController extends Controller
             } else {
                 $absensiSupirHeader->page = ceil($absensiSupirHeader->position / ($request->limit ?? 10));
             }
+            $absensiSupirHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldari));
+            $absensiSupirHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampai));
 
             DB::commit();
             return response()->json([
@@ -393,6 +395,8 @@ class AbsensiSupirHeaderController extends Controller
             } else {
                 $absensiSupirHeader->page = ceil($absensiSupirHeader->position / ($request->limit ?? 10));
             }
+            $absensiSupirHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldari));
+            $absensiSupirHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampai));
 
             DB::commit();
             return response()->json([
@@ -425,6 +429,9 @@ class AbsensiSupirHeaderController extends Controller
             } else {
                 $absensiSupirHeader->page = ceil($absensiSupirHeader->position / ($request->limit ?? 10));
             }
+            $absensiSupirHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldari));
+            $absensiSupirHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampai));
+
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',

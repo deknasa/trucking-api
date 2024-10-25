@@ -123,8 +123,8 @@ class PengeluaranHeaderController extends Controller
                 } else {
                     $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
                 }
-                $pengeluaranHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $pengeluaranHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $pengeluaranHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $pengeluaranHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
             DB::commit();
 
@@ -198,8 +198,8 @@ class PengeluaranHeaderController extends Controller
             } else {
                 $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
             }
-            $pengeluaranHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $pengeluaranHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $pengeluaranHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $pengeluaranHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
             return response()->json([
@@ -231,8 +231,8 @@ class PengeluaranHeaderController extends Controller
             } else {
                 $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
             }
-            $pengeluaranHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $pengeluaranHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $pengeluaranHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $pengeluaranHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             DB::commit();
 
             return response()->json([

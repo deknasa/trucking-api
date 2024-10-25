@@ -84,8 +84,8 @@ class PindahBukuController extends Controller
                 } else {
                     $pindahBuku->page = ceil($pindahBuku->position / ($request->limit ?? 10));
                 }
-                $pindahBuku->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $pindahBuku->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $pindahBuku->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $pindahBuku->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
             DB::commit();
 
@@ -134,8 +134,8 @@ class PindahBukuController extends Controller
             } else {
                 $pindahBuku->page = ceil($pindahBuku->position / ($request->limit ?? 10));
             }
-            $pindahBuku->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $pindahBuku->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $pindahBuku->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $pindahBuku->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             DB::commit();
 
             return response()->json([
@@ -167,8 +167,8 @@ class PindahBukuController extends Controller
             } else {
                 $pindahBuku->page = ceil($pindahBuku->position / ($request->limit ?? 10));
             }
-            $pindahBuku->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $pindahBuku->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $pindahBuku->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $pindahBuku->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             DB::commit();
 
             return response()->json([

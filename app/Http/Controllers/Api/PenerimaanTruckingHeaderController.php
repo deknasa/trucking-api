@@ -99,8 +99,8 @@ class PenerimaanTruckingHeaderController extends Controller
                 } else {
                     $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
                 }
-                $penerimaanTruckingHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $penerimaanTruckingHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $penerimaanTruckingHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $penerimaanTruckingHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
 
             DB::commit();
@@ -170,8 +170,8 @@ class PenerimaanTruckingHeaderController extends Controller
             } else {
                 $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
             }
-            $penerimaanTruckingHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $penerimaanTruckingHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $penerimaanTruckingHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $penerimaanTruckingHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
 
             DB::commit();
@@ -205,8 +205,8 @@ class PenerimaanTruckingHeaderController extends Controller
             } else {
                 $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
             }
-            $penerimaanTruckingHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $penerimaanTruckingHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $penerimaanTruckingHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $penerimaanTruckingHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             DB::commit();
 
             return response()->json([
