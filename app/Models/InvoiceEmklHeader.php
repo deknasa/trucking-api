@@ -122,7 +122,7 @@ class InvoiceEmklHeader extends MyModel
                                 $query = $query->where('statuspajak.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statusppn') {
                                 $query = $query->where('statusppn.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'pelanggan') {
+                            } else if ($filters['field'] == 'pelanggan_id') {
                                 $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'jenisorder_id') {
                                 $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
@@ -156,7 +156,7 @@ class InvoiceEmklHeader extends MyModel
                                     $query = $query->orWhere('statuspajak.text', '=', $filters['data']);
                                 } else if ($filters['field'] == 'statusppn') {
                                     $query = $query->orWhere('statusppn.text', '=', $filters['data']);
-                                } else if ($filters['field'] == 'pelanggan') {
+                                } else if ($filters['field'] == 'pelanggan_id') {
                                     $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'jenisorder_id') {
                                     $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
