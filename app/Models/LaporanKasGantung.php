@@ -987,6 +987,8 @@ class LaporanKasGantung extends MyModel
             $table->float('kredit');
             $table->float('saldo')->nullable();
             $table->longText('penerimaan_nobukti');
+            $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+            $table->unsignedBigInteger('nilaikosongkredit')->nullable();
         });
 
 
@@ -1000,7 +1002,9 @@ class LaporanKasGantung extends MyModel
                 DB::raw('0 as flag'),
                 'C.nominal as debet',
                 DB::raw('0 as kredit'),
-                db::raw("c.nobukti as penerimaan_nobukti")
+                db::raw("c.nobukti as penerimaan_nobukti"),
+                DB::raw("0  as nilaikosongdebet"),
+                DB::raw("1  as nilaikosongkredit"),
             ])
             ->leftJoin(DB::raw($pengembaliankasgantungdetail . " AS b"), function ($join) {
                 $join->on('a.nobukti', '=', 'b.kasgantung_nobukti')
@@ -1019,6 +1023,8 @@ class LaporanKasGantung extends MyModel
             'debet',
             'kredit',
             'penerimaan_nobukti',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $temp_kasgantungheader);
         // dd($temp_kasgantungheader->get());
 
@@ -1040,6 +1046,8 @@ class LaporanKasGantung extends MyModel
                 DB::raw('0 as debet'),
                 'c.nominal as kredit',
                 'a.penerimaan_nobukti',
+                DB::raw("1  as nilaikosongdebet"),
+                DB::raw("0  as nilaikosongkredit"),
             ])
             ->join(DB::raw($pengembaliankasgantungdetail2 . " c with (readuncommitted)"), 'a.nobukti', '=', 'c.nobukti')
             ->join(DB::raw($kasgantungheader . " b with (readuncommitted)"), 'c.kasgantung_nobukti', '=', 'b.nobukti')
@@ -1058,6 +1066,8 @@ class LaporanKasGantung extends MyModel
             'debet',
             'kredit',
             'penerimaan_nobukti',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $temp_pengembaliankasgantungheader2);
         // dd($temp_pengembaliankasgantungheader2->get());
 
@@ -1071,6 +1081,8 @@ class LaporanKasGantung extends MyModel
             $table->float('debet');
             $table->float('kredit');
             $table->float('saldo')->nullable();
+            $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+            $table->unsignedBigInteger('nilaikosongkredit')->nullable();
         });
 
         $select_TempLaporan = DB::table('TempLaporan')->from(DB::raw($TempLaporan . " AS a"))
@@ -1081,6 +1093,8 @@ class LaporanKasGantung extends MyModel
                 'A.debet',
                 'A.kredit',
                 DB::raw('0 as saldo'),
+                'a.nilaikosongdebet',
+                'a.nilaikosongkredit'
 
             ])
             ->orderBy('a.tglbuktikasgantung', 'asc')
@@ -1095,7 +1109,9 @@ class LaporanKasGantung extends MyModel
             'keterangan',
             'debet',
             'kredit',
-            'saldo'
+            'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $select_TempLaporan);
 
         $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
@@ -1126,7 +1142,9 @@ class LaporanKasGantung extends MyModel
                 DB::raw("'Laporan Kas Gantung' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),                
+                'a.nilaikosongdebet',
+                'a.nilaikosongkredit'
 
             ])
             ->orderBy('a.id', 'asc');

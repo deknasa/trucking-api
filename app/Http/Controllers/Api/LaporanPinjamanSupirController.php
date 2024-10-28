@@ -7,6 +7,7 @@ use App\Http\Requests\ValidasiLaporanPinjamanSupirRequest;
 use App\Models\LaporanPinjamanSupir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
@@ -175,8 +176,18 @@ class LaporanPinjamanSupirController extends Controller
             $sheet->setCellValue("B$detail_start_row", $response_detail->nobukti);
             $sheet->setCellValue("C$detail_start_row", $response_detail->namasupir);
             $sheet->setCellValue("D$detail_start_row", $response_detail->keterangan);
-            $sheet->setCellValue("E$detail_start_row", $response_detail->debet);
-            $sheet->setCellValue("F$detail_start_row", $response_detail->kredit);
+            // $sheet->setCellValue("E$detail_start_row", $response_detail->debet);
+            // $sheet->setCellValue("F$detail_start_row", $response_detail->kredit);
+            if ($response_detail->nilaikosongdebet == 1) { 
+                $sheet->setCellValueExplicit("E$detail_start_row", null, DataType::TYPE_NULL);  
+            }else{ 
+                $sheet->setCellValue("E$detail_start_row",  $response_detail->debet);
+            }
+            if ($response_detail->nilaikosongkredit == 1) { 
+                $sheet->setCellValueExplicit("F$detail_start_row", null, DataType::TYPE_NULL);  
+            }else{ 
+                $sheet->setCellValue("F$detail_start_row",  $response_detail->kredit);
+            }
             // $sheet->setCellValue("F$detail_start_row", $response_detail->Saldo);
 
             if ($detail_start_row == 6) {

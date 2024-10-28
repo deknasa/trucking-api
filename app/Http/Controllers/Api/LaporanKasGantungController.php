@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\LaporanKasGantung;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
@@ -243,9 +244,16 @@ class LaporanKasGantungController extends Controller
                     ->setFormatCode('dd-mm-yyyy');
                 $sheet->setCellValue("B$detail_start_row", $response_detail->nobukti);
                 $sheet->setCellValue("C$detail_start_row", $response_detail->keterangan);
-                $sheet->setCellValue("D$detail_start_row", $response_detail->debet);
-                $sheet->setCellValue("E$detail_start_row", $response_detail->kredit);
-
+                if ($response_detail->nilaikosongdebet == 1) { 
+                    $sheet->setCellValueExplicit("D$detail_start_row", null, DataType::TYPE_NULL);  
+                }else{ 
+                    $sheet->setCellValue("D$detail_start_row",  $response_detail->debet);
+                }
+                if ($response_detail->nilaikosongkredit == 1) { 
+                    $sheet->setCellValueExplicit("E$detail_start_row", null, DataType::TYPE_NULL);  
+                }else{ 
+                    $sheet->setCellValue("E$detail_start_row",  $response_detail->kredit);
+                }
                 if ($detail_start_row == 7) {
                     $sheet->setCellValue('F' . $detail_start_row, $response_detail->Saldo);
                 } else {

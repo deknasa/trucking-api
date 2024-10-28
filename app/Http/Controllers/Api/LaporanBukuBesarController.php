@@ -9,6 +9,7 @@ use App\Models\Cabang;
 use App\Models\LaporanBukuBesar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
@@ -232,9 +233,18 @@ class LaporanBukuBesarController extends Controller
                         $sheet->setCellValue("A$detail_start_row", $dateValue);
                         $sheet->setCellValue("B$detail_start_row", ($response_detail->nobukti == '') ? $response_detail->keterangan : $response_detail->nobukti);
                         $sheet->setCellValue("C$detail_start_row", ($response_detail->keterangan == 'SALDO AWAL') ? '' : $response_detail->keterangan);
-                        $sheet->setCellValue("D$detail_start_row", ($response_detail->keterangan == 'SALDO AWAL') ? 0 : $response_detail->debet);
-                        $sheet->setCellValue("E$detail_start_row", ($response_detail->keterangan == 'SALDO AWAL') ? 0 : $response_detail->kredit);
-
+                        // $sheet->setCellValue("D$detail_start_row", ($response_detail->keterangan == 'SALDO AWAL') ? 0 : $response_detail->debet);
+                        // $sheet->setCellValue("E$detail_start_row", ($response_detail->keterangan == 'SALDO AWAL') ? 0 : $response_detail->kredit);
+                        if ($response_detail->nilaikosongdebet == 1) { 
+                            $sheet->setCellValueExplicit("D$detail_start_row", null, DataType::TYPE_NULL);  
+                        }else{ 
+                            $sheet->setCellValue("D$detail_start_row",  $response_detail->debet);
+                        }
+                        if ($response_detail->nilaikosongkredit == 1) { 
+                            $sheet->setCellValueExplicit("E$detail_start_row", null, DataType::TYPE_NULL);  
+                        }else{ 
+                            $sheet->setCellValue("E$detail_start_row",  $response_detail->kredit);
+                        }
                         if ($response_detail->nobukti == '') {
                             $sheet->setCellValue('F' . $detail_start_row, $response_detail->Saldo);
                             $previousRow = $detail_start_row;

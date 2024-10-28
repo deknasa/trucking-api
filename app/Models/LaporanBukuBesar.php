@@ -209,8 +209,8 @@ class LaporanBukuBesar extends MyModel
 
             ->groupBy('a.coa');
 
-            // dd( $querysaldoawal->tosql());
-            // dd( $querysaldoawal->get());
+        // dd( $querysaldoawal->tosql());
+        // dd( $querysaldoawal->get());
 
 
         DB::table($tempsaldorekap)->insertUsing([
@@ -232,6 +232,8 @@ class LaporanBukuBesar extends MyModel
             $table->double('debet', 15, 2)->nullable();
             $table->double('kredit', 15, 2)->nullable();
             $table->double('saldo', 15, 2)->nullable();
+            $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+            $table->unsignedBigInteger('nilaikosongkredit')->nullable();
         });
 
 
@@ -247,7 +249,9 @@ class LaporanBukuBesar extends MyModel
                 DB::raw("'SALDO AWAL' as keterangan"),
                 DB::raw("0 as debet"),
                 DB::raw("0 as kredit"),
-                DB::raw("sum(isnull(b.nominal,0)) as saldo")
+                DB::raw("sum(isnull(b.nominal,0)) as saldo"),
+                DB::raw("1 as nilaikosongdebet"),
+                DB::raw("1 as nilaikosongkredit"),
             )
             ->join(DB::raw("jurnalumumpusatdetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw("akunpusat as c with(readuncommitted)"), 'b.coa', 'c.coa')
@@ -260,7 +264,7 @@ class LaporanBukuBesar extends MyModel
             ->whereraw("(a.cabang_id=" . $cabang_id . " or " . $cabang_id . "=0)")
             ->groupBy('b.coa', 'c.keterangancoa');
 
-            // dd($querysaldoawal->get());
+        // dd($querysaldoawal->get());
         // dd($cabang_id);
 
         // dd($querysaldoawal->get());
@@ -277,6 +281,8 @@ class LaporanBukuBesar extends MyModel
             'debet',
             'kredit',
             'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $querysaldoawal);
 
         // dd(db::table($tempsaldo2)->get());
@@ -295,7 +301,9 @@ class LaporanBukuBesar extends MyModel
                 DB::raw("'SALDO AWAL' as keterangan"),
                 DB::raw("0 as debet"),
                 DB::raw("0 as kredit"),
-                DB::raw("0 as saldo")
+                DB::raw("0 as saldo"),
+                DB::raw("1 as nilaikosongdebet"),
+                DB::raw("1 as nilaikosongkredit")
             )
             ->leftjoin(DB::raw($tempsaldo2) . " as b", 'a.coa', 'b.coa')
             ->join(DB::raw("akunpusat as c with(readuncommitted)"), 'a.coa', 'c.coa')
@@ -305,7 +313,7 @@ class LaporanBukuBesar extends MyModel
             ->whereRaw(DB::raw("a.id <=" . $coasampai_id . ")"))
             ->whereRaw("isnull(B.coa,'')=''");
 
-           
+
         // dd($querysaldoawal->get());
         DB::table($tempsaldo2)->insertUsing([
             'urut',
@@ -317,6 +325,8 @@ class LaporanBukuBesar extends MyModel
             'debet',
             'kredit',
             'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $querysaldoawal);
 
         // dd(db::table($tempsaldo2)->get());
@@ -332,6 +342,8 @@ class LaporanBukuBesar extends MyModel
             $table->double('debet', 15, 2)->nullable();
             $table->double('kredit', 15, 2)->nullable();
             $table->double('saldo', 15, 2)->nullable();
+            $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+            $table->unsignedBigInteger('nilaikosongkredit')->nullable();
         });
 
         $querysaldoawal = DB::table(DB::raw($tempsaldo2))->from(
@@ -346,12 +358,14 @@ class LaporanBukuBesar extends MyModel
                 DB::raw("'SALDO AWAL' as keterangan"),
                 DB::raw("0 as debet"),
                 DB::raw("0 as kredit"),
-                DB::raw("(isnull(a.saldo,0)+isnull(b.saldo,0)) as saldo")
+                DB::raw("(isnull(a.saldo,0)+isnull(b.saldo,0)) as saldo"),
+                DB::raw("1 as nilaikosongdebet"),
+                DB::raw("1 as nilaikosongkredit"),
             )
             ->leftjoin(DB::raw($tempsaldorekap) . " as b", 'a.coa', 'b.coa')
             ->whereRaw("(isnull(a.saldo,0)+isnull(b.saldo,0))<>0");
 
-            // dd($querysaldoawal->get());
+        // dd($querysaldoawal->get());
         DB::table($tempsaldo)->insertUsing([
             'urut',
             'coa',
@@ -362,6 +376,8 @@ class LaporanBukuBesar extends MyModel
             'debet',
             'kredit',
             'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit'
         ], $querysaldoawal);
 
 
@@ -379,6 +395,8 @@ class LaporanBukuBesar extends MyModel
             $table->double('debet', 15, 2)->nullable();
             $table->double('kredit', 15, 2)->nullable();
             $table->double('saldo', 15, 2)->nullable();
+            $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+            $table->unsignedBigInteger('nilaikosongkredit')->nullable();
         });
 
         $querydetail = DB::table("jurnalumumpusatheader")->from(
@@ -393,7 +411,9 @@ class LaporanBukuBesar extends MyModel
                 DB::raw("b.keterangan as keterangan"),
                 DB::raw("(case when nominal>=0 then nominal else 0 end) as debet"),
                 DB::raw("(case when nominal<0 then abs(nominal) else 0 end) as kredit"),
-                DB::raw("0 as saldo")
+                DB::raw("0 as saldo"),
+                DB::raw("(case when nominal>=0 then 0 else 1 end) as nilaikosongdebet"),
+                DB::raw("(case when nominal<0 then 0 else 1 end) as nilaikosongkredit"),
             )
             ->join(DB::raw("jurnalumumpusatdetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw("akunpusat as c with(readuncommitted)"), 'b.coa', 'c.coa')
@@ -418,6 +438,8 @@ class LaporanBukuBesar extends MyModel
             'debet',
             'kredit',
             'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit',
         ], $querydetail);
 
 
@@ -435,6 +457,8 @@ class LaporanBukuBesar extends MyModel
             $table->double('debet', 15, 2)->nullable();
             $table->double('kredit', 15, 2)->nullable();
             $table->double('saldo', 15, 2)->nullable();
+            $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+            $table->unsignedBigInteger('nilaikosongkredit')->nullable();
         });
 
         $queryRekap1 = DB::table($tempsaldo)
@@ -448,6 +472,8 @@ class LaporanBukuBesar extends MyModel
                 'debet',
                 'kredit',
                 'saldo',
+                'nilaikosongdebet',
+                'nilaikosongkredit',
             );
 
 
@@ -461,6 +487,8 @@ class LaporanBukuBesar extends MyModel
             'debet',
             'kredit',
             'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit',
         ], $queryRekap1);
 
 
@@ -475,6 +503,8 @@ class LaporanBukuBesar extends MyModel
                 'debet',
                 'kredit',
                 'saldo',
+                'nilaikosongdebet',
+                'nilaikosongkredit',
             )->orderBy('id', 'asc');
 
 
@@ -488,6 +518,8 @@ class LaporanBukuBesar extends MyModel
             'debet',
             'kredit',
             'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit',
         ], $queryRekap);
 
         if ($cabang_id == 0) {
@@ -546,7 +578,9 @@ class LaporanBukuBesar extends MyModel
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
-                db::raw("(case when '" . $cabang . "'='' then '' else 'Cabang :" . $cabang . "'  end) as Cabang")
+                db::raw("(case when '" . $cabang . "'='' then '' else 'Cabang :" . $cabang . "'  end) as Cabang"),
+                'nilaikosongdebet',
+                'nilaikosongkredit',
 
             )
             ->orderBy('coa', 'Asc')

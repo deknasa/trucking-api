@@ -75,6 +75,8 @@ class ExportLaporanKasGantung extends MyModel
             $table->double('debet', 15, 2)->nullable();
             $table->double('kredit', 15, 2)->nullable();
             $table->dateTime('tglinput')->nullable();
+            $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+            $table->unsignedBigInteger('nilaikosongkredit')->nullable();
         });
 
 
@@ -154,7 +156,9 @@ class ExportLaporanKasGantung extends MyModel
                     'a.keterangan',
                     db::raw("(isnull(A.nominal,0)-isnull(c.nominal,0)) as debet"),
                     db::raw("0 as kredit"),
-                    'b.created_at as tglinput'
+                    'b.created_at as tglinput',
+                    DB::raw("0  as nilaikosongdebet"),
+                    DB::raw("1  as nilaikosongkredit"),
                 )
                 ->join(db::raw("kasgantungheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
                 ->leftjoin(db::raw($Temppengembalian . " c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
@@ -174,6 +178,8 @@ class ExportLaporanKasGantung extends MyModel
                 'debet',
                 'kredit',
                 'tglinput',
+                'nilaikosongdebet',
+                'nilaikosongkredit'
             ], $querytemprekap);
 
             $querytemprekap = db::table("pengembaliankasgantungdetail")->from(db::raw("pengembaliankasgantungdetail a with (readuncommitted)"))
@@ -185,7 +191,9 @@ class ExportLaporanKasGantung extends MyModel
                     'a.keterangan',
                     db::raw("0 as debet"),
                     db::raw("a.nominal as kredit"),
-                    'b.created_at as tglinput'
+                    'b.created_at as tglinput',
+                    DB::raw("1  as nilaikosongdebet"),
+                    DB::raw("0  as nilaikosongkredit"),
 
                 )
                 ->join(db::raw("pengembaliankasgantungheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
@@ -204,6 +212,8 @@ class ExportLaporanKasGantung extends MyModel
                 'debet',
                 'kredit',
                 'tglinput',
+                'nilaikosongdebet',
+                'nilaikosongkredit'
             ], $querytemprekap);
 
             $tgl1 = date('Y-m-d', strtotime($tgl1 . ' +1 day'));
@@ -234,6 +244,8 @@ class ExportLaporanKasGantung extends MyModel
                 db::raw("format(a.tgl,'dd-MM-yyyy') as tgl"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'LAPORAN HARIAN' as jenislaporan"),
+                'a.nilaikosongdebet',
+                'a.nilaikosongkredit',
             )
             ->orderBy('a.tgl', 'asc')
             ->orderBy('a.tglbukti', 'asc')

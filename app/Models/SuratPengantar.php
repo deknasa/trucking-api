@@ -6570,4 +6570,25 @@ class SuratPengantar extends MyModel
 
         return $data;
     }
+
+    public function editTripAsal(array $data)
+    {
+        $suratPengantar = SuratPengantar::findOrFail($data['id']);
+        $suratPengantar->nobukti_tripasal = $data['nobukti_tripasal'];
+        if (!$suratPengantar->save()) {
+            throw new \Exception('Error edit trip asal.');
+        }
+
+        $suratPengantarLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($suratPengantar->getTable()),
+            'postingdari' => 'EDIT TRIP ASAL',
+            'idtrans' => $suratPengantar->id,
+            'nobuktitrans' => $suratPengantar->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $suratPengantar->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        return $suratPengantar;
+    }
 }

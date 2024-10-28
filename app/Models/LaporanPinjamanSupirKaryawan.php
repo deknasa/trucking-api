@@ -329,6 +329,8 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             $table->double('debet')->nullable();
             $table->double('kredit')->nullable();
             $table->double('saldo')->nullable();
+            $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+            $table->unsignedBigInteger('nilaikosongkredit')->nullable();
         });
 
         $queryhasil = DB::table($temprekapdatahasil)->from(
@@ -342,7 +344,9 @@ class LaporanPinjamanSupirKaryawan extends MyModel
                 'a.tglbuktipelunasan',
                 DB::raw("(case when isnull(a.nobuktipelunasan,'')='' then a.nominal else 0 end) as debet"),
                 DB::raw("(case when isnull(a.nobuktipelunasan,'')='' then 0 else a.nominal end) as kredit"),
-                DB::raw("0 as saldo")
+                DB::raw("0 as saldo"),
+                DB::raw("(case when isnull(a.nobuktipelunasan,'')='' then 0 else 1 end) as nilaikosongdebet"),
+                DB::raw("(case when isnull(a.nobuktipelunasan,'')='' then 1 else 0 end) as nilaikosongkredit"),
 
             )
             ->OrderBy('a.id', 'asc');
@@ -356,6 +360,8 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             'debet',
             'kredit',
             'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit',
         ], $queryhasil);
 
 
@@ -384,6 +390,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             $judul1 = $parameter->cekdataText($jenis) ?? '';
         }
 
+        $saldo = date('Y-m-d', strtotime((new Parameter())->cekText('SALDO', 'SALDO')));
         $query = DB::table($temphasil)->from(
             DB::raw($temphasil . " a ")
         )
@@ -397,7 +404,10 @@ class LaporanPinjamanSupirKaryawan extends MyModel
                 db::raw("
                 (case when isnull(a.nobuktipelunasan,'')='' then a.tglbukti else isnull(c.tglbukti,'1900/1/1') end) as tglbukti"),
                 'a.tglbuktipelunasan',
-                'b.keterangan',
+                // 'b.keterangan',
+                DB::raw("(case when isnull(a.namakaryawan,'') != '' then 
+                        (case when a.tglbukti < '$saldo' then '' else '(' + a.namakaryawan + ') ' end)
+                    else '' end) + b.keterangan as keterangan"),
                 'a.debet',
                 db::raw("abs(a.kredit) as kredit"),
                 DB::raw("sum ((isnull(a.saldo,0)+a.debet-a.kredit)) over (order by a.id asc) as Saldo"),
@@ -407,6 +417,8 @@ class LaporanPinjamanSupirKaryawan extends MyModel
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
+                'a.nilaikosongdebet',
+                'a.nilaikosongkredit',
 
             )
             ->leftjoin(DB::raw("pengeluarantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
