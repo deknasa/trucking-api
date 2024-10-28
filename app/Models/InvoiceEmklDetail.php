@@ -51,7 +51,7 @@ class InvoiceEmklDetail extends MyModel
             } else {
                
                 if ($getinfoinvoice->jenisorder_id == 1) {
-                    $query->select(db::raw("STRING_AGG(b.nocont +' / '+b.noseal, ', ') as keterangan, sum(invoiceemkldetail.nominal) as nominal, round((sum(invoiceemkldetail.nominal)*0.011), 0, 1) as ppn,  sum(invoiceemkldetail.nominal) + round((sum(invoiceemkldetail.nominal)*0.011), 0, 1) as total"))
+                    $query->select(db::raw("STRING_AGG(b.nocont +' / '+b.noseal, ', ') as keterangan, sum(invoiceemkldetail.nominal) as nominal, (case when ((sum(invoiceemkldetail.nominal) * 0.011) - floor((sum(invoiceemkldetail.nominal) * 0.011))) >= 0.51 then round((sum(invoiceemkldetail.nominal) * 0.011),0) else round((sum(invoiceemkldetail.nominal) * 0.011),0,1) end) as ppn,  sum(invoiceemkldetail.nominal) + (case when ((sum(invoiceemkldetail.nominal) * 0.011) - floor((sum(invoiceemkldetail.nominal) * 0.011))) >= 0.51 then round((sum(invoiceemkldetail.nominal) * 0.011),0) else round((sum(invoiceemkldetail.nominal) * 0.011),0,1) end) as total"))
                         ->join(db::raw("jobemkl as b with (readuncommitted)"), 'invoiceemkldetail.jobemkl_nobukti', 'b.nobukti')
                         ->where('invoiceemkldetail.invoiceemkl_id', request()->invoiceemkl_id);
                 } else {

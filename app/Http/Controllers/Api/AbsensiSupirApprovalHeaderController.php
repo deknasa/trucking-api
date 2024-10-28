@@ -90,8 +90,8 @@ class AbsensiSupirApprovalHeaderController extends Controller
                 } else {
                     $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
                 }
-                $absensiSupirApprovalHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $absensiSupirApprovalHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $absensiSupirApprovalHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $absensiSupirApprovalHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
             DB::commit();
             return response()->json([
@@ -151,8 +151,8 @@ class AbsensiSupirApprovalHeaderController extends Controller
             } else {
                 $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
             }
-            $absensiSupirApprovalHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $absensiSupirApprovalHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $absensiSupirApprovalHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $absensiSupirApprovalHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
             return response()->json([
@@ -188,8 +188,8 @@ class AbsensiSupirApprovalHeaderController extends Controller
             } else {
                 $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
             }
-            $absensiSupirApprovalHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $absensiSupirApprovalHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $absensiSupirApprovalHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $absensiSupirApprovalHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
             return response()->json([

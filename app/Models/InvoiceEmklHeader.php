@@ -122,7 +122,7 @@ class InvoiceEmklHeader extends MyModel
                                 $query = $query->where('statuspajak.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statusppn') {
                                 $query = $query->where('statusppn.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'pelanggan') {
+                            } else if ($filters['field'] == 'pelanggan_id') {
                                 $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'jenisorder_id') {
                                 $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
@@ -156,7 +156,7 @@ class InvoiceEmklHeader extends MyModel
                                     $query = $query->orWhere('statuspajak.text', '=', $filters['data']);
                                 } else if ($filters['field'] == 'statusppn') {
                                     $query = $query->orWhere('statusppn.text', '=', $filters['data']);
-                                } else if ($filters['field'] == 'pelanggan') {
+                                } else if ($filters['field'] == 'pelanggan_id') {
                                     $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'jenisorder_id') {
                                     $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
@@ -713,6 +713,7 @@ class InvoiceEmklHeader extends MyModel
 
         if ($invoiceHeader->tujuan_id != 0) {
             $pelangggan = db::table("tujuan")->from(db::raw("tujuan with (readuncommitted)"))->where('id', $invoiceHeader->tujuan_id)->first()->pelanggan_id ?? 0;
+            $data['pelanggan_id'] = $pelangggan;
 
             $invoiceHeader->pelanggan_id = $pelangggan;
         }
@@ -878,7 +879,7 @@ class InvoiceEmklHeader extends MyModel
         if ($prosesReimburse != 0) {
             $idthc = (new Parameter())->cekId('BIAYA REIMBURSE EMKL', 'BIAYA REIMBURSE EMKL', 'THC');
             $idstorage = (new Parameter())->cekId('BIAYA REIMBURSE EMKL', 'BIAYA REIMBURSE EMKL', 'STO');
-            $iddemurage = (new Parameter())->cekId('BIAYA REIMBURSE EMKL', 'BIAYA REIMBURSE EMKL', 'DEM');
+            $iddemurage = (new Parameter())->cekId('BIAYA REIMBURSE EMKL', 'BIAYA REIMBURSE EMKL', 'STO-DEM');
             if ($data['biaya'] == $idthc) {
                 $paramcoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL INVOICE REIMBURSE OPT')
                     ->where('subgrp', 'DEBET')
@@ -1464,7 +1465,7 @@ class InvoiceEmklHeader extends MyModel
         $invoiceHeader->editing_at = null;
         if ($invoiceHeader->tujuan_id != 0) {
             $pelangggan = db::table("tujuan")->from(db::raw("tujuan with (readuncommitted)"))->where('id', $invoiceHeader->tujuan_id)->first()->pelanggan_id ?? 0;
-
+            $data['pelanggan_id'] = $pelangggan;
             $invoiceHeader->pelanggan_id = $pelangggan;
         }
 
@@ -1606,7 +1607,7 @@ class InvoiceEmklHeader extends MyModel
         if ($prosesReimburse != 0) {
             $idthc = (new Parameter())->cekId('BIAYA REIMBURSE EMKL', 'BIAYA REIMBURSE EMKL', 'THC');
             $idstorage = (new Parameter())->cekId('BIAYA REIMBURSE EMKL', 'BIAYA REIMBURSE EMKL', 'STO');
-            $iddemurage = (new Parameter())->cekId('BIAYA REIMBURSE EMKL', 'BIAYA REIMBURSE EMKL', 'DEM');
+            $iddemurage = (new Parameter())->cekId('BIAYA REIMBURSE EMKL', 'BIAYA REIMBURSE EMKL', 'STO-DEM');
             if ($data['biaya'] == $idthc) {
                 $paramcoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL INVOICE REIMBURSE OPT')
                     ->where('subgrp', 'DEBET')

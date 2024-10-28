@@ -93,8 +93,8 @@ class HutangHeaderController extends Controller
                 } else {
                     $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
                 }
-                $hutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $hutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $hutangHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $hutangHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
 
 
@@ -201,8 +201,8 @@ class HutangHeaderController extends Controller
             } else {
                 $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
             }
-            $hutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $hutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $hutangHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $hutangHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
             return response()->json([
@@ -234,8 +234,8 @@ class HutangHeaderController extends Controller
             } else {
                 $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
             }
-            $hutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $hutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $hutangHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $hutangHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 

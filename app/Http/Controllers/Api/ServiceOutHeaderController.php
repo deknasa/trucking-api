@@ -75,8 +75,8 @@ class ServiceOutHeaderController extends Controller
                 } else {
                     $serviceOutHeader->page = ceil($serviceOutHeader->position / ($request->limit ?? 10));
                 }
-                $serviceOutHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $serviceOutHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $serviceOutHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $serviceOutHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
             DB::commit();
 
@@ -130,8 +130,8 @@ class ServiceOutHeaderController extends Controller
             } else {
                 $serviceOutHeader->page = ceil($serviceOutHeader->position / ($request->limit ?? 10));
             }
-            $serviceOutHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $serviceOutHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $serviceOutHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $serviceOutHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 
@@ -164,8 +164,8 @@ class ServiceOutHeaderController extends Controller
             } else {
                 $serviceOutHeader->page = ceil($serviceOutHeader->position / ($request->limit ?? 10));
             }
-            $serviceOutHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $serviceOutHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $serviceOutHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $serviceOutHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 

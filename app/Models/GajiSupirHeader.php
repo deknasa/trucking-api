@@ -559,8 +559,7 @@ class GajiSupirHeader extends MyModel
                     DB::raw("(case when $sp.biayaextrasupir_nobukti IS NULL then null else $sp.biayaextrasupir_nobukti end) as biayaextrasupir_nobukti"),
                     DB::raw("(case when $sp.biayaextrasupir_nominal IS NULL then 0 else $sp.biayaextrasupir_nominal end) as biayaextrasupir_nominal"),
                     DB::raw("(case when $sp.biayaextrasupir_keterangan IS NULL then '-' else $sp.biayaextrasupir_keterangan end) as biayaextrasupir_keterangan"),
-                    "$sp.statusapprovaltrip",
-                    "$sp.statusapprovalritasi",
+                    "$sp.statusapproval",
                 );
 
             $this->totalRows = $query->count();
@@ -773,8 +772,7 @@ class GajiSupirHeader extends MyModel
             $table->string('biayaextrasupir_nobukti')->nullable();
             $table->float('biayaextrasupir_nominal')->nullable();
             $table->longText('biayaextrasupir_keterangan')->nullable();
-            $table->longText('statusapprovaltrip')->nullable();
-            $table->longText('statusapprovalritasi')->nullable();
+            $table->longText('statusapproval')->nullable();
         });
 
         if ($getJenisTambahan == 'RITASI') {
@@ -830,8 +828,13 @@ class GajiSupirHeader extends MyModel
 
                     DB::raw("(case when ritasi.suratpengantar_urutke > 1 then 0 else biayatambahan.biayaextra end) as biayaextra"),
                     DB::raw("(case when ritasi.suratpengantar_urutke > 1 then '-' else (case when biayatambahan.biayaextra = 0 then '-' else biayatambahan.keteranganbiaya end)  end) as keteranganbiaya"),
-                    DB::raw("(case when isnull(suratpengantar.statusapprovalmandor,'')='' then statusapprovaldefault.memo else statusapproval.memo end) as statusapprovaltrip"),
-                    DB::raw("(case when isnull(ritasi.statusapprovalritasi,'')='' then statusapprovaldefault.memo else ritasi.statusapprovalritasi end) as statusapprovalritasi")
+                    DB::raw("(case when ritasi.suratpengantar_urutke > 1 then 
+                        (case when isnull(ritasi.statusapprovalritasi,'')='' then '' else ritasi.statusapprovalritasi end) else
+                        (case when isnull(suratpengantar.statusapprovalmandor,'')='' then statusapprovaldefault.memo else statusapproval.memo end)  
+                        end) as statusapproval
+                    "),
+                    // DB::raw("(case when isnull(suratpengantar.statusapprovalmandor,'')='' then statusapprovaldefault.memo else statusapproval.memo end) as statusapprovaltrip"),
+                    // DB::raw("(case when isnull(ritasi.statusapprovalritasi,'')='' then statusapprovaldefault.memo else ritasi.statusapprovalritasi end) as statusapprovalritasi")
                 )
                 ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
                 ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
@@ -856,7 +859,7 @@ class GajiSupirHeader extends MyModel
                 ->orderBy('suratpengantar.nobukti', 'asc')
                 ->orderBy('ritasi.suratpengantar_urutke', 'asc');
             // ->whereRaw("suratpengantar.nobukti not in(select suratpengantar_nobukti from gajisupirdetail)");
-            $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya', 'statusapprovaltrip', 'statusapprovalritasi'], $fetch);
+            $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya', 'statusapproval'], $fetch);
         } else {
 
 
@@ -883,8 +886,7 @@ class GajiSupirHeader extends MyModel
 
                     DB::raw("isnull(biayatambahan.biayaextra, 0) as biayaextra"),
                     DB::raw("(case when biayatambahan.biayaextra = 0 then '-' else biayatambahan.keteranganbiaya end) as keteranganbiaya"),
-                    'statusapprovaldefault.memo as statusapprovaltrip',
-                    'statusapprovaldefault.memo as statusapprovalritasi'
+                    'statusapprovaldefault.memo as statusapproval',
                 )
                 // ->leftJoin(DB::raw("gajisupirdetail with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
                 ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
@@ -907,7 +909,7 @@ class GajiSupirHeader extends MyModel
                 });
             // ->whereRaw("suratpengantar.nobukti not in(select suratpengantar_nobukti from gajisupirdetail)");
 
-            $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'biayaextra', 'keteranganbiaya', 'statusapprovaltrip', 'statusapprovalritasi'], $fetch);
+            $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'biayaextra', 'keteranganbiaya', 'statusapproval'], $fetch);
 
             $queryBiayaExtra = DB::table("biayaextrasupirheader")->from(db::raw("biayaextrasupirheader as a with (readuncommitted)"))
                 ->select('a.nobukti', db::raw("max(a.suratpengantar_nobukti) as suratpengantar_nobukti"), db::raw("STRING_AGG(b.keteranganbiaya, ', ') as keterangan"), db::raw("sum(b.nominal) as nominal"),  DB::raw('ROW_NUMBER() OVER(PARTITION BY a.suratpengantar_nobukti ORDER BY a.suratpengantar_nobukti, a.nobukti) as furut'))
@@ -947,8 +949,7 @@ class GajiSupirHeader extends MyModel
                     'extrasupir.nominal as biayaextrasupir_nominal',
                     'extrasupir.nobukti as biayaextrasupir_nobukti',
                     'extrasupir.keterangan as biayaextrasupir_keterangan',
-                    'statusapprovaldefault.memo as statusapprovaltrip',
-                    'statusapprovaldefault.memo as statusapprovalritasi'
+                    'statusapprovaldefault.memo as statusapproval',
                 )
                 ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
                 ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
@@ -971,7 +972,7 @@ class GajiSupirHeader extends MyModel
                 });
             // ->whereRaw("suratpengantar.nobukti not in(select suratpengantar_nobukti from gajisupirdetail)");
 
-            $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'biayaextrasupir_nominal', 'biayaextrasupir_nobukti', 'biayaextrasupir_keterangan', 'statusapprovaltrip', 'statusapprovalritasi'], $fetch);
+            $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'biayaextrasupir_nominal', 'biayaextrasupir_nobukti', 'biayaextrasupir_keterangan', 'statusapproval'], $fetch);
         }
 
 
@@ -1001,8 +1002,7 @@ class GajiSupirHeader extends MyModel
 
                 DB::raw("biayatambahan.biayaextra as biayaextra"),
                 DB::raw(" (case when biayatambahan.biayaextra = 0 then '-' else biayatambahan.keteranganbiaya end) as keteranganbiaya"),
-                'statusapprovaldefault.memo as statusapprovaltrip',
-                'statusapprovaldefault.memo as statusapprovalritasi'
+                'statusapprovaldefault.memo as statusapproval',
             )
             ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'saldosuratpengantar.dari_id', 'kotaDari.id')
             ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'saldosuratpengantar.sampai_id', 'kotaSampai.id')
@@ -1020,12 +1020,12 @@ class GajiSupirHeader extends MyModel
             ->where('saldosuratpengantar.statusric', 'YA')
             ->whereRaw("saldosuratpengantar.nobukti not in(select suratpengantar_nobukti from gajisupirdetail)");
 
-        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'biayaextra', 'keteranganbiaya', 'statusapprovaltrip', 'statusapprovalritasi'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'biayaextra', 'keteranganbiaya', 'statusapproval'], $fetch);
 
         // fetch ritasi yg tidak ada suratpengantar
         $fetch = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))
             ->select(
-                DB::raw("ritasi.tglbukti as tglbuktisp,trado.kodetrado as trado_id,kotaDari.kodekota as dari_id,kotaSampai.kodekota as sampai_id, ritasi.gaji as upahritasi, ritasi.nobukti as ritasi_nobukti,(parameter.text + ' ' + kotaDari.kodekota + ' - '+kotaSampai.kodekota) as statusritasi, (case when isnull(ritasi.statusapprovalmandor,'')='' then statusapprovaldefault.memo else statusapproval.memo end) as statusapprovalritasi")
+                DB::raw("ritasi.tglbukti as tglbuktisp,trado.kodetrado as trado_id,kotaDari.kodekota as dari_id,kotaSampai.kodekota as sampai_id, ritasi.gaji as upahritasi, ritasi.nobukti as ritasi_nobukti,(parameter.text + ' ' + kotaDari.kodekota + ' - '+kotaSampai.kodekota) as statusritasi, (case when isnull(ritasi.statusapprovalmandor,'')='' then statusapprovaldefault.memo else statusapproval.memo end) as statusapproval")
             )
             ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'ritasi.dari_id', 'kotaDari.id')
             ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'ritasi.sampai_id', 'kotaSampai.id')
@@ -1040,7 +1040,7 @@ class GajiSupirHeader extends MyModel
             ->where('ritasi.tglbukti', '<=', $tglSampai)
             ->whereRaw("isnull(ritasi.suratpengantar_nobukti,'') = ''")
             ->whereRaw("ritasi.nobukti not in(select ritasi_nobukti from gajisupirdetail)");
-        $tes = DB::table($temp)->insertUsing(['tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'statusapprovalritasi'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'statusapproval'], $fetch);
 
         return $temp;
     }
@@ -1079,8 +1079,7 @@ class GajiSupirHeader extends MyModel
                 DB::raw("(case when $sp.biayaextrasupir_nobukti IS NULL then null else $sp.biayaextrasupir_nobukti end) as biayaextrasupir_nobukti"),
                 DB::raw("(case when $sp.biayaextrasupir_nominal IS NULL then 0 else $sp.biayaextrasupir_nominal end) as biayaextrasupir_nominal"),
                 DB::raw("(case when $sp.biayaextrasupir_keterangan IS NULL then '-' else $sp.biayaextrasupir_keterangan end) as biayaextrasupir_keterangan"),
-                "$sp.statusapprovaltrip",
-                "$sp.statusapprovalritasi",
+                "$sp.statusapproval",
             );
 
         $this->totalRows = $query->count();
@@ -1159,8 +1158,12 @@ class GajiSupirHeader extends MyModel
                 'gajisupirdetail.biayaextrasupir_nobukti as biayaextrasupir_nobukti',
                 DB::raw("isnull(gajisupirdetail.nominalbiayaextrasupir, 0) as biayaextrasupir_nominal"),
                 'gajisupirdetail.keteranganbiayaextrasupir as biayaextrasupir_keterangan',
-                DB::raw("(case when isnull(suratpengantar.statusapprovalmandor,'')='' then statusapprovaldefault.memo else statusapproval.memo end) as statusapprovaltrip"),
-                DB::raw("(case when isnull(ritasi.statusapprovalritasi,'')='' then '' else ritasi.statusapprovalritasi end) as statusapprovalritasi")
+                DB::raw("(case when isnull(gajisupirdetail.gajisupir,0) > 0 then 
+                        (case when isnull(suratpengantar.statusapprovalmandor,'')='' then statusapprovaldefault.memo else statusapproval.memo end) else 
+                        (case when isnull(ritasi.statusapprovalritasi,'')='' then '' else ritasi.statusapprovalritasi end) end) as statusapproval
+                ")
+                // DB::raw("(case when isnull(suratpengantar.statusapprovalmandor,'')='' then statusapprovaldefault.memo else statusapproval.memo end) as statusapprovaltrip"),
+                // DB::raw("(case when isnull(ritasi.statusapprovalritasi,'')='' then '' else ritasi.statusapprovalritasi end) as statusapprovalritasi")
 
             )
             ->join(DB::raw("suratpengantar with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
@@ -1206,11 +1209,10 @@ class GajiSupirHeader extends MyModel
             $table->string('biayaextrasupir_nobukti')->nullable();
             $table->float('biayaextrasupir_nominal')->nullable();
             $table->longText('biayaextrasupir_keterangan')->nullable();
-            $table->longText('statusapprovaltrip')->nullable();
-            $table->longText('statusapprovalritasi')->nullable();
+            $table->longText('statusapproval')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya', 'biayaextrasupir_nobukti', 'biayaextrasupir_nominal', 'biayaextrasupir_keterangan', 'statusapprovaltrip', 'statusapprovalritasi'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya', 'biayaextrasupir_nobukti', 'biayaextrasupir_nominal', 'biayaextrasupir_keterangan', 'statusapproval'], $fetch);
 
         // SALDO
         $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
@@ -1237,7 +1239,7 @@ class GajiSupirHeader extends MyModel
                 'gajisupirdetail.ritasi_nobukti',
                 'gajisupirdetail.biayatambahan as biayaextra',
                 'gajisupirdetail.keteranganbiayatambahan as keteranganbiaya',
-                'statusapprovaldefault.memo as statusapprovaltrip',
+                'statusapprovaldefault.memo as statusapproval',
             )
             ->join(DB::raw("saldosuratpengantar with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'saldosuratpengantar.nobukti')
             ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'saldosuratpengantar.dari_id', 'kotaDari.id')
@@ -1252,7 +1254,7 @@ class GajiSupirHeader extends MyModel
             ->where('gajisupirdetail.suratpengantar_nobukti', '!=', '-')
             ->where('gajisupirdetail.gajisupir_id', $gajiId);
 
-        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti',  'biayaextra', 'keteranganbiaya', 'statusapprovaltrip'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti',  'biayaextra', 'keteranganbiaya', 'statusapproval'], $fetch);
 
         $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
             ->select(
@@ -1271,7 +1273,7 @@ class GajiSupirHeader extends MyModel
                 db::raw("(parameter.text + ' ' + kotaDari.kodekota + ' - '+kotaSampai.kodekota) as statusritasi"),
                 'gajisupirdetail.biayatambahan as biayaextra',
                 'gajisupirdetail.keteranganbiayatambahan as keteranganbiaya',
-                DB::raw("(case when isnull(ritasi.statusapprovalmandor,'')='' then '' else statusapproval.memo end) as statusapprovalritasi")
+                DB::raw("(case when isnull(ritasi.statusapprovalmandor,'')='' then '' else statusapproval.memo end) as statusapproval")
             )
             ->leftJoin(DB::raw("ritasi with (readuncommitted)"), 'gajisupirdetail.ritasi_nobukti', 'ritasi.nobukti')
             ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'ritasi.dari_id', 'kotaDari.id')
@@ -1285,7 +1287,7 @@ class GajiSupirHeader extends MyModel
             ->where('gajisupirdetail.suratpengantar_nobukti', '-')
             ->where('gajisupirdetail.gajisupir_id', $gajiId);
 
-        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya', 'statusapprovalritasi'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya', 'statusapproval'], $fetch);
 
         return $temp;
     }
@@ -1725,8 +1727,7 @@ class GajiSupirHeader extends MyModel
                 DB::raw("(case when $tempRIC.biayaextrasupir_nobukti IS NULL then null else $tempRIC.biayaextrasupir_nobukti end) as biayaextrasupir_nobukti"),
                 DB::raw("(case when $tempRIC.biayaextrasupir_nominal IS NULL then 0 else $tempRIC.biayaextrasupir_nominal end) as biayaextrasupir_nominal"),
                 DB::raw("(case when $tempRIC.biayaextrasupir_keterangan IS NULL then '-' else $tempRIC.biayaextrasupir_keterangan end) as biayaextrasupir_keterangan"),
-                "$tempRIC.statusapprovaltrip",
-                "$tempRIC.statusapprovalritasi",
+                "$tempRIC.statusapproval",
             );
 
         $this->totalRows = $query->count();
@@ -1810,8 +1811,12 @@ class GajiSupirHeader extends MyModel
                 'gajisupirdetail.biayaextrasupir_nobukti as biayaextrasupir_nobukti',
                 DB::raw("isnull(gajisupirdetail.nominalbiayaextrasupir, 0) as biayaextrasupir_nominal"),
                 'gajisupirdetail.keteranganbiayaextrasupir as biayaextrasupir_keterangan',
-                DB::raw("(case when isnull(suratpengantar.statusapprovalmandor,'')='' then statusapprovaldefault.memo else statusapproval.memo end) as statusapprovaltrip"),
-                DB::raw("(case when isnull(ritasi.statusapprovalritasi,'')='' then '' else ritasi.statusapprovalritasi end) as statusapprovalritasi")
+                DB::raw("(case when isnull(gajisupirdetail.gajisupir,0) > 0 then 
+                        (case when isnull(suratpengantar.statusapprovalmandor,'')='' then statusapprovaldefault.memo else statusapproval.memo end) else 
+                        (case when isnull(ritasi.statusapprovalritasi,'')='' then '' else ritasi.statusapprovalritasi end) end) as statusapproval
+                ")
+                // DB::raw("(case when isnull(suratpengantar.statusapprovalmandor,'')='' then statusapprovaldefault.memo else statusapproval.memo end) as statusapprovaltrip"),
+                // DB::raw("(case when isnull(ritasi.statusapprovalritasi,'')='' then '' else ritasi.statusapprovalritasi end) as statusapprovalritasi")
                 // 'gajisupirdetail.biayatambahan as biayaextra',
                 // 'gajisupirdetail.keteranganbiayatambahan as keteranganbiaya'
             )
@@ -1859,11 +1864,10 @@ class GajiSupirHeader extends MyModel
             $table->string('biayaextrasupir_nobukti')->nullable();
             $table->float('biayaextrasupir_nominal')->nullable();
             $table->longText('biayaextrasupir_keterangan')->nullable();
-            $table->longText('statusapprovaltrip')->nullable();
-            $table->longText('statusapprovalritasi')->nullable();
+            $table->longText('statusapproval')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya', 'biayaextrasupir_nobukti', 'biayaextrasupir_nominal', 'biayaextrasupir_keterangan', 'statusapprovaltrip', 'statusapprovalritasi'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya', 'biayaextrasupir_nobukti', 'biayaextrasupir_nominal', 'biayaextrasupir_keterangan', 'statusapproval'], $fetch);
 
         // SALDO
         $getSaldoBiaya = $this->createTempSaldoBiayaTambahanEdit($gajiId, $supir_id, $dari, $sampai);
@@ -1891,7 +1895,7 @@ class GajiSupirHeader extends MyModel
                 'gajisupirdetail.ritasi_nobukti',
                 DB::raw("biayatambahan.biayaextra as biayaextra"),
                 DB::raw("biayatambahan.keteranganbiaya as keteranganbiaya"),
-                'statusapprovaldefault.memo as statusapprovaltrip',
+                'statusapprovaldefault.memo as statusapproval',
                 // 'gajisupirdetail.biayatambahan as biayaextra',
                 // 'gajisupirdetail.keteranganbiayatambahan as keteranganbiaya'
             )
@@ -1912,7 +1916,7 @@ class GajiSupirHeader extends MyModel
             ->where('saldosuratpengantar.statusric', 'YA')
             ->where('gajisupirdetail.gajisupir_id', $gajiId);
 
-        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'biayaextra', 'keteranganbiaya', 'statusapprovaltrip'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'biayaextra', 'keteranganbiaya', 'statusapproval'], $fetch);
 
         $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
             ->select(
@@ -1931,7 +1935,7 @@ class GajiSupirHeader extends MyModel
                 db::raw("(parameter.text + ' ' + kotaDari.kodekota + ' - '+kotaSampai.kodekota) as statusritasi"),
                 'gajisupirdetail.biayatambahan as biayaextra',
                 'gajisupirdetail.keteranganbiayatambahan as keteranganbiaya',
-                DB::raw("(case when isnull(ritasi.statusapprovalmandor,'')='' then '' else statusapproval.memo end) as statusapprovalritasi")
+                DB::raw("(case when isnull(ritasi.statusapprovalmandor,'')='' then '' else statusapproval.memo end) as statusapproval")
             )
             ->leftJoin(DB::raw("ritasi with (readuncommitted)"), 'gajisupirdetail.ritasi_nobukti', 'ritasi.nobukti')
             ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'ritasi.dari_id', 'kotaDari.id')
@@ -1946,7 +1950,7 @@ class GajiSupirHeader extends MyModel
             ->where('ritasi.tglbukti', '<=', $sampai)
             ->where('gajisupirdetail.gajisupir_id', $gajiId);
 
-        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya', 'statusapprovalritasi'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya', 'statusapproval'], $fetch);
 
         $getBiaya = $this->createTempBiayaTambahan($supir_id, $dari, $sampai);
         if ($getJenisTambahan == 'RITASI') {
@@ -2002,8 +2006,14 @@ class GajiSupirHeader extends MyModel
                     'ritasi.statusritasi',
                     DB::raw("(case when ritasi.suratpengantar_urutke > 1 then 0 else biayatambahan.biayaextra end) as biayaextra"),
                     DB::raw("(case when ritasi.suratpengantar_urutke > 1 then '-' else biayatambahan.keteranganbiaya end) as keteranganbiaya"),
-                    DB::raw("(case when isnull(suratpengantar.statusapprovalmandor,'')='' then statusapprovaldefault.memo else statusapproval.memo end) as statusapprovaltrip"),
-                    DB::raw("(case when isnull(ritasi.statusapprovalritasi,'')='' then '' else ritasi.statusapprovalritasi end) as statusapprovalritasi")
+
+                    DB::raw("(case when ritasi.suratpengantar_urutke > 1 then 
+                        (case when isnull(ritasi.statusapprovalritasi,'')='' then '' else ritasi.statusapprovalritasi end) else
+                        (case when isnull(suratpengantar.statusapprovalmandor,'')='' then statusapprovaldefault.memo else statusapproval.memo end)  
+                        end) as statusapproval
+                    "),
+                    // DB::raw("(case when isnull(suratpengantar.statusapprovalmandor,'')='' then statusapprovaldefault.memo else statusapproval.memo end) as statusapprovaltrip"),
+                    // DB::raw("(case when isnull(ritasi.statusapprovalritasi,'')='' then '' else ritasi.statusapprovalritasi end) as statusapprovalritasi")
                 )
                 ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
                 ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
@@ -2027,7 +2037,7 @@ class GajiSupirHeader extends MyModel
                         ->orWhereRaw("ritasi.nobukti not in(select ritasi_nobukti from gajisupirdetail)");
                 });
 
-            $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya', 'statusapprovaltrip', 'statusapprovalritasi'], $fetch);
+            $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya', 'statusapproval'], $fetch);
         } else {
             $fetch = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
                 ->select(
@@ -2051,7 +2061,7 @@ class GajiSupirHeader extends MyModel
 
                     DB::raw("isnull(biayatambahan.biayaextra, 0) as biayaextra"),
                     DB::raw("(case when biayatambahan.biayaextra = 0 then '-' else biayatambahan.keteranganbiaya end) as keteranganbiaya"),
-                    'statusapprovaldefault.memo as statusapprovaltrip',
+                    'statusapprovaldefault.memo as statusapproval',
                 )
                 // ->leftJoin(DB::raw("gajisupirdetail with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
                 ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
@@ -2074,7 +2084,7 @@ class GajiSupirHeader extends MyModel
                     // ->orWhereRaw("extrasupir.nobukti not in(select biayaextrasupir_nobukti from gajisupirdetail where isnull(biayaextrasupir_nobukti,'') !='')");
                 });
 
-            $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'biayaextra', 'keteranganbiaya', 'statusapprovaltrip'], $fetch);
+            $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'biayaextra', 'keteranganbiaya', 'statusapproval'], $fetch);
 
             $queryBiayaExtra = DB::table("biayaextrasupirheader")->from(db::raw("biayaextrasupirheader as a with (readuncommitted)"))
                 ->select('a.nobukti', db::raw("max(a.suratpengantar_nobukti) as suratpengantar_nobukti"), db::raw("STRING_AGG(b.keteranganbiaya, ', ') as keterangan"), db::raw("sum(b.nominal) as nominal"),  DB::raw('ROW_NUMBER() OVER(PARTITION BY a.suratpengantar_nobukti ORDER BY a.suratpengantar_nobukti, a.nobukti) as furut'))
@@ -2114,7 +2124,7 @@ class GajiSupirHeader extends MyModel
                     'extrasupir.nominal as biayaextrasupir_nominal',
                     'extrasupir.nobukti as biayaextrasupir_nobukti',
                     'extrasupir.keterangan as biayaextrasupir_keterangan',
-                    'statusapprovaldefault.memo as statusapprovaltrip',
+                    'statusapprovaldefault.memo as statusapproval',
                 )
                 ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
                 ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
@@ -2136,7 +2146,7 @@ class GajiSupirHeader extends MyModel
                         ->orWhereRaw("extrasupir.nobukti not in(select biayaextrasupir_nobukti from gajisupirdetail where isnull(biayaextrasupir_nobukti,'') !='')");
                 });
 
-            $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'biayaextrasupir_nominal', 'biayaextrasupir_nobukti', 'biayaextrasupir_keterangan', 'statusapprovaltrip'], $fetch);
+            $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'biayaextrasupir_nominal', 'biayaextrasupir_nobukti', 'biayaextrasupir_keterangan', 'statusapproval'], $fetch);
         }
         // SALDO
 
@@ -2163,7 +2173,7 @@ class GajiSupirHeader extends MyModel
                 DB::raw("saldosuratpengantar.tolsupir as tolsupir"),
                 DB::raw("biayatambahan.biayaextra as biayaextra"),
                 DB::raw("biayatambahan.keteranganbiaya as keteranganbiaya"),
-                'statusapprovaldefault.memo as statusapprovaltrip',
+                'statusapprovaldefault.memo as statusapproval',
             )
             ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'saldosuratpengantar.dari_id', 'kotaDari.id')
             ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'saldosuratpengantar.sampai_id', 'kotaSampai.id')
@@ -2183,11 +2193,11 @@ class GajiSupirHeader extends MyModel
                 $query->whereRaw("saldosuratpengantar.nobukti not in(select suratpengantar_nobukti from gajisupirdetail)");
             });
 
-        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'biayaextra', 'keteranganbiaya', 'statusapprovaltrip'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'biayaextra', 'keteranganbiaya', 'statusapproval'], $fetch);
 
         $fetch = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))
             ->select(
-                DB::raw("ritasi.tglbukti as tglbuktisp,trado.kodetrado as trado_id,kotaDari.keterangan as dari_id,kotaSampai.keterangan as sampai_id, ritasi.gaji as upahritasi,ritasi.nobukti as ritasi_nobukti,(parameter.text + ' ' + kotaDari.kodekota + ' - '+kotaSampai.kodekota) as statusritasi, (case when isnull(ritasi.statusapprovalmandor,'')='' then '' else statusapproval.memo end) as statusapprovalritasi")
+                DB::raw("ritasi.tglbukti as tglbuktisp,trado.kodetrado as trado_id,kotaDari.keterangan as dari_id,kotaSampai.keterangan as sampai_id, ritasi.gaji as upahritasi,ritasi.nobukti as ritasi_nobukti,(parameter.text + ' ' + kotaDari.kodekota + ' - '+kotaSampai.kodekota) as statusritasi, (case when isnull(ritasi.statusapprovalmandor,'')='' then '' else statusapproval.memo end) as statusapproval")
             )
             ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'ritasi.dari_id', 'kotaDari.id')
             ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'ritasi.sampai_id', 'kotaSampai.id')
@@ -2203,7 +2213,7 @@ class GajiSupirHeader extends MyModel
             ->whereRaw("isnull(ritasi.suratpengantar_nobukti,'') = ''")
             ->whereRaw("ritasi.nobukti not in(select ritasi_nobukti from gajisupirdetail)");
 
-        $tes = DB::table($temp)->insertUsing(['tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'statusapprovalritasi'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'statusapproval'], $fetch);
 
         return $temp;
     }
@@ -2815,15 +2825,62 @@ class GajiSupirHeader extends MyModel
                 $sisaPinjaman = $pinjaman->sisa_pinjaman;
             }
 
-            $deposito = DB::table("penerimaantruckingdetail")->from(DB::raw("penerimaantruckingdetail as ptd with (readuncommitted)"))
-                ->select(DB::raw("ptd.supir_id, (SUM(ptd.nominal) - isnull(SUM(pt.nominal), 0)) AS deposito"))
-                ->leftJoin(DB::raw("pengeluarantruckingdetail as pt with (readuncommitted)"), 'ptd.nobukti', 'pt.penerimaantruckingheader_nobukti')
-                ->leftJoin(DB::raw("penerimaantruckingheader as pth with (readuncommitted)"), 'ptd.nobukti', 'pth.nobukti')
-                ->where('ptd.supir_id', $data->supir_id)
-                ->where("ptd.nobukti",  'LIKE', "%DPO%")
-                ->where("pth.tglbukti",  '<=', $data->tglbukti)
-                ->groupBy('ptd.supir_id')
-                ->first();
+            $penerimaantrucking_id = 3;
+            $pengeluarantrucking_id = 2;
+
+            $temppenerimaantrucking = '##temppenerimaantrucking' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temppenerimaantrucking, function ($table) {
+                $table->unsignedBigInteger('supir_id')->nullable();
+                $table->double('nominal', 15, 2)->nullable();
+            });
+            $querypenerimaantrucking = DB::table('penerimaantruckingheader')->from(
+                DB::raw("penerimaantruckingheader as a with (readuncommitted)")
+            )
+                ->select(
+                    'b.supir_id',
+                    DB::raw("sum(b.nominal) as nominal")
+                )
+                ->join(DB::raw("penerimaantruckingdetail b with (readuncommitted)"), 'a.id', 'b.penerimaantruckingheader_id')
+                ->where('a.tglbukti', '<=', $data->tglbukti)
+                ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
+                ->where('b.supir_id', $data->supir_id)
+                ->groupBy('b.supir_id');
+
+            DB::table($temppenerimaantrucking)->insertUsing([
+                'supir_id',
+                'nominal',
+            ], $querypenerimaantrucking);
+
+            $temppengeluarantrucking = '##temppengeluarantrucking' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temppengeluarantrucking, function ($table) {
+                $table->unsignedBigInteger('supir_id')->nullable();
+                $table->double('nominal', 15, 2)->nullable();
+            });
+
+            $querypengeluarantrucking = DB::table('pengeluarantruckingheader')->from(
+                DB::raw("pengeluarantruckingheader as a with (readuncommitted)")
+            )
+                ->select(
+                    'b.supir_id',
+                    DB::raw("sum(b.nominal) as nominal")
+                )
+                ->join(DB::raw("pengeluarantruckingdetail b with (readuncommitted)"), 'a.id', 'b.pengeluarantruckingheader_id')
+                ->where('a.tglbukti', '<=', $data->tglbukti)
+                ->where('a.pengeluarantrucking_id', '=', $pengeluarantrucking_id)
+                ->where('b.supir_id', $data->supir_id)
+                ->groupBy('b.supir_id');
+
+            DB::table($temppengeluarantrucking)->insertUsing([
+                'supir_id',
+                'nominal',
+            ], $querypengeluarantrucking);
+
+            $deposito = DB::table($temppenerimaantrucking)->from(DB::raw("$temppenerimaantrucking as a with (readuncommitted)"))
+            ->select(
+                DB::raw("(isnull(a.nominal,0)-isnull(b.nominal,0)) as deposito"),
+            ) 
+            ->leftjoin(DB::raw($temppengeluarantrucking . "  as b "), 'b.supir_id', 'a.supir_id')
+            ->first();
             if ($deposito != '') {
                 $sisaDeposito = $deposito->deposito;
             }
@@ -3060,12 +3117,24 @@ class GajiSupirHeader extends MyModel
             $table->string('suratpengantar_nobukti', 50)->nullable();
             $table->bigInteger('furut')->nullable();
         });
-        $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
-            ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,ROW_NUMBER() OVER(PARTITION BY c.nobukti ORDER BY b.tglbukti,b.nobukti,a.id) as furut"))
 
-            ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
-            ->join(db::raw("suratpengantar as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.nobukti')
-            ->where('a.nobukti', $gajiSupirHeader->nobukti);
+        if ($cabang == 'MEDAN') {
+
+            $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
+                ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,ROW_NUMBER() OVER(PARTITION BY c.nobukti ORDER BY b.tglbukti,b.nobukti,a.ritasi_nobukti,a.id) as furut"))
+
+                ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+                ->join(db::raw("suratpengantar as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.nobukti')
+                ->where('a.nobukti', $gajiSupirHeader->nobukti);
+        } else {
+            $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
+                ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,ROW_NUMBER() OVER(PARTITION BY c.nobukti ORDER BY b.tglbukti,b.nobukti,a.id) as furut"))
+
+                ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+                ->join(db::raw("suratpengantar as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.nobukti')
+                ->where('a.nobukti', $gajiSupirHeader->nobukti);
+        }
+
 
         DB::table($tempnourut)->insertUsing([
             'id',
@@ -3501,12 +3570,21 @@ class GajiSupirHeader extends MyModel
             $table->string('suratpengantar_nobukti', 50)->nullable();
             $table->bigInteger('furut')->nullable();
         });
-        $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
-            ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,ROW_NUMBER() OVER(PARTITION BY c.nobukti ORDER BY b.tglbukti,b.nobukti,a.id) as furut"))
+        if ($cabang == 'MEDAN') {
+            $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
+                ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,ROW_NUMBER() OVER(PARTITION BY c.nobukti ORDER BY b.tglbukti,b.nobukti,a.ritasi_nobukti,a.id) as furut"))
 
-            ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
-            ->join(db::raw("suratpengantar as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.nobukti')
-            ->where('a.nobukti', $gajiSupirHeader->nobukti);
+                ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+                ->join(db::raw("suratpengantar as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.nobukti')
+                ->where('a.nobukti', $gajiSupirHeader->nobukti);
+        } else {
+            $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
+                ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,ROW_NUMBER() OVER(PARTITION BY c.nobukti ORDER BY b.tglbukti,b.nobukti,a.id) as furut"))
+
+                ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+                ->join(db::raw("suratpengantar as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.nobukti')
+                ->where('a.nobukti', $gajiSupirHeader->nobukti);
+        }
         DB::table($tempnourut)->insertUsing([
             'id',
             'nobukti',

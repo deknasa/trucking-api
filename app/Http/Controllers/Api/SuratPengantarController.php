@@ -252,15 +252,16 @@ class SuratPengantarController extends Controller
                 'statuspenyesuaian' => $request->statuspenyesuaian,
             ];
             $suratPengantar = (new SuratPengantar())->processUpdate($suratpengantar, $data);
-            $suratPengantar->position = $this->getPosition($suratPengantar, $suratPengantar->getTable())->position;
-            if ($request->limit == 0) {
-                $suratPengantar->page = ceil($suratPengantar->position / (10));
-            } else {
-                $suratPengantar->page = ceil($suratPengantar->position / ($request->limit ?? 10));
-            }
+            // $suratPengantar->position = $this->getPosition($suratPengantar, $suratPengantar->getTable())->position;
+            // if ($request->limit == 0) {
+            //     $suratPengantar->page = ceil($suratPengantar->position / (10));
+            // } else {
+            //     $suratPengantar->page = ceil($suratPengantar->position / ($request->limit ?? 10));
+            // }
             // $suratPengantar->position = $suratpengantar->id;
-            // $suratPengantar->page = 1;
-
+            $suratPengantar->page = request()->page;
+            $suratPengantar->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $suratPengantar->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 
@@ -302,6 +303,8 @@ class SuratPengantarController extends Controller
             } else {
                 $suratPengantar->page = ceil($suratPengantar->position / ($request->limit ?? 10));
             }
+            $suratPengantar->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $suratPengantar->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 

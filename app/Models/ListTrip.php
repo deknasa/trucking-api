@@ -1556,12 +1556,29 @@ class ListTrip extends MyModel
         $statusApproval = (new Parameter())->cekId('STATUS APPROVAL', 'STATUS APPROVAL', 'APPROVAL');
         $statusNonApproval = (new Parameter())->cekId('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
         $buktiNon = [];
-        for ($i = 0; $i < count($data['nobukti']); $i++) {
-            $nobukti = $data['nobukti'][$i];
-            $nomor = substr($data['nobukti'][$i], 0, 3);
-            // dd($nomor);
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temp, function ($table) {
+            $table->string('nobukti')->nullable();
+        });
+        $nobuktitrip = json_encode($data['rincian_nobukti'], true);
+        $query = db::table('a')->from(db::raw("OPENJSON ('$nobuktitrip')"))
+            ->select(db::raw("[value] as nobukti"))
+            ->groupBy('value');
+            DB::table($temp)->insertUsing(['nobukti'], $query);
+
+        $nobuktitrip = json_encode($data['rincian_ritasi'], true);
+        $query = db::table('a')->from(db::raw("OPENJSON ('$nobuktitrip')"))
+            ->select(db::raw("[value] as nobukti"))
+            ->where('value', '!=', '-');
+
+        DB::table($temp)->insertUsing(['nobukti'], $query);
+        $datatrip = DB::table($temp)->get();
+        foreach ($datatrip as $row => $value) {
+            $nobukti = $value->nobukti;
+            $nomor = substr($nobukti, 0, 3);
             if ($nomor == 'RTT') {
                 $getRitasi = DB::table("ritasi")->from(DB::raw("ritasi with (readuncommitted)"))->where('nobukti', $nobukti)->first()->id ?? 0;
+
                 if ($getRitasi != 0) {
                     $ritasi = Ritasi::lockForUpdate()->findOrFail($getRitasi);
 
@@ -1585,7 +1602,8 @@ class ListTrip extends MyModel
                         ]);
                     }
                 }
-            } else {
+            } 
+            if ($nomor == 'TRP') {
                 $getSuratpengantar = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('nobukti', $nobukti)->first()->id ?? 0;
                 if ($getSuratpengantar != 0) {
                     $suratPengantar = SuratPengantar::lockForUpdate()->findOrFail($getSuratpengantar);
@@ -1613,59 +1631,59 @@ class ListTrip extends MyModel
             }
         }
 
-        if (count($buktiNon) > 0) {
+        // if (count($buktiNon) > 0) {
 
 
-            $requestData = json_encode($data['nobukti']);
-            $query = db::table('a')->from(DB::raw("OPENJSON ('$requestData')"))
-                ->select(db::raw("[value]"))
-                ->groupBy('value');
+        //     $requestData = json_encode($data['nobukti']);
+        //     $query = db::table('a')->from(DB::raw("OPENJSON ('$requestData')"))
+        //         ->select(db::raw("[value]"))
+        //         ->groupBy('value');
 
-            $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($temp, function ($table) {
-                $table->string('value')->nullable();
-            });
-            DB::table($temp)->insertUsing(['value'], $query);
+        //     $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        //     Schema::create($temp, function ($table) {
+        //         $table->string('value')->nullable();
+        //     });
+        //     DB::table($temp)->insertUsing(['value'], $query);
 
-            $trip = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
-                ->select('a.nobukti')
-                ->join(db::raw("$temp as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.value')
-                ->groupBy('a.nobukti');
+        //     $trip = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
+        //         ->select('a.nobukti')
+        //         ->join(db::raw("$temp as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.value')
+        //         ->groupBy('a.nobukti');
 
-            $temptrip = '##temptrip' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($temptrip, function ($table) {
-                $table->string('nobukti')->nullable();
-            });
-            DB::table($temptrip)->insertUsing(['nobukti'], $trip);
+        //     $temptrip = '##temptrip' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        //     Schema::create($temptrip, function ($table) {
+        //         $table->string('nobukti')->nullable();
+        //     });
+        //     DB::table($temptrip)->insertUsing(['nobukti'], $trip);
 
-            $ritasi = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
-                ->select('a.nobukti')
-                ->join(db::raw("$temp as b with (readuncommitted)"), 'a.ritasi_nobukti', 'b.value')
-                ->leftJoin(db::raw("$temptrip as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
-                ->whereRaw("isnull(c.nobukti,'')=''")
-                ->groupBy('a.nobukti');
-            DB::table($temptrip)->insertUsing(['nobukti'], $ritasi);
+        //     $ritasi = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
+        //         ->select('a.nobukti')
+        //         ->join(db::raw("$temp as b with (readuncommitted)"), 'a.ritasi_nobukti', 'b.value')
+        //         ->leftJoin(db::raw("$temptrip as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+        //         ->whereRaw("isnull(c.nobukti,'')=''")
+        //         ->groupBy('a.nobukti');
+        //     DB::table($temptrip)->insertUsing(['nobukti'], $ritasi);
 
-            $statusCetak = (new Parameter())->cekId('STATUSCETAK', 'STATUSCETAK', 'CETAK');
-            $getRic = DB::table("gajisupirheader")->from(DB::raw("gajisupirheader as a with (readuncommitted)"))
-                ->select('a.id', 'a.nobukti')
-                ->join(DB::raw("$temptrip as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-                ->where('a.statuscetak', $statusCetak)
-                ->get();
+        //     $statusCetak = (new Parameter())->cekId('STATUSCETAK', 'STATUSCETAK', 'CETAK');
+        //     $getRic = DB::table("gajisupirheader")->from(DB::raw("gajisupirheader as a with (readuncommitted)"))
+        //         ->select('a.id', 'a.nobukti')
+        //         ->join(DB::raw("$temptrip as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+        //         ->where('a.statuscetak', $statusCetak)
+        //         ->get();
 
-            if (count($getRic) > 0) {
-                foreach ($getRic as $row => $value) {
-                    $tableId[] = $value->id;
-                    $bukti[] = $value->nobukti;
-                }
-                $dataBukaCetak = [
-                    'tableId' => $tableId,
-                    'bukti' => $bukti,
-                    'table' => 'GAJISUPIRHEADER'
-                ];
-                (new ApprovalBukaCetak())->processStore($dataBukaCetak);
-            }
-        }
+        //     if (count($getRic) > 0) {
+        //         foreach ($getRic as $row => $value) {
+        //             $tableId[] = $value->id;
+        //             $bukti[] = $value->nobukti;
+        //         }
+        //         $dataBukaCetak = [
+        //             'tableId' => $tableId,
+        //             'bukti' => $bukti,
+        //             'table' => 'GAJISUPIRHEADER'
+        //         ];
+        //         (new ApprovalBukaCetak())->processStore($dataBukaCetak);
+        //     }
+        // }
         return $data;
     }
 }

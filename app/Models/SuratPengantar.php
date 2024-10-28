@@ -1234,24 +1234,28 @@ class SuratPengantar extends MyModel
             Schema::create($tempparameter, function ($table) {
                 $table->unsignedBigInteger('id')->nullable();
                 $table->longtext('memo')->nullable();
+                $table->longtext('text')->nullable();
                 $table->index('id', 'tempparameter_id_index');
             });
 
             $queryparameter = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
                 ->select(
                     'a.id',
-                    'a.memo'
+                    'a.memo',
+                    'a.text'
                 )
                 ->orderby('a.id');
 
             DB::table($tempparameter)->insert([
                 'id' => 0,
                 'memo' => '',
+                'text' => '',
             ]);
 
             DB::table($tempparameter)->insertUsing([
                 'id',
-                'memo'
+                'memo',
+                'text'
             ], $queryparameter);
 
             // tarif
@@ -1394,16 +1398,25 @@ class SuratPengantar extends MyModel
                 $table->longtext('gandengan_id')->nullable();
                 $table->longtext('gandenganid')->nullable();
                 $table->longtext('statuslongtrip')->nullable();
+                $table->longtext('statuslongtriptext')->nullable();
+                $table->longtext('statuslangsir')->nullable();
+                $table->longtext('statuslangsirtext')->nullable();
                 $table->longtext('statusperalihan')->nullable();
+                $table->longtext('statusperalihantext')->nullable();
                 $table->longtext('statusritasiomset')->nullable();
                 $table->longtext('statusapprovaleditsuratpengantar')->nullable();
+                $table->longtext('statusapprovaleditsuratpengantartext')->nullable();
                 $table->longtext('statusapprovalbiayatitipanemkl')->nullable();
+                $table->longtext('statusapprovalbiayatitipanemkltext')->nullable();
                 $table->longtext('tarif_id')->nullable();
                 $table->longtext('mandortrado_id')->nullable();
                 $table->longtext('mandorsupir_id')->nullable();
                 $table->longtext('statustolakan')->nullable();
+                $table->longtext('statustolakantext')->nullable();
                 $table->longtext('statusgudangsama')->nullable();
+                $table->longtext('statusgudangsamatext')->nullable();
                 $table->longtext('statusbatalmuat')->nullable();
+                $table->longtext('statusbatalmuattext')->nullable();
                 $table->longtext('userapprovaleditsuratpengantar')->nullable();
                 $table->longtext('userapprovalbiayatitipanemkl')->nullable();
                 $table->date('tglapprovaleditsuratpengantar')->nullable();
@@ -1416,7 +1429,9 @@ class SuratPengantar extends MyModel
                 $table->longtext('prosesgajisupir_nobukti')->nullable();
                 $table->longtext('invoice_nobukti')->nullable();
                 $table->longtext('statusgajisupir')->nullable();
+                $table->longtext('statusgajisupirtext')->nullable();
                 $table->longtext('statusinvoice')->nullable();
+                $table->longtext('statusinvoicetext')->nullable();
                 $table->date('tgldariorderantrucking')->nullable();
                 $table->date('tglsampaiorderantrucking')->nullable();
                 $table->date('tgldarigajisupirheader')->nullable();
@@ -1424,6 +1439,7 @@ class SuratPengantar extends MyModel
                 $table->date('tgldariinvoiceheader')->nullable();
                 $table->date('tglsampaiinvoiceheader')->nullable();
                 $table->longtext('statusapprovalbiayaextra')->nullable();
+                $table->longtext('statusapprovalbiayaextratext')->nullable();
                 $table->longtext('userapprovalbiayaextra')->nullable();
                 $table->date('tglapprovalbiayaextra')->nullable();
                 $table->date('tglbatasapprovalbiayaextra')->nullable();
@@ -1470,16 +1486,25 @@ class SuratPengantar extends MyModel
                     'gandengan.keterangan as gandengan_id',
                     'gandengan.id as gandenganid',
                     'statuslongtrip.memo as statuslongtrip',
+                    'statuslongtrip.text as statuslongtriptext',
+                    'statuslangsir.memo as statuslangsir',
+                    'statuslangsir.text as statuslangsirtext',
                     'statusperalihan.memo as statusperalihan',
+                    'statusperalihan.text as statusperalihantext',
                     'statusritasiomset.memo as statusritasiomset',
                     'statusapprovaleditsuratpengantar.memo as statusapprovaleditsuratpengantar',
+                    'statusapprovaleditsuratpengantar.text as statusapprovaleditsuratpengantartext',
                     'statusapprovalbiayatitipanemkl.memo as statusapprovalbiayatitipanemkl',
+                    'statusapprovalbiayatitipanemkl.text as statusapprovalbiayatitipanemkltext',
                     'tarif.tujuan as tarif_id',
                     'mandortrado.namamandor as mandortrado_id',
                     'mandorsupir.namamandor as mandorsupir_id',
                     'statustolakan.memo as statustolakan',
+                    'statustolakan.text as statustolakantext',
                     'statusgudangsama.memo as statusgudangsama',
+                    'statusgudangsama.text as statusgudangsamatext',
                     'statusbatalmuat.memo as statusbatalmuat',
+                    'statusbatalmuat.text as statusbatalmuattext',
                     'suratpengantar.userapprovaleditsuratpengantar',
                     'suratpengantar.userapprovalbiayatitipanemkl',
                     DB::raw("(case when year(isnull(suratpengantar.tglapprovaleditsuratpengantar,'1900/1/1'))<2000 then null else suratpengantar.tglapprovaleditsuratpengantar end) as tglapprovaleditsuratpengantar"),
@@ -1492,7 +1517,9 @@ class SuratPengantar extends MyModel
                     'suratpengantar.prosesgajisupir_nobukti',
                     'suratpengantar.invoice_nobukti',
                     'statusgajisupir.memo as statusgajisupir',
+                    'statusgajisupir.text as statusgajisupirtext',
                     'statusinvoice.memo as statusinvoice',
+                    'statusinvoice.text as statusinvoicetext',
                     db::raw("cast((format(orderantrucking.tglbukti,'yyyy/MM')+'/1') as date) as tgldariorderantrucking"),
                     db::raw("cast(cast(format((cast((format(orderantrucking.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiorderantrucking"),
                     db::raw("cast((format(gajisupirheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldarigajisupirheader"),
@@ -1501,6 +1528,7 @@ class SuratPengantar extends MyModel
                     db::raw("cast(cast(format((cast((format(invoiceheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiinvoiceheader"),
 
                     'statusapprovalbiayaextra.memo as statusapprovalbiayaextra',
+                    'statusapprovalbiayaextra.text as statusapprovalbiayaextratext',
                     'suratpengantar.userapprovalbiayaextra',
                     DB::raw("(case when year(isnull(suratpengantar.tglapprovalbiayaextra,'1900/1/1'))<2000 then null else suratpengantar.tglapprovalbiayaextra end) as tglapprovalbiayaextra"),
                     DB::raw("(case when year(isnull(suratpengantar.tglbatasapprovalbiayaextra,'1900/1/1 00:00:00.000'))<2000 then null else suratpengantar.tglbatasapprovalbiayaextra end) as tglbatasapprovalbiayaextra"),
@@ -1517,6 +1545,7 @@ class SuratPengantar extends MyModel
                 ->Join(db::raw($tempsupir . " as supir"), db::raw("isnull(suratpengantar.supir_id,0)"), 'supir.id')
                 ->Join(db::raw($tempgandengan . " as gandengan"), db::raw("isnull(suratpengantar.gandengan_id,0)"), 'gandengan.id')
                 ->Join(db::raw($tempparameter . " as statuslongtrip"), db::raw("isnull(suratpengantar.statuslongtrip,0)"), 'statuslongtrip.id')
+                ->Join(db::raw($tempparameter . " as statuslangsir"), db::raw("isnull(suratpengantar.statuslangsir,0)"), 'statuslangsir.id')
                 ->Join(db::raw($tempparameter . " as statusperalihan"), db::raw("isnull(suratpengantar.statusperalihan,0)"), 'statusperalihan.id')
                 ->Join(db::raw($tempparameter . " as statusritasiomset"), db::raw("isnull(suratpengantar.statusritasiomset,0)"), 'statusritasiomset.id')
                 ->Join(db::raw($tempparameter . " as statusgudangsama"), db::raw("isnull(suratpengantar.statusgudangsama,0)"), 'statusgudangsama.id')
@@ -1572,16 +1601,25 @@ class SuratPengantar extends MyModel
                 'gandengan_id',
                 'gandenganid',
                 'statuslongtrip',
+                'statuslongtriptext',
+                'statuslangsir',
+                'statuslangsirtext',
                 'statusperalihan',
+                'statusperalihantext',
                 'statusritasiomset',
                 'statusapprovaleditsuratpengantar',
+                'statusapprovaleditsuratpengantartext',
                 'statusapprovalbiayatitipanemkl',
+                'statusapprovalbiayatitipanemkltext',
                 'tarif_id',
                 'mandortrado_id',
                 'mandorsupir_id',
                 'statustolakan',
+                'statustolakantext',
                 'statusgudangsama',
+                'statusgudangsamatext',
                 'statusbatalmuat',
+                'statusbatalmuattext',
                 'userapprovaleditsuratpengantar',
                 'userapprovalbiayatitipanemkl',
                 'tglapprovaleditsuratpengantar',
@@ -1594,7 +1632,9 @@ class SuratPengantar extends MyModel
                 'prosesgajisupir_nobukti',
                 'invoice_nobukti',
                 'statusgajisupir',
+                'statusgajisupirtext',
                 'statusinvoice',
+                'statusinvoicetext',
                 'tgldariorderantrucking',
                 'tglsampaiorderantrucking',
                 'tgldarigajisupirheader',
@@ -1602,6 +1642,7 @@ class SuratPengantar extends MyModel
                 'tgldariinvoiceheader',
                 'tglsampaiinvoiceheader',
                 'statusapprovalbiayaextra',
+                'statusapprovalbiayaextratext',
                 'userapprovalbiayaextra',
                 'tglapprovalbiayaextra',
                 'tglbatasapprovalbiayaextra',
@@ -1662,6 +1703,7 @@ class SuratPengantar extends MyModel
                 'suratpengantar.gandengan_id',
                 'suratpengantar.gandenganid',
                 'suratpengantar.statuslongtrip',
+                'suratpengantar.statuslangsir',
                 'suratpengantar.statusperalihan',
                 'suratpengantar.statusritasiomset',
                 'suratpengantar.statusapprovaleditsuratpengantar',
@@ -2922,6 +2964,7 @@ class SuratPengantar extends MyModel
             $table->unsignedBigInteger('supir_id')->nullable();
             $table->unsignedBigInteger('gandengan_id')->nullable();
             $table->integer('statuslongtrip')->length(11)->nullable();
+            $table->integer('statuslangsir')->length(11)->nullable();
             $table->integer('statusperalihan')->length(11)->nullable();
             $table->integer('statusritasiomset')->length(11)->nullable();
             $table->integer('statusapprovaleditsuratpengantar')->Length(11)->nullable();
@@ -3008,6 +3051,7 @@ class SuratPengantar extends MyModel
                 'suratpengantar.supir_id',
                 'suratpengantar.gandengan_id',
                 'suratpengantar.statuslongtrip',
+                'suratpengantar.statuslangsir',
                 'suratpengantar.statusperalihan',
                 'suratpengantar.statusritasiomset',
                 'suratpengantar.statusapprovaleditsuratpengantar',
@@ -3039,9 +3083,9 @@ class SuratPengantar extends MyModel
             )
             ->leftJoin(DB::raw("$tempspric as b with (readuncommitted)"), 'suratpengantar.nobukti', 'b.suratpengantar_nobukti')
             ->leftJoin(DB::raw("invoicedetail as c with (readuncommitted)"), 'suratpengantar.jobtrucking', 'c.orderantrucking_nobukti');
-            if (request()->tgldariheader) {
-                $querysuratpengantar->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-            }
+        if (request()->tgldariheader) {
+            $querysuratpengantar->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+        }
 
         DB::table($tempsuratpengantar)->insertUsing([
             'id',
@@ -3074,6 +3118,7 @@ class SuratPengantar extends MyModel
             'supir_id',
             'gandengan_id',
             'statuslongtrip',
+            'statuslangsir',
             'statusperalihan',
             'statusritasiomset',
             'statusapprovaleditsuratpengantar',
@@ -3107,7 +3152,7 @@ class SuratPengantar extends MyModel
 
 
 
-        return DB::table($tempsuratpengantar)->from(DB::raw("$tempsuratpengantar as suratpengantar"))->select(
+        $query = DB::table($tempsuratpengantar)->from(DB::raw("$tempsuratpengantar as suratpengantar"))->select(
             DB::raw(
                 "suratpengantar.id,
                 suratpengantar.nobukti,
@@ -3139,16 +3184,25 @@ class SuratPengantar extends MyModel
                 supir.namasupir as supir_id,
                 gandengan.keterangan as gandengan_id,
                 statuslongtrip.memo as statuslongtrip,
+                statuslongtrip.text as statuslongtriptext,
+                statuslangsir.memo as statuslangsir,
+                statuslangsir.text as statuslangsirtext,
                 statusperalihan.memo as statusperalihan,
+                statusperalihan.text as statusperalihantext,
                 statusritasiomset.memo as statusritasiomset,
                 statusapprovaleditsuratpengantar.memo as statusapprovaleditsuratpengantar,
+                statusapprovaleditsuratpengantar.text as statusapprovaleditsuratpengantartext,
                 statusapprovalbiayatitipanemkl.memo as statusapprovalbiayatitipanemkl,
+                statusapprovalbiayatitipanemkl.text as statusapprovalbiayatitipanemkltext,
                 tarif.tujuan as tarif_id,
                 mandortrado.namamandor as mandortrado_id,
                 mandorsupir.namamandor as mandorsupir_id,
                 statustolakan.memo as statustolakan,
+                statustolakan.text as statustolakantext,
                 statusgudangsama.memo as statusgudangsama,
+                statusgudangsama.text as statusgudangsamatext,
                 statusbatalmuat.memo as statusbatalmuat,
+                statusbatalmuat.text as statusbatalmuattext,
                 suratpengantar.userapprovaleditsuratpengantar,
                 suratpengantar.userapprovalbiayatitipanemkl,
                 suratpengantar.tglapprovaleditsuratpengantar,
@@ -3161,8 +3215,11 @@ class SuratPengantar extends MyModel
                 suratpengantar.created_at,
                 suratpengantar.updated_at,
                 statusgajisupir.memo as statusgajisupir,
+                statusgajisupir.text as statusgajisupirtext,
                 statusinvoice.memo as statusinvoice,
+                statusinvoice.text as statusinvoicetext,
                 statusapprovalbiayaextra.memo as statusapprovalbiayaextra,
+                statusapprovalbiayaextra.text as statusapprovalbiayaextratext,
                 suratpengantar.userapprovalbiayaextra,
                 suratpengantar.tglapprovalbiayaextra,
                 suratpengantar.tglbatasapprovalbiayaextra
@@ -3182,6 +3239,7 @@ class SuratPengantar extends MyModel
             ->leftJoin('supir', 'suratpengantar.supir_id', 'supir.id')
             ->leftJoin('gandengan', 'suratpengantar.gandengan_id', 'gandengan.id')
             ->leftJoin('parameter as statuslongtrip', 'suratpengantar.statuslongtrip', 'statuslongtrip.id')
+            ->leftJoin('parameter as statuslangsir', 'suratpengantar.statuslangsir', 'statuslangsir.id')
             ->leftJoin('parameter as statusperalihan', 'suratpengantar.statusperalihan', 'statusperalihan.id')
             ->leftJoin('parameter as statusritasiomset', 'suratpengantar.statusritasiomset', 'statusritasiomset.id')
             ->leftJoin('parameter as statusgudangsama', 'suratpengantar.statusgudangsama', 'statusgudangsama.id')
@@ -3197,6 +3255,222 @@ class SuratPengantar extends MyModel
             // ->leftJoin(DB::raw("gajisupirdetail as b with (readuncommitted)"), 'suratpengantar.nobukti', 'b.suratpengantar_nobukti')
             // ->leftJoin(DB::raw("invoicedetail as c with (readuncommitted)"), 'suratpengantar.jobtrucking', 'c.orderantrucking_nobukti')
             ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id');
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->string('jobtrucking', 50)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->string('nosp', 50)->nullable();
+            $table->date('tglsp')->nullable();
+            $table->string('nojob', 100)->nullable();
+            $table->string('pelanggan_id')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('dari_id')->nullable();
+            $table->string('sampai_id')->nullable();
+            $table->string('penyesuaian')->nullable();
+            $table->float('gajisupir')->nullable();
+            $table->decimal('jarak')->nullable();
+            $table->string('agen_id')->nullable();
+            $table->string('jenisorder_id')->nullable();
+            $table->string('container_id')->nullable();
+            $table->string('nocont', 50)->nullable();
+            $table->string('nocont2', 50)->nullable();
+            $table->string('noseal', 50)->nullable();
+            $table->string('noseal2', 50)->nullable();
+            $table->float('omset')->nullable();
+            $table->float('nominalperalihan')->nullable();
+            $table->float('totalomset')->nullable();
+            $table->string('statuscontainer_id')->nullable();
+            $table->string('gudang')->nullable();
+            $table->string('trado_id')->nullable();
+            $table->string('supir_id')->nullable();
+            $table->string('gandengan_id')->nullable();
+            $table->longText('statuslongtrip')->nullable();
+            $table->longText('statuslongtriptext')->nullable();
+            $table->longText('statuslangsir')->nullable();
+            $table->longText('statuslangsirtext')->nullable();
+            $table->longText('statusperalihan')->nullable();
+            $table->longText('statusperalihantext')->nullable();
+            $table->longText('statusritasiomset')->nullable();
+            $table->longText('statusapprovaleditsuratpengantar')->nullable();
+            $table->longText('statusapprovaleditsuratpengantartext')->nullable();
+            $table->longText('statusapprovalbiayatitipanemkl')->nullable();
+            $table->longText('statusapprovalbiayatitipanemkltext')->nullable();
+            $table->string('tarif_id')->nullable();
+            $table->string('mandortrado_id')->nullable();
+            $table->string('mandorsupir_id')->nullable();
+            $table->longText('statustolakan')->nullable();
+            $table->longText('statustolakantext')->nullable();
+            $table->longText('statusgudangsama')->nullable();
+            $table->longText('statusgudangsamatext')->nullable();
+            $table->longText('statusbatalmuat')->nullable();
+            $table->longText('statusbatalmuattext')->nullable();
+            $table->string('userapprovaleditsuratpengantar')->nullable();
+            $table->string('userapprovalbiayatitipanemkl')->nullable();
+            $table->date('tglapprovaleditsuratpengantar')->nullable();
+            $table->dateTime('tglbataseditsuratpengantar')->nullable();
+            $table->date('tglapprovalbiayatitipanemkl')->nullable();
+            $table->string('gajisupir_nobukti')->nullable();
+            $table->string('prosesgajisupir_nobukti')->nullable();
+            $table->longText('invoice_nobukti')->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
+            $table->longText('statusgajisupir')->nullable();
+            $table->longText('statusgajisupirtext')->nullable();
+            $table->longText('statusinvoice')->nullable();
+            $table->longText('statusinvoicetext')->nullable();
+            $table->longText('statusapprovalbiayaextra')->nullable();
+            $table->longText('statusapprovalbiayaextratext')->nullable();
+            $table->string('userapprovalbiayaextra', 50)->nullable();
+            $table->date('tglapprovalbiayaextra')->nullable();
+            $table->datetime('tglbatasapprovalbiayaextra')->nullable();
+        });
+        DB::table($temp)->insertUsing([
+            'id',
+            'nobukti',
+            'jobtrucking',
+            'tglbukti',
+            'nosp',
+            'tglsp',
+            'nojob',
+            'pelanggan_id',
+            'keterangan',
+            'dari_id',
+            'sampai_id',
+            'penyesuaian',
+            'gajisupir',
+            'jarak',
+            'agen_id',
+            'jenisorder_id',
+            'container_id',
+            'nocont',
+            'nocont2',
+            'noseal',
+            'noseal2',
+            'omset',
+            'nominalperalihan',
+            'totalomset',
+            'statuscontainer_id',
+            'gudang',
+            'trado_id',
+            'supir_id',
+            'gandengan_id',
+            'statuslongtrip',
+            'statuslongtriptext',
+            'statuslangsir',
+            'statuslangsirtext',
+            'statusperalihan',
+            'statusperalihantext',
+            'statusritasiomset',
+            'statusapprovaleditsuratpengantar',
+            'statusapprovaleditsuratpengantartext',
+            'statusapprovalbiayatitipanemkl',
+            'statusapprovalbiayatitipanemkltext',
+            'tarif_id',
+            'mandortrado_id',
+            'mandorsupir_id',
+            'statustolakan',
+            'statustolakantext',
+            'statusgudangsama',
+            'statusgudangsamatext',
+            'statusbatalmuat',
+            'statusbatalmuattext',
+            'userapprovaleditsuratpengantar',
+            'userapprovalbiayatitipanemkl',
+            'tglapprovaleditsuratpengantar',
+            'tglbataseditsuratpengantar',
+            'tglapprovalbiayatitipanemkl',
+            'gajisupir_nobukti',
+            'prosesgajisupir_nobukti',
+            'invoice_nobukti',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+            'statusgajisupir',
+            'statusgajisupirtext',
+            'statusinvoice',
+            'statusinvoicetext',
+            'statusapprovalbiayaextra',
+            'statusapprovalbiayaextratext',
+            'userapprovalbiayaextra',
+            'tglapprovalbiayaextra',
+            'tglbatasapprovalbiayaextra'
+        ], $query);
+
+        return DB::table($temp)->from(DB::raw("$temp as suratpengantar with (readuncommitted)"))
+            ->select(
+                'suratpengantar.id',
+                'suratpengantar.nobukti',
+                'suratpengantar.jobtrucking',
+                'suratpengantar.tglbukti',
+                'suratpengantar.nosp',
+                'suratpengantar.tglsp',
+                'suratpengantar.nojob',
+                'suratpengantar.pelanggan_id',
+                'suratpengantar.keterangan',
+                'suratpengantar.dari_id',
+                'suratpengantar.sampai_id',
+                'suratpengantar.penyesuaian',
+                'suratpengantar.gajisupir',
+                'suratpengantar.jarak',
+                'suratpengantar.agen_id',
+                'suratpengantar.jenisorder_id',
+                'suratpengantar.container_id',
+                'suratpengantar.nocont',
+                'suratpengantar.nocont2',
+                'suratpengantar.noseal',
+                'suratpengantar.noseal2',
+                'suratpengantar.omset',
+                'suratpengantar.nominalperalihan',
+                'suratpengantar.totalomset',
+                'suratpengantar.statuscontainer_id',
+                'suratpengantar.gudang',
+                'suratpengantar.trado_id',
+                'suratpengantar.supir_id',
+                'suratpengantar.gandengan_id',
+                'suratpengantar.statuslongtrip',
+                'suratpengantar.statuslongtriptext',
+                'suratpengantar.statuslangsir',
+                'suratpengantar.statuslangsirtext',
+                'suratpengantar.statusperalihan',
+                'suratpengantar.statusperalihantext',
+                'suratpengantar.statusritasiomset',
+                'suratpengantar.statusapprovaleditsuratpengantar',
+                'suratpengantar.statusapprovaleditsuratpengantartext',
+                'suratpengantar.statusapprovalbiayatitipanemkl',
+                'suratpengantar.statusapprovalbiayatitipanemkltext',
+                'suratpengantar.tarif_id',
+                'suratpengantar.mandortrado_id',
+                'suratpengantar.mandorsupir_id',
+                'suratpengantar.statustolakan',
+                'suratpengantar.statustolakantext',
+                'suratpengantar.statusgudangsama',
+                'suratpengantar.statusgudangsamatext',
+                'suratpengantar.statusbatalmuat',
+                'suratpengantar.statusbatalmuattext',
+                'suratpengantar.userapprovaleditsuratpengantar',
+                'suratpengantar.userapprovalbiayatitipanemkl',
+                'suratpengantar.tglapprovaleditsuratpengantar',
+                'suratpengantar.tglbataseditsuratpengantar',
+                'suratpengantar.tglapprovalbiayatitipanemkl',
+                'suratpengantar.gajisupir_nobukti',
+                'suratpengantar.prosesgajisupir_nobukti',
+                'suratpengantar.invoice_nobukti',
+                'suratpengantar.modifiedby',
+                'suratpengantar.created_at',
+                'suratpengantar.updated_at',
+                'suratpengantar.statusgajisupir',
+                'suratpengantar.statusgajisupirtext',
+                'suratpengantar.statusinvoice',
+                'suratpengantar.statusinvoicetext',
+                'suratpengantar.statusapprovalbiayaextra',
+                'suratpengantar.statusapprovalbiayaextratext',
+                'suratpengantar.userapprovalbiayaextra',
+                'suratpengantar.tglapprovalbiayaextra',
+                'suratpengantar.tglbatasapprovalbiayaextra'
+            );
     }
 
     public function getpelabuhan($id)
@@ -3404,7 +3678,9 @@ class SuratPengantar extends MyModel
                 $table->string('supir_id')->nullable();
                 $table->string('gandengan_id')->nullable();
                 $table->longText('statuslongtrip')->nullable();
+                $table->longText('statuslongtriptext')->nullable();
                 $table->longText('statusperalihan')->nullable();
+                $table->longText('statusperalihantext')->nullable();
                 $table->longText('statusritasiomset')->nullable();
                 $table->longText('statusapprovalmandor')->nullable();
                 $table->longText('statusapprovalmandortext')->nullable();
@@ -3414,7 +3690,9 @@ class SuratPengantar extends MyModel
                 $table->string('mandortrado_id')->nullable();
                 $table->string('mandorsupir_id')->nullable();
                 $table->longText('statusgudangsama')->nullable();
+                $table->longText('statusgudangsamatext')->nullable();
                 $table->longText('statusbatalmuat')->nullable();
+                $table->longText('statusbatalmuattext')->nullable();
                 $table->string('modifiedby')->nullable();
                 $table->dateTime('created_at')->nullable();
                 $table->dateTime('updated_at')->nullable();
@@ -3422,6 +3700,7 @@ class SuratPengantar extends MyModel
                 $table->string('gajisupir_nobukti', 500)->nullable();
                 $table->string('prosesgajisupir_nobukti', 500)->nullable();
                 $table->longText('statusgajisupir')->nullable();
+                $table->longText('statusgajisupirtext')->nullable();
                 $table->date('tgldarigajisupirheader')->nullable();
                 $table->date('tglsampaigajisupirheader')->nullable();
                 $table->date('tgldariebs')->nullable();
@@ -3454,7 +3733,9 @@ class SuratPengantar extends MyModel
                 'supir.namasupir as supir_id',
                 'gandengan.keterangan as gandengan_id',
                 'statuslongtrip.memo as statuslongtrip',
+                'statuslongtrip.text as statuslongtriptext',
                 'statusperalihan.memo as statusperalihan',
+                'statusperalihan.text as statusperalihantext',
                 'statusritasiomset.memo as statusritasiomset',
                 'statusapprovalmandor.memo as statusapprovalmandor',
                 'statusapprovalmandor.text as statusapprovalmandortext',
@@ -3464,7 +3745,9 @@ class SuratPengantar extends MyModel
                 'mandortrado.namamandor as mandortrado_id',
                 'mandorsupir.namamandor as mandorsupir_id',
                 'statusgudangsama.memo as statusgudangsama',
+                'statusgudangsama.text as statusgudangsamatext',
                 'statusbatalmuat.memo as statusbatalmuat',
+                'statusbatalmuat.text as statusbatalmuattext',
                 'suratpengantar.modifiedby',
                 'suratpengantar.created_at',
                 'suratpengantar.updated_at',
@@ -3537,7 +3820,9 @@ class SuratPengantar extends MyModel
                     $table->string('supir_id')->nullable();
                     $table->string('gandengan_id')->nullable();
                     $table->longText('statuslongtrip')->nullable();
+                    $table->longText('statuslongtriptext')->nullable();
                     $table->longText('statusperalihan')->nullable();
+                    $table->longText('statusperalihantext')->nullable();
                     $table->longText('statusritasiomset')->nullable();
                     $table->longText('statusapprovalmandor')->nullable();
                     $table->longText('statusapprovalmandortext')->nullable();
@@ -3547,7 +3832,9 @@ class SuratPengantar extends MyModel
                     $table->string('mandortrado_id')->nullable();
                     $table->string('mandorsupir_id')->nullable();
                     $table->longText('statusgudangsama')->nullable();
+                    $table->longText('statusgudangsamatext')->nullable();
                     $table->longText('statusbatalmuat')->nullable();
+                    $table->longText('statusbatalmuattext')->nullable();
                     $table->string('modifiedby')->nullable();
                     $table->dateTime('created_at')->nullable();
                     $table->dateTime('updated_at')->nullable();
@@ -3618,7 +3905,9 @@ class SuratPengantar extends MyModel
                     'supir_id',
                     'gandengan_id',
                     'statuslongtrip',
+                    'statuslongtriptext',
                     'statusperalihan',
+                    'statusperalihantext',
                     'statusritasiomset',
                     'statusapprovalmandor',
                     'statusapprovalmandortext',
@@ -3628,7 +3917,9 @@ class SuratPengantar extends MyModel
                     'mandortrado_id',
                     'mandorsupir_id',
                     'statusgudangsama',
+                    'statusgudangsamatext',
                     'statusbatalmuat',
+                    'statusbatalmuattext',
                     'modifiedby',
                     'created_at',
                     'updated_at',
@@ -3698,7 +3989,9 @@ class SuratPengantar extends MyModel
                     'supir.namasupir as supir_id',
                     'gandengan.keterangan as gandengan_id',
                     'statuslongtrip.memo as statuslongtrip',
+                    'statuslongtrip.text as statuslongtriptext',
                     'statusperalihan.memo as statusperalihan',
+                    'statusperalihan.text as statusperalihantext',
                     'statusritasiomset.memo as statusritasiomset',
                     'statusapprovalmandor.memo as statusapprovalmandor',
                     'statusapprovalmandor.text as statusapprovalmandortext',
@@ -3708,7 +4001,9 @@ class SuratPengantar extends MyModel
                     'mandortrado.namamandor as mandortrado_id',
                     'mandorsupir.namamandor as mandorsupir_id',
                     'statusgudangsama.memo as statusgudangsama',
+                    'statusgudangsama.text as statusgudangsamatext',
                     'statusbatalmuat.memo as statusbatalmuat',
+                    'statusbatalmuat.text as statusbatalmuattext',
                     'suratpengantar.modifiedby',
                     'suratpengantar.created_at',
                     'suratpengantar.updated_at',
@@ -3781,7 +4076,9 @@ class SuratPengantar extends MyModel
                     'supir_id',
                     'gandengan_id',
                     'statuslongtrip',
+                    'statuslongtriptext',
                     'statusperalihan',
+                    'statusperalihantext',
                     'statusritasiomset',
                     'statusapprovalmandor',
                     'statusapprovalmandortext',
@@ -3791,7 +4088,9 @@ class SuratPengantar extends MyModel
                     'mandortrado_id',
                     'mandorsupir_id',
                     'statusgudangsama',
+                    'statusgudangsamatext',
                     'statusbatalmuat',
+                    'statusbatalmuattext',
                     'modifiedby',
                     'created_at',
                     'updated_at',
@@ -3833,7 +4132,9 @@ class SuratPengantar extends MyModel
                         'a.supir_id',
                         'a.gandengan_id',
                         'a.statuslongtrip',
+                        'a.statuslongtriptext',
                         'a.statusperalihan',
+                        'a.statusperalihantext',
                         'a.statusritasiomset',
                         'a.statusapprovalmandor',
                         'a.statusapprovalmandortext',
@@ -3843,7 +4144,9 @@ class SuratPengantar extends MyModel
                         'a.mandortrado_id',
                         'a.mandorsupir_id',
                         'a.statusgudangsama',
+                        'a.statusgudangsamatext',
                         'a.statusbatalmuat',
+                        'a.statusbatalmuattext',
                         'a.modifiedby',
                         'a.created_at',
                         'a.updated_at',
@@ -3851,6 +4154,7 @@ class SuratPengantar extends MyModel
                         'a.gajisupir_nobukti',
                         'a.prosesgajisupir_nobukti',
                         'statusgajisupir.memo as statusgajisupir',
+                        'statusgajisupir.text as statusgajisupirtext',
                         'a.tgldarigajisupirheader',
                         'a.tglsampaigajisupirheader',
                         DB::raw("cast((format(prosesgajisupirheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariebs, cast(cast(format((cast((format(prosesgajisupirheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiebs")
@@ -3887,7 +4191,9 @@ class SuratPengantar extends MyModel
                     'supir_id',
                     'gandengan_id',
                     'statuslongtrip',
+                    'statuslongtriptext',
                     'statusperalihan',
+                    'statusperalihantext',
                     'statusritasiomset',
                     'statusapprovalmandor',
                     'statusapprovalmandortext',
@@ -3897,7 +4203,9 @@ class SuratPengantar extends MyModel
                     'mandortrado_id',
                     'mandorsupir_id',
                     'statusgudangsama',
+                    'statusgudangsamatext',
                     'statusbatalmuat',
+                    'statusbatalmuattext',
                     'modifiedby',
                     'created_at',
                     'updated_at',
@@ -3905,6 +4213,7 @@ class SuratPengantar extends MyModel
                     'gajisupir_nobukti',
                     'prosesgajisupir_nobukti',
                     'statusgajisupir',
+                    'statusgajisupirtext',
                     'tgldarigajisupirheader',
                     'tglsampaigajisupirheader',
                     'tgldariebs',
@@ -3940,7 +4249,9 @@ class SuratPengantar extends MyModel
                     'supir_id',
                     'gandengan_id',
                     'statuslongtrip',
+                    'statuslongtriptext',
                     'statusperalihan',
+                    'statusperalihantext',
                     'statusritasiomset',
                     'statusapprovalmandor',
                     'statusapprovalmandortext',
@@ -3950,7 +4261,9 @@ class SuratPengantar extends MyModel
                     'mandortrado_id',
                     'mandorsupir_id',
                     'statusgudangsama',
+                    'statusgudangsamatext',
                     'statusbatalmuat',
+                    'statusbatalmuattext',
                     'modifiedby',
                     'created_at',
                     'updated_at',
@@ -4105,16 +4418,25 @@ class SuratPengantar extends MyModel
             $table->string('supir_id')->nullable();
             $table->string('gandengan_id')->nullable();
             $table->longText('statuslongtrip')->nullable();
+            $table->longText('statuslongtriptext')->nullable();
+            $table->longText('statuslangsir')->nullable();
+            $table->longText('statuslangsirtext')->nullable();
             $table->longText('statusperalihan')->nullable();
+            $table->longText('statusperalihantext')->nullable();
             $table->longText('statusritasiomset')->nullable();
             $table->longText('statusapprovaleditsuratpengantar')->nullable();
+            $table->longText('statusapprovaleditsuratpengantartext')->nullable();
             $table->longText('statusapprovalbiayatitipanemkl')->nullable();
+            $table->longText('statusapprovalbiayatitipanemkltext')->nullable();
             $table->string('tarif_id')->nullable();
             $table->string('mandortrado_id')->nullable();
             $table->string('mandorsupir_id')->nullable();
             $table->longText('statustolakan')->nullable();
+            $table->longText('statustolakantext')->nullable();
             $table->longText('statusgudangsama')->nullable();
+            $table->longText('statusgudangsamatext')->nullable();
             $table->longText('statusbatalmuat')->nullable();
+            $table->longText('statusbatalmuattext')->nullable();
             $table->string('userapprovaleditsuratpengantar')->nullable();
             $table->string('userapprovalbiayatitipanemkl')->nullable();
             $table->date('tglapprovaleditsuratpengantar')->nullable();
@@ -4127,8 +4449,11 @@ class SuratPengantar extends MyModel
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
             $table->longText('statusgajisupir')->nullable();
+            $table->longText('statusgajisupirtext')->nullable();
             $table->longText('statusinvoice')->nullable();
+            $table->longText('statusinvoicetext')->nullable();
             $table->longText('statusapprovalbiayaextra')->nullable();
+            $table->longText('statusapprovalbiayaextratext')->nullable();
             $table->string('userapprovalbiayaextra', 50)->nullable();
             $table->date('tglapprovalbiayaextra')->nullable();
             $table->datetime('tglbatasapprovalbiayaextra')->nullable();
@@ -4180,16 +4505,25 @@ class SuratPengantar extends MyModel
             'supir_id',
             'gandengan_id',
             'statuslongtrip',
+            'statuslongtriptext',
+            'statuslangsir',
+            'statuslangsirtext',
             'statusperalihan',
+            'statusperalihantext',
             'statusritasiomset',
             'statusapprovaleditsuratpengantar',
+            'statusapprovaleditsuratpengantartext',
             'statusapprovalbiayatitipanemkl',
+            'statusapprovalbiayatitipanemkltext',
             'tarif_id',
             'mandortrado_id',
             'mandorsupir_id',
             'statustolakan',
+            'statustolakantext',
             'statusgudangsama',
+            'statusgudangsamatext',
             'statusbatalmuat',
+            'statusbatalmuattext',
             'userapprovaleditsuratpengantar',
             'userapprovalbiayatitipanemkl',
             'tglapprovaleditsuratpengantar',
@@ -4202,8 +4536,11 @@ class SuratPengantar extends MyModel
             'created_at',
             'updated_at',
             'statusgajisupir',
+            'statusgajisupirtext',
             'statusinvoice',
+            'statusinvoicetext',
             'statusapprovalbiayaextra',
+            'statusapprovalbiayaextratext',
             'userapprovalbiayaextra',
             'tglapprovalbiayaextra',
             'tglbatasapprovalbiayaextra'
@@ -4309,29 +4646,30 @@ class SuratPengantar extends MyModel
                             //         $query = $query->where('mandorsupir.namamandor', 'LIKE', "%$filters[data]%");
                             //     } else if ($filters['field'] == 'ketextra' || $filters['field'] == 'ketextratagih') {
                             //         $query = $query->where('suratpengantarbiayatambahan.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            //     } else if ($filters['field'] == 'statuslongtrip') {
-                            //         $query = $query->where('statuslongtrip.text', '=', "$filters[data]");
-                            //     } else if ($filters['field'] == 'statusperalihan') {
-                            //         $query = $query->where('statusperalihan.text', '=', "$filters[data]");
-                            //     } else if ($filters['field'] == 'statusritasiomset') {
-                            //         $query = $query->where('statusritasiomset.text', '=', "$filters[data]");
-                            //     } else if ($filters['field'] == 'statusgudangsama') {
-                            //         $query = $query->where('statusgudangsama.text', '=', "$filters[data]");
-                            //     } else if ($filters['field'] == 'statustolakan') {
-                            //         $query = $query->where('statustolakan.text', '=', "$filters[data]");
-                            //     } else if ($filters['field'] == 'statusbatalmuat') {
-                            //         $query = $query->where('statusbatalmuat.text', '=', "$filters[data]");
-                            //     } else if ($filters['field'] == 'statusgajisupir') {
-                            //         $query = $query->where('statusgajisupir.text', '=', "$filters[data]");
-                            //     } else if ($filters['field'] == 'statusinvoice') {
-                            //         $query = $query->where('statusinvoice.text', '=', "$filters[data]");
-                            //     } else if ($filters['field'] == 'statusapprovaleditsuratpengantar') {
-                            //         $query = $query->where('statusapprovaleditsuratpengantar.text', '=', "$filters[data]");
-                            //     } else if ($filters['field'] == 'statusapprovalbiayaextra') {
-                            //         $query = $query->where('statusapprovalbiayaextra.text', '=', "$filters[data]");
-                            //     } else if ($filters['field'] == 'statusapprovalbiayatitipanemkl') {
-                            //         $query = $query->where('statusapprovalbiayatitipanemkl.text', '=', "$filters[data]");
-                            if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak' || $filters['field'] == 'omset' || $filters['field'] == 'nominalperalihan' || $filters['field'] == 'totalomset') {
+                            //     } else 
+                            if ($filters['field'] == 'statuslongtrip') {
+                                $query = $query->where('suratpengantar.statuslongtriptext', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusperalihan') {
+                                $query = $query->where('suratpengantar.statusperalihantext', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statuslangsir') {
+                                $query = $query->where('suratpengantar.statuslangsirtext', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusgudangsama') {
+                                $query = $query->where('suratpengantar.statusgudangsamatext', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statustolakan') {
+                                $query = $query->where('suratpengantar.statustolakantext', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusbatalmuat') {
+                                $query = $query->where('suratpengantar.statusbatalmuattext', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusgajisupir') {
+                                $query = $query->where('suratpengantar.statusgajisupirtext', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusinvoice') {
+                                $query = $query->where('suratpengantar.statusinvoicetext', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusapprovaleditsuratpengantar') {
+                                $query = $query->where('suratpengantar.statusapprovaleditsuratpengantartext', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusapprovalbiayaextra') {
+                                $query = $query->where('suratpengantar.statusapprovalbiayaextratext', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusapprovalbiayatitipanemkl') {
+                                $query = $query->where('suratpengantar.statusapprovalbiayatitipanemkltext', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak' || $filters['field'] == 'omset' || $filters['field'] == 'nominalperalihan' || $filters['field'] == 'totalomset') {
                                 $query = $query->whereRaw("format(suratpengantar." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'biayaextra' || $filters['field'] == 'biayatagih') {
                                 $query = $query->whereRaw("format(suratpengantarbiayatambahan." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
@@ -4381,29 +4719,30 @@ class SuratPengantar extends MyModel
                                 //     $query = $query->orWhere('mandortrado.namamandor', 'LIKE', "%$filters[data]%");
                                 // } else if ($filters['field'] == 'mandorsupir_id') {
                                 //     $query = $query->orWhere('mandorsupir.namamandor', 'LIKE', "%$filters[data]%");
-                                // } else if ($filters['field'] == 'statuslongtrip') {
-                                //     $query = $query->orWhere('statuslongtrip.text', '=', "$filters[data]");
-                                // } else if ($filters['field'] == 'statusgajisupir') {
-                                //     $query = $query->Orwhere('statusgajisupir.text', '=', "$filters[data]");
-                                // } else if ($filters['field'] == 'statusinvoice') {
-                                //     $query = $query->Orwhere('statusinvoice.text', '=', "$filters[data]");
-                                // } else if ($filters['field'] == 'statusperalihan') {
-                                //     $query = $query->orWhere('statusperalihan.text', '=', "$filters[data]");
-                                // } else if ($filters['field'] == 'statusritasiomset') {
-                                //     $query = $query->orWhere('statusritasiomset.text', '=', "$filters[data]");
-                                // } else if ($filters['field'] == 'statusgudangsama') {
-                                //     $query = $query->orWhere('statusgudangsama.text', '=', "$filters[data]");
-                                // } else if ($filters['field'] == 'statustolakan') {
-                                //     $query = $query->orWhere('statustolakan.text', '=', "$filters[data]");
-                                // } else if ($filters['field'] == 'statusbatalmuat') {
-                                //     $query = $query->orWhere('statusbatalmuat.text', '=', "$filters[data]");
-                                // } else if ($filters['field'] == 'statusapprovaleditsuratpengantar') {
-                                //     $query = $query->orWhere('statusapprovaleditsuratpengantar.text', '=', "$filters[data]");
-                                // } else if ($filters['field'] == 'statusapprovalbiayaextra') {
-                                //     $query = $query->orWhere('statusapprovalbiayaextra.text', '=', "$filters[data]");
-                                // } else if ($filters['field'] == 'statusapprovalbiayatitipanemkl') {
-                                //     $query = $query->orWhere('statusapprovalbiayatitipanemkl.text', '=', "$filters[data]");
-                                if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak' || $filters['field'] == 'omset' || $filters['field'] == 'nominalperalihan' || $filters['field'] == 'totalomset') {
+                                // } 
+                                if ($filters['field'] == 'statuslongtrip') {
+                                    $query = $query->orWhere('suratpengantar.statuslongtriptext', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusgajisupir') {
+                                    $query = $query->Orwhere('suratpengantar.statusgajisupirtext', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusinvoice') {
+                                    $query = $query->Orwhere('suratpengantar.statusinvoicetext', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusperalihan') {
+                                    $query = $query->orWhere('suratpengantar.statusperalihantext', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statuslangsir') {
+                                    $query = $query->orWhere('suratpengantar.statuslangsirtext', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusgudangsama') {
+                                    $query = $query->orWhere('suratpengantar.statusgudangsamatext', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statustolakan') {
+                                    $query = $query->orWhere('suratpengantar.statustolakantext', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusbatalmuat') {
+                                    $query = $query->orWhere('suratpengantar.statusbatalmuattext', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusapprovaleditsuratpengantar') {
+                                    $query = $query->orWhere('suratpengantar.statusapprovaleditsuratpengantartext', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusapprovalbiayaextra') {
+                                    $query = $query->orWhere('suratpengantar.statusapprovalbiayaextratext', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusapprovalbiayatitipanemkl') {
+                                    $query = $query->orWhere('suratpengantar.statusapprovalbiayatitipanemkltext', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak' || $filters['field'] == 'omset' || $filters['field'] == 'nominalperalihan' || $filters['field'] == 'totalomset') {
                                     $query = $query->orWhereRaw("format(suratpengantar." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'biayaextra' || $filters['field'] == 'biayatagih') {
                                     $query = $query->orWhereRaw("format(suratpengantarbiayatambahan." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");

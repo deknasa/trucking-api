@@ -105,8 +105,8 @@ class PenerimaanHeaderController extends Controller
                 } else {
                     $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
                 }
-                $penerimaanHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $penerimaanHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $penerimaanHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $penerimaanHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
 
             DB::commit();
@@ -167,8 +167,8 @@ class PenerimaanHeaderController extends Controller
             } else {
                 $penerimaanheader->page = ceil($penerimaanheader->position / ($request->limit ?? 10));
             }
-            $penerimaanheader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $penerimaanheader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $penerimaanheader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $penerimaanheader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
 
             DB::commit();
@@ -201,8 +201,8 @@ class PenerimaanHeaderController extends Controller
             } else {
                 $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
             }
-            $penerimaanHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $penerimaanHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $penerimaanHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $penerimaanHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
             DB::commit();
 

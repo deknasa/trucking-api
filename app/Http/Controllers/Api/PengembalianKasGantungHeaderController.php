@@ -106,8 +106,8 @@ class PengembalianKasGantungHeaderController extends Controller
                 } else {
                     $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / ($request->limit ?? 10));
                 }
-                $pengembalianKasGantungHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $pengembalianKasGantungHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $pengembalianKasGantungHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $pengembalianKasGantungHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
 
             DB::commit();
@@ -168,8 +168,8 @@ class PengembalianKasGantungHeaderController extends Controller
             } else {
                 $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / ($request->limit ?? 10));
             }
-            $pengembalianKasGantungHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $pengembalianKasGantungHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $pengembalianKasGantungHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $pengembalianKasGantungHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
 
             DB::commit();
@@ -205,8 +205,8 @@ class PengembalianKasGantungHeaderController extends Controller
             } else {
                 $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / ($request->limit ?? 10));
             }
-            $pengembalianKasGantungHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $pengembalianKasGantungHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $pengembalianKasGantungHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $pengembalianKasGantungHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
 
 
             DB::commit();

@@ -87,8 +87,8 @@ class NotaDebetHeaderController extends Controller
                 } else {
                     $notaDebetHeader->page = ceil($notaDebetHeader->position / ($request->limit ?? 10));
                 }
-                $notaDebetHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-                $notaDebetHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+                $notaDebetHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+                $notaDebetHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             }
             DB::commit();
 
@@ -144,8 +144,8 @@ class NotaDebetHeaderController extends Controller
             } else {
                 $notaDebetHeader->page = ceil($notaDebetHeader->position / ($request->limit ?? 10));
             }
-            $notaDebetHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $notaDebetHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $notaDebetHeader->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $notaDebetHeader->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil diubah',
@@ -174,8 +174,8 @@ class NotaDebetHeaderController extends Controller
             } else {
                 $notaDebet->page = ceil($notaDebet->position / ($request->limit ?? 10));
             }
-            $notaDebet->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $notaDebet->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            $notaDebet->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $notaDebet->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
             DB::commit();
 
             return response()->json([

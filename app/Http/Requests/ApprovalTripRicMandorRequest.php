@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\approvalMandorDouble;
 use App\Rules\ApprovalTripRicMandor;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -26,7 +27,11 @@ class ApprovalTripRicMandorRequest extends FormRequest
     public function rules()
     {
         return [
-            'detail' => [new ApprovalTripRicMandor()]
+            'detail' => [
+                // new ApprovalTripRicMandor(),
+                new approvalMandorDouble()
+
+            ]
         ];
     }
 }
