@@ -149,7 +149,7 @@ class PelunasanHutangHeader extends MyModel
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'PelunasanHutangheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'PelunasanHutangheader.supplier_id', 'supplier.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'PelunasanHutangheader.alatbayar_id', 'alatbayar.id')
-            ->join(DB::raw("pengeluaranheader with (readuncommitted)"), 'PelunasanHutangheader.pengeluaran_nobukti', 'pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"), 'PelunasanHutangheader.pengeluaran_nobukti', 'pengeluaranheader.nobukti')
             ->where('PelunasanHutangheader.id', $id);
 
 
