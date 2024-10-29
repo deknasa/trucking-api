@@ -939,6 +939,8 @@ class LaporanNeraca extends MyModel
                 $table->string('usercetak', 500)->nullable();
                 $table->string('disetujui', 500)->nullable();
                 $table->string('diperiksa', 500)->nullable();
+                $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+                $table->unsignedBigInteger('nilaikosongkredit')->nullable();
             });
 
 
@@ -958,6 +960,8 @@ class LaporanNeraca extends MyModel
                 'usercetak',
                 'disetujui',
                 'diperiksa',
+                'nilaikosongdebet',
+                'nilaikosongkredit',
             ], (new LaporanPinjamanSupirKaryawan())->getReport($tglsd, 1, 83));
             // 
 
@@ -1054,6 +1058,8 @@ class LaporanNeraca extends MyModel
                 $table->string('judullaporan', 500)->nullable();
                 $table->longtext('tglcetak')->nullable();
                 $table->string('usercetak', 500)->nullable();
+                $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+                $table->unsignedBigInteger('nilaikosongkredit')->nullable();
             });
 
             $tempkasgantungtnl = '##tempkasgantungtnl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -1070,6 +1076,8 @@ class LaporanNeraca extends MyModel
                 $table->string('judullaporan', 500)->nullable();
                 $table->longtext('tglcetak')->nullable();
                 $table->string('usercetak', 500)->nullable();
+                $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+                $table->unsignedBigInteger('nilaikosongkredit')->nullable();
             });
 
 
@@ -1095,6 +1103,8 @@ class LaporanNeraca extends MyModel
                 'judullaporan',
                 'tglcetak',
                 'usercetak',
+                'nilaikosongdebet',
+                'nilaikosongkredit'
             ], (new LaporanKasGantung())->getReport($tglsd, 1, 1));
 
             // dd(db::table($tempkasgantung)->get());
@@ -1114,6 +1124,8 @@ class LaporanNeraca extends MyModel
                     'judullaporan',
                     'tglcetak',
                     'usercetak',
+                    'nilaikosongdebet',
+                    'nilaikosongkredit'
                 ], (new LaporanKasGantung())->getReport($tglsd, 1, 6));
             }
 

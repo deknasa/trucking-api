@@ -405,6 +405,8 @@ class LaporanPinjamanSupir extends MyModel
             $table->double('debet')->nullable();
             $table->double('kredit')->nullable();
             $table->double('saldo')->nullable();
+            $table->unsignedBigInteger('nilaikosongdebet')->nullable();
+            $table->unsignedBigInteger('nilaikosongkredit')->nullable();
         });
 
         $queryhasil = DB::table($temprekapdatahasil)->from(
@@ -418,7 +420,9 @@ class LaporanPinjamanSupir extends MyModel
                 'a.tglbuktipelunasan',
                 DB::raw("(case when isnull(a.nobuktipelunasan,'')='' then a.nominal else 0 end) as debet"),
                 DB::raw("(case when isnull(a.nobuktipelunasan,'')='' then 0 else a.nominal end) as kredit"),
-                DB::raw("0 as saldo")
+                DB::raw("0 as saldo"),
+                DB::raw("(case when isnull(a.nobuktipelunasan,'')='' then 0 else 1 end) as nilaikosongdebet"),
+                DB::raw("(case when isnull(a.nobuktipelunasan,'')='' then 1 else 0 end) as nilaikosongkredit"),
 
             )
             ->OrderBy('a.id', 'asc');
@@ -432,6 +436,8 @@ class LaporanPinjamanSupir extends MyModel
             'debet',
             'kredit',
             'saldo',
+            'nilaikosongdebet',
+            'nilaikosongkredit',
         ], $queryhasil);
 
         $getJudul = DB::table('parameter')
@@ -475,6 +481,8 @@ class LaporanPinjamanSupir extends MyModel
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
+                'a.nilaikosongdebet',
+                'a.nilaikosongkredit',
             )
             ->leftjoin(DB::raw("pengeluarantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
             // ->where('a.nobukti','PJT 0008/VI/2018')

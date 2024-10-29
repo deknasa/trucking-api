@@ -7,6 +7,7 @@ use App\Models\ExportLaporanKasGantung;
 use App\Http\Requests\ValidasiExportKasHarianRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -184,8 +185,22 @@ class ExportLaporanKasGantungController extends Controller
                             $dateValue = ($value != null) ? Date::PHPToExcel(date('Y-m-d', strtotime($value))) : '';
                             $sheet->setCellValue($alphabets[$columnIndex] . $dataRow, $dateValue);
                         } else {
-                            $sheet->setCellValue($alphabets[$columnIndex] . $dataRow, $value);
-                            // $sheet->getStyle($alphabets[$columnIndex] . $dataRow)->applyFromArray($borderStyle);
+                            if ($index == 'debet') {
+                                if ($row->nilaikosongdebet == 1) {
+                                    $sheet->setCellValueExplicit($alphabets[$columnIndex] . $dataRow, null, DataType::TYPE_NULL);
+                                } else {
+                                    $sheet->setCellValue($alphabets[$columnIndex] . $dataRow, $value);
+                                }
+                            } else if ($index == 'kredit') {
+                                if ($row->nilaikosongkredit == 1) {
+                                    $sheet->setCellValueExplicit($alphabets[$columnIndex] . $dataRow, null, DataType::TYPE_NULL);
+                                } else {
+                                    $sheet->setCellValue($alphabets[$columnIndex] . $dataRow, $value);
+                                }
+                            } else {
+                                $sheet->setCellValue($alphabets[$columnIndex] . $dataRow, $value);
+                                // $sheet->getStyle($alphabets[$columnIndex] . $dataRow)->applyFromArray($borderStyle);
+                            }
                         }
                         // Apply number format to debet, kredit, and saldo columns
                         if ($index == 'debet' || $index == 'kredit' || $index == 'saldo') {
