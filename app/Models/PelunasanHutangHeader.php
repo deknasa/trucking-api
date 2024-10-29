@@ -905,7 +905,7 @@ class PelunasanHutangHeader extends MyModel
         }
 
         $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
-        if ($cabang == 'JAKARTA') {
+        if ($cabang == 'JAKARTA' || $cabang == 'TNL') {
             $queryGetcoa = DB::table("pelunasanhutangdetail")->from(DB::raw("pelunasanhutangdetail as ph with (readuncommitted)"))
                 ->select(DB::raw("h.coakredit as coa,sum(ph.nominal) as nominal"))
 
