@@ -999,11 +999,13 @@ class LaporanKasBank extends MyModel
                         'a.nilaikosongkredit',
                         'c.totaldebet',
                         'c.totalkredit',
-                        DB::raw("sum ((isnull(a.saldo,0)+
-                    (case when isnull(a.urutdetail,0)=1 then  isnull(c.totaldebet,0) else 0 end)
-                    )-
-                    (case when isnull(a.urutdetail,0)=1 then  isnull(c.totalkredit,0) else 0 end)
-                    ) over (order by a.tglbukti,a.urut,a.nobukti,a.id) as saldo"),
+                    //     DB::raw("sum ((isnull(a.saldo,0)+
+                    // (case when isnull(a.urutdetail,0)=1 then  isnull(c.totaldebet,0) else 0 end)
+                    // )-
+                    // (case when isnull(a.urutdetail,0)=1 then  isnull(c.totalkredit,0) else 0 end)
+                    // ) over (order by a.tglbukti,a.urut,a.nobukti,a.id) as saldo"),
+                    
+                        DB::raw("sum ((isnull(a.saldo,0)+isnull(a.debet,0))-isnull(a.Kredit,0)) over (order by a.tglbukti,a.urut,a.nobukti,a.id) as saldo"),
                         DB::raw("'Laporan Buku " . ucwords(strtolower($querykasbank->tipe)) . "' as judulLaporan"),
                         DB::raw("'" . $getJudul->text . "' as judul"),
                         DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
