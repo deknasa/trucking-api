@@ -766,6 +766,12 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('/orderanemkl/getTglJob', [OrderanEmklController::class, 'getTglJob']);
     Route::get('kelompok/default', [KelompokController::class, 'default']);
 
+    Route::get('ritasi/combo', [RitasiController::class, 'combo']);
+    Route::post('ritasi/{id}/cekvalidasi', [RitasiController::class, 'cekvalidasi'])->name('ritasi.cekValidasi')->whereNumber('id');
+    Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
+    Route::get('ritasi/default', [RitasiController::class, 'default']);
+    Route::get('ritasi/export', [RitasiController::class, 'export']);
+    Route::resource('ritasi', RitasiController::class)->whereNumber('ritasi');
 
 });
 
@@ -1653,12 +1659,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('upahritasirincian/setuprowshow/{id}', [UpahRitasiRincianController::class, 'setUpRowExcept'])->whereNumber('id');
     Route::resource('upahritasirincian', UpahRitasiRincianController::class)->whereNumber('upahritasirincian');
 
-    Route::get('ritasi/combo', [RitasiController::class, 'combo']);
-    Route::post('ritasi/{id}/cekvalidasi', [RitasiController::class, 'cekvalidasi'])->name('ritasi.cekValidasi')->whereNumber('id');
-    Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
-    Route::get('ritasi/default', [RitasiController::class, 'default']);
-    Route::get('ritasi/export', [RitasiController::class, 'export']);
-    Route::resource('ritasi', RitasiController::class)->whereNumber('ritasi');
 
     //pengeluaran
     Route::get('pengeluaranheader/{id}/printreport', [PengeluaranHeaderController::class, 'printReport'])->whereNumber('id');
