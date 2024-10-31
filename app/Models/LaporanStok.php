@@ -398,9 +398,14 @@ class LaporanStok extends MyModel
                 ->leftjoin(db::raw("penerimaanstokdetail d with (readuncommitted) "), function ($join) {
                     $join->on('a.nobukti', '=', 'd.nobukti');
                     $join->on('a.stok_id', '=', 'd.stok_id');
-                })
-                ->orderBy(db::raw("isnull(c1.kodekelompok,'')+' - '+b.namastok"), 'asc')
-                // ->orderBy(db::raw("(case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end) "), 'asc')
+                });
+
+                if($getcabang == 'JAKARTA'){
+                    $query->orderBy(db::raw("(case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end) "), 'asc');
+                }else{
+                    $query->orderBy(db::raw("isnull(c1.kodekelompok,'')+' - '+b.namastok"), 'asc');
+                }
+                $query
                 ->orderBy('a.stok_id', 'asc')
                 ->orderBy('a.tglbukti', 'asc')
                 ->orderBy('a.tglinput', 'asc')
