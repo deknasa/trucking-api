@@ -48,6 +48,21 @@ class HutangHeader extends MyModel
             'nominal',
         ], $query);
 
+        $tempTable = '##tempTable' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempTable, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->string('nobukti_asal')->nullable();
+            $table->date('tgldariheaderspb')->nullable();
+            $table->date('tglsampaiheaderspb')->nullable();
+        });
+        $getDataLain = DB::table("penerimaanstokheader")->from(DB::raw("penerimaanstokheader as a with (readuncommitted)"))
+            ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal, cast((format(b.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderspb, cast(cast(format((cast((format(b.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderspb"))
+            ->join(DB::raw("hutangheader as b with (readuncommitted)"), 'a.hutang_nobukti', 'b.nobukti');
+        if (request()->tgldari && request()->tglsampai) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal', 'tgldariheaderspb', 'tglsampaiheaderspb'], $getDataLain);
+
         $this->setRequestParameters();
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
@@ -74,13 +89,17 @@ class HutangHeader extends MyModel
 
                 'hutangheader.modifiedby',
                 'hutangheader.created_at',
-                'hutangheader.updated_at'
+                'hutangheader.updated_at',
+                DB::raw("isnull(d.nobukti_asal,'') as nobukti_spb"),
+                'd.tgldariheaderspb',
+                'd.tglsampaiheaderspb',
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id')
-            ->leftJoin(DB::raw($tempbayar . " as c"), 'hutangheader.nobukti', 'c.hutang_nobukti');
+            ->leftJoin(DB::raw($tempbayar . " as c"), 'hutangheader.nobukti', 'c.hutang_nobukti')
+            ->leftJoin(DB::raw($tempTable . " as d"), 'hutangheader.nobukti', 'd.nobukti');
         if (request()->tgldari) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
@@ -151,6 +170,19 @@ class HutangHeader extends MyModel
             'hutang_nobukti',
             'nominal',
         ], $tes);
+        
+        $tempTable = '##tempTable' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempTable, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->string('nobukti_asal')->nullable();
+        });
+        $getDataLain = DB::table("penerimaanstokheader")->from(DB::raw("penerimaanstokheader as a with (readuncommitted)"))
+            ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal"))
+            ->join(DB::raw("hutangheader as b with (readuncommitted)"), 'a.hutang_nobukti', 'b.nobukti');
+        if (request()->tgldari && request()->tglsampai) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal'], $getDataLain);
 
         return $query->from(
             DB::raw($this->table . " with (readuncommitted)")
@@ -175,7 +207,8 @@ class HutangHeader extends MyModel
                  $this->table.jumlahcetak,
                  $this->table.modifiedby,
                  $this->table.created_at,
-                 $this->table.updated_at"
+                 $this->table.updated_at,
+                 isnull(d.nobukti_asal,'') as nobukti_spb"
                 )
 
             )
@@ -183,7 +216,8 @@ class HutangHeader extends MyModel
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id')
-            ->leftJoin(DB::raw($tempbayar . " as c"), 'hutangheader.nobukti', 'c.hutang_nobukti');
+            ->leftJoin(DB::raw($tempbayar . " as c"), 'hutangheader.nobukti', 'c.hutang_nobukti')
+            ->leftJoin(DB::raw($tempTable . " as d"), 'hutangheader.nobukti', 'd.nobukti');
     }
 
     public function createTemp(string $modelTable)
@@ -209,6 +243,7 @@ class HutangHeader extends MyModel
             $table->string('modifiedby')->default();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
+            $table->string('nobukti_spb', 50)->nullable();
             $table->increments('position');
         });
         // if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
@@ -223,7 +258,7 @@ class HutangHeader extends MyModel
         $models = $query
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
 
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'coa', 'postingdari', 'supplier_id', 'total', 'nominalbayar', 'sisahutang', 'statuscetak', 'statusapproval', 'userapproval', 'tglapproval','userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'coa', 'postingdari', 'supplier_id', 'total', 'nominalbayar', 'sisahutang', 'statuscetak', 'statusapproval', 'userapproval', 'tglapproval', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at','nobukti_spb'], $models);
 
         return $temp;
     }
@@ -256,6 +291,8 @@ class HutangHeader extends MyModel
                                 $query->where('statusapproval.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'supplier_id') {
                                 $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nobukti_spb') {
+                                $query->where('d.nobukti_asal', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'coa') {
                                 $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'total') {
@@ -286,6 +323,8 @@ class HutangHeader extends MyModel
                                     $query->orWhere('statusapproval.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'supplier_id') {
                                     $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'nobukti_spb') {
+                                    $query->orWhere('d.nobukti_asal', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'coa') {
                                     $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
@@ -333,7 +372,7 @@ class HutangHeader extends MyModel
     {
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
-   
+
         $pelunasanHutang = DB::table('pelunasanhutangdetail')
             ->from(
                 DB::raw("pelunasanhutangdetail as a with (readuncommitted)")
@@ -344,11 +383,11 @@ class HutangHeader extends MyModel
             )
             ->where('a.hutang_nobukti', '=', $nobukti)
             ->first();
-          $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+        $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
         if (isset($pelunasanHutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Pembayaran hutang <b>'. $pelunasanHutang->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Pembayaran hutang <b>' . $pelunasanHutang->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Pembayaran Hutang '. $pelunasanHutang->nobukti,
                 'kodeerror' => 'SATL2'
             ];
@@ -365,12 +404,12 @@ class HutangHeader extends MyModel
             )
             ->where('a.hutang_nobukti', '=', $nobukti)
             ->first();
-            $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
+        $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
 
         if (isset($penerimaanStok)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Penerimaan Stok <b>'. $penerimaanStok->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Penerimaan Stok <b>' . $penerimaanStok->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Penerimaan Stok '. $penerimaanStok->nobukti,
                 'kodeerror' => 'TDT'
             ];
@@ -387,12 +426,12 @@ class HutangHeader extends MyModel
             )
             ->where('a.hutang_nobukti', '=', $nobukti)
             ->first();
-            $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
+        $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
 
         if (isset($hutangExtra)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Hutang Extra <b>'. $hutangExtra->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Hutang Extra <b>' . $hutangExtra->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Hutang Extra '. $hutangExtra->nobukti,
                 'kodeerror' => 'TDT'
             ];
@@ -408,11 +447,11 @@ class HutangHeader extends MyModel
             )
             ->where('a.nobukti', '=', $nobukti)
             ->first();
-            $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
+        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
         if (isset($jurnalpusat)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $jurnalpusat->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $jurnalpusat->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Approval Jurnal '. $jurnalpusat->nobukti,
                 'kodeerror' => 'SAP'
             ];
@@ -619,7 +658,7 @@ class HutangHeader extends MyModel
         } else {
             $total = $data['total'];
             $coa = $data['coa'];
-            $coakredit = ($data['coakredit'] == null) ? $memoKredit['JURNAL'] : $data['coakredit'];            
+            $coakredit = ($data['coakredit'] == null) ? $memoKredit['JURNAL'] : $data['coakredit'];
         }
 
         if (trim($getTgl->text) == 'YA') {
@@ -801,7 +840,7 @@ class HutangHeader extends MyModel
         $data = $query->first();
         return $data;
     }
-    
+
     public function processApproval(array $data)
     {
         // dd($data);

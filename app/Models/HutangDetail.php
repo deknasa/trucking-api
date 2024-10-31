@@ -119,7 +119,11 @@ class HutangDetail extends MyModel
                 'pelunasanhutangdetail.keterangan as keterangan_bayar',
                 'pelunasanhutangdetail.nominal as nominal_bayar',
                 'pelunasanhutangdetail.potongan',
-            );
+                db::raw("cast((format(pelunasanhutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpelunasan"),
+                db::raw("cast(cast(format((cast((format(pelunasanhutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpelunasan"),
+                
+            )
+            ->join(DB::raw("pelunasanhutangheader with (readuncommitted)"), 'pelunasanhutangheader.nobukti', 'pelunasanhutangdetail.nobukti');
 
             $query->where('pelunasanhutangdetail.hutang_nobukti', '=', $hutang->nobukti);
 

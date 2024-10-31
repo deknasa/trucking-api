@@ -91,7 +91,11 @@ class PiutangDetail extends MyModel
                 'pelunasanpiutangdetail.nominal as nominal_pelunasan',
                 'pelunasanpiutangdetail.potongan',
                 'pelunasanpiutangdetail.nominallebihbayar',
-            );
+                db::raw("cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpelunasan"),
+                db::raw("cast(cast(format((cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpelunasan"),
+                
+            )
+            ->join(DB::raw("pelunasanpiutangheader with (readuncommitted)"), 'pelunasanpiutangheader.nobukti', 'pelunasanpiutangdetail.nobukti');
 
             $query->where('pelunasanpiutangdetail.piutang_nobukti', '=', $piutang->nobukti);
 
