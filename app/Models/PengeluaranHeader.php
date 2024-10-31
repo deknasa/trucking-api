@@ -104,6 +104,8 @@ class PengeluaranHeader extends MyModel
                 $table->string('modifiedby', 200)->nullable();
                 $table->dateTime('created_at')->nullable();
                 $table->dateTime('updated_at')->nullable();
+                $table->string('nobukti_asal', 50)->nullable();
+                $table->longText('url_asal')->nullable();
             });
             $tempPenerima = '##tempPenerima' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempPenerima, function ($table) {
@@ -130,6 +132,84 @@ class PengeluaranHeader extends MyModel
                     ->where('pengeluaranheader.bank_id', request()->bank_id);
             }
             DB::table($tempNominal)->insertUsing(['nobukti', 'nominal'], $getNominal);
+
+            $tempTable = '##tempTable' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempTable, function ($table) {
+                $table->string('nobukti')->nullable();
+                $table->string('nobukti_asal')->nullable();
+                $table->longText('url_asal')->nullable();
+            });
+
+
+            $petik = '"';
+            $url = config('app.url_fe') . 'kasgantungheader';
+            // KAS GANTUNG
+            $getDataLain = DB::table("kasgantungheader")->from(DB::raw("kasgantungheader as a with (readuncommitted)"))
+                ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal, cast('<a href=$petik" . $url . "?tgldari='+(format(a.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(a.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+a.nobukti+'$petik class=$petik link-color $petik target=$petik _blank $petik>'+a.nobukti+'</a>' as nvarchar(max)) as url_asal"))
+                ->join(DB::raw("pengeluaranheader as b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti')
+                ->leftJoin(DB::raw("absensisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.kasgantung_nobukti')
+                ->whereRaw("isnull(c.nobukti,'')=''");
+            if (request()->tgldari && request()->tglsampai) {
+                $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                    ->where('b.bank_id', request()->bank_id);
+            }
+            DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal', 'url_asal'], $getDataLain);
+
+            // ABSENSI APPROVAL
+            $url = config('app.url_fe') . 'absensisupirapprovalheader';
+            $getDataLain = DB::table("absensisupirapprovalheader")->from(DB::raw("absensisupirapprovalheader as a with (readuncommitted)"))
+                ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal, cast('<a href=$petik" . $url . "?tgldari='+(format(a.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(a.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+a.nobukti+'$petik class=$petik link-color $petik target=$petik _blank $petik>'+a.nobukti+'</a>' as nvarchar(max)) as url_asal"))
+                ->join(DB::raw("pengeluaranheader as b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti');
+            if (request()->tgldari && request()->tglsampai) {
+                $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                    ->where('b.bank_id', request()->bank_id);
+            }
+            DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal', 'url_asal'], $getDataLain);
+
+            // PELUNASAN HUTANG
+            $url = config('app.url_fe') . 'pelunasanhutangheader';
+            $getDataLain = DB::table("pelunasanhutangheader")->from(DB::raw("pelunasanhutangheader as a with (readuncommitted)"))
+                ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal, cast('<a href=$petik" . $url . "?tgldari='+(format(a.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(a.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+a.nobukti+'$petik class=$petik link-color $petik target=$petik _blank $petik>'+a.nobukti+'</a>' as nvarchar(max)) as url_asal"))
+                ->join(DB::raw("pengeluaranheader as b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti');
+            if (request()->tgldari && request()->tglsampai) {
+                $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                    ->where('b.bank_id', request()->bank_id);
+            }
+            DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal', 'url_asal'], $getDataLain);
+
+            // PENGELUARAN TRUCKING
+            $url = config('app.url_fe') . 'pengeluarantruckingheader';
+            $getDataLain = DB::table("pengeluarantruckingheader")->from(DB::raw("pengeluarantruckingheader as a with (readuncommitted)"))
+                ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal, cast('<a href=$petik" . $url . "?tgldari='+(format(a.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(a.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+a.nobukti+'$petik class=$petik link-color $petik target=$petik _blank $petik>'+a.nobukti+'</a>' as nvarchar(max)) as url_asal"))
+                ->join(DB::raw("pengeluaranheader as b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti');
+            if (request()->tgldari && request()->tglsampai) {
+                $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                    ->where('b.bank_id', request()->bank_id);
+            }
+            DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal', 'url_asal'], $getDataLain);
+
+            // PROSES GAJI SUPIR
+            $url = config('app.url_fe') . 'prosesgajisupirheader';
+            $getDataLain = DB::table("prosesgajisupirheader")->from(DB::raw("prosesgajisupirheader as a with (readuncommitted)"))
+                ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal, cast('<a href=$petik" . $url . "?tgldari='+(format(a.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(a.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+a.nobukti+'$petik class=$petik link-color $petik target=$petik _blank $petik>'+a.nobukti+'</a>' as nvarchar(max)) as url_asal"))
+                ->join(DB::raw("pengeluaranheader as b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti');
+            if (request()->tgldari && request()->tglsampai) {
+                $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                    ->where('b.bank_id', request()->bank_id);
+            }
+            DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal', 'url_asal'], $getDataLain);
+
+            // PENDAPATAN SUPIR
+            $url = config('app.url_fe') . 'pendapatansupirheader';
+            $getDataLain = DB::table("pendapatansupirheader")->from(DB::raw("pendapatansupirheader as a with (readuncommitted)"))
+                ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal, cast('<a href=$petik" . $url . "?tgldari='+(format(a.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(a.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+a.nobukti+'$petik class=$petik link-color $petik target=$petik _blank $petik>'+a.nobukti+'</a>' as nvarchar(max)) as url_asal"))
+                ->join(DB::raw("pengeluaranheader as b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti');
+            if (request()->tgldari && request()->tglsampai) {
+                $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                    ->where('b.bank_id', request()->bank_id);
+            }
+            DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal', 'url_asal'], $getDataLain);
+
             $query = DB::table($this->table)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
                 ->select(
                     'pengeluaranheader.id',
@@ -161,7 +241,9 @@ class PengeluaranHeader extends MyModel
                     'pengeluaranheader.jumlahcetak',
                     'pengeluaranheader.modifiedby',
                     'pengeluaranheader.created_at',
-                    'pengeluaranheader.updated_at'
+                    'pengeluaranheader.updated_at',
+                    'asal.nobukti_asal',
+                    DB::raw("cast(isnull(asal.url_asal, '') as nvarchar(max)) as url_asal")
 
                 )
 
@@ -171,6 +253,7 @@ class PengeluaranHeader extends MyModel
                 ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pengeluaranheader.statusapproval', 'statusapproval.id')
                 ->leftJoin(DB::raw("$tempPenerima as penerima with (readuncommitted)"), 'pengeluaranheader.nobukti', 'penerima.nobukti')
                 ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'pengeluaranheader.nobukti', 'nominal.nobukti')
+                ->leftJoin(DB::raw("$tempTable as asal with (readuncommitted)"), 'pengeluaranheader.nobukti', 'asal.nobukti')
                 ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'pengeluaranheader.statuskirimberkas', 'statuskirimberkas.id')
                 ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluaranheader.statuscetak', 'statuscetak.id');
             if (request()->tgldari && request()->tglsampai) {
@@ -216,6 +299,8 @@ class PengeluaranHeader extends MyModel
                 'modifiedby',
                 'created_at',
                 'updated_at',
+                'nobukti_asal',
+                'url_asal',
             ], $query);
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
@@ -265,6 +350,7 @@ class PengeluaranHeader extends MyModel
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
+                'a.url_asal'
             );
         // dd($query->get());
         // dd(request()->limit);
@@ -361,6 +447,7 @@ class PengeluaranHeader extends MyModel
             $table->string('modifiedby', 200)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
+            $table->string('nobukti_asal', 50)->nullable();
         });
         $tempPenerima = '##tempPenerima' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempPenerima, function ($table) {
@@ -388,6 +475,74 @@ class PengeluaranHeader extends MyModel
                 ->where('pengeluaranheader.bank_id', request()->bank_id);
         }
         DB::table($tempNominal)->insertUsing(['nobukti', 'nominal'], $getNominal);
+
+        $tempTable = '##tempTable' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempTable, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->string('nobukti_asal')->nullable();
+        });
+
+        // KAS GANTUNG
+        $getDataLain = DB::table("kasgantungheader")->from(DB::raw("kasgantungheader as a with (readuncommitted)"))
+            ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal"))
+            ->join(DB::raw("pengeluaranheader as b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti')
+            ->leftJoin(DB::raw("absensisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.kasgantung_nobukti')
+            ->whereRaw("isnull(c.nobukti,'')=''");
+        if (request()->tgldari && request()->tglsampai) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                ->where('b.bank_id', request()->bank_id);
+        }
+        DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal'], $getDataLain);
+
+        // ABSENSI APPROVAL
+        $getDataLain = DB::table("absensisupirapprovalheader")->from(DB::raw("absensisupirapprovalheader as a with (readuncommitted)"))
+            ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal"))
+            ->join(DB::raw("pengeluaranheader as b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti');
+        if (request()->tgldari && request()->tglsampai) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                ->where('b.bank_id', request()->bank_id);
+        }
+        DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal'], $getDataLain);
+
+        // PELUNASAN HUTANG
+        $getDataLain = DB::table("pelunasanhutangheader")->from(DB::raw("pelunasanhutangheader as a with (readuncommitted)"))
+            ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal"))
+            ->join(DB::raw("pengeluaranheader as b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti');
+        if (request()->tgldari && request()->tglsampai) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                ->where('b.bank_id', request()->bank_id);
+        }
+        DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal'], $getDataLain);
+
+        // PENGELUARAN TRUCKING
+        $getDataLain = DB::table("pengeluarantruckingheader")->from(DB::raw("pengeluarantruckingheader as a with (readuncommitted)"))
+            ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal"))
+            ->join(DB::raw("pengeluaranheader as b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti');
+        if (request()->tgldari && request()->tglsampai) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                ->where('b.bank_id', request()->bank_id);
+        }
+        DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal'], $getDataLain);
+
+        // PROSES GAJI SUPIR
+        $getDataLain = DB::table("prosesgajisupirheader")->from(DB::raw("prosesgajisupirheader as a with (readuncommitted)"))
+            ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal"))
+            ->join(DB::raw("pengeluaranheader as b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti');
+        if (request()->tgldari && request()->tglsampai) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                ->where('b.bank_id', request()->bank_id);
+        }
+        DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal'], $getDataLain);
+
+        // PENDAPATAN SUPIR
+        $getDataLain = DB::table("pendapatansupirheader")->from(DB::raw("pendapatansupirheader as a with (readuncommitted)"))
+            ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal"))
+            ->join(DB::raw("pengeluaranheader as b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti');
+        if (request()->tgldari && request()->tglsampai) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                ->where('b.bank_id', request()->bank_id);
+        }
+        DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal'], $getDataLain);
 
         $query = DB::table($this->table)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
             ->select(
@@ -421,7 +576,8 @@ class PengeluaranHeader extends MyModel
                 'pengeluaranheader.jumlahcetak',
                 'pengeluaranheader.modifiedby',
                 'pengeluaranheader.created_at',
-                'pengeluaranheader.updated_at'
+                'pengeluaranheader.updated_at',
+                'asal.nobukti_asal'
 
             )
 
@@ -431,6 +587,7 @@ class PengeluaranHeader extends MyModel
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pengeluaranheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("$tempPenerima as penerima with (readuncommitted)"), 'pengeluaranheader.nobukti', 'penerima.nobukti')
             ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'pengeluaranheader.nobukti', 'nominal.nobukti')
+            ->leftJoin(DB::raw("$tempTable as asal with (readuncommitted)"), 'pengeluaranheader.nobukti', 'asal.nobukti')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluaranheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'pengeluaranheader.statuskirimberkas', 'statuskirimberkas.id');
         DB::table($temp)->insertUsing([
@@ -465,6 +622,7 @@ class PengeluaranHeader extends MyModel
             'modifiedby',
             'created_at',
             'updated_at',
+            'nobukti_asal'
         ], $query);
 
         $query = DB::table($temp)->from(DB::raw($temp . " a "))
@@ -500,6 +658,7 @@ class PengeluaranHeader extends MyModel
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
+                'a.nobukti_asal'
             );
 
         return $query;
@@ -540,6 +699,7 @@ class PengeluaranHeader extends MyModel
             $table->string('modifiedby', 200)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
+            $table->string('nobukti_asal', 50)->nullable();
             $table->increments('position');
         });
 
@@ -584,6 +744,7 @@ class PengeluaranHeader extends MyModel
             'modifiedby',
             'created_at',
             'updated_at',
+            'nobukti_asal',
         ], $models);
 
         return $temp;
@@ -625,6 +786,8 @@ class PengeluaranHeader extends MyModel
                                 $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->whereRaw("format(a.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'url_asal') {
+                                $query = $query->where('a.nobukti_asal', 'LIKE', "%$filters[data]%");
                             } else {
                                 // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -659,6 +822,8 @@ class PengeluaranHeader extends MyModel
                                     //     $query = $query->orWhere('pengeluarandetail.keterangan', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                     $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'url_asal') {
+                                    $query = $query->orWhere('a.nobukti_asal', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'nominal') {
                                     $query = $query->orWhereRaw("format(a.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                                 } else {
