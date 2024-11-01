@@ -845,9 +845,9 @@ class PenerimaanHeader extends MyModel
         $getDataLain = DB::table("pelunasanpiutangheader")->from(DB::raw("pelunasanpiutangheader as a with (readuncommitted)"))
             ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal"))
             ->join(DB::raw("penerimaanheader as b with (readuncommitted)"), 'a.penerimaan_nobukti', 'b.nobukti');
-        if (request()->tgldari && request()->tglsampai) {
-            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
-                ->where('b.bank_id', request()->bank);
+        if (request()->tgldariheader && request()->tglsampaiheader) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])
+                ->where('b.bank_id', request()->bankheader);
         }
         DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal'], $getDataLain);
 
@@ -855,9 +855,9 @@ class PenerimaanHeader extends MyModel
         $getDataLain = DB::table("pengembaliankasgantungheader")->from(DB::raw("pengembaliankasgantungheader as a with (readuncommitted)"))
             ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal"))
             ->join(DB::raw("penerimaanheader as b with (readuncommitted)"), 'a.penerimaan_nobukti', 'b.nobukti');
-        if (request()->tgldari && request()->tglsampai) {
-            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
-                ->where('b.bank_id', request()->bank);
+        if (request()->tgldariheader && request()->tglsampaiheader) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])
+                ->where('b.bank_id', request()->bankheader);
         }
         DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal'], $getDataLain);
 
@@ -865,9 +865,9 @@ class PenerimaanHeader extends MyModel
         $getDataLain = DB::table("pengeluaranstokheader")->from(DB::raw("pengeluaranstokheader as a with (readuncommitted)"))
             ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal"))
             ->join(DB::raw("penerimaanheader as b with (readuncommitted)"), 'a.penerimaan_nobukti', 'b.nobukti');
-        if (request()->tgldari && request()->tglsampai) {
-            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
-                ->where('b.bank_id', request()->bank);
+        if (request()->tgldariheader && request()->tglsampaiheader) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])
+                ->where('b.bank_id', request()->bankheader);
         }
         DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal'], $getDataLain);
 
@@ -876,9 +876,9 @@ class PenerimaanHeader extends MyModel
             ->select(DB::raw("b.nobukti, STRING_AGG(cast(a.nobukti as nvarchar(max)), ', ') as nobukti_asal"))
             ->join(DB::raw("penerimaanheader as b with (readuncommitted)"), 'a.penerimaan_nobukti', 'b.nobukti')
             ->groupBy("b.nobukti");
-        if (request()->tgldari && request()->tglsampai) {
-            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
-                ->where('b.bank_id', request()->bank);
+        if (request()->tgldariheader && request()->tglsampaiheader) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])
+                ->where('b.bank_id', request()->bankheader);
         }
         DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal'], $getDataLain);
 

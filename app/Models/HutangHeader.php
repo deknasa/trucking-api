@@ -179,8 +179,8 @@ class HutangHeader extends MyModel
         $getDataLain = DB::table("penerimaanstokheader")->from(DB::raw("penerimaanstokheader as a with (readuncommitted)"))
             ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal"))
             ->join(DB::raw("hutangheader as b with (readuncommitted)"), 'a.hutang_nobukti', 'b.nobukti');
-        if (request()->tgldari && request()->tglsampai) {
-            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        if (request()->tgldariheader && request()->tglsampaiheader) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
         }
         DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal'], $getDataLain);
 

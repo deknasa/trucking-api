@@ -488,8 +488,8 @@ class PengeluaranHeader extends MyModel
             ->join(DB::raw("pengeluaranheader as b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti')
             ->leftJoin(DB::raw("absensisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.kasgantung_nobukti')
             ->whereRaw("isnull(c.nobukti,'')=''");
-        if (request()->tgldari && request()->tglsampai) {
-            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+        if (request()->tgldariheader && request()->tglsampaiheader) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])
                 ->where('b.bank_id', request()->bank_id);
         }
         DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal'], $getDataLain);
@@ -498,8 +498,8 @@ class PengeluaranHeader extends MyModel
         $getDataLain = DB::table("absensisupirapprovalheader")->from(DB::raw("absensisupirapprovalheader as a with (readuncommitted)"))
             ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal"))
             ->join(DB::raw("pengeluaranheader as b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti');
-        if (request()->tgldari && request()->tglsampai) {
-            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+        if (request()->tgldariheader && request()->tglsampaiheader) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])
                 ->where('b.bank_id', request()->bank_id);
         }
         DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal'], $getDataLain);
@@ -508,8 +508,8 @@ class PengeluaranHeader extends MyModel
         $getDataLain = DB::table("pelunasanhutangheader")->from(DB::raw("pelunasanhutangheader as a with (readuncommitted)"))
             ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal"))
             ->join(DB::raw("pengeluaranheader as b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti');
-        if (request()->tgldari && request()->tglsampai) {
-            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+        if (request()->tgldariheader && request()->tglsampaiheader) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])
                 ->where('b.bank_id', request()->bank_id);
         }
         DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal'], $getDataLain);
@@ -518,8 +518,8 @@ class PengeluaranHeader extends MyModel
         $getDataLain = DB::table("pengeluarantruckingheader")->from(DB::raw("pengeluarantruckingheader as a with (readuncommitted)"))
             ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal"))
             ->join(DB::raw("pengeluaranheader as b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti');
-        if (request()->tgldari && request()->tglsampai) {
-            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+        if (request()->tgldariheader && request()->tglsampaiheader) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])
                 ->where('b.bank_id', request()->bank_id);
         }
         DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal'], $getDataLain);
@@ -528,8 +528,8 @@ class PengeluaranHeader extends MyModel
         $getDataLain = DB::table("prosesgajisupirheader")->from(DB::raw("prosesgajisupirheader as a with (readuncommitted)"))
             ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal"))
             ->join(DB::raw("pengeluaranheader as b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti');
-        if (request()->tgldari && request()->tglsampai) {
-            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+        if (request()->tgldariheader && request()->tglsampaiheader) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])
                 ->where('b.bank_id', request()->bank_id);
         }
         DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal'], $getDataLain);
@@ -538,8 +538,8 @@ class PengeluaranHeader extends MyModel
         $getDataLain = DB::table("pendapatansupirheader")->from(DB::raw("pendapatansupirheader as a with (readuncommitted)"))
             ->select(DB::raw("b.nobukti, a.nobukti as nobukti_asal"))
             ->join(DB::raw("pengeluaranheader as b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti');
-        if (request()->tgldari && request()->tglsampai) {
-            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+        if (request()->tgldariheader && request()->tglsampaiheader) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])
                 ->where('b.bank_id', request()->bank_id);
         }
         DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal'], $getDataLain);
