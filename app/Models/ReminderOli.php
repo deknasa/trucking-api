@@ -281,7 +281,8 @@ class ReminderOli extends MyModel
                 'a.tglsampai',
                 'a.jarak',
             )
-            ->leftjoin(db::raw("trado b with (readuncommitted)"), 'a.nopol', 'b.kodetrado')
+            ->join(db::raw("trado b with (readuncommitted)"), 'a.trado_id', 'b.id')
+            ->where("b.statusaktif","1")
             ->orderby('a.id', 'asc');
 
         //   dd($querysaldo->get());
@@ -684,12 +685,14 @@ class ReminderOli extends MyModel
             $table->string('statusbatas', 100)->nullable();
             $table->integer('urutid')->nullable();
         });
+        $parameter = new Parameter();
+        $tglsaldo = $parameter->cekText('SALDO', 'SALDO') ?? '1900-01-01';
 
         $query = DB::table($Tempsaldoreminderoli)->from(DB::raw($Tempsaldoreminderoli . " a "))
             ->select(
                 'a.nopol',
                 'a.trado_id',
-                db::raw("isnull(c.tgl,'2023/9/30') as tanggal"),
+                db::raw("isnull(c.tgl,'".$tglsaldo."') as tanggal"),
                 'a.statusreminder as status',
                 DB::raw("(case 
                     when a.statusreminder = 'PENGGANTIAN OLI GARDAN' then $batasgardan 

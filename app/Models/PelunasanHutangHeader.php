@@ -143,11 +143,13 @@ class PelunasanHutangHeader extends MyModel
                 'PelunasanHutangheader.nowarkat',
                 'PelunasanHutangheader.statusapproval',
                 'alatbayar.namaalatbayar as alatbayar',
-                'PelunasanHutangheader.tglcair'
+                'PelunasanHutangheader.tglcair',
+                'pengeluaranheader.statusapproval as statusapprovalpengeluaran'
             )
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'PelunasanHutangheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'PelunasanHutangheader.supplier_id', 'supplier.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'PelunasanHutangheader.alatbayar_id', 'alatbayar.id')
+            ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"), 'PelunasanHutangheader.pengeluaran_nobukti', 'pengeluaranheader.nobukti')
             ->where('PelunasanHutangheader.id', $id);
 
 
@@ -861,22 +863,23 @@ class PelunasanHutangHeader extends MyModel
             ->where('subgrp', '=', 'KETERANGAN DEFAULT HUTANG USAHA')
             ->first();
 
-        $querysupplier = DB::table('PelunasanHutangheader')->from(
-            db::raw("PelunasanHutangheader a with (readuncommitted)")
-        )
-            ->select(
-                'b.namasupplier'
-            )
-            ->join(DB::raw("supplier b with (readuncommitted)"), 'a.supplier_id', 'b.id')
-            ->where('a.id', '=', $PelunasanHutangHeader->id)
-            ->first();
+        // $querysupplier = DB::table('PelunasanHutangheader')->from(
+        //     db::raw("PelunasanHutangheader a with (readuncommitted)")
+        // )
+        //     ->select(
+        //         'b.namasupplier'
+        //     )
+        //     ->join(DB::raw("supplier b with (readuncommitted)"), 'a.supplier_id', 'b.id')
+        //     ->where('a.id', '=', $PelunasanHutangHeader->id)
+        //     ->first();
 
-        $supplier = $querysupplier->namasupplier ?? '';
+        // $supplier = $querysupplier->namasupplier ?? '';
 
+        $supplier = Supplier::from(DB::raw("supplier with (readuncommitted)"))->where('id', $data['supplier_id'])->first();
         $statusketerangan = $statusketerangan->text ?? '';
         $total = 0;
         for ($i = 0; $i < count($data['hutang_id']); $i++) {
-            $hutang = HutangDetail::where('nobukti', $data['hutang_nobukti'][$i])->first();
+            $hutang = DB::table("hutangheader")->from(DB::raw("hutangheader with (readuncommitted)"))->where('nobukti', $data['hutang_nobukti'][$i])->first();
 
             $PelunasanHutangDetail = (new PelunasanHutangDetail())->processStore($PelunasanHutangHeader, [
                 'PelunasanHutang_id' => $PelunasanHutangHeader->id,
@@ -893,28 +896,40 @@ class PelunasanHutangHeader extends MyModel
             $PelunasanHutangDetails[] = $PelunasanHutangDetail->toArray();
             $total = $total + ($data['bayar'][$i] - $data['potongan'][$i]);
             $keterangan_detail[] = $data['keterangan'][$i];
-        }
-
-        
-        $supplier = Supplier::from(DB::raw("supplier with (readuncommitted)"))->where('id', $data['supplier_id'])->first();
-        $queryGetcoa = DB::table("pelunasanhutangdetail")->from(DB::raw("pelunasanhutangdetail as ph with (readuncommitted)"))
-            ->select(DB::raw("h.coakredit as coa,sum(ph.nominal) as nominal"))
-
-            ->join(db::raw("hutangheader as h with (readuncommitted)"), 'ph.hutang_nobukti', 'h.nobukti')
-            ->where('ph.nobukti', $PelunasanHutangHeader->nobukti)
-            ->groupBy('h.coakredit')
-            ->get();
-            
-
-        for ($i = 0; $i < count($queryGetcoa); $i++) {
-            $coadebet[] = $queryGetcoa[$i]->coa;
+            $coadebet[] = $hutang->coakredit;
             $coakredit[] = $coakredits;
             $tgljatuhtempo[] = $data['tglcair'];
             $nowarkat[] = $data['nowarkat'];
-            $nominal_detail[] = $queryGetcoa[$i]->nominal;
-            $statusketerangandefault[] = $statusketerangan . ' ' . $supplier->namasupplier . ' ' . $data['keterangan'][0];
+            $nominal_detail[] = $data['bayar'][$i];
+            $statusketerangandefault[] = $statusketerangan . ' ' . $supplier->namasupplier . ' ' . $data['hutang_nobukti'][$i] . ' ' . $data['keterangan'][$i];
         }
-    
+
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
+        if ($cabang == 'JAKARTA' || $cabang == 'TNL') {
+            $queryGetcoa = DB::table("pelunasanhutangdetail")->from(DB::raw("pelunasanhutangdetail as ph with (readuncommitted)"))
+                ->select(DB::raw("h.coakredit as coa,sum(ph.nominal) as nominal"))
+
+                ->join(db::raw("hutangheader as h with (readuncommitted)"), 'ph.hutang_nobukti', 'h.nobukti')
+                ->where('ph.nobukti', $PelunasanHutangHeader->nobukti)
+                ->groupBy('h.coakredit')
+                ->get();
+
+            $coadebet = [];
+            $coakredit = [];
+            $tgljatuhtempo = [];
+            $nowarkat = [];
+            $nominal_detail = [];
+            $statusketerangandefault = [];
+
+            for ($i = 0; $i < count($queryGetcoa); $i++) {
+                $coadebet[] = $queryGetcoa[$i]->coa;
+                $coakredit[] = $coakredits;
+                $tgljatuhtempo[] = $data['tglcair'];
+                $nowarkat[] = $data['nowarkat'];
+                $nominal_detail[] = $queryGetcoa[$i]->nominal;
+                $statusketerangandefault[] = $statusketerangan . ' ' . $supplier->namasupplier . ' ' . $data['keterangan'][0];
+            }
+        }
         /*STORE PENGELUARAN*/
 
         if ($bayarhutang == $statusbayarhutang) {

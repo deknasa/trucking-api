@@ -774,6 +774,30 @@ class ListTrip extends MyModel
                     ];
                     $orderanTrucking = (new OrderanTrucking())->processUpdate($getJobtrucking, $orderan);
                 }
+            } else {
+                $tglBatasEdit = date('Y-m-d', strtotime($data['tglbukti'])) . ' ' . '12:00:00';
+                $orderan = [
+                    'tglbukti' => $data['tglbukti'],
+                    'container_id' => $data['container_id'],
+                    'agen_id' => $data['agen_id'],
+                    'jenisorder_id' => $data['jenisorder_id'],
+                    'pelanggan_id' => $data['pelanggan_id'],
+                    'tarifrincian_id' => $data['tarifrincian_id'],
+                    'statusjeniskendaraan' => $data['statusjeniskendaraan'],
+                    'nojobemkl' => $data['nojobemkl'] ?? '',
+                    'nocont' => $data['nocont'] ?? '',
+                    'noseal' => $data['noseal'] ?? '',
+                    'nojobemkl2' => $data['nojobemkl2'] ?? '',
+                    'nocont2' => $data['nocont2'] ?? '',
+                    'noseal2' => $data['noseal2'] ?? '',
+                    'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
+                    'gandengan_id' => $data['gandengan_id'],
+                    'statusperalihan' => $statusperalihan->id,
+                    'tglbataseditorderantrucking' => $tglBatasEdit,
+                    'inputtripmandor' =>  '1',
+                ];
+                $orderanTrucking = (new OrderanTrucking())->processStore($orderan);
+                $trip->jobtrucking = $orderanTrucking->nobukti;
             }
             goto trip;
         }
@@ -1564,7 +1588,7 @@ class ListTrip extends MyModel
         $query = db::table('a')->from(db::raw("OPENJSON ('$nobuktitrip')"))
             ->select(db::raw("[value] as nobukti"))
             ->groupBy('value');
-            DB::table($temp)->insertUsing(['nobukti'], $query);
+        DB::table($temp)->insertUsing(['nobukti'], $query);
 
         $nobuktitrip = json_encode($data['rincian_ritasi'], true);
         $query = db::table('a')->from(db::raw("OPENJSON ('$nobuktitrip')"))
@@ -1602,7 +1626,7 @@ class ListTrip extends MyModel
                         ]);
                     }
                 }
-            } 
+            }
             if ($nomor == 'TRP') {
                 $getSuratpengantar = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('nobukti', $nobukti)->first()->id ?? 0;
                 if ($getSuratpengantar != 0) {

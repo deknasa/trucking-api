@@ -1269,4 +1269,34 @@ class SuratPengantarController extends Controller
             ]
         ]);
     }
+
+    /**
+     * @ClassName 
+     * @Keterangan EDIT TRIP ASAL
+     */
+    public function editTripAsal(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $data = [
+                'id' => $request->id,
+                'nobukti_tripasal' => $request->nobukti_tripasal ?? '',
+            ];
+            $suratPengantar = (new SuratPengantar())->editTripAsal($data);
+            $suratPengantar->page = request()->page;
+            $suratPengantar->tgldariheader = date('Y-m-d', strtotime(request()->tgldariheader));
+            $suratPengantar->tglsampaiheader = date('Y-m-d', strtotime(request()->tglsampaiheader));
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Berhasil diubah',
+                'data' => $suratPengantar
+            ]);
+        } catch (\Throwable $th) {
+
+            DB::rollBack();
+            throw $th;
+        }
+    }
 }

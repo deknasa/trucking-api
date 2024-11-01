@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\ApprovalBukaCetakRequest;
-use Illuminate\Http\Request;
 use App\Models\Parameter;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\PenerimaanHeader;
-use App\Models\PengeluaranHeader;
-use App\Http\Requests\StoreApprovalBukuCetakHeaderRequest;
 use App\Models\ApprovalBukaCetak;
+use App\Models\PengeluaranHeader;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\ApprovalBukaCetakRequest;
+use App\Http\Requests\GetApprovalBukaCetakRequest;
+use App\Http\Requests\StoreApprovalBukuCetakHeaderRequest;
 use App\Rules\ApprovalBukaCetak as RulesApprovalBukaCetak;
 
 class ApprovalBukaCetakController extends Controller
@@ -21,46 +22,59 @@ class ApprovalBukaCetakController extends Controller
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
-    public function index(Request $request)
+    public function index(GetApprovalBukaCetakRequest $request)
     {
-        $parameter = new Parameter();
-        $dataCetak = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
-
-        $request['statuscetak'] = $dataCetak->id;
-
-        $parameter = new Parameter();
-        $dataCetakUlang = $parameter->getcombodata('CETAKULANG', 'CETAKULANG');
-        $dataCetakUlang = json_decode($dataCetakUlang, true);
-        foreach ($dataCetakUlang as $item) {
-            $statusCetakUlang[] = $item['text'];
-        }
-
-        $request->validate([
-            'table' => ['required', Rule::in($statusCetakUlang)],
-            'periode' => ['required', new RulesApprovalBukaCetak()],
-        ]);
-
-        if ($request->periode) {
-            $periode = explode("-", $request->periode);
-            $request->merge([
-                'year' => $periode[1],
-                'month' => $periode[0],
-                'statuscetak' => $dataCetak->id
-            ]);
-        }
-
-        $table = Parameter::where('text', $request->table)->first();
-        $backSlash = " \ ";
-        $model = 'App\Models' . trim($backSlash) . $table->text;
-        $data = app($model);
+        $data = new ApprovalBukaCetak();
         return response([
-            'data' => $data->get($request),
+            'data' => $data->get(),
             'attributes' => [
                 'totalRows' => $data->totalRows,
                 'totalPages' => $data->totalPages
             ]
         ]);
     }
+
+
+    // public function index2(Request $request)
+    // {
+    //     $parameter = new Parameter();
+    //     $dataCetak = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+    //     $request['statuscetak'] = $dataCetak->id;
+
+    //     $parameter = new Parameter();
+    //     $dataCetakUlang = $parameter->getcombodata('CETAKULANG', 'CETAKULANG');
+    //     $dataCetakUlang = json_decode($dataCetakUlang, true);
+    //     foreach ($dataCetakUlang as $item) {
+    //         $statusCetakUlang[] = $item['text'];
+    //     }
+
+    //     $request->validate([
+    //         'table' => ['required', Rule::in($statusCetakUlang)],
+    //         'periode' => ['required', new RulesApprovalBukaCetak()],
+    //     ]);
+
+    //     if ($request->periode) {
+    //         $periode = explode("-", $request->periode);
+    //         $request->merge([
+    //             'year' => $periode[1],
+    //             'month' => $periode[0],
+    //             'statuscetak' => $dataCetak->id
+    //         ]);
+    //     }
+
+    //     $table = Parameter::where('text', $request->table)->first();
+    //     $backSlash = " \ ";
+    //     $model = 'App\Models' . trim($backSlash) . $table->text;
+    //     $data = app($model);
+    //     return response([
+    //         'data' => $data->get($request),
+    //         'attributes' => [
+    //             'totalRows' => $data->totalRows,
+    //             'totalPages' => $data->totalPages
+    //         ]
+    //     ]);
+    // }
     /**
      * @ClassName 
      * @Keterangan TAMBAH DATA
