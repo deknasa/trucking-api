@@ -218,7 +218,8 @@ class LaporanPinjamanSupir extends MyModel
                 'a.nobukti',
                 DB::raw("'' as nobuktipelunasan"),
                 DB::raw("min(a.tglbukti) as tglbukti"),
-                DB::raw("'1900/1/1' as tglbuktipelunasan"),
+                // DB::raw("'1900/1/1' as tglbuktipelunasan"),
+                DB::raw("max(a.tglbukti) as tglbuktipelunasan"),
                 DB::raw("sum(a.nominal) as nominal"),
                 DB::raw("max(a.namasupir) as namasupir"),
                 DB::raw("max(a.created_at) as created_at"),
@@ -363,7 +364,8 @@ class LaporanPinjamanSupir extends MyModel
             $table->string('namasupir', 1000)->nullable();
             $table->dateTime('created_at')->nullable();
         });
-
+        $month = date('m', strtotime($sampai));
+        $year = date('Y', strtotime($sampai));
         $queryrekapdatahasil = DB::table($temprekapdata)->from(
             DB::raw($temprekapdata . " a ")
         )
@@ -376,7 +378,9 @@ class LaporanPinjamanSupir extends MyModel
                 'a.namasupir',
                 'a.created_at'
             )
-            ->whereraw("isnull(a.nominal,0)<>0")
+            ->whereRaw(" (MONTH(a.tglbuktipelunasan) = $month AND YEAR(a.tglbuktipelunasan) = $year) 
+                        OR ((MONTH(a.tglbuktipelunasan) <> $month OR YEAR(a.tglbuktipelunasan) <> $year) AND ISNULL(a.nominal, 0) <> 0)")
+            // ->whereraw("isnull(a.nominal,0)<>0")
             ->OrderBy('a.tglbukti', 'asc')
             ->OrderBy('a.created_at', 'asc')
             ->OrderBy('a.nobukti', 'asc')
@@ -489,6 +493,9 @@ class LaporanPinjamanSupir extends MyModel
             
 
             ->OrderBy('a.id', 'asc');
+            // dd($query->count());
+            // dd($query->where('a.nobukti','PJT 0008/VI/2018')->get());
+            // dd($query->whereraw("(a.debet = 0 and a.kredit = 0)")->get());
 
         $data = $query->get();
         return $data;
