@@ -1354,6 +1354,16 @@ class InvoiceEmklHeader extends MyModel
                 }
             }
         }
+        
+        if ($data['statusinvoice'] != $statusInvoice->id) {
+            if($data['jenisorder_id'] == 1 && count($coadebetjurnal) > 0){
+                $nominaljurnal[] = $nominalppn;
+                $coadebetjurnal[] = $coadebetjurnal[0];
+                $coakreditjurnal[] = $coakreditjurnal[0];
+                $keteranganjurnal[] = 'PPN ATAS INVOICE PAJAK '. $invoiceHeader->nobuktiinvoicepajak;
+            }
+        }
+        
         $invoiceRequest = [
             'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
             'tgljatuhtempo' => date('Y-m-d', strtotime($data['tglbukti'])),
@@ -2079,6 +2089,14 @@ class InvoiceEmklHeader extends MyModel
         $invoiceHeader->nominalppn = $nominalppn;
         $invoiceHeader->save();
 
+        if ($data['statusinvoice'] != $statusInvoice->id) {
+            if($data['jenisorder_id'] == 1 && count($coadebetjurnal) > 0){
+                $nominaljurnal[] = $nominalppn;
+                $coadebetjurnal[] = $coadebetjurnal[0];
+                $coakreditjurnal[] = $coakreditjurnal[0];
+                $keteranganjurnal[] = 'PPN ATAS INVOICE PAJAK '. $invoiceHeader->nobuktiinvoicepajak;
+            }
+        }
         $invoiceRequest = [
             'tgljatuhtempo' => date('Y-m-d', strtotime($data['tglbukti'])),
             'postingdari' => 'EDIT INVOICE EMKL',
