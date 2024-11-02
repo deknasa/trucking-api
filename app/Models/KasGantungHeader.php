@@ -169,6 +169,25 @@ class KasGantungHeader extends MyModel
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
 
+        $tempTable = '##tempTable' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempTable, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->longText('nobukti_asal')->nullable();
+            $table->longText('url_asal')->nullable();
+        });
+        $petik = '"';
+        $url = config('app.url_fe') . 'pengembaliankasgantungheader';
+        $getDataLain = DB::table("pengembaliankasgantungdetail")->from(DB::raw("pengembaliankasgantungdetail as a with (readuncommitted)"))
+            ->select(DB::raw("b.nobukti, STRING_AGG(cast(a.nobukti as nvarchar(max)), ', ') as nobukti_asal, STRING_AGG(cast('<a href=$petik" . $url . "?tgldari='+(format(c.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(c.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+a.nobukti+'$petik class=$petik link-color $petik target=$petik _blank $petik>'+a.nobukti+'</a>' as nvarchar(max)), ',') as url_asal"))
+            ->join(DB::raw("kasgantungheader as b with (readuncommitted)"), 'a.kasgantung_nobukti', 'b.nobukti')
+            ->join(DB::raw("pengembaliankasgantungheader as c with (readuncommitted)"), 'c.nobukti', 'a.nobukti')
+            ->groupBy("b.nobukti");
+        if (request()->tgldari && request()->tglsampai) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        
+        DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal', 'url_asal'], $getDataLain);
+
         $query = DB::table($this->table)->from(DB::raw("kasgantungheader with (readuncommitted)"))
             ->select(
                 'kasgantungheader.id',
@@ -191,6 +210,8 @@ class KasGantungHeader extends MyModel
                 db::raw("cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
                 db::raw("cast(cast(format((cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
                 'kasgantungheader.bank_id as pengeluaranbank_id',
+                DB::raw("cast(isnull(asal.nobukti_asal, '') as nvarchar(max)) as nobukti_asal"),
+                DB::raw("cast(isnull(asal.url_asal, '') as nvarchar(max)) as url_asal")
 
             )
 
@@ -198,6 +219,7 @@ class KasGantungHeader extends MyModel
             ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'kasgantungheader.penerima_id', 'penerima.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'kasgantungheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("pengeluaranheader as pengeluaran with (readuncommitted)"), 'kasgantungheader.pengeluaran_nobukti', '=', 'pengeluaran.nobukti')
+            ->leftJoin(DB::raw("$tempTable as asal with (readuncommitted)"), 'kasgantungheader.nobukti', 'asal.nobukti')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'kasgantungheader.bank_id', 'bank.id');
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
@@ -256,6 +278,21 @@ class KasGantungHeader extends MyModel
 
     public function selectColumns($query)
     {
+        $tempTable = '##tempTable' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempTable, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->longText('nobukti_asal')->nullable();
+        });
+        $getDataLain = DB::table("pengembaliankasgantungdetail")->from(DB::raw("pengembaliankasgantungdetail as a with (readuncommitted)"))
+            ->select(DB::raw("b.nobukti, STRING_AGG(cast(a.nobukti as nvarchar(max)), ', ') as nobukti_asal"))
+            ->join(DB::raw("kasgantungheader as b with (readuncommitted)"), 'a.kasgantung_nobukti', 'b.nobukti')
+            ->groupBy("b.nobukti");
+        if (request()->tgldariheader && request()->tglsampaiheader) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+        }
+        
+        DB::table($tempTable)->insertUsing(['nobukti', 'nobukti_asal'], $getDataLain);
+        
         return $query->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
@@ -275,13 +312,15 @@ class KasGantungHeader extends MyModel
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at,
-            $this->table.penerima
+            $this->table.penerima,
+            cast(isnull(asal.nobukti_asal, '') as nvarchar(max)) as nobukti_asal
             "
 
                 )
             )
             ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'kasgantungheader.penerima_id', 'penerima.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'kasgantungheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("$tempTable as asal with (readuncommitted)"), 'kasgantungheader.nobukti', 'asal.nobukti')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'kasgantungheader.bank_id', 'bank.id');
     }
 
@@ -304,6 +343,7 @@ class KasGantungHeader extends MyModel
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
             $table->longText('penerima')->nullable();
+            $table->longText('nobukti_asal')->nullable();
             $table->increments('position');
         });
 
@@ -322,7 +362,7 @@ class KasGantungHeader extends MyModel
         DB::table($temp)->insertUsing(
             [
                 'id', 'nobukti', 'tglbukti',  'bank_id', 'pengeluaran_nobukti', 'coakaskeluar',
-                'tglkaskeluar', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at', 'penerima'
+                'tglkaskeluar', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at', 'penerima','nobukti_asal'
             ],
             $models
         );
@@ -428,6 +468,8 @@ class KasGantungHeader extends MyModel
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'url_asal') {
+                                $query = $query->where('asal.nobukti_asal', 'LIKE', "%$filters[data]%");
                             } else {
                                 // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -450,6 +492,8 @@ class KasGantungHeader extends MyModel
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'url_asal') {
+                                    $query = $query->orWhere('asal.nobukti_asal', 'LIKE', "%$filters[data]%");
                                 } else {
                                     // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                     $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
