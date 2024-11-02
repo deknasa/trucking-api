@@ -123,13 +123,20 @@ class PengeluaranStokDetail extends MyModel
 
             $this->totalRows = $query->count();
         } else {
-
+            
             $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->select('text')
                 ->where('grp', 'JUDULAN LAPORAN')
                 ->where('subgrp', 'JUDULAN LAPORAN')
                 ->first();
 
+            $cekHeader = DB::table('pengeluaranstokheader')->from(DB::raw("pengeluaranstokheader with (readuncommitted)"))
+                ->select('pengeluaranstok_id')
+                ->where('id', request()->pengeluaranstokheader_id)
+                ->first();
+            $spk = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
+            
+            
             $query->select(
                 "$this->table.pengeluaranstokheader_id",
                 "$this->table.nobukti",
@@ -174,6 +181,16 @@ class PengeluaranStokDetail extends MyModel
                 ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
                 ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id")
                 ->leftJoin("parameter as statusban", "stok.statusban", "statusban.id");
+                
+            if($spk->text ==$cekHeader->pengeluaranstok_id){
+                $query
+                ->leftJoin("pengeluaranstokdetailfifo as fifo", "$this->table.stok_id", "fifo.stok_id")
+                ->addSelect(
+                    db::raw("isnull(fifo.qty,0) as qty"),
+                    db::raw("isnull(fifo.penerimaanstok_harga,0) as harga"),
+                    db::raw("isnull(fifo.penerimaanstokheader_totalterpakai,0) as total"),
+                );
+            }
             if($from == 'klaim')
             {
                 $tempfifo = '##tempfifo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -211,8 +228,11 @@ class PengeluaranStokDetail extends MyModel
                     $query->whereRaw("pengeluaranstokdetail.stok_id not in (select stok_id from pengeluarantruckingdetail where pengeluaranstok_nobukti='$nobuktiStok' and stok_id != $stok_id)");
                 }
             }
-
-            $this->totalNominal = $query->sum('total');
+            if($spk->text ==$cekHeader->pengeluaranstok_id){
+                $this->totalNominal = $query->sum('penerimaanstokheader_totalterpakai');
+            }else{
+                $this->totalNominal = $query->sum('total');
+            }
             $this->filter($query);
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
