@@ -2950,7 +2950,7 @@ class GajiSupirHeader extends MyModel
                 ->join(DB::raw("suratpengantar as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.nobukti')
                 ->join(DB::raw("upahsupirrincian as c with (readuncommitted)"), 'b.upah_id', 'c.upahsupir_id')
                 ->where('a.gajisupir_id', $id)
-                ->whereRaw("c.container_id=b.container_id and c.statuscontainer_id=b.statuscontainer_id")
+                ->whereRaw("c.container_id=b.container_id and c.statuscontainer_id=b.statuscontainer_id and a.gajisupir > 0")
                 ->first()->liter ?? 0;
             $liter = $getLiter;
         }
