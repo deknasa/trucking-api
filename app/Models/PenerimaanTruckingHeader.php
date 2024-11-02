@@ -111,7 +111,42 @@ class PenerimaanTruckingHeader extends MyModel
                 $table->date('tgldariheaderpenerimaanheader')->nullable();
                 $table->date('tglsampaiheaderpenerimaanheader')->nullable();
                 $table->integer('penerimaanbank_id')->nullable();
+                $table->longText('nobukti_pelunasan')->nullable();
+                $table->longText('url_pelunasan')->nullable();
             });
+
+            $tempPelunasan = '##tempPelunasan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempPelunasan, function ($table) {
+                $table->string('nobukti')->nullable();
+                $table->longText('nobukti_pelunasan')->nullable();
+                $table->longText('url_pelunasan')->nullable();
+            });
+            $petik = '"';
+            $url = config('app.url_fe') . 'pengeluarantruckingheader';
+            // DPO
+            $getDataLain = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail as a with (readuncommitted)"))
+                ->select(DB::raw("b.nobukti, STRING_AGG(cast(a.nobukti as nvarchar(max)), ', ') as nobukti_pelunasan, STRING_AGG(cast('<a href=$petik" . $url . "?tgldari='+(format(c.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(c.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+a.nobukti+'$petik class=$petik link-color $petik target=$petik _blank $petik>'+a.nobukti+'</a>' as nvarchar(max)), ',') as url_pelunasan"))
+                ->join(DB::raw("penerimaantruckingheader as b with (readuncommitted)"), 'a.penerimaantruckingheader_nobukti', 'b.nobukti')
+                ->join(DB::raw("pengeluarantruckingheader as c with (readuncommitted)"), 'c.nobukti', 'a.nobukti')
+                ->groupBy("b.nobukti");
+            if (request()->tgldari && request()->tglsampai) {
+                $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])->where('b.penerimaantrucking_id', 3);
+            }
+
+            DB::table($tempPelunasan)->insertUsing(['nobukti', 'nobukti_pelunasan', 'url_pelunasan'], $getDataLain);
+
+            // BBM
+            $getDataLain = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail as a with (readuncommitted)"))
+                ->select(DB::raw("b.nobukti, STRING_AGG(cast(a.nobukti as nvarchar(max)), ', ') as nobukti_pelunasan, STRING_AGG(cast('<a href=$petik" . $url . "?tgldari='+(format(c.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(c.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+a.nobukti+'$petik class=$petik link-color $petik target=$petik _blank $petik>'+a.nobukti+'</a>' as nvarchar(max)), ',') as url_pelunasan"))
+                ->join(DB::raw("penerimaantruckingheader as b with (readuncommitted)"), 'a.penerimaantruckingheader_nobukti', 'b.nobukti')
+                ->join(DB::raw("pengeluarantruckingheader as c with (readuncommitted)"), 'c.nobukti', 'a.nobukti')
+                ->groupBy("b.nobukti");
+            if (request()->tgldari && request()->tglsampai) {
+                $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])->where('b.penerimaantrucking_id', 1);
+            }
+
+            DB::table($tempPelunasan)->insertUsing(['nobukti', 'nobukti_pelunasan', 'url_pelunasan'], $getDataLain);
+
 
             $query = DB::table($this->table)->from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
                 ->select(
@@ -138,6 +173,9 @@ class PenerimaanTruckingHeader extends MyModel
                     db::raw("cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaanheader"),
                     db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanheader"),
                     'penerimaanheader.bank_id as penerimaanbank_id',
+                    DB::raw("cast(isnull(asal.nobukti_pelunasan, '') as nvarchar(max)) as nobukti_pelunasan"),
+                    DB::raw("cast(isnull(asal.url_pelunasan, '') as nvarchar(max)) as url_pelunasan")
+
 
 
                 )
@@ -147,6 +185,7 @@ class PenerimaanTruckingHeader extends MyModel
                 ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'penerimaantruckingheader.statuscetak', 'parameter.id')
                 ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id')
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), 'penerimaantruckingheader.supir_id', 'supir.id')
+                ->leftJoin(DB::raw("$tempPelunasan as asal with (readuncommitted)"), 'penerimaantruckingheader.nobukti', 'asal.nobukti')
                 ->leftJoin(DB::raw("karyawan with (readuncommitted)"), 'penerimaantruckingheader.karyawan_id', 'karyawan.id');
             // ->join(db::raw($temprole . " d "), 'penerimaantrucking.aco_id', 'd.aco_id');
 
@@ -238,6 +277,8 @@ class PenerimaanTruckingHeader extends MyModel
                     'tgldariheaderpenerimaanheader' => $item['tgldariheaderpenerimaanheader'],
                     'tglsampaiheaderpenerimaanheader' => $item['tglsampaiheaderpenerimaanheader'],
                     'penerimaanbank_id' => $item['penerimaanbank_id'],
+                    'nobukti_pelunasan' => $item['nobukti_pelunasan'],
+                    'url_pelunasan' => $item['url_pelunasan'],
 
                 ]);
             }
@@ -277,6 +318,8 @@ class PenerimaanTruckingHeader extends MyModel
                 'a.tgldariheaderpenerimaanheader',
                 'a.tglsampaiheaderpenerimaanheader',
                 'a.penerimaanbank_id',
+                'a.nobukti_pelunasan',
+                'a.url_pelunasan',
             );
 
         $this->totalRows = $query->count();
@@ -363,7 +406,41 @@ class PenerimaanTruckingHeader extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->date('tgldariheaderpenerimaanheader')->nullable();
             $table->date('tglsampaiheaderpenerimaanheader')->nullable();
+            $table->longText('nobukti_pelunasan')->nullable();
         });
+
+
+        $tempPelunasan = '##tempPelunasan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempPelunasan, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->longText('nobukti_pelunasan')->nullable();
+            $table->longText('url_pelunasan')->nullable();
+        });
+        $petik = '"';
+        $url = config('app.url_fe') . 'pengeluarantruckingheader';
+        // DPO
+        $getDataLain = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail as a with (readuncommitted)"))
+            ->select(DB::raw("b.nobukti, STRING_AGG(cast(a.nobukti as nvarchar(max)), ', ') as nobukti_pelunasan, STRING_AGG(cast('<a href=$petik" . $url . "?tgldari='+(format(c.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(c.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+a.nobukti+'$petik class=$petik link-color $petik target=$petik _blank $petik>'+a.nobukti+'</a>' as nvarchar(max)), ',') as url_pelunasan"))
+            ->join(DB::raw("penerimaantruckingheader as b with (readuncommitted)"), 'a.penerimaantruckingheader_nobukti', 'b.nobukti')
+            ->join(DB::raw("pengeluarantruckingheader as c with (readuncommitted)"), 'c.nobukti', 'a.nobukti')
+            ->groupBy("b.nobukti");
+        if (request()->tgldariheader && request()->tglsampaiheader) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])->where('b.penerimaantrucking_id', 3);
+        }
+
+        DB::table($tempPelunasan)->insertUsing(['nobukti', 'nobukti_pelunasan', 'url_pelunasan'], $getDataLain);
+
+        // BBM
+        $getDataLain = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail as a with (readuncommitted)"))
+            ->select(DB::raw("b.nobukti, STRING_AGG(cast(a.nobukti as nvarchar(max)), ', ') as nobukti_pelunasan, STRING_AGG(cast('<a href=$petik" . $url . "?tgldari='+(format(c.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(c.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+a.nobukti+'$petik class=$petik link-color $petik target=$petik _blank $petik>'+a.nobukti+'</a>' as nvarchar(max)), ',') as url_pelunasan"))
+            ->join(DB::raw("penerimaantruckingheader as b with (readuncommitted)"), 'a.penerimaantruckingheader_nobukti', 'b.nobukti')
+            ->join(DB::raw("pengeluarantruckingheader as c with (readuncommitted)"), 'c.nobukti', 'a.nobukti')
+            ->groupBy("b.nobukti");
+        if (request()->tgldariheader && request()->tglsampaiheader) {
+            $getDataLain->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])->where('b.penerimaantrucking_id', 1);
+        }
+
+        DB::table($tempPelunasan)->insertUsing(['nobukti', 'nobukti_pelunasan', 'url_pelunasan'], $getDataLain);
         $query = DB::table($this->table)->from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
             ->select(
                 'penerimaantruckingheader.id',
@@ -389,6 +466,7 @@ class PenerimaanTruckingHeader extends MyModel
                 'penerimaantruckingheader.updated_at',
                 db::raw("cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaanheader"),
                 db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanheader"),
+                DB::raw("cast(isnull(asal.nobukti_pelunasan, '') as nvarchar(max)) as nobukti_pelunasan"),
             )
             ->leftJoin(DB::raw("penerimaanheader with (readuncommitted)"), 'penerimaantruckingheader.penerimaan_nobukti', '=', 'penerimaanheader.nobukti')
             ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id', 'penerimaantrucking.id')
@@ -396,6 +474,7 @@ class PenerimaanTruckingHeader extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'penerimaantruckingheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'penerimaantruckingheader.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("$tempPelunasan as asal with (readuncommitted)"), 'penerimaantruckingheader.nobukti', 'asal.nobukti')
             ->leftJoin(DB::raw("karyawan with (readuncommitted)"), 'penerimaantruckingheader.karyawan_id', 'karyawan.id');
         // ->join(db::raw($temprole . " d "), 'penerimaantrucking.aco_id', 'd.aco_id');
         DB::table($temp)->insertUsing([
@@ -420,6 +499,7 @@ class PenerimaanTruckingHeader extends MyModel
             'updated_at',
             'tgldariheaderpenerimaanheader',
             'tglsampaiheaderpenerimaanheader',
+            'nobukti_pelunasan'
         ], $query);
 
         $query = DB::table($temp)->from(DB::raw($temp . " a "))
@@ -445,6 +525,7 @@ class PenerimaanTruckingHeader extends MyModel
                 'a.updated_at',
                 'a.tgldariheaderpenerimaanheader',
                 'a.tglsampaiheaderpenerimaanheader',
+                'a.nobukti_pelunasan'
 
             );
         return $query;
@@ -475,6 +556,7 @@ class PenerimaanTruckingHeader extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->date('tgldariheaderpenerimaanheader')->nullable();
             $table->date('tglsampaiheaderpenerimaanheader')->nullable();
+            $table->longText('nobukti_pelunasan')->nullable();
             $table->increments('position');
         });
         // if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
@@ -493,7 +575,7 @@ class PenerimaanTruckingHeader extends MyModel
         }
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'penerimaantruckingid', 'penerimaantrucking_id', 'penerimaan_nobukti', 'keteranganheader', 'bank_id', 'supir_id', 'karyawan_id', 'tglbukacetak', 'statuscetak', 'statuscetaktext', 'userbukacetak',  'jumlahcetak', 'coa', 'modifiedby', 'created_at', 'updated_at', 'tgldariheaderpenerimaanheader', 'tglsampaiheaderpenerimaanheader'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'penerimaantruckingid', 'penerimaantrucking_id', 'penerimaan_nobukti', 'keteranganheader', 'bank_id', 'supir_id', 'karyawan_id', 'tglbukacetak', 'statuscetak', 'statuscetaktext', 'userbukacetak',  'jumlahcetak', 'coa', 'modifiedby', 'created_at', 'updated_at', 'tgldariheaderpenerimaanheader', 'tglsampaiheaderpenerimaanheader', 'nobukti_pelunasan'], $models);
 
 
         return  $temp;
@@ -624,14 +706,14 @@ class PenerimaanTruckingHeader extends MyModel
 
         $temppenerimaanbbm = '##temppenerimaanbbm' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temppenerimaanbbm, function ($table) {
-            $table->string('nobuktiebs',50)->nullable();
+            $table->string('nobuktiebs', 50)->nullable();
             $table->string('nobukti')->nullable();
             $table->double('nominal', 15, 2)->nullable();
         });
 
         $temppengeluaranbbm = '##temppengeluaranbbm' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temppengeluaranbbm, function ($table) {
-            $table->string('nobuktiebs',50)->nullable();
+            $table->string('nobuktiebs', 50)->nullable();
             $table->string('nobukti')->nullable();
             $table->double('nominal', 15, 2)->nullable();
         });
@@ -918,23 +1000,23 @@ class PenerimaanTruckingHeader extends MyModel
             });
 
             $fetch1 = DB::table('penerimaantruckingdetail')
-            ->from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
-            ->select(
-                DB::raw("prosesgajisupirdetail.nobukti, 
-                'Pelunasan Hutang BBM Supir Periode '+format(min(suratpengantar.tglbukti),'dd-MM-yyyy')+' s/d ' + format(max(suratpengantar.tglbukti),'dd-MM-yyyy') as keterangan" )
-            )
-            ->Join(db::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', '=', 'penerimaantruckingheader.nobukti')
-            ->Join(db::raw("gajisupirbbm with (readuncommitted)"), 'gajisupirbbm.penerimaantrucking_nobukti', '=', 'penerimaantruckingheader.nobukti')
-            ->Join(db::raw("prosesgajisupirdetail with (readuncommitted)"), 'prosesgajisupirdetail.gajisupir_nobukti', '=', 'gajisupirbbm.gajisupir_nobukti')
-            ->Join(db::raw("prosesgajisupirheader with (readuncommitted)"), 'prosesgajisupirheader.nobukti', '=', 'prosesgajisupirdetail.nobukti')
-            ->Join(db::raw("gajisupirdetail with (readuncommitted)"), 'gajisupirdetail.nobukti', '=', 'prosesgajisupirdetail.gajisupir_nobukti')
-            ->Join(db::raw("suratpengantar with (readuncommitted)"), 'suratpengantar.nobukti', '=', 'gajisupirdetail.suratpengantar_nobukti')
-            ->leftJoin(db::raw("pengeluarantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', '=', 'pengeluarantruckingdetail.penerimaantruckingheader_nobukti ')
-            ->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
-            ->where('penerimaantruckingheader.penerimaantrucking_id', '=', 1)
-            ->groupBy('prosesgajisupirdetail.nobukti');
+                ->from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                ->select(
+                    DB::raw("prosesgajisupirdetail.nobukti, 
+                'Pelunasan Hutang BBM Supir Periode '+format(min(suratpengantar.tglbukti),'dd-MM-yyyy')+' s/d ' + format(max(suratpengantar.tglbukti),'dd-MM-yyyy') as keterangan")
+                )
+                ->Join(db::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', '=', 'penerimaantruckingheader.nobukti')
+                ->Join(db::raw("gajisupirbbm with (readuncommitted)"), 'gajisupirbbm.penerimaantrucking_nobukti', '=', 'penerimaantruckingheader.nobukti')
+                ->Join(db::raw("prosesgajisupirdetail with (readuncommitted)"), 'prosesgajisupirdetail.gajisupir_nobukti', '=', 'gajisupirbbm.gajisupir_nobukti')
+                ->Join(db::raw("prosesgajisupirheader with (readuncommitted)"), 'prosesgajisupirheader.nobukti', '=', 'prosesgajisupirdetail.nobukti')
+                ->Join(db::raw("gajisupirdetail with (readuncommitted)"), 'gajisupirdetail.nobukti', '=', 'prosesgajisupirdetail.gajisupir_nobukti')
+                ->Join(db::raw("suratpengantar with (readuncommitted)"), 'suratpengantar.nobukti', '=', 'gajisupirdetail.suratpengantar_nobukti')
+                ->leftJoin(db::raw("pengeluarantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', '=', 'pengeluarantruckingdetail.penerimaantruckingheader_nobukti ')
+                ->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
+                ->where('penerimaantruckingheader.penerimaantrucking_id', '=', 1)
+                ->groupBy('prosesgajisupirdetail.nobukti');
 
-            DB::table($temptgl)->insertUsing(['nobukti','keterangan'], $fetch1);
+            DB::table($temptgl)->insertUsing(['nobukti', 'keterangan'], $fetch1);
 
             $fetch = DB::table('penerimaantruckingdetail')
                 ->from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
@@ -1494,6 +1576,8 @@ class PenerimaanTruckingHeader extends MyModel
                                 $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'url_pelunasan') {
+                                $query = $query->where('a.nobukti_pelunasan', 'LIKE', "%$filters[data]%");
                             } else {
                                 // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -1512,6 +1596,8 @@ class PenerimaanTruckingHeader extends MyModel
                                     $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                     $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'url_pelunasan') {
+                                    $query = $query->orWhere('a.nobukti_pelunasan', 'LIKE', "%$filters[data]%");
                                 } else {
                                     // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                     $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
