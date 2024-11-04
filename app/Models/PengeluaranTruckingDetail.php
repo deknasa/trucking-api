@@ -178,7 +178,7 @@ class PengeluaranTruckingDetail extends MyModel
                     ->leftJoin(DB::raw("$tableStok as stok with (readuncommitted)"), "pengeluarantruckingdetail.$kolomStok", 'stok.id')
                     ->leftJoin(DB::raw("parameter as statustitipanemkl with (readuncommitted)"), 'pengeluarantruckingdetail.statustitipanemkl', 'statustitipanemkl.id')
                     ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'pengeluarantruckingdetail.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
-                    ->leftJoin(DB::raw("penerimaanstokheader with (readuncommitted)"), 'pengeluarantruckingdetail.pengeluaranstok_nobukti', '=', 'penerimaanstokheader.nobukti')
+                    ->leftJoin(DB::raw("penerimaanstokheader with (readuncommitted)"),  $this->table . '.penerimaanstok_nobukti', '=', 'penerimaanstokheader.nobukti')
                     ->leftJoin(DB::raw("container with (readuncommitted)"), 'pengeluarantruckingdetail.container_id', 'container.id');
 // dd('test');
             } else {
