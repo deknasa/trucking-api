@@ -2218,9 +2218,9 @@ class Supir extends MyModel
             $photoktp = true;
             $photosim = true;
             $photokk = true;
-            $photoskck = true;
             $pdfsuratperjanjian = true;
 
+           
             if (!is_null(json_decode($supir['photosupir']))) {
                 foreach (json_decode($supir['photosupir']) as $value) {
                     if ($value != '') {
@@ -2236,7 +2236,7 @@ class Supir extends MyModel
             } else {
                 $photosupir = false;
             }
-
+            
             selesai1:
             if (!is_null(json_decode($supir['photoktp']))) {
                 foreach (json_decode($supir['photoktp']) as $value) {
@@ -2279,34 +2279,17 @@ class Supir extends MyModel
                     if ($value != '') {
                         if (!Storage::exists("supir/kk/$value")) {
                             $photokk = false;
-                            goto selesai4;
+                            goto selesai5;
                         }
                     } else {
                         $photokk = false;
-                        goto selesai4;
+                        goto selesai5;
                     }
                 }
             } else {
                 $photokk = false;
             }
 
-            selesai4:
-
-            if (!is_null(json_decode($supir['photoskck']))) {
-                foreach (json_decode($supir['photoskck']) as $value) {
-                    if ($value != '') {
-                        if (!Storage::exists("supir/skck/$value")) {
-                            $photoskck = false;
-                            goto selesai5;
-                        }
-                    } else {
-                        $photoskck = false;
-                        goto selesai5;
-                    }
-                }
-            } else {
-                $photoskck = false;
-            }
 
             selesai5:
 
@@ -2340,7 +2323,8 @@ class Supir extends MyModel
                 ->first();
 
 
-            if ($photosupir == true || $photokk == true  || $photoktp == true || $photosim == true || $photoskck == true || $pdfsuratperjanjian == true) {
+
+            if ((!$photosupir) || (!$photokk) || (!$photoktp) || (!$photosim) || (!$pdfsuratperjanjian) ) {
                 if (isset($querygambar)) {
 
                     DB::table($tempsupirgambar)->insert([
