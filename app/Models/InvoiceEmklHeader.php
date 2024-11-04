@@ -485,6 +485,90 @@ class InvoiceEmklHeader extends MyModel
         ], $query2);
 
 
+        if ($statusinvoice == $invoiceUtamaId->id && $request->jenisorder_id == 2) {
+            $tempawal = '##tempawal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempawal, function ($table) {
+                $table->longText('jobemkl')->nullable();
+            });
+
+            $queryawal =  DB::table('jobemkl')->from(
+                db::raw("jobemkl a with (readuncommitted)")
+            )
+                ->select('a.nobukti as jobemkl')
+                ->join(db::raw("invoiceemkldetail as b with (readuncommitted)"), 'a.nobukti', 'b.jobemkl_nobukti')
+                ->join(db::raw("invoiceemklheader as c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
+                ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
+                ->where('c.statusinvoice', '!=', 722);
+            DB::table($tempawal)->insertUsing([
+                'jobemkl',
+            ], $queryawal);
+
+            $tempgetutama = '##tempgetutama' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempgetutama, function ($table) {
+                $table->longText('jobemkl')->nullable();
+            });
+            $querygetutama =  DB::table($tempawal)->from(
+                db::raw("$tempawal a with (readuncommitted)")
+            )
+                ->select('a.jobemkl')
+                ->join(db::raw("invoiceemkldetail as b with (readuncommitted)"), 'a.jobemkl', 'b.jobemkl_nobukti')
+                ->join(db::raw("invoiceemklheader as c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
+                ->where('c.statusinvoice', 722);
+            DB::table($tempgetutama)->insertUsing([
+                'jobemkl',
+            ], $querygetutama);
+
+            $tempfinal = '##tempfinal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempfinal, function ($table) {
+                $table->longText('jobemkl')->nullable();
+            });
+            $queryfinal =  DB::table($tempawal)->from(
+                db::raw("$tempawal a with (readuncommitted)")
+            )
+                ->select('a.jobemkl')
+                ->leftJoin(db::raw("$tempgetutama as b with (readuncommitted)"), 'a.jobemkl', 'b.jobemkl')
+                ->whereRaw("isnull(b.jobemkl,'')=''");
+            DB::table($tempfinal)->insertUsing([
+                'jobemkl',
+            ], $queryfinal);
+
+            $queryhasil = DB::table('jobemkl')->from(
+                db::raw("jobemkl a with (readuncommitted)")
+            )
+                ->select(
+                    db::raw("null as idinvoice, a.nobukti as nojobemkl, a.tglbukti as tgljobemkl, a.nocont, a.noseal, b.namapelanggan,a.nominal,'' as keterangan_detail"),
+                    db::raw("
+                            (SELECT b1.kodebiayaemkl as biaya_emkl,
+                                format(a1.nominal,'#0.00') as nominal_biaya,
+                                a1.keterangan as keterangan_biaya
+                            from jobemklrincianbiaya a1 
+                                inner join biayaemkl b1 on a1.biayaemkl_id=b1.id
+                                where a1.nobukti=a.nobukti 
+                            FOR JSON PATH) as keterangan_biaya
+
+                       "),
+
+                )
+                ->leftJoin(db::raw("pelanggan as b with (readuncommitted)"), 'a.shipper_id', 'b.id')
+                ->join(db::raw("$tempfinal as d with (readuncommitted)"), 'a.nobukti', 'd.jobemkl')
+                ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
+                ->where('a.tujuan_id', $request->tujuan_id)
+                ->where('a.jenisorder_id', $request->jenisorder_id)
+                ->orderBy("a.tglbukti");
+
+
+            DB::table($tempdatahasil)->insertUsing([
+                'idinvoice',
+                'nojobemkl',
+                'tgljobemkl',
+                'nocont',
+                'noseal',
+                'namapelanggan',
+                'nominal',
+                'keterangan_detail',
+                'keterangan_biaya'
+            ], $queryhasil);
+        }
         // dd(db::table($tempdatahasil)->get());
         if ($edit == true) {
 
