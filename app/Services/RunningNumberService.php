@@ -47,9 +47,29 @@ class RunningNumberService
             $formatangka = $format[0]['formatangka'];
             $find = db::select("select charindex('" . $formatangka . "','" .  $nobukti . "') as findangka ")[0]->findangka;
             // dd($find);
-            $tgluji2 = date('Y-m-d', strtotime($tgl . ' -1 day'));
             if ($tujuan != 0  &&  $marketing != 0) {
                 // dd("substring(nobukti,".$find.",len('".$formatangka."'))");
+                $tgluji2 = date('Y-m-d', strtotime($tgl . ' -1 day'));
+                $tgluji2awal = date('Y-m-d', strtotime(date('Y-m-', strtotime($tgl)) . '01'));
+                while ($tgluji2 >= $tgluji2awal) {
+                    $cekquery = db::table($table)
+                        ->select('tglbukti')
+                        ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                        ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                        ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                        ->where(DB::raw('marketing_id'), '=', $marketing)
+                        ->where(DB::raw($fieldstatusformat), '=', $statusformat)
+                        ->whereRaw("tglbukti = '$tgluji2'")
+                        ->lockForUpdate()->first();
+
+                    if (isset($cekquery)) {
+                        $tgluji2 = $cekquery->tglbukti;
+                        break;
+                    }
+
+                    $tgluji2 = date('Y-m-d', strtotime($tgluji2 . ' -1 day'));
+                }
+                // dd($tgluji2);
                 $lastRow = DB::table($table)
                     ->select(db::raw("substring($fieldnobukti," . $find . ",len('" . $formatangka . "')) as urut"))
                     ->where(DB::raw('month(tglbukti)'), '=', $bulan)
@@ -57,13 +77,35 @@ class RunningNumberService
                     ->where(DB::raw('tujuan_id'), '=', $tujuan)
                     ->where(DB::raw('marketing_id'), '=', $marketing)
                     ->where(DB::raw($fieldstatusformat), '=', $statusformat)
-                    ->whereRaw("tglbukti = '$tgluji2'")                    
+                    ->whereRaw("tglbukti = '$tgluji2'")
                     ->orderby(db::raw("substring($fieldnobukti," . $find . ",len('" . $formatangka . "'))"), 'desc')
                     ->lockForUpdate()->first()->urut ?? 0;
                 //  dd($lastRow->tosql());
                 // ->lockForUpdate()->count();
 
             } else if ($tujuan != 0 &&  $jenisbiaya != 0 &&  $marketing != 0) {
+                $tgluji2 = date('Y-m-d', strtotime($tgl . ' -1 day'));
+                $tgluji2awal = date('Y-m-d', strtotime(date('Y-m-', strtotime($tgl)) . '01'));
+                while ($tgluji2 >= $tgluji2awal) {
+                    $cekquery = db::table($table)
+                        ->select('tglbukti')
+                        ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                        ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                        ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                        ->where(DB::raw('marketing_id'), '=', $marketing)
+                        ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
+                        ->where(DB::raw($fieldstatusformat), '=', $statusformat)
+                        ->whereRaw("tglbukti = '$tgluji2'")
+                        ->lockForUpdate()->first();
+
+                    if (isset($cekquery)) {
+                        $tgluji2 = $cekquery->tglbukti;
+                        break;
+                    }
+
+                    $tgluji2 = date('Y-m-d', strtotime($tgluji2 . ' -1 day'));
+                }
+
                 $lastRow = DB::table($table)
                     ->select(db::raw("substring($fieldnobukti," . $find . ",len('" . $formatangka . "')) as urut"))
                     ->where(DB::raw('month(tglbukti)'), '=', $bulan)
@@ -72,11 +114,32 @@ class RunningNumberService
                     ->where(DB::raw('marketing_id'), '=', $marketing)
                     ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
                     ->where(DB::raw($fieldstatusformat), '=', $statusformat)
-                    ->whereRaw("tglbukti = '$tgluji2'")                    
+                    ->whereRaw("tglbukti = '$tgluji2'")
                     ->orderby(db::raw("substring($fieldnobukti," . $find . ",len('" . $formatangka . "'))"), 'desc')
                     ->lockForUpdate()->first()->urut ?? 0;
                 // ->lockForUpdate()->count();
             } else if ($tujuan != 0 &&  $cabang != 0) {
+
+                $tgluji2 = date('Y-m-d', strtotime($tgl . ' -1 day'));
+                $tgluji2awal = date('Y-m-d', strtotime(date('Y-m-', strtotime($tgl)) . '01'));
+                while ($tgluji2 >= $tgluji2awal) {
+                    $cekquery = db::table($table)
+                        ->select('tglbukti')
+                        ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                        ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                        ->where(DB::raw('cabang_id'), '=', $cabang)
+                        ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                        ->where(DB::raw($fieldstatusformat), '=', $statusformat)
+                        ->whereRaw("tglbukti = '$tgluji2'")
+                        ->lockForUpdate()->first();
+
+                    if (isset($cekquery)) {
+                        $tgluji2 = $cekquery->tglbukti;
+                        break;
+                    }
+
+                    $tgluji2 = date('Y-m-d', strtotime($tgluji2 . ' -1 day'));
+                }
 
                 $lastRow = DB::table($table)
                     ->select(db::raw("substring($fieldnobukti," . $find . ",len('" . $formatangka . "')) as urut"))
@@ -85,11 +148,33 @@ class RunningNumberService
                     ->where(DB::raw('cabang_id'), '=', $cabang)
                     ->where(DB::raw('tujuan_id'), '=', $tujuan)
                     ->where(DB::raw($fieldstatusformat), '=', $statusformat)
-                    ->whereRaw("tglbukti = '$tgluji2'")                    
+                    ->whereRaw("tglbukti = '$tgluji2'")
                     ->orderby(db::raw("substring($fieldnobukti," . $find . ",len('" . $formatangka . "'))"), 'desc')
                     ->lockForUpdate()->first()->urut ?? 0;
                 // ->lockForUpdate()->count();
             } else if ($tujuan != 0 &&  $jenisbiaya != 0) {
+
+                $tgluji2 = date('Y-m-d', strtotime($tgl . ' -1 day'));
+                $tgluji2awal = date('Y-m-d', strtotime(date('Y-m-', strtotime($tgl)) . '01'));
+                while ($tgluji2 >= $tgluji2awal) {
+                    $cekquery = db::table($table)
+                        ->select('tglbukti')
+                        ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                        ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                        ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                        ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
+                        ->where(DB::raw($fieldstatusformat), '=', $statusformat)
+                        ->whereRaw("tglbukti = '$tgluji2'")
+                        ->lockForUpdate()->first();
+
+                    if (isset($cekquery)) {
+                        $tgluji2 = $cekquery->tglbukti;
+                        break;
+                    }
+
+                    $tgluji2 = date('Y-m-d', strtotime($tgluji2 . ' -1 day'));
+                }
+
                 $lastRow = DB::table($table)
                     ->select(db::raw("substring($fieldnobukti," . $find . ",len('" . $formatangka . "')) as urut"))
                     ->where(DB::raw('month(tglbukti)'), '=', $bulan)
@@ -97,11 +182,30 @@ class RunningNumberService
                     ->where(DB::raw('tujuan_id'), '=', $tujuan)
                     ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
                     ->where(DB::raw($fieldstatusformat), '=', $statusformat)
-                    ->whereRaw("tglbukti = '$tgluji2'")                    
+                    ->whereRaw("tglbukti = '$tgluji2'")
                     ->orderby(db::raw("substring($fieldnobukti," . $find . ",len('" . $formatangka . "'))"), 'desc')
                     ->lockForUpdate()->first()->urut ?? 0;
                 // ->lockForUpdate()->count();
             } else if ($tujuan != 0) {
+                $tgluji2 = date('Y-m-d', strtotime($tgl . ' -1 day'));
+                $tgluji2awal = date('Y-m-d', strtotime(date('Y-m-', strtotime($tgl)) . '01'));
+                while ($tgluji2 >= $tgluji2awal) {
+                    $cekquery = db::table($table)
+                        ->select('tglbukti')
+                        ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                        ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                        ->where(DB::raw('tujuan_id'), '=', $tujuan)
+                        ->where(DB::raw($fieldstatusformat), '=', $statusformat)
+                        ->whereRaw("tglbukti = '$tgluji2'")
+                        ->lockForUpdate()->first();
+
+                    if (isset($cekquery)) {
+                        $tgluji2 = $cekquery->tglbukti;
+                        break;
+                    }
+
+                    $tgluji2 = date('Y-m-d', strtotime($tgluji2 . ' -1 day'));
+                }
 
                 $lastRow = DB::table($table)
                     ->select(db::raw("substring($fieldnobukti," . $find . ",len('" . $formatangka . "')) as urut"))
@@ -109,19 +213,38 @@ class RunningNumberService
                     ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                     ->where(DB::raw('tujuan_id'), '=', $tujuan)
                     ->where(DB::raw($fieldstatusformat), '=', $statusformat)
-                    ->whereRaw("tglbukti = '$tgluji2'")                    
+                    ->whereRaw("tglbukti = '$tgluji2'")
                     ->orderby(db::raw("substring($fieldnobukti," . $find . ",len('" . $formatangka . "'))"), 'desc')
                     ->lockForUpdate()->first()->urut ?? 0;
 
                 // ->lockForUpdate()->count();
             } else {
                 // dd($fieldnobukti);
+                $tgluji2 = date('Y-m-d', strtotime($tgl . ' -1 day'));
+                $tgluji2awal = date('Y-m-d', strtotime(date('Y-m-', strtotime($tgl)) . '01'));
+                while ($tgluji2 >= $tgluji2awal) {
+                    $cekquery = db::table($table)
+                        ->select('tglbukti')
+                        ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                        ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                        ->where(DB::raw($fieldstatusformat), '=', $statusformat)
+                        ->whereRaw("tglbukti = '$tgluji2'")
+                        ->lockForUpdate()->first();
+
+                    if (isset($cekquery)) {
+                        $tgluji2 = $cekquery->tglbukti;
+                        break;
+                    }
+
+                    $tgluji2 = date('Y-m-d', strtotime($tgluji2 . ' -1 day'));
+                }
+
                 $lastRow = DB::table($table)
                     ->select(db::raw("substring($fieldnobukti," . $find . ",len('" . $formatangka . "')) as urut"))
                     ->where(DB::raw('month(tglbukti)'), '=', $bulan)
                     ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                     ->where(DB::raw($fieldstatusformat), '=', $statusformat)
-                    ->whereRaw("tglbukti = '$tgluji2'")                    
+                    ->whereRaw("tglbukti = '$tgluji2'")
                     ->orderby(db::raw("substring($fieldnobukti," . $find . ",len('" . $formatangka . "'))"), 'desc')
                     ->lockForUpdate()->first()->urut ?? 0;
 
@@ -130,7 +253,7 @@ class RunningNumberService
             }
             // dd($lastRow);
 
-
+            // dd('a');
 
             // perubahan
             $a = 0;
@@ -426,7 +549,7 @@ class RunningNumberService
             $nobukti = $format[0]['nobukti'];
             $formatangka = $format[0]['formatangka'];
             $find = db::select("select charindex('" . $formatangka . "','" .  $nobukti . "') as findangka ")[0]->findangka;
-            $tgluji2 = date('Y-m-d', strtotime($tgl . ' -1 day'));            
+            $tgluji2 = date('Y-m-d', strtotime($tgl . ' -1 day'));
             if ($tujuan != 0  &&  $marketing != 0) {
 
                 $lastRow = DB::table($table)
@@ -435,7 +558,7 @@ class RunningNumberService
                     ->where(DB::raw('tujuan_id'), '=', $tujuan)
                     ->where(DB::raw('marketing_id'), '=', $marketing)
                     ->where(DB::raw($fieldstatusformat), '=', $statusformat)
-                    ->whereRaw("tglbukti = '$tgluji2'")                          
+                    ->whereRaw("tglbukti = '$tgluji2'")
                     ->orderby(db::raw("substring($fieldnobukti," . $find . ",len('" . $formatangka . "'))"), 'desc')
                     ->lockForUpdate()->first()->urut ?? 0;
                 // ->lockForUpdate()->count();
@@ -447,7 +570,7 @@ class RunningNumberService
                     ->where(DB::raw('marketing_id'), '=', $marketing)
                     ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
                     ->where(DB::raw($fieldstatusformat), '=', $statusformat)
-                    ->whereRaw("tglbukti = '$tgluji2'")                          
+                    ->whereRaw("tglbukti = '$tgluji2'")
                     ->orderby(db::raw("substring($fieldnobukti," . $find . ",len('" . $formatangka . "'))"), 'desc')
                     ->lockForUpdate()->first()->urut ?? 0;
                 // ->lockForUpdate()->count();
@@ -459,7 +582,7 @@ class RunningNumberService
                     ->where(DB::raw('cabang_id'), '=', $cabang)
                     ->where(DB::raw('tujuan_id'), '=', $tujuan)
                     ->where(DB::raw($fieldstatusformat), '=', $statusformat)
-                    ->whereRaw("tglbukti = '$tgluji2'")                          
+                    ->whereRaw("tglbukti = '$tgluji2'")
                     ->orderby(db::raw("substring($fieldnobukti," . $find . ",len('" . $formatangka . "'))"), 'desc')
                     ->lockForUpdate()->first()->urut ?? 0;
                 // ->lockForUpdate()->count();
@@ -471,7 +594,7 @@ class RunningNumberService
                     ->where(DB::raw('tujuan_id'), '=', $tujuan)
                     ->where(DB::raw('statusjenisbiaya'), '=', $jenisbiaya)
                     ->where(DB::raw($fieldstatusformat), '=', $statusformat)
-                    ->whereRaw("tglbukti = '$tgluji2'")                          
+                    ->whereRaw("tglbukti = '$tgluji2'")
                     ->orderby(db::raw("substring($fieldnobukti," . $find . ",len('" . $formatangka . "'))"), 'desc')
                     ->lockForUpdate()->first()->urut ?? 0;
                 // ->lockForUpdate()->count();
@@ -482,7 +605,7 @@ class RunningNumberService
                     ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                     ->where(DB::raw('tujuan_id'), '=', $tujuan)
                     ->where(DB::raw($fieldstatusformat), '=', $statusformat)
-                    ->whereRaw("tglbukti = '$tgluji2'")                          
+                    ->whereRaw("tglbukti = '$tgluji2'")
                     ->orderby(db::raw("substring($fieldnobukti," . $find . ",len('" . $formatangka . "'))"), 'desc')
                     ->lockForUpdate()->first()->urut ?? 0;
                 // ->lockForUpdate()->count();
@@ -491,7 +614,7 @@ class RunningNumberService
                     ->select(db::raw("substring($fieldnobukti," . $find . ",len('" . $formatangka . "')) as urut"))
                     ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                     ->where(DB::raw($fieldstatusformat), '=', $statusformat)
-                    ->whereRaw("tglbukti = '$tgluji2'")                          
+                    ->whereRaw("tglbukti = '$tgluji2'")
                     ->orderby(db::raw("substring($fieldnobukti," . $find . ",len('" . $formatangka . "'))"), 'desc')
                     ->lockForUpdate()->first()->urut ?? 0;
                 // ->lockForUpdate()->count();
