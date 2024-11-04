@@ -184,7 +184,10 @@ class PengeluaranStokDetail extends MyModel
                 
             if($spk->text ==$cekHeader->pengeluaranstok_id){
                 $query
-                ->leftJoin("pengeluaranstokdetailfifo as fifo", "$this->table.stok_id", "fifo.stok_id")
+                ->leftJoin("pengeluaranstokdetailfifo as fifo", function ($join) {
+                    $join->on("$this->table.stok_id", '=', "fifo.stok_id");
+                    $join->on("$this->table.pengeluaranstokheader_id", '=', "fifo.pengeluaranstokheader_id");
+                })
                 ->addSelect(
                     db::raw("isnull(fifo.qty,0) as qty"),
                     db::raw("isnull(fifo.penerimaanstok_harga,0) as harga"),
