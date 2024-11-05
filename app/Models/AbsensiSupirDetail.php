@@ -349,8 +349,11 @@ class AbsensiSupirDetail extends MyModel
                 }
 
             
-                if ($getAbsen) {
-                    $statusJenisKendaraan = request()->statusjeniskendaraan;
+                if ($getAbsen) {                    
+                    $isTangki = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'ABSENSI TANGKI')->first()->text ?? 'TIDAK';
+                    $statusGandengan = (new Parameter())->cekId('STATUS JENIS KENDARAAN', 'STATUS JENIS KENDARAAN', 'GANDENGAN');
+                    
+                    $statusJenisKendaraan = ($isTangki == 'YA') ? request()->statusjeniskendaraan : $statusGandengan;
                     $isMandor = auth()->user()->isMandor();
                     $isAdmin = auth()->user()->isAdmin();
 

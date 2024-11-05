@@ -609,57 +609,57 @@ class ExportLaporanMingguanSupirController extends Controller
         $sheet->mergeCells("I" . ($detail_table_header_row + 1) . ":I" . ($detail_table_header_row + 2));
         $sheet->setCellValue("J" . ($detail_table_header_row + 1), 'Full/Empty')->getStyle("J2")->applyFromArray($styleHeader)->getFont()->setBold(true);
         $sheet->mergeCells("J" . ($detail_table_header_row + 1) . ":J" . ($detail_table_header_row + 2));
-        $sheet->setCellValue("K$detail_table_header_row", 'No. JP')->getStyle("K1")->applyFromArray($styleHeader)->getFont()->setBold(true);
-        $sheet->mergeCells("K$detail_table_header_row:K" . ($detail_table_header_row + 2));
+        $sheet->setCellValue("K$detail_table_header_row", '')->getStyle("K1")->applyFromArray($styleHeader)->getFont()->setBold(true);
+        // $sheet->mergeCells("K$detail_table_header_row:K" . ($detail_table_header_row + 2));
         $sheet->setCellValue("L$detail_table_header_row", 'Omset')->getStyle("L1")->applyFromArray($styleHeader)->getFont()->setBold(true);
         $sheet->mergeCells("L$detail_table_header_row:L" . ($detail_table_header_row + 2));
-        $sheet->setCellValue("M$detail_table_header_row", 'Omset Tambahan')->getStyle("M1")->applyFromArray($styleHeader)->getFont()->setBold(true);
+        // $sheet->setCellValue("M$detail_table_header_row", 'Omset Tambahan')->getStyle("M1")->applyFromArray($styleHeader)->getFont()->setBold(true);
+        // $sheet->mergeCells("M$detail_table_header_row:M" . ($detail_table_header_row + 2));
+        // $sheet->setCellValue("N$detail_table_header_row", 'Total Omset')->getStyle("N1")->applyFromArray($styleHeader)->getFont()->setBold(true);
+        // $sheet->mergeCells("N$detail_table_header_row:N" . ($detail_table_header_row + 2));
+        $sheet->setCellValue("M$detail_table_header_row", 'Inv')->getStyle("M1")->applyFromArray($styleHeader)->getFont()->setBold(true);
         $sheet->mergeCells("M$detail_table_header_row:M" . ($detail_table_header_row + 2));
-        $sheet->setCellValue("N$detail_table_header_row", 'Total Omset')->getStyle("N1")->applyFromArray($styleHeader)->getFont()->setBold(true);
-        $sheet->mergeCells("N$detail_table_header_row:N" . ($detail_table_header_row + 2));
-        $sheet->setCellValue("O$detail_table_header_row", 'Inv')->getStyle("O1")->applyFromArray($styleHeader)->getFont()->setBold(true);
-        $sheet->mergeCells("O$detail_table_header_row:O" . ($detail_table_header_row + 2));
-        $sheet->setCellValue("P$detail_table_header_row", 'Biaya Operasional')->getStyle("P1")->applyFromArray($styleHeader)->getFont()->setBold(true);
-        $sheet->mergeCells("P$detail_table_header_row:W$detail_table_header_row");
-        $sheet->setCellValue("P" . ($detail_table_header_row + 1), 'Borongan')->getStyle("P2")->applyFromArray($styleHeader)->getFont()->setBold(true);
+        $sheet->setCellValue("N$detail_table_header_row", 'Biaya Operasional')->getStyle("N1")->applyFromArray($styleHeader)->getFont()->setBold(true);
+        $sheet->mergeCells("N$detail_table_header_row:U$detail_table_header_row");
+        $sheet->setCellValue("N" . ($detail_table_header_row + 1), 'Borongan')->getStyle("N2")->applyFromArray($styleHeader)->getFont()->setBold(true);
+        $sheet->mergeCells("N" . ($detail_table_header_row + 1) . ":N" . ($detail_table_header_row + 2));
+        $sheet->setCellValue("O" . ($detail_table_header_row + 1), '')->getStyle("O2")->applyFromArray($styleHeader)->getFont()->setBold(true);
+        $sheet->mergeCells("O" . ($detail_table_header_row + 1) . ":O" . ($detail_table_header_row + 2));
+        $sheet->setCellValue("P" . ($detail_table_header_row + 1), '')->getStyle("P2")->applyFromArray($styleHeader)->getFont()->setBold(true);
         $sheet->mergeCells("P" . ($detail_table_header_row + 1) . ":P" . ($detail_table_header_row + 2));
-        $sheet->setCellValue("Q" . ($detail_table_header_row + 1), '')->getStyle("Q2")->applyFromArray($styleHeader)->getFont()->setBold(true);
+        $sheet->setCellValue("Q" . ($detail_table_header_row + 1), 'U. Buruh')->getStyle("Q2")->applyFromArray($styleHeader)->getFont()->setBold(true);
         $sheet->mergeCells("Q" . ($detail_table_header_row + 1) . ":Q" . ($detail_table_header_row + 2));
         $sheet->setCellValue("R" . ($detail_table_header_row + 1), '')->getStyle("R2")->applyFromArray($styleHeader)->getFont()->setBold(true);
         $sheet->mergeCells("R" . ($detail_table_header_row + 1) . ":R" . ($detail_table_header_row + 2));
-        $sheet->setCellValue("S" . ($detail_table_header_row + 1), 'U. Buruh')->getStyle("S2")->applyFromArray($styleHeader)->getFont()->setBold(true);
-        $sheet->mergeCells("S" . ($detail_table_header_row + 1) . ":S" . ($detail_table_header_row + 2));
-        $sheet->setCellValue("T" . ($detail_table_header_row + 1), '')->getStyle("T2")->applyFromArray($styleHeader)->getFont()->setBold(true);
-        $sheet->mergeCells("T" . ($detail_table_header_row + 1) . ":T" . ($detail_table_header_row + 2));
 
-        $sheet->setCellValue("U" . ($detail_table_header_row + 1), 'LAIN')->getStyle("U2")->applyFromArray($styleHeader)->getFont()->setBold(true);
-        $sheet->mergeCells("U" . ($detail_table_header_row + 1) . ":W" . ($detail_table_header_row + 1));
-        $sheet->setCellValue("U" . ($detail_table_header_row + 2), 'U. extra')->getStyle("U3")->applyFromArray($styleHeader)->getFont()->setBold(true);
-        $sheet->setCellValue("V" . ($detail_table_header_row + 2), '')->getStyle("V3")->applyFromArray($styleHeader)->getFont()->setBold(true);
-        $sheet->setCellValue("W" . ($detail_table_header_row + 2), 'Ket')->getStyle("W3")->applyFromArray($styleHeader)->getFont()->setBold(true);
+        $sheet->setCellValue("S" . ($detail_table_header_row + 1), 'LAIN')->getStyle("S2")->applyFromArray($styleHeader)->getFont()->setBold(true);
+        $sheet->mergeCells("S" . ($detail_table_header_row + 1) . ":U" . ($detail_table_header_row + 1));
+        $sheet->setCellValue("S" . ($detail_table_header_row + 2), 'Rp')->getStyle("S3")->applyFromArray($styleHeader)->getFont()->setBold(true);
+        $sheet->setCellValue("T" . ($detail_table_header_row + 2), '')->getStyle("T3")->applyFromArray($styleHeader)->getFont()->setBold(true);
+        $sheet->setCellValue("U" . ($detail_table_header_row + 2), 'Ket')->getStyle("U3")->applyFromArray($styleHeader)->getFont()->setBold(true);
 
-        $sheet->setCellValue("X$detail_table_header_row", 'Biaya')->getStyle("X1")->applyFromArray($styleHeader)->getFont()->setBold(true);
-        $sheet->mergeCells("X$detail_table_header_row:Y$detail_table_header_row");
-        $sheet->setCellValue("X" . ($detail_table_header_row + 1), 'Uang Jalan')->getStyle("X2")->applyFromArray($styleHeader)->getFont()->setBold(true);
+        $sheet->setCellValue("V$detail_table_header_row", 'Biaya')->getStyle("V1")->applyFromArray($styleHeader)->getFont()->setBold(true);
+        $sheet->mergeCells("V$detail_table_header_row:W$detail_table_header_row");
+        $sheet->setCellValue("V" . ($detail_table_header_row + 1), 'Uang Jalan')->getStyle("V2")->applyFromArray($styleHeader)->getFont()->setBold(true);
+        $sheet->mergeCells("V" . ($detail_table_header_row + 1) . ":V" . ($detail_table_header_row + 2));
+        $sheet->setCellValue("W" . ($detail_table_header_row + 1), 'BBM')->getStyle("W2")->applyFromArray($styleHeader)->getFont()->setBold(true);
+        $sheet->mergeCells("W" . ($detail_table_header_row + 1) . ":W" . ($detail_table_header_row + 2));
+
+        $sheet->setCellValue("X" . ($detail_table_header_row + 1), '')->getStyle("X2")->applyFromArray($styleHeader)->getFont()->setBold(true);
         $sheet->mergeCells("X" . ($detail_table_header_row + 1) . ":X" . ($detail_table_header_row + 2));
-        $sheet->setCellValue("Y" . ($detail_table_header_row + 1), 'BBM')->getStyle("Y2")->applyFromArray($styleHeader)->getFont()->setBold(true);
-        $sheet->mergeCells("Y" . ($detail_table_header_row + 1) . ":Y" . ($detail_table_header_row + 2));
-
-        $sheet->setCellValue("Z" . ($detail_table_header_row + 1), '')->getStyle("Z2")->applyFromArray($styleHeader)->getFont()->setBold(true);
-        $sheet->mergeCells("Z" . ($detail_table_header_row + 1) . ":Z" . ($detail_table_header_row + 2));
 
 
-        $sheet->setCellValue("AA$detail_table_header_row", 'Total Biaya')->getStyle("AA1")->applyFromArray($styleHeader)->getFont()->setBold(true);
-        $sheet->mergeCells("AA$detail_table_header_row:AA" . ($detail_table_header_row + 2));
-        $sheet->setCellValue("AB$detail_table_header_row", 'Laba')->getStyle("AB1")->applyFromArray($styleHeader)->getFont()->setBold(true);
-        $sheet->mergeCells("AB$detail_table_header_row:AB" . ($detail_table_header_row + 2));
+        $sheet->setCellValue("Y$detail_table_header_row", 'Total Biaya')->getStyle("Y1")->applyFromArray($styleHeader)->getFont()->setBold(true);
+        $sheet->mergeCells("Y$detail_table_header_row:Y" . ($detail_table_header_row + 2));
+        $sheet->setCellValue("Z$detail_table_header_row", 'Laba')->getStyle("Z1")->applyFromArray($styleHeader)->getFont()->setBold(true);
+        $sheet->mergeCells("Z$detail_table_header_row:Z" . ($detail_table_header_row + 2));
 
-        $style = $spreadsheet->getActiveSheet()->getStyle("A$detail_table_header_row:AB3");
+        $style = $spreadsheet->getActiveSheet()->getStyle("A$detail_table_header_row:AA3");
         // Get the fill object from the style
         $fill = $style->getFill();
         // Set the fill color
-        $fill->setFillType(Fill::FILL_SOLID)
-            ->getStartColor()->setARGB('ffff00');
+        // $fill->setFillType(Fill::FILL_SOLID)
+        //     ->getStartColor()->setARGB('ffff00');
 
         $rowIndex = 4;
         $previous_nopol = null;
@@ -679,13 +679,13 @@ class ExportLaporanMingguanSupirController extends Controller
                     $endTotalIndex = $rowIndex - 1;
 
                     $sheet->setCellValue("L$rowIndex", "=SUM(L$startTotalIndex:L$endTotalIndex)")->getStyle("L$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-                    $sheet->setCellValue("P$rowIndex", "=SUM(P$startTotalIndex:P$endTotalIndex)")->getStyle("P$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->setCellValue("N$rowIndex", "=SUM(N$startTotalIndex:N$endTotalIndex)")->getStyle("N$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->setCellValue("Q$rowIndex", "=SUM(Q$startTotalIndex:Q$endTotalIndex)")->getStyle("Q$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
                     $sheet->setCellValue("S$rowIndex", "=SUM(S$startTotalIndex:S$endTotalIndex)")->getStyle("S$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-                    $sheet->setCellValue("U$rowIndex", "=SUM(U$startTotalIndex:U$endTotalIndex)")->getStyle("U$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-                    $sheet->setCellValue("X$rowIndex", "=SUM(X$startTotalIndex:X$endTotalIndex)")->getStyle("X$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-                    $sheet->setCellValue("Y$rowIndex", "=SUM(Y$startTotalIndex:Y$endTotalIndex)")->getStyle("Y$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-                    $sheet->setCellValue("AA$rowIndex", "=(P$endTotalIndex+S$endTotalIndex+U$endTotalIndex)")->getStyle("AA$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-                    $sheet->setCellValue("AB$rowIndex", "=(L$endTotalIndex-AA$endTotalIndex)")->getStyle("AB$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->setCellValue("V$rowIndex", "=SUM(V$startTotalIndex:V$endTotalIndex)")->getStyle("V$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->setCellValue("W$rowIndex", "=SUM(W$startTotalIndex:W$endTotalIndex)")->getStyle("W$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->setCellValue("Y$rowIndex", "=(N$endTotalIndex+Q$endTotalIndex+S$endTotalIndex)")->getStyle("Y$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->setCellValue("Z$rowIndex", "=(L$endTotalIndex-Y$endTotalIndex)")->getStyle("Z$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
                     $groupRowCount = 0;
                     $rowIndex++;
                     $rowIndex++; // Move to the next row
@@ -696,8 +696,8 @@ class ExportLaporanMingguanSupirController extends Controller
                 // Get the fill object from the style
                 $fill = $style->getFill();
                 // Set the fill color
-                $fill->setFillType(Fill::FILL_SOLID)
-                    ->getStartColor()->setARGB('92D050');
+                // $fill->setFillType(Fill::FILL_SOLID)
+                //     ->getStartColor()->setARGB('92D050');
                 $rowIndex++;
 
                 // Store the starting row index of the current group
@@ -719,21 +719,21 @@ class ExportLaporanMingguanSupirController extends Controller
             $sheet->setCellValue("K$rowIndex", $response_detail->jobtrucking);
             $sheet->setCellValue("L$rowIndex", $response_detail->omsetsurabaya)->getStyle("L$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
 
-            $sheet->setCellValue("O$rowIndex", $response_detail->invoice);
-            $sheet->setCellValue("P$rowIndex", $response_detail->borongan)->getStyle("P$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("Q$rowIndex", $response_detail->nobuktiebs);
-            $sheet->setCellValue("R$rowIndex", $response_detail->pengeluarannobuktiebs);
-            $sheet->setCellValue("S$rowIndex", $response_detail->uangburuh)->getStyle("S$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("U$rowIndex", $response_detail->uangextra)->getStyle("U$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            if ($response_detail->uangextra > 0) {
-                $sheet->setCellValue("V$rowIndex", $response_detail->nobuktikbtkomisi);
-            }
-            $sheet->setCellValue("W$rowIndex", $response_detail->keteranganbiayatambahan);
-            $sheet->setCellValue("X$rowIndex", $response_detail->uangjalan)->getStyle("X$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("Y$rowIndex", $response_detail->uangbbm)->getStyle("Y$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("AA$rowIndex", "=(P$rowIndex+S$rowIndex+U$rowIndex)")->getStyle("AA$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("AB$rowIndex", "=(L$rowIndex-AA$rowIndex)")->getStyle("AB$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("AC$rowIndex", $response_detail->nobukti);
+            $sheet->setCellValue("M$rowIndex", $response_detail->invoice);
+            $sheet->setCellValue("N$rowIndex", $response_detail->borongan)->getStyle("N$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("O$rowIndex", $response_detail->nobuktiebs);
+            $sheet->setCellValue("P$rowIndex", $response_detail->pengeluarannobuktiebs);
+            $sheet->setCellValue("Q$rowIndex", $response_detail->uangburuh)->getStyle("Q$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("S$rowIndex", $response_detail->uangextra)->getStyle("S$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            // if ($response_detail->uangextra > 0) {
+                $sheet->setCellValue("T$rowIndex", $response_detail->pengeluarannobuktiebs);
+            // }
+            $sheet->setCellValue("U$rowIndex", $response_detail->keteranganbiayatambahan);
+            $sheet->setCellValue("V$rowIndex", $response_detail->uangjalan)->getStyle("V$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("W$rowIndex", $response_detail->uangbbm)->getStyle("W$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("Y$rowIndex", "=(N$rowIndex+Q$rowIndex+S$rowIndex)")->getStyle("Y$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("Z$rowIndex", "=(L$rowIndex-Y$rowIndex)")->getStyle("Z$rowIndex")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("AA$rowIndex", $response_detail->nobukti);
             $rowIndex++;
 
             // Store the current group details in an array
@@ -751,27 +751,27 @@ class ExportLaporanMingguanSupirController extends Controller
             $endTotalIndex = $rowIndex - 1;
 
             $sheet->setCellValue("L$rowIndex", "=SUM(L$startTotalIndex:L$endTotalIndex)")->getStyle("L$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("P$rowIndex", "=SUM(P$startTotalIndex:P$endTotalIndex)")->getStyle("P$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("N$rowIndex", "=SUM(N$startTotalIndex:N$endTotalIndex)")->getStyle("N$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("Q$rowIndex", "=SUM(Q$startTotalIndex:Q$endTotalIndex)")->getStyle("Q$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
             $sheet->setCellValue("S$rowIndex", "=SUM(S$startTotalIndex:S$endTotalIndex)")->getStyle("S$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("U$rowIndex", "=SUM(U$startTotalIndex:U$endTotalIndex)")->getStyle("U$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("X$rowIndex", "=SUM(X$startTotalIndex:X$endTotalIndex)")->getStyle("X$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("Y$rowIndex", "=SUM(Y$startTotalIndex:Y$endTotalIndex)")->getStyle("Y$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("AA$rowIndex", "=(P$endTotalIndex+S$endTotalIndex+U$endTotalIndex)")->getStyle("AA$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-            $sheet->setCellValue("AB$rowIndex", "=(L$endTotalIndex-AA$endTotalIndex)")->getStyle("AB$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("V$rowIndex", "=SUM(V$startTotalIndex:V$endTotalIndex)")->getStyle("V$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("W$rowIndex", "=SUM(W$startTotalIndex:W$endTotalIndex)")->getStyle("W$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("Y$rowIndex", "=(N$endTotalIndex+Q$endTotalIndex+S$endTotalIndex)")->getStyle("Y$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->setCellValue("Z$rowIndex", "=(L$endTotalIndex-Y$endTotalIndex)")->getStyle("Z$rowIndex")->applyFromArray($styleArray2)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
         }
         $endTotalIndex++;
         $lastRow = $endTotalIndex + 2;
         $sheet->setCellValue("L$lastRow", "=SUM(L5:L$endTotalIndex)/2")->getStyle("L$lastRow")->applyFromArray($styleLastRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-        $sheet->setCellValue("P$lastRow", "=SUM(P5:P$endTotalIndex)/2")->getStyle("P$lastRow")->applyFromArray($styleLastRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+        $sheet->setCellValue("N$lastRow", "=SUM(N5:N$endTotalIndex)/2")->getStyle("N$lastRow")->applyFromArray($styleLastRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+        $sheet->setCellValue("Q$lastRow", "=SUM(Q5:Q$endTotalIndex)/2")->getStyle("Q$lastRow")->applyFromArray($styleLastRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
         $sheet->setCellValue("S$lastRow", "=SUM(S5:S$endTotalIndex)/2")->getStyle("S$lastRow")->applyFromArray($styleLastRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-        $sheet->setCellValue("U$lastRow", "=SUM(U5:U$endTotalIndex)/2")->getStyle("U$lastRow")->applyFromArray($styleLastRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
         $sheet->setCellValue("Y$lastRow", "=SUM(Y5:Y$endTotalIndex)/2")->getStyle("Y$lastRow")->applyFromArray($styleLastRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-        $sheet->setCellValue("AA$lastRow", "=SUM(AA5:AA$endTotalIndex)/2")->getStyle("AA$lastRow")->applyFromArray($styleLastRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
-        $sheet->setCellValue("AB$lastRow", "=SUM(AB5:AB$endTotalIndex)/2")->getStyle("AB$lastRow")->applyFromArray($styleLastRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+        $sheet->setCellValue("W$lastRow", "=SUM(W5:W$endTotalIndex)/2")->getStyle("W$lastRow")->applyFromArray($styleLastRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+        $sheet->setCellValue("Z$lastRow", "=SUM(Z5:Z$endTotalIndex)/2")->getStyle("Z$lastRow")->applyFromArray($styleLastRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
 
-        $style = $spreadsheet->getActiveSheet()->getStyle("L$lastRow:AB$lastRow");
+        $style = $spreadsheet->getActiveSheet()->getStyle("L$lastRow:AA$lastRow");
         // Get the font object from the style
-        $style->getFont()->getColor()->setRGB('7030a0'); // Set font color to red
+        // $style->getFont()->getColor()->setRGB('7030a0'); // Set font color to red
         $style->getFont()->setSize(10);
         $spreadsheet->getActiveSheet()->getRowDimension($lastRow)->setRowHeight(30);
         // Get the border object from the style

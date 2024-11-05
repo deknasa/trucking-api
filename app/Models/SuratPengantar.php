@@ -2331,6 +2331,7 @@ class SuratPengantar extends MyModel
                 //         dd(
                 //     DB::table($tempJobFinal)->get(),
                 // DB::table($tempTripAsal)->get());
+                $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
                 $query
                     ->leftjoin(db::raw($tempJobFinal . " jobfinal"), 'suratpengantar.jobtrucking', 'jobfinal.jobtrucking')
                     ->leftjoin(db::raw($tempTripAsal . " a"), 'suratpengantar.nobukti', 'a.nobukti_tripasal')
@@ -2338,9 +2339,14 @@ class SuratPengantar extends MyModel
                     ->whereRaw("isnull(jobfinal.jobtrucking,'')!='' ")
                     ->where('c.sampai_id', '!=', 1)
                     ->where('c.agen_id', $agen_id)
-                    ->where('c.statuscontainer_id', '!=', 3)
                     ->where('c.container_id', $container_id)
                     ->where('c.statusgandengan', $idTinggalGandengan);
+
+                if ($cabang == 'SURABAYA') {
+                    $query->where('c.statuscontainer_id', 3);
+                } else {
+                    $query->where('c.statuscontainer_id', '!=', 3);
+                }
                 if ($idtrip != 0) {
                     $query->where('suratpengantar.id', '<>', $idtrip);
                 }
@@ -5244,6 +5250,27 @@ class SuratPengantar extends MyModel
                     }
                 }
             }
+
+            if ($cabang == 'SURABAYA') {
+                // jika awalnya longtrip
+                if ($suratPengantar->statuslongtrip == 65) {
+                    // awalnya longtrip, diubah jadi bukan longtrip
+                    if ($data['statuslongtrip'] == 66) {
+                        $dataTripAsal = [
+                            'nobukti_tripasal' => $suratPengantar->nobukti_tripasal
+                        ];
+                        (new SuratPengantar())->updateStatusContainerLongtrip($dataTripAsal, 'DELETE');
+                    }
+                } else {
+                    // awalnya bukan longtrip, lalu diubah jadi longtrip
+                    if ($data['statuslongtrip'] == 65) {
+                        $dataTripAsal = [
+                            'nobukti_tripasal' => $data['nobukti_tripasal']
+                        ];
+                        (new SuratPengantar())->updateStatusContainerLongtrip($dataTripAsal, 'ADD');
+                    }
+                }
+            }
             $suratPengantar->jobtrucking = $data['jobtrucking'];
             $suratPengantar->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
             $suratPengantar->pelanggan_id = $pelanggan;
@@ -5730,6 +5757,13 @@ class SuratPengantar extends MyModel
         if ($suratPengantar->statuslongtrip == 65) {
             $cekSP = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $suratPengantar->jobtrucking)->first();
             (new OrderanTrucking())->processDestroy($cekSP->id);
+            $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
+            if ($cabang == 'SURABAYA') {
+                $dataTripAsal = [
+                    'nobukti_tripasal' => $suratPengantar->nobukti_tripasal
+                ];
+                (new SuratPengantar())->updateStatusContainerLongtrip($dataTripAsal, 'DELETE');
+            }
         }
 
         $suratPengantarLogTrail = (new LogTrail())->processStore([
@@ -6582,6 +6616,77 @@ class SuratPengantar extends MyModel
         $suratPengantarLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($suratPengantar->getTable()),
             'postingdari' => 'EDIT TRIP ASAL',
+            'idtrans' => $suratPengantar->id,
+            'nobuktitrans' => $suratPengantar->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $suratPengantar->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        return $suratPengantar;
+    }
+
+    public function updateStatusContainerLongtrip(array $data, $aksi)
+    {
+        $getDataTripAsal = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+            ->where('nobukti', $data['nobukti_tripasal'])
+            ->first();
+        $suratPengantar = SuratPengantar::findOrFail($getDataTripAsal->id);
+        if ($aksi == 'ADD') {
+
+            $getJarak = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->where('id', $getDataTripAsal->upah_id)->first()->jarak ?? 0;
+
+            if ($getDataTripAsal->jenisorder_id == 1 || $getDataTripAsal->jenisorder_id == 4) {
+                $suratPengantar->statuscontainer_id = 2;
+                $getUpah = DB::table("upahsupirrincian")->from(db::raw("upahsupirrincian with (readuncommitted)"))
+                    ->where('upahsupir_id', $getDataTripAsal->upah_id)
+                    ->where('container_id', $getDataTripAsal->container_id)
+                    ->where('statuscontainer_id', 2)
+                    ->first();
+
+                if ($getUpah != '') {
+                    $suratPengantar->gajisupir = $getUpah->nominalsupir;
+                    $suratPengantar->gajikenek = $getUpah->nominalkenek;
+                    $suratPengantar->komisisupir = $getUpah->nominalkomisi;
+                    $suratPengantar->jarak = $getJarak;
+                }
+            } else {
+                $suratPengantar->statuscontainer_id = 1;
+                $getUpah = DB::table("upahsupirrincian")->from(db::raw("upahsupirrincian with (readuncommitted)"))
+                    ->where('upahsupir_id', $getDataTripAsal->upah_id)
+                    ->where('container_id', $getDataTripAsal->container_id)
+                    ->where('statuscontainer_id', 1)
+                    ->first();
+                if ($getUpah != '') {
+                    $suratPengantar->gajisupir = $getUpah->nominalsupir;
+                    $suratPengantar->gajikenek = $getUpah->nominalkenek;
+                    $suratPengantar->komisisupir = $getUpah->nominalkomisi;
+                    $suratPengantar->jarak = $getJarak;
+                }
+            }
+        }
+        if ($aksi == 'DELETE') {
+            $suratPengantar->statuscontainer_id = 3;
+            $getUpah = DB::table("upahsupirrincian")->from(db::raw("upahsupirrincian with (readuncommitted)"))
+                ->where('upahsupir_id', $getDataTripAsal->upah_id)
+                ->where('container_id', $getDataTripAsal->container_id)
+                ->where('statuscontainer_id', 3)
+                ->first();
+            $getJarak = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->where('id', $getDataTripAsal->upah_id)->first()->jarakfullempty ?? 0;
+            if ($getUpah != '') {
+                $suratPengantar->gajisupir = $getUpah->nominalsupir;
+                $suratPengantar->gajikenek = $getUpah->nominalkenek;
+                $suratPengantar->komisisupir = $getUpah->nominalkomisi;
+                $suratPengantar->jarak = $getJarak;
+            }
+        }
+        if (!$suratPengantar->save()) {
+            throw new \Exception('Error UPDATE STATUS CONTAINER LONGTRIP.');
+        }
+
+        $suratPengantarLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($suratPengantar->getTable()),
+            'postingdari' => 'UPDATE STATUS CONTAINER LONGTRIP',
             'idtrans' => $suratPengantar->id,
             'nobuktitrans' => $suratPengantar->nobukti,
             'aksi' => 'EDIT',

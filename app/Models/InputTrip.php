@@ -120,7 +120,6 @@ class InputTrip extends MyModel
             $nobuktiorderantrucking = '';
             goto tanpajobmanual;
         }
-
         denganjobmanual:
         if ($jobtrucking == '') {
             $orderan = [
@@ -425,6 +424,13 @@ class InputTrip extends MyModel
 
         // dd('here');
         // 
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
+        if($cabang == 'SURABAYA') {
+            if($data['statuslongtrip'] == 65) {
+               (new SuratPengantar())->updateStatusContainerLongtrip($data, 'ADD');
+                
+            }
+        }
         $dataSP = [
 
             'jobtrucking' => $nobuktiorderantrucking,
