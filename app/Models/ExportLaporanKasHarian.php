@@ -560,7 +560,7 @@ class ExportLaporanKasHarian extends MyModel
             )
             ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
             ->leftjoin(DB::raw("akunpusat as c "), db::raw("
-                (case when then '" . $cabang . "' = 'PUSAT' then a.coadebet else 
+                (case when '" . $cabang . "' = 'PUSAT' then a.coadebet else 
             (case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end) end)
             "), 'c.coa')
             ->whereraw("isnull(b.alatbayar_id,0) not in(3,4)")
@@ -639,7 +639,7 @@ class ExportLaporanKasHarian extends MyModel
             )
             ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
             ->leftjoin(DB::raw("akunpusat as c "), db::raw("
-            (case when then '" . $cabang . "' = 'PUSAT' then a.coadebet else 
+            (case when '" . $cabang . "' = 'PUSAT' then a.coadebet else 
             (case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end) end)"), 'c.coa')
             ->join(DB::raw("pencairangiropengeluaranheader as d with (readuncommitted)"), 'b.nobukti', 'd.pengeluaran_nobukti')
             ->whereraw("isnull(b.alatbayar_id,0) in(3,4)")
@@ -739,7 +739,7 @@ class ExportLaporanKasHarian extends MyModel
                 )
                 ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
                 ->leftjoin(DB::raw("akunpusat as c "), db::raw("
-                (case when then '" . $cabang . "' = 'PUSAT' then a.coadebet else 
+                (case when '" . $cabang . "' = 'PUSAT' then a.coadebet else 
                 (case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end) end)
                 "), 'c.coa')
                 ->whereraw("isnull(b.alatbayar_id,0) not in(3,4)")
@@ -783,7 +783,7 @@ class ExportLaporanKasHarian extends MyModel
                 )
                 ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
                 ->leftjoin(DB::raw("akunpusat as c "), db::raw("
-                (case when then '" . $cabang . "' = 'PUSAT' then a.coadebet else                 
+                (case when  '" . $cabang . "' = 'PUSAT' then a.coadebet else                 
                 (case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end) end)"), 'c.coa')
                 ->join(DB::raw("pencairangiropengeluaranheader as d with (readuncommitted)"), 'b.nobukti', 'd.pengeluaran_nobukti')
                 ->whereraw("isnull(b.alatbayar_id,0) in(3,4)")
@@ -1374,7 +1374,7 @@ class ExportLaporanKasHarian extends MyModel
             )
             ->join(db::raw("pengeluaranheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(db::raw("akunpusat c with (readuncommitted)"), db::raw("
-            (case when then '" . $cabang . "' = 'PUSAT' then a.coadebet else 
+            (case when  '" . $cabang . "' = 'PUSAT' then a.coadebet else 
             (case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end) end)"), 'c.coa')
             ->whereRaw("format(b.tglbukti,'MM-yyyy')='" . $sampai . "'")
             ->where('b.bank_id', $jenis)
@@ -1398,7 +1398,7 @@ class ExportLaporanKasHarian extends MyModel
             )
             ->join(db::raw("pengeluaranheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(db::raw("akunpusat c with (readuncommitted)"), db::raw("
-            (case when then '" . $cabang . "' = 'PUSAT' then a.coadebet else 
+            (case when  '" . $cabang . "' = 'PUSAT' then a.coadebet else 
             (case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end) end)
             "), 'c.coa')
             ->join(db::raw("pencairangiropengeluaranheader d with (readuncommitted)"), 'b.nobukti', 'd.pengeluaran_nobukti')
@@ -1422,7 +1422,7 @@ class ExportLaporanKasHarian extends MyModel
                 db::raw("sum(a.nominal) as nominal")
             )
             ->join(db::raw("akunpusat c with (readuncommitted)"), db::raw("
-            (case when then '" . $cabang . "' = 'PUSAT' then a.coadebet else 
+            (case when  '" . $cabang . "' = 'PUSAT' then a.coadebet else 
             (case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end) end)"), 'c.coa')
             ->whereRaw("format(a.tglbukti,'MM-yyyy')='" . $sampai . "'")
             ->where('a.bankdari_id', $jenis)
