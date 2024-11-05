@@ -410,7 +410,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
                     else '' end) + b.keterangan as keterangan"),
                 'a.debet',
                 db::raw("abs(a.kredit) as kredit"),
-                DB::raw("sum ((isnull(a.saldo,0)+a.debet-a.kredit)) over (order by a.id asc) as Saldo"),
+                DB::raw("sum ((isnull(a.saldo,0)+a.debet+a.kredit)) over (order by a.id asc) as Saldo"),
                 DB::raw("'LAPORAN PINJAMAN KARYAWAN " . $judul1 . "' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
