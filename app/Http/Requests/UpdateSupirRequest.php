@@ -130,7 +130,7 @@ class UpdateSupirRequest extends FormRequest
             'statusaktif' => [$ruleKeterangan, 'int', 'exists:parameter,id'],
             'tglmasuk' => 'required',
             'tglexpsim' => [$ruleKeterangan],
-            'nosim' => [$ruleKeterangan, 'min:12', 'max:15', new SupirResign($cekSupir), new SupirBlackListSim(),'nullable'], //.',nosim',
+            'nosim' => [$ruleKeterangan, 'min:12', 'max:16', new SupirResign($cekSupir), new SupirBlackListSim(),'nullable'], //.',nosim',
             'noktp' => ['required', 'min:16', 'max:16', new SupirResign($cekSupir), new SupirBlackListKtp()], //.',noktp',
             'nokk' => [$ruleKeterangan, 'min:16', 'max:16', 'nullable'],
             'tgllahir' => [
@@ -218,7 +218,7 @@ class UpdateSupirRequest extends FormRequest
             'noktp.min' => 'Min. 16 karakter',
             'nokk.max' => 'Max. 16 karakter',
             'nokk.min' => 'Min. 16 karakter',
-            'nosim.max' => 'Max. 15 karakter',
+            'nosim.max' => 'Max. 16 karakter',
             'nosim.min' => 'Min. 12 karakter',
             'nosim.unique' => ':attribute Sudah digunakan',
             'noktp.unique' => ':attribute Sudah digunakan',
