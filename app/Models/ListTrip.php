@@ -22,7 +22,7 @@ class ListTrip extends MyModel
         $jobmanual = (new Parameter())->cekText('JOB TRUCKING MANUAL', 'JOB TRUCKING MANUAL') ?? 'TIDAK';
         $aksi = request()->aksi;
         $trip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->select('nobukti', 'jobtrucking', 'tglbukti', DB::raw("isnull(approvalbukatanggal_id,0) as approvalbukatanggal_id"), 'tglbataseditsuratpengantar', 'statusapprovaleditsuratpengantar', 'statusjeniskendaraan', 'supir_id', 'trado_id')
+            ->select('nobukti', 'jobtrucking', 'tglbukti', DB::raw("isnull(approvalbukatanggal_id,0) as approvalbukatanggal_id"), 'tglbataseditsuratpengantar', 'statusapprovaleditsuratpengantar', 'statusjeniskendaraan', 'supir_id', 'trado_id', 'nobukti_tripasal', 'statuslongtrip')
             ->where('id', $id)
             ->first();
         $jenisTangki = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
@@ -72,6 +72,24 @@ class ListTrip extends MyModel
         $nobukti = $trip->nobukti;
         $jobtrucking = $trip->jobtrucking;
 
+
+        if ($cabang == 'SURABAYA') {
+            $isMandor = auth()->user()->isMandor();
+            if ($isMandor) {
+                if ($trip->nobukti_tripasal != '') {
+
+                    // $keteranganerror = $error->cekKeteranganError('TBH') ?? '';
+                    // $keteranganerrortambahan = $error->cekKeteranganError('SHP') ?? '';
+                    $data = [
+                        'kondisi' => true,
+                        'keterangan' => 'trip <b>' . $trip->nobukti . '</b><br> MERUPAKAN TRIP LONGTRIP <br>' . $keterangantambahanerror,
+                        'kodeerror' => 'SHP',
+                    ];
+
+                    goto selesai;
+                }
+            }
+        }
         $parameter = new Parameter();
         $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
 
@@ -377,17 +395,28 @@ class ListTrip extends MyModel
             ->join('suratpengantar', 'suratpengantar.trado_id', 'trado.id')
             ->where('suratpengantar.nobukti', $nobukti)
             ->first();
+        if ($cabang == 'SURABAYA') {
+            if (!$isMandor && $trip->nobukti_tripasal == '') {
+                $keteranganerror = $error->cekKeteranganError('TPH') ?? '';
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => $keteranganerror . '<br> trip milik pengurus lain <br> ' . $keterangantambahanerror,
+                    'kodeerror' => 'TPH',
+                ];
+                goto selesai;
+            }
+        } else {
 
-        if ($cektrado == '') {
-            $keteranganerror = $error->cekKeteranganError('TPH') ?? '';
-            $data = [
-                'kondisi' => true,
-                'keterangan' => $keteranganerror . '<br> trip milik pengurus lain <br> ' . $keterangantambahanerror,
-                'kodeerror' => 'TPH',
-            ];
-            goto selesai;
+            if ($cektrado == '') {
+                $keteranganerror = $error->cekKeteranganError('TPH') ?? '';
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => $keteranganerror . '<br> trip milik pengurus lain <br> ' . $keterangantambahanerror,
+                    'kodeerror' => 'TPH',
+                ];
+                goto selesai;
+            }
         }
-
 
         $data = [
             'kondisi' => false,
@@ -895,8 +924,7 @@ class ListTrip extends MyModel
                 ->first();
 
             $tglBatasEdit = date('Y-m-d', strtotime($data['tglbukti'])) . ' ' . '12:00:00';
-
-            if ($data['statuslongtrip'] == 65) {
+            if ($data['statuslongtrip'] == 65 && $trip->nobukti_tripasal == '') {
 
                 $getId = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
                 if (isset($getId)) {
@@ -1137,30 +1165,56 @@ class ListTrip extends MyModel
             }
             if ($cekkota != $pelabuhan && $data['statuslongtrip'] != 65) {
                 $pelabuhandari_id = db::table('kota')->from(db::raw("kota with (readuncommitted)"))->where('id', $data['dari_id'])->first()->statuspelabuhan;
-                if ($pelabuhandari_id == $pelabuhan) {
-                    $tglBatasEdit = date('Y-m-d', strtotime($data['tglbukti'])) . ' ' . '12:00:00';
-                    $orderan = [
-                        'tglbukti' => $data['tglbukti'],
-                        'container_id' => $data['container_id'],
-                        'agen_id' => $data['agen_id'],
-                        'jenisorder_id' => $data['jenisorder_id'],
-                        'pelanggan_id' => $data['pelanggan_id'],
-                        'tarifrincian_id' => $data['tarifrincian_id'],
-                        'statusjeniskendaraan' => $data['statusjeniskendaraan'],
-                        'nojobemkl' => $data['nojobemkl'] ?? '',
-                        'nocont' => $data['nocont'] ?? '',
-                        'noseal' => $data['noseal'] ?? '',
-                        'nojobemkl2' => $data['nojobemkl2'] ?? '',
-                        'nocont2' => $data['nocont2'] ?? '',
-                        'noseal2' => $data['noseal2'] ?? '',
-                        'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
-                        'gandengan_id' => $data['gandengan_id'],
-                        'statusperalihan' => $statusperalihan->id,
-                        'tglbataseditorderantrucking' => $tglBatasEdit,
-                        'inputtripmandor' =>  '1',
-                    ];
-                    $orderanTrucking = (new OrderanTrucking())->processStore($orderan);
-                    $trip->jobtrucking = $orderanTrucking->nobukti;
+                if ($trip->statuslongtrip == 65 && $data['statuslongtrip'] != 65) {
+                    $getJobtrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
+                    if ($getJobtrucking != '') {
+                        $orderan = [
+                            'container_id' => $data['container_id'],
+                            'agen_id' => $data['agen_id'],
+                            'jenisorder_id' => $data['jenisorder_id'],
+                            'jenisorderemkl_id' => $getJobtrucking['jenisorderemkl_id'],
+                            'pelanggan_id' => $data['pelanggan_id'],
+                            'nojobemkl' => $getJobtrucking['nojobemkl'],
+                            'nocont' => $getJobtrucking['nocont'] ?? '',
+                            'noseal' => $getJobtrucking['noseal'] ?? '',
+                            'nojobemkl2' => $getJobtrucking['nojobemkl2'] ?? '',
+                            'nocont2' => $getJobtrucking['nocont2'] ?? '',
+                            'noseal2' => $getJobtrucking['noseal2'] ?? '',
+                            'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
+                            'gandengan_id' => $data['gandengan_id'],
+                            'statusperalihan' => $statusperalihan->id,
+                            'inputtripmandor' =>  'true',
+                        ];
+    
+                        $orderanTrucking = (new OrderanTrucking())->processUpdate($getJobtrucking, $orderan);
+                    }
+                } else {
+
+                    if ($pelabuhandari_id == $pelabuhan) {
+                        $tglBatasEdit = date('Y-m-d', strtotime($data['tglbukti'])) . ' ' . '12:00:00';
+                        $orderan = [
+                            'tglbukti' => $data['tglbukti'],
+                            'container_id' => $data['container_id'],
+                            'agen_id' => $data['agen_id'],
+                            'jenisorder_id' => $data['jenisorder_id'],
+                            'pelanggan_id' => $data['pelanggan_id'],
+                            'tarifrincian_id' => $data['tarifrincian_id'],
+                            'statusjeniskendaraan' => $data['statusjeniskendaraan'],
+                            'nojobemkl' => $data['nojobemkl'] ?? '',
+                            'nocont' => $data['nocont'] ?? '',
+                            'noseal' => $data['noseal'] ?? '',
+                            'nojobemkl2' => $data['nojobemkl2'] ?? '',
+                            'nocont2' => $data['nocont2'] ?? '',
+                            'noseal2' => $data['noseal2'] ?? '',
+                            'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
+                            'gandengan_id' => $data['gandengan_id'],
+                            'statusperalihan' => $statusperalihan->id,
+                            'tglbataseditorderantrucking' => $tglBatasEdit,
+                            'inputtripmandor' =>  '1',
+                        ];
+                        $orderanTrucking = (new OrderanTrucking())->processStore($orderan);
+                        $trip->jobtrucking = $orderanTrucking->nobukti;
+                    }
                 }
             }
         } else {
@@ -1533,7 +1587,7 @@ class ListTrip extends MyModel
     public function processDestroy($id): SuratPengantar
     {
         // $suratPengantarBiayaTambahan = SuratPengantarBiayaTambahan::where('suratpengantar_id', $id)->get();
-        $cekSP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('suratpengantar.dari_id', 'orderantrucking.id', 'suratpengantar.statusgudangsama', 'suratpengantar.statuslongtrip')
+        $cekSP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('suratpengantar.dari_id', 'orderantrucking.id', 'suratpengantar.statusgudangsama', 'suratpengantar.statuslongtrip', 'suratpengantar.nobukti_tripasal')
             ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'suratpengantar.jobtrucking', 'orderantrucking.nobukti')->where('suratpengantar.id', $id)->first();
 
         if ($cekSP->dari_id == 1) {
@@ -1544,6 +1598,13 @@ class ListTrip extends MyModel
         }
         if ($cekSP->statuslongtrip == 65) {
             (new OrderanTrucking())->processDestroy($cekSP->id);
+            $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
+            if ($cabang == 'SURABAYA') {
+                $dataTripAsal = [
+                    'nobukti_tripasal' => $cekSP->nobukti_tripasal
+                ];
+                (new SuratPengantar())->updateStatusContainerLongtrip($dataTripAsal, 'DELETE');
+            }
         }
         $suratPengantar = new SuratPengantar();
         $suratPengantar = $suratPengantar->lockAndDestroy($id);

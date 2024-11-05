@@ -248,6 +248,8 @@ class AbsensiSupirHeader extends MyModel
                 $table->string('statusapprovalpengajuantripinap', 1000)->nullable();
                 $table->string('userapprovalpengajuantripinap', 50)->nullable();
                 $table->string('userbukacetak', 50)->nullable();
+                $table->longText('kasgantung')->nullable();
+                $table->longText('kasgantung_url')->nullable();
                 $table->integer('jumlahcetak')->Length(11)->nullable();
                 $table->string('modifiedby', 1000)->nullable();
                 $table->dateTime('created_at')->nullable();
@@ -273,6 +275,8 @@ class AbsensiSupirHeader extends MyModel
                 'statusapprovalpengajuantripinap',
                 'userapprovalpengajuantripinap',
                 'userbukacetak',
+                'kasgantung',
+                'kasgantung_url',
                 'jumlahcetak',
                 'modifiedby',
                 'created_at',
@@ -352,6 +356,8 @@ class AbsensiSupirHeader extends MyModel
                 $table->string('statusapprovalpengajuantripinap', 1000)->nullable();
                 $table->string('userapprovalpengajuantripinap', 50)->nullable();
                 $table->string('userbukacetak', 50)->nullable();
+                $table->longText('kasgantung')->nullable();
+                $table->longText('kasgantung_url')->nullable();
                 $table->integer('jumlahcetak')->Length(11)->nullable();
                 $table->string('modifiedby', 1000)->nullable();
                 $table->dateTime('created_at')->nullable();
@@ -377,6 +383,8 @@ class AbsensiSupirHeader extends MyModel
                 'statusapprovalpengajuantripinap',
                 'userapprovalpengajuantripinap',
                 'userbukacetak',
+                'kasgantung',
+                'kasgantung_url',
                 'jumlahcetak',
                 'modifiedby',
                 'created_at',

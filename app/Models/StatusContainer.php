@@ -75,6 +75,7 @@ class StatusContainer extends MyModel
             ->first();
 
         $aktif = request()->aktif ?? '';
+        $forLookup = request()->forLookup ?? '';
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'statuscontainer.id',
@@ -106,6 +107,17 @@ class StatusContainer extends MyModel
                 ->first();
 
             $query->where('statuscontainer.statusaktif', '=', $statusaktif->id);
+        }
+
+        if($forLookup == true) {
+            $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
+            if($cabang == 'JAKARTA' || $cabang == 'TNL' || $cabang == 'SURABAYA') {
+                
+                $isMandor = auth()->user()->isMandor();
+                if($isMandor) {
+                    $query->where('statuscontainer.kodestatuscontainer', 'FULL EMPTY');
+                }
+            }
         }
         $this->sort($query);
         $this->paginate($query);
