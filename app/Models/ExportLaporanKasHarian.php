@@ -27,7 +27,7 @@ class ExportLaporanKasHarian extends MyModel
     public function getExport($sampai, $jenis)
     {
 
-
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
         $bulan = substr($sampai, 0, 2);
         $tahun = substr($sampai, -4);
 
@@ -559,7 +559,10 @@ class ExportLaporanKasHarian extends MyModel
                 DB::raw("0  as nilaikosongkredit"),
             )
             ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
-            ->leftjoin(DB::raw("akunpusat as c "), db::raw("(case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end)"), 'c.coa')
+            ->leftjoin(DB::raw("akunpusat as c "), db::raw("
+                (case when then '" . $cabang . "' = 'PUSAT' then a.coadebet else 
+            (case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end) end)
+            "), 'c.coa')
             ->whereraw("isnull(b.alatbayar_id,0) not in(3,4)")
             ->whereRaw("month(A.tgljatuhtempo)= cast(left($bulan,2) as integer)")
             ->whereRaw("year(A.tgljatuhtempo)= cast(right($tahun,4) as integer)")
@@ -635,7 +638,9 @@ class ExportLaporanKasHarian extends MyModel
                 DB::raw("0  as nilaikosongkredit"),
             )
             ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
-            ->leftjoin(DB::raw("akunpusat as c "), db::raw("(case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end)"), 'c.coa')
+            ->leftjoin(DB::raw("akunpusat as c "), db::raw("
+            (case when then '" . $cabang . "' = 'PUSAT' then a.coadebet else 
+            (case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end) end)"), 'c.coa')
             ->join(DB::raw("pencairangiropengeluaranheader as d with (readuncommitted)"), 'b.nobukti', 'd.pengeluaran_nobukti')
             ->whereraw("isnull(b.alatbayar_id,0) in(3,4)")
             ->whereRaw("month(A.tgljatuhtempo)= cast(left($bulan,2) as integer)")
@@ -733,7 +738,10 @@ class ExportLaporanKasHarian extends MyModel
                     DB::raw("0  as nilaikosongkredit"),
                 )
                 ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
-                ->leftjoin(DB::raw("akunpusat as c "), db::raw("(case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end)"), 'c.coa')
+                ->leftjoin(DB::raw("akunpusat as c "), db::raw("
+                (case when then '" . $cabang . "' = 'PUSAT' then a.coadebet else 
+                (case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end) end)
+                "), 'c.coa')
                 ->whereraw("isnull(b.alatbayar_id,0) not in(3,4)")
                 ->whereRaw("month(A.tgljatuhtempo)= cast(left($bulan,2) as integer)")
                 ->whereRaw("year(A.tgljatuhtempo)= cast(right($tahun,4) as integer)")
@@ -774,7 +782,9 @@ class ExportLaporanKasHarian extends MyModel
                     DB::raw("0  as nilaikosongkredit"),
                 )
                 ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
-                ->leftjoin(DB::raw("akunpusat as c "), db::raw("(case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end)"), 'c.coa')
+                ->leftjoin(DB::raw("akunpusat as c "), db::raw("
+                (case when then '" . $cabang . "' = 'PUSAT' then a.coadebet else                 
+                (case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end) end)"), 'c.coa')
                 ->join(DB::raw("pencairangiropengeluaranheader as d with (readuncommitted)"), 'b.nobukti', 'd.pengeluaran_nobukti')
                 ->whereraw("isnull(b.alatbayar_id,0) in(3,4)")
                 ->whereRaw("month(A.tgljatuhtempo)= cast(left($bulan,2) as integer)")
@@ -1363,7 +1373,9 @@ class ExportLaporanKasHarian extends MyModel
                 db::raw("sum(a.nominal) as nominal")
             )
             ->join(db::raw("pengeluaranheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-            ->join(db::raw("akunpusat c with (readuncommitted)"), db::raw("(case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end)"), 'c.coa')
+            ->join(db::raw("akunpusat c with (readuncommitted)"), db::raw("
+            (case when then '" . $cabang . "' = 'PUSAT' then a.coadebet else 
+            (case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end) end)"), 'c.coa')
             ->whereRaw("format(b.tglbukti,'MM-yyyy')='" . $sampai . "'")
             ->where('b.bank_id', $jenis)
             ->whereraw("b.alatbayar_id not in (3,4)")
@@ -1385,7 +1397,10 @@ class ExportLaporanKasHarian extends MyModel
                 db::raw("sum(a.nominal) as nominal")
             )
             ->join(db::raw("pengeluaranheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-            ->join(db::raw("akunpusat c with (readuncommitted)"), db::raw("(case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end)"), 'c.coa')
+            ->join(db::raw("akunpusat c with (readuncommitted)"), db::raw("
+            (case when then '" . $cabang . "' = 'PUSAT' then a.coadebet else 
+            (case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end) end)
+            "), 'c.coa')
             ->join(db::raw("pencairangiropengeluaranheader d with (readuncommitted)"), 'b.nobukti', 'd.pengeluaran_nobukti')
             ->whereRaw("format(b.tglbukti,'MM-yyyy')='" . $sampai . "'")
             ->where('b.bank_id', $jenis)
@@ -1406,7 +1421,9 @@ class ExportLaporanKasHarian extends MyModel
                 'c.keterangancoa',
                 db::raw("sum(a.nominal) as nominal")
             )
-            ->join(db::raw("akunpusat c with (readuncommitted)"), db::raw("(case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end)"), 'c.coa')
+            ->join(db::raw("akunpusat c with (readuncommitted)"), db::raw("
+            (case when then '" . $cabang . "' = 'PUSAT' then a.coadebet else 
+            (case when a.coakredit='03.02.02.05' then a.coakredit else a.coadebet end) end)"), 'c.coa')
             ->whereRaw("format(a.tglbukti,'MM-yyyy')='" . $sampai . "'")
             ->where('a.bankdari_id', $jenis)
             ->groupby('c.coa')
