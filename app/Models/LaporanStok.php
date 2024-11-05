@@ -372,15 +372,15 @@ class LaporanStok extends MyModel
                     'a.nilaikeluar as nominalkeluar',
                     // 'a.qtysaldo as qtysaldo',
                     // 'a.nilaisaldo as nominalsaldo',
-                    db::raw("(case when (row_number() Over(partition BY (case when isnull(b.keterangan,'')='' then isnull(b.keterangan,'') else isnull(b.keterangan,'') end) Order By (case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end),a.tglbukti,a.tglinput))=1 then a.qtysaldo else 0 end) as qtysaldo"),
-                    db::raw("(case when (row_number() Over(partition BY (case when isnull(b.keterangan,'')='' then isnull(b.keterangan,'') else isnull(b.keterangan,'') end) Order By (case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end),a.tglbukti,a.tglinput))=1 then a.nilaisaldo else 0 end) as nominalsaldo"),
+                    db::raw("(case when (row_number() Over(partition BY (case when isnull(b.keterangan,'')='' then b.namastok else b.keterangan end) Order By (case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end),a.tglbukti,a.tglinput))=1 then a.qtysaldo else 0 end) as qtysaldo"),
+                    db::raw("(case when (row_number() Over(partition BY (case when isnull(b.keterangan,'')='' then b.namastok else b.keterangan end) Order By (case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end),a.tglbukti,a.tglinput))=1 then a.nilaisaldo else 0 end) as nominalsaldo"),
                     // db::raw("(case when (row_number() Over(partition BY isnull(c1.kodekelompok,'')+' - '+b.namastok Order By isnull(c1.kodekelompok,'')+' - '+b.namastok,a.tglbukti,a.tglinput))=1 then a.qtysaldo else 0 end) as qtysaldo"),
                     // db::raw("(case when (row_number() Over(partition BY isnull(c1.kodekelompok,'')+' - '+b.namastok Order By isnull(c1.kodekelompok,'')+' - '+b.namastok,a.tglbukti,a.tglinput))=1 then a.nilaisaldo else 0 end) as nominalsaldo"),
                     // db::raw("0 as qtysaldo"),
                     // db::raw("0 as nominalsaldo"),
                     db::raw("'" . $disetujui . "' as disetujui"),
                     db::raw("'" . $diperiksa . "' as diperiksa"),
-                    db::raw("(case when (row_number() Over(partition BY a.stok_id Order By (case when isnull(b.keterangan,'')='' then isnull(b.keterangan,'') else isnull(b.keterangan,'') end),a.stok_id,a.tglbukti,a.tglinput))=1 then 1 else 0 end) as baris"),
+                    db::raw("(case when (row_number() Over(partition BY a.stok_id Order By b.namastok,a.stok_id,a.tglbukti,a.tglinput))=1 then 1 else 0 end) as baris"),
                     // db::raw("(case when (row_number() Over(partition BY a.stok_id Order By isnull(c1.kodekelompok,'')+' - '+b.namastok,a.stok_id,a.tglbukti,a.tglinput))=1 then 1 else 0 end) as baris"),
                     // db::raw("(case when a.nobukti='SALDO AWAL' then 1 else 0 end) as baris"),
                     DB::raw("'" . $getJudul->text . "' as judul"),
@@ -400,11 +400,12 @@ class LaporanStok extends MyModel
                     $join->on('a.stok_id', '=', 'd.stok_id');
                 })
                 // ->orderBy(db::raw("isnull(c1.kodekelompok,'')+' - '+b.namastok"), 'asc')
-                ->orderBy(db::raw("(case when isnull(b.keterangan,'')='' then isnull(b.keterangan,'') else isnull(b.keterangan,'') end) "), 'asc')
+                ->orderBy(db::raw("(case when isnull(b.keterangan,'')='' then b.namastok else b.keterangan end) "), 'asc')
                 ->orderBy('a.stok_id', 'asc')
                 ->orderBy('a.tglbukti', 'asc')
                 ->orderBy('a.tglinput', 'asc')
                 ->orderBy(db::raw("(case when UPPER(isnull(a.nobukti,''))='SALDO AWAL' then '' else isnull(a.nobukti,'') end)"), 'asc');
+                // dd($query->get());
         } else {
             $query = DB::table($temprekapall)->from(
                 DB::raw($temprekapall . " a")
