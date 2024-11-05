@@ -781,11 +781,11 @@ class InvoiceEmklHeader extends MyModel
         $invoiceHeader->statusformat = $format->id;
         $invoiceHeader->statusformatreimbursement = $data['statusreimbursement'] ?? $statusReimbursement->id;
         $invoiceHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
-        if ($jenisorder_id == 2) {
+        if ($jenisorder_id == 2 && $prosesReimburse == 0) {
             $invoiceHeader->statusformatinvoicetambahan = $formatinvoicetambahan->id;
             $invoiceHeader->nobuktiinvoicetambahan = (new RunningNumberService)->get($groupinvoicebongkaran, $subGroupinvoicebongkaran, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])), $tujuan_id, $cabang_id, 0, 0, 'nobuktiinvoicetambahan', 'statusformatinvoicetambahan');
         }
-        if ($jenisorder_id == 1) {
+        if ($jenisorder_id == 1 && $prosesReimburse == 0) {
             // dd($statusPajak->id,$statuspajakdata);
             if ($statusPajak->id == $statuspajakdata) {
                 // dd('a');
