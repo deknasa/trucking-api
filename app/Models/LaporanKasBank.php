@@ -29,6 +29,7 @@ class LaporanKasBank extends MyModel
 
     public function getReport($dari, $sampai, $bank_id, $prosesneraca)
     {
+        $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
 
         // dd('test');
         // dd($dari, $sampai, $bank_id, $prosesneraca);
@@ -653,7 +654,10 @@ class LaporanKasBank extends MyModel
             ->select(
                 DB::raw("4 as urut"),
                 DB::raw('ROW_NUMBER() OVER (PARTITION BY A.nobukti ORDER BY b.id) as urutdetail'),
-                db::raw("(case when b.coakredit='03.02.02.05' then b.coakredit else b.coadebet end) as coa"),
+                db::raw("
+                (case when then '" . $cabang . "' = 'PUSAT' then b.coadebet else 
+                (case when b.coakredit='03.02.02.05' then b.coakredit else b.coadebet end)  end)
+                as coa"),
                 // 'b.coadebet as coa',
                 'b.tgljatuhtempo',
                 'b.tgljatuhtempo as tglbukti2',
@@ -696,7 +700,10 @@ class LaporanKasBank extends MyModel
             ->select(
                 DB::raw("4 as urut"),
                 DB::raw('ROW_NUMBER() OVER (PARTITION BY A.nobukti ORDER BY b.id) as urutdetail'),
-                db::raw("(case when b.coakredit='03.02.02.05' then b.coakredit else b.coadebet end) as coa"),
+                db::raw("
+                (case when then '" . $cabang . "' = 'PUSAT' then b.coadebet else 
+                (case when b.coakredit='03.02.02.05' then b.coakredit else b.coadebet end) end)
+                as coa"),
 
                 // 'b.coadebet as coa',
                 'c.tglbukti',
@@ -741,7 +748,10 @@ class LaporanKasBank extends MyModel
                 ->select(
                     DB::raw("5 as urut"),
                     DB::raw('ROW_NUMBER() OVER (PARTITION BY A.nobukti ORDER BY b.id) as urutdetail'),
-                    db::raw("(case when b.coakredit='03.02.02.05' then b.coakredit else b.coadebet end) as coa"),
+                    db::raw("
+                              (case when then '" . $cabang . "' = 'PUSAT' then b.coadebet else 
+                        (case when b.coakredit='03.02.02.05' then b.coakredit else b.coadebet end)  end)
+                        as coa"),
 
                     // 'b.coadebet as coa',
                     'b.tgljatuhtempo as tglbukti',
@@ -961,7 +971,6 @@ class LaporanKasBank extends MyModel
             //     $queryhasil->whereraw("a.nobukti not in ('SALDO AWAL')");
             // }
             // dd(db::table($temprekap)->get());
-            $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
             if ($cabang == 'PUSAT') {
 
                 $queryhasil = DB::table($temprekap)->from(
@@ -999,12 +1008,12 @@ class LaporanKasBank extends MyModel
                         'a.nilaikosongkredit',
                         'c.totaldebet',
                         'c.totalkredit',
-                    //     DB::raw("sum ((isnull(a.saldo,0)+
-                    // (case when isnull(a.urutdetail,0)=1 then  isnull(c.totaldebet,0) else 0 end)
-                    // )-
-                    // (case when isnull(a.urutdetail,0)=1 then  isnull(c.totalkredit,0) else 0 end)
-                    // ) over (order by a.tglbukti,a.urut,a.nobukti,a.id) as saldo"),
-                    
+                        //     DB::raw("sum ((isnull(a.saldo,0)+
+                        // (case when isnull(a.urutdetail,0)=1 then  isnull(c.totaldebet,0) else 0 end)
+                        // )-
+                        // (case when isnull(a.urutdetail,0)=1 then  isnull(c.totalkredit,0) else 0 end)
+                        // ) over (order by a.tglbukti,a.urut,a.nobukti,a.id) as saldo"),
+
                         DB::raw("sum ((isnull(a.saldo,0)+isnull(a.debet,0))-isnull(a.Kredit,0)) over (order by a.tglbukti,a.urut,a.nobukti,a.id) as saldo"),
                         DB::raw("'Laporan Buku " . ucwords(strtolower($querykasbank->tipe)) . "' as judulLaporan"),
                         DB::raw("'" . $getJudul->text . "' as judul"),
