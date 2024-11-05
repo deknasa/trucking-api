@@ -655,7 +655,7 @@ class LaporanKasBank extends MyModel
                 DB::raw("4 as urut"),
                 DB::raw('ROW_NUMBER() OVER (PARTITION BY A.nobukti ORDER BY b.id) as urutdetail'),
                 db::raw("
-                (case when then '" . $cabang . "' = 'PUSAT' then b.coadebet else 
+                (case when '" . $cabang . "' = 'PUSAT' then b.coadebet else 
                 (case when b.coakredit='03.02.02.05' then b.coakredit else b.coadebet end)  end)
                 as coa"),
                 // 'b.coadebet as coa',
@@ -701,7 +701,7 @@ class LaporanKasBank extends MyModel
                 DB::raw("4 as urut"),
                 DB::raw('ROW_NUMBER() OVER (PARTITION BY A.nobukti ORDER BY b.id) as urutdetail'),
                 db::raw("
-                (case when then '" . $cabang . "' = 'PUSAT' then b.coadebet else 
+                (case when '" . $cabang . "' = 'PUSAT' then b.coadebet else 
                 (case when b.coakredit='03.02.02.05' then b.coakredit else b.coadebet end) end)
                 as coa"),
 
@@ -749,7 +749,7 @@ class LaporanKasBank extends MyModel
                     DB::raw("5 as urut"),
                     DB::raw('ROW_NUMBER() OVER (PARTITION BY A.nobukti ORDER BY b.id) as urutdetail'),
                     db::raw("
-                              (case when then '" . $cabang . "' = 'PUSAT' then b.coadebet else 
+                              (case when '" . $cabang . "' = 'PUSAT' then b.coadebet else 
                         (case when b.coakredit='03.02.02.05' then b.coakredit else b.coadebet end)  end)
                         as coa"),
 
