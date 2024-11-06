@@ -501,6 +501,22 @@ class SuratPengantar extends MyModel
                 'suratpengantar_nobukti',
             ], $queryric);
 
+            $tempspinv = '##tempspinv' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempspinv, function ($table) {
+                $table->string('nobukti', 50)->nullable();
+                $table->string('orderantrucking_nobukti', 50)->nullable();
+            });
+            $queryinv = DB::table("invoicedetail")->from(DB::raw("invoicedetail a with (readuncommitted)"))
+                ->select(
+                    db::raw("max(a.nobukti) as nobukti"),
+                    'a.orderantrucking_nobukti'
+                )
+                ->groupBy('a.orderantrucking_nobukti');
+            DB::table($tempspinv)->insertUsing([
+                'nobukti',
+                'orderantrucking_nobukti',
+            ], $queryinv);
+
             $querysuratpengantar = DB::table('suratpengantar')->from(
                 DB::raw("suratpengantar with (readuncommitted)")
             )
@@ -602,7 +618,7 @@ class SuratPengantar extends MyModel
                     'tglbatasapprovalbiayaextra'
                 )
                 ->leftJoin(DB::raw("$tempspric as b with (readuncommitted)"), 'suratpengantar.nobukti', 'b.suratpengantar_nobukti')
-                ->leftJoin(DB::raw("invoicedetail as c with (readuncommitted)"), 'suratpengantar.jobtrucking', 'c.orderantrucking_nobukti')
+                ->leftJoin(DB::raw("$tempspinv as c with (readuncommitted)"), 'suratpengantar.jobtrucking', 'c.orderantrucking_nobukti')
                 ->leftJoin(DB::raw("orderantrucking  with (readuncommitted)"), 'suratpengantar.jobtrucking', 'orderantrucking.nobukti');
 
 
@@ -3023,6 +3039,22 @@ class SuratPengantar extends MyModel
             'suratpengantar_nobukti',
         ], $queryric);
 
+        $tempspinv = '##tempspinv' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempspinv, function ($table) {
+            $table->string('nobukti', 50)->nullable();
+            $table->string('orderantrucking_nobukti', 50)->nullable();
+        });
+        $queryinv = DB::table("invoicedetail")->from(DB::raw("invoicedetail a with (readuncommitted)"))
+            ->select(
+                db::raw("max(a.nobukti) as nobukti"),
+                'a.orderantrucking_nobukti'
+            )
+            ->groupBy('a.orderantrucking_nobukti');
+        DB::table($tempspinv)->insertUsing([
+            'nobukti',
+            'orderantrucking_nobukti',
+        ], $queryinv);
+
         $querysuratpengantar = DB::table('suratpengantar')->from(
             DB::raw("suratpengantar with (readuncommitted)")
         )
@@ -3088,7 +3120,7 @@ class SuratPengantar extends MyModel
 
             )
             ->leftJoin(DB::raw("$tempspric as b with (readuncommitted)"), 'suratpengantar.nobukti', 'b.suratpengantar_nobukti')
-            ->leftJoin(DB::raw("invoicedetail as c with (readuncommitted)"), 'suratpengantar.jobtrucking', 'c.orderantrucking_nobukti');
+            ->leftJoin(DB::raw("$tempspinv as c with (readuncommitted)"), 'suratpengantar.jobtrucking', 'c.orderantrucking_nobukti');
         if (request()->tgldariheader) {
             $querysuratpengantar->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
         }
