@@ -2859,6 +2859,7 @@ class GajiSupirHeader extends MyModel
         $sisaDeposito = 0;
         $liter = 0;
         $trado = '';
+        $hargabbm = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'HARGA SOLAR')->where('subgrp', 'HARGA SOLAR')->first()->text ?? 0;
 
         if ($formatCetak->text == 'FORMAT 3') {
             $data = db::table("gajisupirheader")->from(DB::raw("gajisupirheader with (readuncommitted)"))->where("id", $id)->first();
@@ -2980,6 +2981,7 @@ class GajiSupirHeader extends MyModel
                 DB::raw("'" . $sisaDeposito . "' as sisadeposito"),
                 DB::raw("'" . $sisaPinjaman . "' as sisapinjaman"),
                 DB::raw("'" . $liter . "' as liter"),
+                DB::raw(" (gajisupirheader.bbm / $hargabbm) as literbbm"),
                 DB::raw("'" . $trado . "' as trado"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'" . $formatCetak->text . "' as formatcetak"),
