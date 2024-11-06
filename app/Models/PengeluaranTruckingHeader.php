@@ -98,6 +98,33 @@ class PengeluaranTruckingHeader extends MyModel
             goto selesai;
         }
 
+        $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
+            ->where('kodepengeluaran', "KLAIM")
+            ->first();
+        if ($klaim->id == $PengeluaranTruckingHeader->pengeluarantrucking_id) {
+            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+            $nobuktiPjt = $PengeluaranTruckingHeader->pengeluarantrucking_nobukti;
+            $penerimaanTrucking = DB::table('penerimaantruckingdetail')
+            ->from(
+                DB::raw("penerimaantruckingdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.pengeluarantruckingheader_nobukti', '=', $nobuktiPjt)
+            ->first();
+
+            if (isset($penerimaanTrucking)) {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => 'No Bukti <b>' . $nobuktiPjt . '</b><br>' . $keteranganerror . '<br> No Bukti Penerimaan Trucking <b>' . $penerimaanTrucking->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                    // 'keterangan' => 'Penerimaan Trucking ' . $penerimaanTrucking->nobukti,
+                    'kodeerror' => 'SATL2'
+                ];
+                goto selesai;
+            }
+        }
+
         $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
         $approvalJurnal = DB::table('pengeluarantruckingheader')
             ->from(
