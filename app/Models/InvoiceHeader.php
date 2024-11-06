@@ -2343,7 +2343,7 @@ class InvoiceHeader extends MyModel
             $total = $total + $data['omset'][$i] + $data['nominalretribusi'][$i] + $data['nominalextra'][$i];
 
             $getSP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
-                ->where('jobtrucking', $SP->jobtrucking)->get();
+                ->where('jobtrucking', $data['jobtrucking'][$i])->get();
 
             $allSP = "";
             foreach ($getSP as $key => $value) {
@@ -2361,7 +2361,7 @@ class InvoiceHeader extends MyModel
                 'total' => $data['omset'][$i] + $data['nominalretribusi'][$i] + $data['nominalextra'][$i],
                 'keterangan' => $data['keterangan'][$i] ?? '',
                 'kapal' => $data['kapal'][$i] ?? '',
-                'orderantrucking_nobukti' => $SP->jobtrucking,
+                'orderantrucking_nobukti' => $data['jobtrucking'][$i],
                 'suratpengantar_nobukti' => $allSP
             ]);
             // STORE 
@@ -2477,7 +2477,7 @@ class InvoiceHeader extends MyModel
             $total = $total + $data['omset'][$i] + $data['nominalretribusi'][$i] + $data['nominalextra'][$i];
 
             $getSP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
-                ->where('jobtrucking', $SP->jobtrucking)->get();
+                ->where('jobtrucking', $data['jobtrucking'][$i])->get();
 
             $allSP = "";
             foreach ($getSP as $key => $value) {
@@ -2495,7 +2495,7 @@ class InvoiceHeader extends MyModel
                 'total' => $data['omset'][$i] + $data['nominalretribusi'][$i] + $data['nominalextra'][$i],
                 'keterangan' => $data['keterangan'][$i] ?? '',
                 'kapal' => $data['kapal'][$i] ?? '',
-                'orderantrucking_nobukti' => $SP->jobtrucking,
+                'orderantrucking_nobukti' => $data['jobtrucking'][$i],
                 'suratpengantar_nobukti' => $allSP
             ]);
             // STORE 
