@@ -888,7 +888,35 @@ class ListTrip extends MyModel
                         // $trip->noseal2 = '';
                     } else {
                         if ($cabang == 'MEDAN') {
-                            DB::update(DB::raw("UPDATE SURATPENGANTAR SET jobtrucking='' where id=$trip->id"));
+                            if ($trip->statuslongtrip != 65 && $data['statuslongtrip'] == 65) {
+
+                                $tglBatasEdit = date('Y-m-d', strtotime($data['tglbukti'])) . ' ' . '12:00:00';
+                                $orderan = [
+                                    'tglbukti' => $data['tglbukti'],
+                                    'container_id' => $data['container_id'],
+                                    'agen_id' => $data['agen_id'],
+                                    'jenisorder_id' => $data['jenisorder_id'],
+                                    'pelanggan_id' => $data['pelanggan_id'],
+                                    'tarifrincian_id' => $data['tarifrincian_id'],
+                                    'statusjeniskendaraan' => $data['statusjeniskendaraan'],
+                                    'nojobemkl' => $data['nojobemkl'] ?? '',
+                                    'nocont' => $data['nocont'] ?? '',
+                                    'noseal' => $data['noseal'] ?? '',
+                                    'nojobemkl2' => $data['nojobemkl2'] ?? '',
+                                    'nocont2' => $data['nocont2'] ?? '',
+                                    'noseal2' => $data['noseal2'] ?? '',
+                                    'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
+                                    'gandengan_id' => $data['gandengan_id'],
+                                    'statusperalihan' => $statusperalihan->id,
+                                    'tglbataseditorderantrucking' => $tglBatasEdit,
+                                    'inputtripmandor' =>  '1',
+                                ];
+                                $orderanTrucking = (new OrderanTrucking())->processStore($orderan);
+                                DB::update(DB::raw("UPDATE SURATPENGANTAR SET jobtrucking='' where id=$trip->id"));
+                                $trip->jobtrucking = $orderanTrucking->nobukti;
+                            } else {
+                                DB::update(DB::raw("UPDATE SURATPENGANTAR SET jobtrucking='' where id=$trip->id"));
+                            }
                         } else {
                             DB::update(DB::raw("UPDATE SURATPENGANTAR SET jobtrucking='',nocont='',nocont2='',noseal='',noseal2='' where id=$trip->id"));
                         }
@@ -1185,7 +1213,7 @@ class ListTrip extends MyModel
                             'statusperalihan' => $statusperalihan->id,
                             'inputtripmandor' =>  'true',
                         ];
-    
+
                         $orderanTrucking = (new OrderanTrucking())->processUpdate($getJobtrucking, $orderan);
                     }
                 } else {
