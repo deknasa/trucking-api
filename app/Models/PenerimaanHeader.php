@@ -799,7 +799,7 @@ class PenerimaanHeader extends MyModel
             $table->string('bank', 50)->nullable();
             $table->integer('bank_id')->nullable();
             $table->string('postingdari', 1000)->nullable();
-            $table->string('diterimadari', 1000)->nullable();
+            $table->longtext('diterimadari')->nullable();
             $table->date('tgllunas')->nullable();
             $table->longtext('userapproval')->nullable();
             $table->date('tglapproval')->nullable();
@@ -1009,7 +1009,7 @@ class PenerimaanHeader extends MyModel
             $table->string('bank', 50)->nullable();
             $table->integer('bank_id')->nullable();
             $table->string('postingdari', 1000)->nullable();
-            $table->string('diterimadari', 1000)->nullable();
+            $table->longtext('diterimadari')->nullable();
             $table->date('tgllunas')->nullable();
             $table->longtext('userapproval')->nullable();
             $table->longtext('statusapproval')->nullable();
