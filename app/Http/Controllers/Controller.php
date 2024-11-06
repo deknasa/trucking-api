@@ -39,6 +39,8 @@ class Controller extends BaseController
     public function __construct()
     {
         $this->appHelper = new AppHelper();
+        $domain =request()->getScheme().'://'.request()->getHttpHost().env('APP_PATH').'/';
+        config()->set('app.url_fe',$domain);
     }
 
 
