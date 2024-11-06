@@ -74,7 +74,7 @@ class StoreMandorTripRequest extends FormRequest
      */
     public function rules()
     {
-      
+
         $jenisTangki = DB::table('parameter')->from(
             DB::raw("parameter as a with (readuncommitted)")
         )
@@ -85,7 +85,7 @@ class StoreMandorTripRequest extends FormRequest
             ->where('a.subgrp', '=', 'STATUS JENIS KENDARAAN')
             ->where('a.text', '=', 'TANGKI')
             ->first();
-       
+
         if (request()->statusjeniskendaraan == $jenisTangki->id) {
             $agen_id = $this->agen_id;
             $rulesAgen_id = [];
@@ -98,7 +98,7 @@ class StoreMandorTripRequest extends FormRequest
                     'agen_id' => ['required', 'numeric', 'min:1', new ExistAgen()]
                 ];
             }
-         
+
             $pelanggan_id = $this->pelanggan_id;
             $rulesPelanggan_id = [];
             if ($pelanggan_id != null) {
@@ -110,7 +110,7 @@ class StoreMandorTripRequest extends FormRequest
                     'pelanggan_id' => ['required', 'numeric', 'min:1', new ExistPelanggan()]
                 ];
             }
-   
+
             if (request()->trado_id != '') {
 
                 // 
@@ -288,7 +288,15 @@ class StoreMandorTripRequest extends FormRequest
                 $rulesTrado_id = [
                     'trado_id' => [
                         // 
-                        'required', 'numeric', 'min:1', new ExistTrado(), new validasiBatasLuarKota(), new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin), new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling), new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan), new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa)
+                        'required',
+                        'numeric',
+                        'min:1',
+                        new ExistTrado(),
+                        new validasiBatasLuarKota(),
+                        new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin),
+                        new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling),
+                        new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan),
+                        new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa)
                     ],
                     'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()],
                     'absensidetail_id' => ['required', 'numeric', 'min:1', new ExistAbsensiSupirDetail()],
@@ -342,7 +350,8 @@ class StoreMandorTripRequest extends FormRequest
 
             $rules = [
                 'tglbukti' => [
-                    'required', 'date_format:d-m-Y',
+                    'required',
+                    'date_format:d-m-Y',
                     new DateApprovalQuota()
                 ],
                 "agen" => ["required"],
@@ -380,7 +389,7 @@ class StoreMandorTripRequest extends FormRequest
             }
 
             $idstatuskandang = $parameter->cekId('STATUS KANDANG', 'STATUS KANDANG', 'KANDANG') ?? 0;
-          
+
             $getGudangSama = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GUDANG SAMA')->where('text', 'GUDANG SAMA')->first();
             $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
             $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
@@ -467,7 +476,7 @@ class StoreMandorTripRequest extends FormRequest
                 ];
             }
 
-         
+
 
             $upah_id = $this->upah_id;
             $rulesUpah_id = [];
@@ -480,17 +489,17 @@ class StoreMandorTripRequest extends FormRequest
                     'upah_id' => ['required', 'numeric', 'min:1', new ExistUpahSupirRincianSuratPengantar()]
                 ];
             }
-            
+
             $rulesDari_id = [];
             $rulesSampai_id = [];
             // $idpelabuhan = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? 0;
-            $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
-            $idpelabuhan=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
-            ->select(
-                db::raw("STRING_AGG(id,',') as id"),
-            )
-            ->where('a.statuspelabuhan',$statuspelabuhan)
-            ->first()->id ?? 1;            
+            $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN', 'PELABUHAN') ?? 0;
+            $idpelabuhan = db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+                ->select(
+                    db::raw("STRING_AGG(id,',') as id"),
+                )
+                ->where('a.statuspelabuhan', $statuspelabuhan)
+                ->first()->id ?? 1;
 
             if ($upah_id != null) {
                 $validasiUpah = (new UpahSupirRincian())->cekValidasiInputTripUpah(request()->statuscontainer_id, request()->jenisorder_id, request()->upah_id);
@@ -653,7 +662,7 @@ class StoreMandorTripRequest extends FormRequest
                     $validasireminderolimesin = false;
                     $keteranganvalidasireminderolimesin = "";
                 }
-               
+
 
                 // pergantian oli persneling
                 $query = db::table($tempreminderoli)->from(db::raw($tempreminderoli . " a"))
@@ -757,7 +766,15 @@ class StoreMandorTripRequest extends FormRequest
                 $rulesTrado_id = [
                     'trado_id' => [
                         // 
-                        'required', 'numeric', 'min:1', new ExistTrado(), new validasiBatasLuarKota(), new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin), new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling), new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan), new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa)
+                        'required',
+                        'numeric',
+                        'min:1',
+                        new ExistTrado(),
+                        new validasiBatasLuarKota(),
+                        new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin),
+                        new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling),
+                        new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan),
+                        new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa)
                     ],
                     'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()],
                     'absensidetail_id' => ['required', 'numeric', 'min:1', new ExistAbsensiSupirDetail()],
@@ -780,7 +797,8 @@ class StoreMandorTripRequest extends FormRequest
                 return false;
             });
 
-          
+
+            $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
             $rulesGandengan_id = [];
             if ((request()->dari_id == 1 && request()->sampai_id == 103) || (request()->dari_id == 103 && request()->sampai_id == 1) || (request()->statuslongtrip == 65)) {
 
@@ -791,7 +809,8 @@ class StoreMandorTripRequest extends FormRequest
                 if ($getgerobak->id == $gerobakVal) {
                     $rules = [
                         'tglbukti' => [
-                            'required', 'date_format:d-m-Y',
+                            'required',
+                            'date_format:d-m-Y',
                             new DateApprovalQuota()
                         ],
                         "nobukti_tripasal" => $ruleTripAsal,
@@ -816,18 +835,22 @@ class StoreMandorTripRequest extends FormRequest
                 } else {
                     $gandengan_id = $this->gandengan_id;
                     $rulesGandengan_id = [];
-                    if ($gandengan_id != null) {
-                        $rulesGandengan_id = [
-                            'gandengan_id' => ['required', 'numeric', 'min:1', new ExistGandengan()]
-                        ];
-                    } else if ($gandengan_id == null && $this->gandengan != '') {
-                        $rulesGandengan_id = [
-                            'gandengan_id' => ['required', 'numeric', 'min:1', new ExistGandengan()]
-                        ];
+                    if ($cabang == 'MEDAN') {
+
+                        if ($gandengan_id != null) {
+                            $rulesGandengan_id = [
+                                'gandengan_id' => ['required', 'numeric', 'min:1', new ExistGandengan()]
+                            ];
+                        } else if ($gandengan_id == null && $this->gandengan != '') {
+                            $rulesGandengan_id = [
+                                'gandengan_id' => ['required', 'numeric', 'min:1', new ExistGandengan()]
+                            ];
+                        }
                     }
                     $rules = [
                         'tglbukti' => [
-                            'required', 'date_format:d-m-Y',
+                            'required',
+                            'date_format:d-m-Y',
                             new DateApprovalQuota()
                         ],
                         "nobukti_tripasal" => $ruleTripAsal,
@@ -870,7 +893,8 @@ class StoreMandorTripRequest extends FormRequest
                 if ($getgerobak->id == $gerobakVal) {
                     $rules = [
                         'tglbukti' => [
-                            'required', 'date_format:d-m-Y',
+                            'required',
+                            'date_format:d-m-Y',
                             new DateApprovalQuota()
                         ],
                         "nobukti_tripasal" => $ruleTripAsal,
@@ -895,18 +919,22 @@ class StoreMandorTripRequest extends FormRequest
                 } else {
                     $gandengan_id = $this->gandengan_id;
                     $rulesGandengan_id = [];
-                    if ($gandengan_id != null) {
-                        $rulesGandengan_id = [
-                            'gandengan_id' => ['required', 'numeric', 'min:1', new ExistGandengan()]
-                        ];
-                    } else if ($gandengan_id == null && $this->gandengan != '') {
-                        $rulesGandengan_id = [
-                            'gandengan_id' => ['required', 'numeric', 'min:1', new ExistGandengan()]
-                        ];
+                    
+                    if ($cabang == 'MEDAN') {
+                        if ($gandengan_id != null) {
+                            $rulesGandengan_id = [
+                                'gandengan_id' => ['required', 'numeric', 'min:1', new ExistGandengan()]
+                            ];
+                        } else if ($gandengan_id == null && $this->gandengan != '') {
+                            $rulesGandengan_id = [
+                                'gandengan_id' => ['required', 'numeric', 'min:1', new ExistGandengan()]
+                            ];
+                        }
                     }
                     $rules = [
                         'tglbukti' => [
-                            'required', 'date_format:d-m-Y',
+                            'required',
+                            'date_format:d-m-Y',
                             new DateApprovalQuota()
                         ],
                         "nobukti_tripasal" => $ruleTripAsal,
@@ -946,16 +974,16 @@ class StoreMandorTripRequest extends FormRequest
             $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
             $jobmanual = $parameter->cekText('JOB TRUCKING MANUAL', 'JOB TRUCKING MANUAL') ?? 'TIDAK';
             // dd(request()->statuskandang,$idstatuskandang);
-            $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
-            $idpelabuhan=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
-            ->select(
-                db::raw("STRING_AGG('required_unless:dari_id,'+trim(str(id)),'|') as id"),
-            )
-            ->where('a.statuspelabuhan',$statuspelabuhan)
-            ->first()->id ?? '';   
+            $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN', 'PELABUHAN') ?? 0;
+            $idpelabuhan = db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+                ->select(
+                    db::raw("STRING_AGG('required_unless:dari_id,'+trim(str(id)),'|') as id"),
+                )
+                ->where('a.statuspelabuhan', $statuspelabuhan)
+                ->first()->id ?? '';
 
             $rulesJobTrucking = [];
-            if (request()->dari_id != '' &&  $jobmanual =='TIDAK') {
+            if (request()->dari_id != '' &&  $jobmanual == 'TIDAK') {
                 if ((request()->statuslongtrip == 66) && (request()->statuslangsir == 80) && (request()->statusgudangsama == 205)) {
                     // dd('disini');
                     if (request()->dari_id != $idkandang && request()->nobukti_tripasal == '') {
