@@ -30,6 +30,7 @@ class LaporanKartuPiutangPerAgen extends MyModel
         $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
         $pelangganDari = request()->pelanggandari_id;
         $pelangganSampai = request()->pelanggansampai_id;
+        $jenislaporan = request()->jenislaporan ?? 0;
 
         $sampai = $dari;
         $tgl = '01-' . date('m', strtotime($dari)) . '-' . date('Y', strtotime($dari));
@@ -126,19 +127,63 @@ class LaporanKartuPiutangPerAgen extends MyModel
             $table->double('nominal')->nullable();
         });
 
-        $querypiutangsaldo = db::table('piutangheader')->from(db::raw("piutangheader a with (readuncommitted)"))
-            ->select(
-                'a.nobukti',
-                db::raw("sum(b.nominal) as nominal"),
-            )
-            ->join(db::raw("piutangdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-            ->whereRaw("a.tglbukti<'" . $dari1 . "'");
-        if ($cabang != 'BITUNG-EMKL') {
-            $querypiutangsaldo->whereRaw("(a.agen_id>=" . $agenDari . " and a.agen_id<=" . $agenSampai . ")");
+        $jenislaporanpiutangusaha = (new Parameter())->cekId('JENIS KARTU PIUTANG', 'JENIS KARTU PIUTANG', 'PIUTANG USAHA');
+        $jenislaporanpiutanglain = (new Parameter())->cekId('JENIS KARTU PIUTANG', 'JENIS KARTU PIUTANG', 'PIUTANG LAIN');
+
+
+        if ($prosesneraca == 1) {
+            $querypiutangsaldo = db::table('piutangheader')->from(db::raw("piutangheader a with (readuncommitted)"))
+                ->select(
+                    'a.nobukti',
+                    db::raw("sum(b.nominal) as nominal"),
+                )
+                ->join(db::raw("piutangdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                ->whereRaw("a.tglbukti<'" . $dari1 . "'");
+            if ($cabang != 'BITUNG-EMKL') {
+                $querypiutangsaldo->whereRaw("(a.agen_id>=" . $agenDari . " and a.agen_id<=" . $agenSampai . ")");
+            } else {
+                $querypiutangsaldo->whereRaw("(a.pelanggan_id>=" . $pelangganDari . " and a.pelanggan_id<=" . $pelangganSampai . ")");
+            }
+            $querypiutangsaldo->groupby('a.nobukti');
         } else {
-            $querypiutangsaldo->whereRaw("(a.pelanggan_id>=" . $pelangganDari . " and a.pelanggan_id<=" . $pelangganSampai . ")");
+            if ($jenislaporan == $jenislaporanpiutanglain) {
+                $querypiutangsaldo = db::table('piutangheader')->from(db::raw("piutangheader a with (readuncommitted)"))
+                    ->select(
+                        'a.nobukti',
+                        db::raw("sum(b.nominal) as nominal"),
+                    )
+                    ->join(db::raw("piutangdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                    ->whereRaw("a.tglbukti<'" . $dari1 . "'")
+                    ->whereRaw("a.coadebet='01.08.01.06'")
+                    ->whereRaw("(a.agen_id>=" . $agenDari . " and a.agen_id<=" . $agenSampai . ")")
+                    ->groupby('a.nobukti');
+            } else if ($jenislaporan == $jenislaporanpiutangusaha) {
+                $querypiutangsaldo = db::table('piutangheader')->from(db::raw("piutangheader a with (readuncommitted)"))
+                    ->select(
+                        'a.nobukti',
+                        db::raw("sum(b.nominal) as nominal"),
+                    )
+                    ->join(db::raw("piutangdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                    ->whereRaw("a.tglbukti<'" . $dari1 . "'")
+                    ->whereRaw("a.coadebet!='01.08.01.06'")
+                    ->whereRaw("(a.agen_id>=" . $agenDari . " and a.agen_id<=" . $agenSampai . ")")
+                    ->groupby('a.nobukti');
+            } else {
+                $querypiutangsaldo = db::table('piutangheader')->from(db::raw("piutangheader a with (readuncommitted)"))
+                    ->select(
+                        'a.nobukti',
+                        db::raw("sum(b.nominal) as nominal"),
+                    )
+                    ->join(db::raw("piutangdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                    ->whereRaw("a.tglbukti<'" . $dari1 . "'");
+                if ($cabang != 'BITUNG-EMKL') {
+                    $querypiutangsaldo->whereRaw("(a.agen_id>=" . $agenDari . " and a.agen_id<=" . $agenSampai . ")");
+                } else {
+                    $querypiutangsaldo->whereRaw("(a.pelanggan_id>=" . $pelangganDari . " and a.pelanggan_id<=" . $pelangganSampai . ")");
+                }
+                $querypiutangsaldo->groupby('a.nobukti');
+            }
         }
-        $querypiutangsaldo->groupby('a.nobukti');
         // dd($querypiutangsaldo->get());
 
         DB::table($temppiutangsaldo)->insertUsing([
@@ -183,22 +228,61 @@ class LaporanKartuPiutangPerAgen extends MyModel
             'nominal',
         ], $queryrekappiutang);
 
+        if ($prosesneraca == 1) {
+            $queryrekappiutang = db::table("piutangheader")->from(db::raw("piutangheader a with (readuncommitted) "))
+                ->select(
+                    'a.nobukti',
+                    db::raw("sum(isnull(b.nominal,0)) as nominal"),
+                )
+                ->leftjoin(db::raw("piutangdetail b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+                ->whereRaw("(a.tglbukti>='" . $dari1 . "' and a.tglbukti<='" . $sampai . "')");
 
-        $queryrekappiutang = db::table("piutangheader")->from(db::raw("piutangheader a with (readuncommitted) "))
-            ->select(
-                'a.nobukti',
-                db::raw("sum(isnull(b.nominal,0)) as nominal"),
-            )
-            ->leftjoin(db::raw("piutangdetail b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
-            ->whereRaw("(a.tglbukti>='" . $dari1 . "' and a.tglbukti<='" . $sampai . "')");
-
-        if ($cabang != 'BITUNG-EMKL') {
-            $queryrekappiutang->whereRaw("(a.agen_id>=" . $agenDari . " and a.agen_id<=" . $agenSampai . ")");
+            if ($cabang != 'BITUNG-EMKL') {
+                $queryrekappiutang->whereRaw("(a.agen_id>=" . $agenDari . " and a.agen_id<=" . $agenSampai . ")");
+            } else {
+                $queryrekappiutang->whereRaw("(a.pelanggan_id>=" . $pelangganDari . " and a.pelanggan_id<=" . $pelangganSampai . ")");
+            }
+            $queryrekappiutang->groupby('a.nobukti');
         } else {
-            $queryrekappiutang->whereRaw("(a.pelanggan_id>=" . $pelangganDari . " and a.pelanggan_id<=" . $pelangganSampai . ")");
-        }
-        $queryrekappiutang->groupby('a.nobukti');
+            if ($jenislaporan == $jenislaporanpiutanglain) {
+                $queryrekappiutang = db::table("piutangheader")->from(db::raw("piutangheader a with (readuncommitted) "))
+                    ->select(
+                        'a.nobukti',
+                        db::raw("sum(isnull(b.nominal,0)) as nominal"),
+                    )
+                    ->leftjoin(db::raw("piutangdetail b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+                    ->whereRaw("(a.tglbukti>='" . $dari1 . "' and a.tglbukti<='" . $sampai . "')")
+                    ->whereRaw("a.coadebet='01.08.01.06'")
+                    ->whereRaw("(a.agen_id>=" . $agenDari . " and a.agen_id<=" . $agenSampai . ")")
+                    ->groupby('a.nobukti');
+            } else if ($jenislaporan == $jenislaporanpiutangusaha) {
+                $queryrekappiutang = db::table("piutangheader")->from(db::raw("piutangheader a with (readuncommitted) "))
+                    ->select(
+                        'a.nobukti',
+                        db::raw("sum(isnull(b.nominal,0)) as nominal"),
+                    )
+                    ->leftjoin(db::raw("piutangdetail b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+                    ->whereRaw("(a.tglbukti>='" . $dari1 . "' and a.tglbukti<='" . $sampai . "')")
+                    ->whereRaw("a.coadebet!='01.08.01.06'")
+                    ->whereRaw("(a.agen_id>=" . $agenDari . " and a.agen_id<=" . $agenSampai . ")")
+                    ->groupby('a.nobukti');
+            } else {
+                $queryrekappiutang = db::table("piutangheader")->from(db::raw("piutangheader a with (readuncommitted) "))
+                    ->select(
+                        'a.nobukti',
+                        db::raw("sum(isnull(b.nominal,0)) as nominal"),
+                    )
+                    ->leftjoin(db::raw("piutangdetail b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+                    ->whereRaw("(a.tglbukti>='" . $dari1 . "' and a.tglbukti<='" . $sampai . "')");
 
+                if ($cabang != 'BITUNG-EMKL') {
+                    $queryrekappiutang->whereRaw("(a.agen_id>=" . $agenDari . " and a.agen_id<=" . $agenSampai . ")");
+                } else {
+                    $queryrekappiutang->whereRaw("(a.pelanggan_id>=" . $pelangganDari . " and a.pelanggan_id<=" . $pelangganSampai . ")");
+                }
+                $queryrekappiutang->groupby('a.nobukti');
+            }
+        }
         DB::table($temprekappiutang)->insertUsing([
             'nobukti',
             'nominal',
@@ -517,7 +601,12 @@ class LaporanKartuPiutangPerAgen extends MyModel
                 DB::raw("'$cabang' AS cabang"),
                 DB::raw("(case when '$keteranganagen'='' then '$agendarinama' else '$keteranganagen' end)  AS dari"),
                 DB::raw("(case when '$keteranganagen'='' then '$agensampainama' else '$keteranganagen' end)   AS sampai"),
-                DB::raw("(case when '$cabang' != 'BITUNG-EMKL' then 'Laporan Kartu Piutang Per Customer' else 'Laporan Kartu Piutang Per Shipper' end) as judulLaporan"),
+                
+                DB::raw("(case 
+                    when $jenislaporan = 0 then
+                        (case when '$cabang' != 'BITUNG-EMKL' then 'Laporan Kartu Piutang Per Customer' else 'Laporan Kartu Piutang Per Shipper' end)
+                    when $jenislaporan = $jenislaporanpiutangusaha then 'Laporan Kartu Piutang Usaha Per Customer' else 
+					'Laporan Kartu Piutang Lain Per Customer' end) as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
