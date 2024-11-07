@@ -137,6 +137,17 @@ class User extends Authenticatable
             return $this->select('mandor.id as mandor_id')->rightJoin(DB::raw("mandordetail as mandor  with (readuncommitted)"), 'mandor.user_id', 'user.id')->where('mandor.user_id', $this->id)->first();
         }
         return false;
+    } 
+    public function isMandor2()
+    {
+        $role = DB::table('role')->select('id')->where('rolename', 'MANDOR2')->first();
+        $userMandor = $this->checkUserRole($role);
+
+        if ($userMandor->count()) {
+            //check user has mandor
+            return true;
+        }
+        return false;
     }
 
     public function isMarketing()
