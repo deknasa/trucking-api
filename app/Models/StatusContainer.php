@@ -113,9 +113,17 @@ class StatusContainer extends MyModel
             $cabang = (new Parameter())->cekText('CABANG', 'CABANG');
             if($cabang == 'JAKARTA' || $cabang == 'TNL' || $cabang == 'SURABAYA') {
                 
-                $isMandor = auth()->user()->isMandor();
-                if($isMandor) {
-                    $query->where('statuscontainer.kodestatuscontainer', 'FULL EMPTY');
+                if($cabang == 'JAKARTA' || $cabang == 'TNL'){
+                    $isMandor = auth()->user()->isMandor();
+
+                    if($isMandor) {
+                        $query->where('statuscontainer.kodestatuscontainer', 'FULL EMPTY');
+                    }
+                } else {
+                    $isMandor = auth()->user()->isMandor2();
+                    if($isMandor) {
+                        $query->where('statuscontainer.kodestatuscontainer', 'FULL EMPTY');
+                    }
                 }
             }
         }

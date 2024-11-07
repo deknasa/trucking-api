@@ -144,26 +144,29 @@ class Mandor extends MyModel
     public function cekvalidasihapus($id)
     {
 
-        $trado = DB::table('trado')
-            ->from(
-                DB::raw("trado as a with (readuncommitted)")
-            )
-            ->select(
-                'a.mandor_id'
-            )
-            ->where('a.mandor_id', '=', $id)
-            ->first();
-        if (isset($trado)) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'Trado',
-            ];
+        if(request()->aksi == 'DELETE') {
+                
+            $trado = DB::table('trado')
+                ->from(
+                    DB::raw("trado as a with (readuncommitted)")
+                )
+                ->select(
+                    'a.mandor_id'
+                )
+                ->where('a.mandor_id', '=', $id)
+                ->first();
+            if (isset($trado)) {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => 'Trado',
+                ];
 
 
-            goto selesai;
+                goto selesai;
+            }
+
+
         }
-
-
         $data = [
             'kondisi' => false,
             'keterangan' => '',
