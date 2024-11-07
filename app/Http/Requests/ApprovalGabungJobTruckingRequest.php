@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\ApprovalGabungJobTrucking;
+use App\Rules\ValidasiInvoiceGabungJobTrucking;
 
 class ApprovalGabungJobTruckingRequest extends FormRequest
 {
@@ -26,7 +27,7 @@ class ApprovalGabungJobTruckingRequest extends FormRequest
     public function rules()
     {
         return [
-            'Id' => ['required', new ApprovalGabungJobTrucking()]
+            'Id' => ['required', new ApprovalGabungJobTrucking(), new ValidasiInvoiceGabungJobTrucking()]
         ];
     }
     public function messages()
