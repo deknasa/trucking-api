@@ -244,9 +244,9 @@ class ApprovalGabungJobTrucking implements Rule
         if ($noinvoice != ''  && $bulanpelabuhan == $bulannonpelabuhan) {
             return false;
         }
-        if ($noinvoice != '') {
-            return false;
-        }
+        // if ($noinvoice != '') {
+        //     return false;
+        // }
 
         return true;
     }
