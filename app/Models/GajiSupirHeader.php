@@ -70,6 +70,52 @@ class GajiSupirHeader extends MyModel
             goto selesai;
         }
 
+        $gajiSupirDeposito = DB::table('gajisupirdeposito')
+            ->from(
+                DB::raw("gajisupirdeposito as a with (readuncommitted)")
+            )
+            ->select(
+                'a.gajisupir_nobukti',
+                'a.penerimaantrucking_nobukti',
+                'b.nobukti'
+            )
+            ->join(db::raw("pengeluarantruckingdetail as b with (readuncommitted)"), 'a.penerimaantrucking_nobukti', 'b.penerimaantruckingheader_nobukti')
+            ->where('a.gajisupir_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($gajiSupirDeposito)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'No Bukti <b>' . $gajiSupirDeposito->penerimaantrucking_nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti penarikan deposito <b>' . $gajiSupirDeposito->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                // 'keterangan' => 'Rincian Gaji Supir ' . $gajiSupirDeposito->gajisupir_nobukti,
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+        
+
+        $gajiSupirBBM = DB::table('gajisupirbbm')
+            ->from(
+                DB::raw("gajisupirbbm as a with (readuncommitted)")
+            )
+            ->select(
+                'a.gajisupir_nobukti',
+                'a.penerimaantrucking_nobukti',
+                'b.nobukti'
+            )
+            ->join(db::raw("pengeluarantruckingdetail as b with (readuncommitted)"), 'a.penerimaantrucking_nobukti', 'b.penerimaantruckingheader_nobukti')
+            ->where('a.gajisupir_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($gajiSupirBBM)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'No Bukti <b>' . $gajiSupirBBM->penerimaantrucking_nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pelunasan bbm <b>' . $gajiSupirBBM->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                // 'keterangan' => 'Rincian Gaji Supir ' . $gajiSupirDeposito->gajisupir_nobukti,
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
+
 
         $data = [
             'kondisi' => false,
