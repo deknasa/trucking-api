@@ -287,6 +287,7 @@ class PelunasanHutangHeaderController extends Controller
                 'message' => 'Berhasil'
             ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
@@ -406,6 +407,18 @@ class PelunasanHutangHeaderController extends Controller
                 'kodeerror' => 'TUTUPBUKU',
                 'statuspesan' => 'warning',
             ];
+
+            return response($data);
+        } else if ($status == $statusApproval->id && $aksi == 'DELETE') {
+            $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
+            ];
+
 
             return response($data);
         } else if ($useredit != '' && $useredit != $user) {

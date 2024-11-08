@@ -4,6 +4,7 @@ namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Error;
+use App\Models\PelunasanHutangHeader;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -15,6 +16,8 @@ class ValidasiApprovalPelunasanHutang implements Rule
      * @return void
      */
     public $nobukti;
+    public $kodeerror;
+    public $keterangan;
     public function __construct()
     {
         //
@@ -31,25 +34,33 @@ class ValidasiApprovalPelunasanHutang implements Rule
     {
         $posting = 0;
         $nobukti = '';
-        for($i = 0; $i<count(request()->bayarId); $i++)
-        {
-            $cekPosting = DB::table("pelunasanhutangheader")->from(DB::raw("pelunasanhutangheader with (readuncommitted)"))
-            ->where('id', request()->bayarId[$i])->first();
-            if(isset($cekPosting)){
-                if($cekPosting->pengeluaran_nobukti != ''){
-                    $posting++;
-                    if ($nobukti == '') {
-                        $nobukti = $cekPosting->nobukti;
-                    } else {
-                        $nobukti = $nobukti . ', ' . $cekPosting->nobukti;
-                    }
-                }
+        for ($i = 0; $i < count(request()->bayarId); $i++) {
+
+            $pelunasanHutangHeader = new PelunasanHutangHeader();
+            $nobukti = PelunasanHutangHeader::from(DB::raw("pelunasanhutangheader"))->where('id', request()->bayarId[$i])->first();
+            $cekdata = $pelunasanHutangHeader->cekvalidasiaksi($nobukti->nobukti, $nobukti->pengeluaran_nobukti);
+            if ($cekdata['kondisi']) {
+                $this->kodeerror = $cekdata['kodeerror'];
+                $this->keterangan = $cekdata['keterangan'];
+                return false;
             }
+            // $cekPosting = DB::table("pelunasanhutangheader")->from(DB::raw("pelunasanhutangheader with (readuncommitted)"))
+            // ->where('id', request()->bayarId[$i])->first();
+            // if(isset($cekPosting)){
+            //     if($cekPosting->pengeluaran_nobukti != ''){
+            //         $posting++;
+            //         if ($nobukti == '') {
+            //             $nobukti = $cekPosting->nobukti;
+            //         } else {
+            //             $nobukti = $nobukti . ', ' . $cekPosting->nobukti;
+            //         }
+            //     }
+            // }
         }
-        $this->nobukti = $nobukti;
-        if ($posting > 0) {
-            return false;
-        }
+        // $this->nobukti = $nobukti;
+        // if ($posting > 0) {
+        //     return false;
+        // }
         return true;
     }
 
@@ -60,8 +71,10 @@ class ValidasiApprovalPelunasanHutang implements Rule
      */
     public function message()
     {
-        $error = new Error();
-        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
-        return 'NO BUKTI <b>'. $this->nobukti . '</b> <br>'. app(ErrorController::class)->geterror('SPOST')->keterangan . ' <br>' . $keterangantambahanerror;
+
+        return $this->keterangan;
+        // $error = new Error();
+        // $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        // return 'NO BUKTI <b>'. $this->nobukti . '</b> <br>'. app(ErrorController::class)->geterror('SPOST')->keterangan . ' <br>' . $keterangantambahanerror;
     }
 }
