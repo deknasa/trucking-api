@@ -724,11 +724,11 @@ class Tarif extends MyModel
                     // DB::raw("(case when tarif.upahsupir_id=0 then null else tarif.upahsupir_id end) as upahsupir_id"),
                     // "$tempUpahsupir.kotasampai_id as upah",     
 
-                    db::raw("isnull(kotadari.keterangan,'')+(case when isnull(kotasampai.keterangan,'')='' then '' else ' - ' +isnull(kotasampai.keterangan,'') end)+ 
+                    db::raw("isnull(kotadari.kodekota,'')+(case when isnull(kotasampai.kodekota,'')='' then '' else ' - ' +isnull(kotasampai.kodekota,'') end)+ 
                 (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as upah
                 "),
-                    'kotadari.keterangan as dari',
-                    'kotasampai.keterangan as sampai',
+                    'kotadari.kodekota as dari',
+                    'kotasampai.kodekota as sampai',
                     'upahsupir.penyesuaian as penyesuaianupah',
                     'upahsupir.id as upah_id',
                     DB::raw("TRIM(tarif.tujuan) as tujuan"),
@@ -736,7 +736,7 @@ class Tarif extends MyModel
                     'tarif.statusaktif',
                     'tarif.statussistemton',
                     DB::raw("(case when tarif.kota_id=0 then null else tarif.kota_id end) as kota_id"),
-                    'kota.keterangan as kota',
+                    'kota.kodekota as kota',
                     DB::raw("(case when tarif.zona_id=0 then null else tarif.zona_id end) as zona_id"),
                     'zona.keterangan as zona',
                     'jenisorder.id as jenisorder_id',
@@ -774,11 +774,11 @@ class Tarif extends MyModel
                     // DB::raw("(case when tarif.upahsupir_id=0 then null else tarif.upahsupir_id end) as upahsupir_id"),
                     // "$tempUpahsupir.kotasampai_id as upah",     
 
-                    db::raw("isnull(kotadari.keterangan,'')+(case when isnull(kotasampai.keterangan,'')='' then '' else ' - ' +isnull(kotasampai.keterangan,'') end)+ 
+                    db::raw("isnull(kotadari.kodekota,'')+(case when isnull(kotasampai.kodekota,'')='' then '' else ' - ' +isnull(kotasampai.kodekota,'') end)+ 
                 (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as upah
                 "),
-                    'kotadari.keterangan as dari',
-                    'kotasampai.keterangan as sampai',
+                    'kotadari.kodekota as dari',
+                    'kotasampai.kodekota as sampai',
                     'upahsupir.penyesuaian as penyesuaianupah',
                     'upahsupir.id as upah_id',
                     DB::raw("TRIM(tarif.tujuan) as tujuan"),
@@ -786,7 +786,7 @@ class Tarif extends MyModel
                     'tarif.statusaktif',
                     'tarif.statussistemton',
                     DB::raw("(case when tarif.kota_id=0 then null else tarif.kota_id end) as kota_id"),
-                    'kota.keterangan as kota',
+                    'kota.kodekota as kota',
                     DB::raw("(case when tarif.zona_id=0 then null else tarif.zona_id end) as zona_id"),
                     'zona.keterangan as zona',
                     'jenisorder.id as jenisorder_id',
@@ -825,11 +825,11 @@ class Tarif extends MyModel
                     // DB::raw("(case when tarif.upahsupir_id=0 then null else tarif.upahsupir_id end) as upahsupir_id"),
                     // "$tempUpahsupir.kotasampai_id as upah",     
 
-                    db::raw("isnull(kotadari.keterangan,'')+(case when isnull(kotasampai.keterangan,'')='' then '' else ' - ' +isnull(kotasampai.keterangan,'') end)+ 
+                    db::raw("isnull(kotadari.kodekota,'')+(case when isnull(kotasampai.kodekota,'')='' then '' else ' - ' +isnull(kotasampai.kodekota,'') end)+ 
                 (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as upah
                 "),
-                    'kotadari.keterangan as dari',
-                    'kotasampai.keterangan as sampai',
+                    'kotadari.kodekota as dari',
+                    'kotasampai.kodekota as sampai',
                     'upahsupir.penyesuaian as penyesuaianupah',
                     'upahsupir.id as upah_id',
                     DB::raw("TRIM(tarif.tujuan) as tujuan"),
@@ -837,7 +837,7 @@ class Tarif extends MyModel
                     'tarif.statusaktif',
                     'tarif.statussistemton',
                     DB::raw("(case when tarif.kota_id=0 then null else tarif.kota_id end) as kota_id"),
-                    'kota.keterangan as kota',
+                    'kota.kodekota as kota',
                     DB::raw("(case when tarif.zona_id=0 then null else tarif.zona_id end) as zona_id"),
                     'zona.keterangan as zona',
                     'jenisorder.id as jenisorder_id',
@@ -876,11 +876,11 @@ class Tarif extends MyModel
                     // DB::raw("(case when tarif.upahsupir_id=0 then null else tarif.upahsupir_id end) as upahsupir_id"),
                     // "$tempUpahsupir.kotasampai_id as upah",     
 
-                    db::raw("isnull(kotadari.keterangan,'')+(case when isnull(kotasampai.keterangan,'')='' then '' else ' - ' +isnull(kotasampai.keterangan,'') end)+ 
+                    db::raw("isnull(kotadari.kodekota,'')+(case when isnull(kotasampai.kodekota,'')='' then '' else ' - ' +isnull(kotasampai.kodekota,'') end)+ 
                 (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as upah
                 "),
-                    'kotadari.keterangan as dari',
-                    'kotasampai.keterangan as sampai',
+                    'kotadari.kodekota as dari',
+                    'kotasampai.kodekota as sampai',
                     'upahsupir.penyesuaian as penyesuaianupah',
                     'upahsupir.id as upah_id',
                     DB::raw("TRIM(tarif.tujuan) as tujuan"),
@@ -888,7 +888,7 @@ class Tarif extends MyModel
                     'tarif.statusaktif',
                     'tarif.statussistemton',
                     DB::raw("(case when tarif.kota_id=0 then null else tarif.kota_id end) as kota_id"),
-                    'kota.keterangan as kota',
+                    'kota.kodekota as kota',
                     DB::raw("(case when tarif.zona_id=0 then null else tarif.zona_id end) as zona_id"),
                     'zona.keterangan as zona',
                     'jenisorder.id as jenisorder_id',
@@ -927,11 +927,11 @@ class Tarif extends MyModel
                     // DB::raw("(case when tarif.upahsupir_id=0 then null else tarif.upahsupir_id end) as upahsupir_id"),
                     // "$tempUpahsupir.kotasampai_id as upah",     
 
-                    db::raw("isnull(kotadari.keterangan,'')+(case when isnull(kotasampai.keterangan,'')='' then '' else ' - ' +isnull(kotasampai.keterangan,'') end)+ 
+                    db::raw("isnull(kotadari.kodekota,'')+(case when isnull(kotasampai.kodekota,'')='' then '' else ' - ' +isnull(kotasampai.kodekota,'') end)+ 
                 (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as upah
                 "),
-                    'kotadari.keterangan as dari',
-                    'kotasampai.keterangan as sampai',
+                    'kotadari.kodekota as dari',
+                    'kotasampai.kodekota as sampai',
                     'upahsupir.penyesuaian as penyesuaianupah',
                     'upahsupir.id as upah_id',
                     DB::raw("TRIM(tarif.tujuan) as tujuan"),
@@ -939,7 +939,7 @@ class Tarif extends MyModel
                     'tarif.statusaktif',
                     'tarif.statussistemton',
                     DB::raw("(case when tarif.kota_id=0 then null else tarif.kota_id end) as kota_id"),
-                    'kota.keterangan as kota',
+                    'kota.kodekota as kota',
                     DB::raw("(case when tarif.zona_id=0 then null else tarif.zona_id end) as zona_id"),
                     'zona.keterangan as zona',
                     'jenisorder.id as jenisorder_id',

@@ -35,31 +35,31 @@ class ValidasiPenyesuaianUpahSupir implements Rule
         $tarif = request()->tarif;
         $status = true;
 
-        if ($tarif != '') {
-            if ($penyesuaian != trim(strtoupper($tarif))) {
-                $status = false;
-            }
-        }
-        if (request()->tarifmuatan != '') {
-            if ($penyesuaian != trim(strtoupper(request()->tarifmuatan))) {
-                $status = false;
-            }
-        }
-        if (request()->tarifbongkaran != '') {
-            if ($penyesuaian != trim(strtoupper(request()->tarifbongkaran))) {
-                $status = false;
-            }
-        }
-        if (request()->tarifexport != '') {
-            if ($penyesuaian != trim(strtoupper(request()->tarifexport))) {
-                $status = false;
-            }
-        }
-        if (request()->tarifimport != '') {
-            if ($penyesuaian != trim(strtoupper(request()->tarifimport))) {
-                $status = false;
-            }
-        }
+        // if ($tarif != '') {
+        //     if ($penyesuaian != trim(strtoupper($tarif))) {
+        //         $status = false;
+        //     }
+        // }
+        // if (request()->tarifmuatan != '') {
+        //     if ($penyesuaian != trim(strtoupper(request()->tarifmuatan))) {
+        //         $status = false;
+        //     }
+        // }
+        // if (request()->tarifbongkaran != '') {
+        //     if ($penyesuaian != trim(strtoupper(request()->tarifbongkaran))) {
+        //         $status = false;
+        //     }
+        // }
+        // if (request()->tarifexport != '') {
+        //     if ($penyesuaian != trim(strtoupper(request()->tarifexport))) {
+        //         $status = false;
+        //     }
+        // }
+        // if (request()->tarifimport != '') {
+        //     if ($penyesuaian != trim(strtoupper(request()->tarifimport))) {
+        //         $status = false;
+        //     }
+        // }
         return $status;
     }
 
