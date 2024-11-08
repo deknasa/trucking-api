@@ -91,7 +91,7 @@ class GajiSupirHeader extends MyModel
             ];
             goto selesai;
         }
-        
+
 
         $gajiSupirBBM = DB::table('gajisupirbbm')
             ->from(
@@ -1029,7 +1029,7 @@ class GajiSupirHeader extends MyModel
                 ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
                 ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
                 ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
-                ->leftJoin(DB::raw("$tempbiayaextra as extrasupir with (readuncommitted)"), 'suratpengantar.nobukti', 'extrasupir.suratpengantar_nobukti')
+                ->join(DB::raw("$tempbiayaextra as extrasupir with (readuncommitted)"), 'suratpengantar.nobukti', 'extrasupir.suratpengantar_nobukti')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'suratpengantar.container_id', 'container.id')
                 ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'suratpengantar.statuscontainer_id', 'statuscontainer.id')
                 ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'suratpengantar.pelanggan_id', 'pelanggan.id')
@@ -2225,7 +2225,7 @@ class GajiSupirHeader extends MyModel
                 ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
                 ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
                 ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
-                ->leftJoin(DB::raw("$tempbiayaextra as extrasupir with (readuncommitted)"), 'suratpengantar.nobukti', 'extrasupir.suratpengantar_nobukti')
+                ->join(DB::raw("$tempbiayaextra as extrasupir with (readuncommitted)"), 'suratpengantar.nobukti', 'extrasupir.suratpengantar_nobukti')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'suratpengantar.container_id', 'container.id')
                 ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'suratpengantar.statuscontainer_id', 'statuscontainer.id')
                 ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'suratpengantar.pelanggan_id', 'pelanggan.id')
