@@ -942,7 +942,7 @@ class PelunasanHutangHeader extends MyModel
                 }
             } else {
                 $getPengeluaran = DB::table("pengeluaranheader")->from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $PelunasanHutangHeader->pengeluaran_nobukti)->first();
-               
+
                 $pengeluaranRequest = [
                     'tglbukti' => $PelunasanHutangHeader->tglbukti,
                     'pelanggan_id' => 0,
@@ -1120,6 +1120,18 @@ class PelunasanHutangHeader extends MyModel
             $PelunasanHutang->tglapproval = date('Y-m-d', time());
             $PelunasanHutang->userapproval = auth('api')->user()->name;
             $PelunasanHutang->save();
+
+
+            if ($PelunasanHutang->pengeluaran_nobukti != '') {
+                $getPengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $PelunasanHutang->pengeluaran_nobukti)->first();
+                if ($getPengeluaran != null) {
+                    (new PengeluaranHeader())->processDestroy($getPengeluaran->id, 'UNAPPROVE PELUNASAN HUTANG');
+                    $PelunasanHutang->pengeluaran_nobukti = '';
+                    $PelunasanHutang->alatbayar_id = '';
+                    $PelunasanHutang->bank_id = '';
+                    $PelunasanHutang->save();
+                }
+            }
 
             (new LogTrail())->processStore([
                 'namatabel' => strtoupper($PelunasanHutang->getTable()),
