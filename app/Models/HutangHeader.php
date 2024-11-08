@@ -135,11 +135,14 @@ class HutangHeader extends MyModel
                 'hutangheader.statuscetak',
                 'hutangheader.statusapproval',
                 'hutangheader.total',
+                'hutangheader.coa',
+                'akunpusat.keterangancoa as ketcoa',
 
                 'hutangheader.modifiedby',
                 'hutangheader.updated_at'
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id')
 
@@ -539,10 +542,17 @@ class HutangHeader extends MyModel
         $memoKredit = json_decode($getCoaKredit->memo, true);
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $proseslain = $data['proseslain'] ?? "";
+        $coadebetmanual = '';
         if ($proseslain == "") {
+            if($data['coa'] != ''){
+                $coadebetmanual = $data['coa'];
+                $coa = $data['coa'];
+            } else {
+                $coadebetmanual = $memo['JURNAL'];
+                $coa = $memo['JURNAL'];
+            }
             $total = array_sum($data['total_detail']);
             $tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
-            $coa = $memo['JURNAL'];
             $coakredit = $memoKredit['JURNAL'];
         } else {
             $total = $data['total'];
@@ -602,7 +612,7 @@ class HutangHeader extends MyModel
             ]);
             $hutangDetails[] = $hutangDetail->toArray();
             $coakredit_detail[] = ($data['coakredit'] == null) ? $memoKredit['JURNAL'] : $data['coakredit'];
-            $coadebet_detail[] = ($data['coadebet'] == null) ? $memo['JURNAL'] : $data['coadebet'];
+            $coadebet_detail[] = ($data['coadebet'] == null) ? $coadebetmanual : $data['coadebet'];
             $nominal_detail[] = $data['total_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
         }
@@ -651,10 +661,18 @@ class HutangHeader extends MyModel
         $memoKredit = json_decode($getCoaKredit->memo, true);
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $proseslain = $data['proseslain'] ?? "";
+        $coadebetmanual = '';
         if ($proseslain == "") {
             $total = array_sum($data['total_detail']);
-            $coa = $memo['JURNAL'];
+            // $coa = $memo['JURNAL'];
             $coakredit = $memoKredit['JURNAL'];
+            if($data['coa'] != ''){
+                $coadebetmanual = $data['coa'];
+                $coa = $data['coa'];
+            } else {
+                $coadebetmanual = $memo['JURNAL'];
+                $coa = $memo['JURNAL'];
+            }
         } else {
             $total = $data['total'];
             $coa = $data['coa'];
@@ -733,7 +751,7 @@ class HutangHeader extends MyModel
             ]);
             $hutangDetails[] = $hutangDetail->toArray();
             $coakredit_detail[] = ($data['coakredit'] == null) ? $memoKredit['JURNAL'] : $data['coakredit'];
-            $coadebet_detail[] = ($data['coadebet'] == null) ? $memo['JURNAL'] : $data['coadebet'];
+            $coadebet_detail[] = ($data['coadebet'] == null) ? $coadebetmanual : $data['coadebet'];
             $nominal_detail[] = $data['total_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
         }
