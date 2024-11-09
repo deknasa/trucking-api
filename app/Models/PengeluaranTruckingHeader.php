@@ -306,6 +306,7 @@ class PengeluaranTruckingHeader extends MyModel
                 $table->double('qty')->nullable();
                 $table->double('harga')->nullable();
                 $table->integer('pengeluaranbank_id')->nullable();
+                $table->longText('keteranganheader')->nullable();
             });
             // get namasupir pjt
             $tempSupir = '##tempsupir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -356,6 +357,44 @@ class PengeluaranTruckingHeader extends MyModel
             });
             DB::table($tempurl)->insertUsing(['pengeluarantruckingheader_nobukti', 'nobuktipenerimaan', 'url'], $getpenerimaantruckingdetail);
 
+            
+            $tempKeteranganDetail = '##tempKeteranganDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempKeteranganDetail, function ($table) {
+                $table->string('nobukti')->nullable();
+                $table->longtext('keterangan')->nullable();
+                $table->index('nobukti');
+            });
+
+            $tempKeteranganDetaillist = '##tempKeteranganDetaillist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempKeteranganDetaillist, function ($table) {
+                $table->string('nobukti')->nullable();
+                $table->longtext('keterangan')->nullable();
+                $table->index('nobukti');
+            });
+
+            $getKeteranganDetaillist = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+                ->select(DB::raw("pengeluarantruckingheader.nobukti,pengeluarantruckingdetail.keterangan as keterangan"))
+                ->join(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.id', 'pengeluarantruckingdetail.pengeluarantruckingheader_id')
+                ->groupBy("pengeluarantruckingheader.nobukti")
+                ->groupBy("pengeluarantruckingdetail.keterangan");
+
+            if (request()->tgldari && request()->tglsampai) {
+                $getKeteranganDetaillist->whereBetween('pengeluarantruckingheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+                if (request()->pengeluaranheader_id) {
+                    $getKeteranganDetaillist->where('pengeluarantruckingheader.pengeluarantrucking_id', request()->pengeluaranheader_id);
+                }
+            }
+
+            DB::table($tempKeteranganDetaillist)->insertUsing(['nobukti', 'keterangan'], $getKeteranganDetaillist);
+
+
+            $getKeteranganDetail = DB::table($tempKeteranganDetaillist)->from(DB::raw($tempKeteranganDetaillist . " a"))
+                ->select(DB::raw("a.nobukti,STRING_AGG(cast(a.keterangan as nvarchar(max)),',') as keterangan"))
+                ->groupBy("a.nobukti");
+
+            DB::table($tempKeteranganDetail)->insertUsing(['nobukti', 'keterangan'], $getKeteranganDetail);
+
+
             $query = DB::table($this->table)->from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
                 ->select(
                     'pengeluarantruckingheader.id',
@@ -394,6 +433,7 @@ class PengeluaranTruckingHeader extends MyModel
                     'statusposting.memo as statusposting',
                     'statusposting.text as statuspostingtext',
                     'pengeluaranheader.bank_id as pengeluaranbank_id',
+                    DB::raw("(case when isnull(pengeluarantruckingheader.keterangan, '')='' then tblketerangan.keterangan else pengeluarantruckingheader.keterangan end) as keteranganheader"),
 
                 )
                 // ->whereBetween('pengeluarantruckingheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])            
@@ -409,6 +449,7 @@ class PengeluaranTruckingHeader extends MyModel
                 ->leftJoin(DB::raw("$tempSupir as getsupir with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'getsupir.nobukti')
                 ->leftJoin(DB::raw("parameter as statusposting with (readuncommitted)"), 'pengeluarantruckingheader.statusposting', 'statusposting.id')
                 ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'pengeluarantruckingheader.statuskirimberkas', 'statuskirimberkas.id')
+                ->leftJoin(DB::raw("$tempKeteranganDetail as tblketerangan with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'tblketerangan.nobukti')
                 ->leftJoin(DB::raw("$tempurl as penerimaantruckingdetail with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti');
             // ->join(db::raw($temprole . " d "), 'pengeluarantrucking.aco_id', 'd.aco_id');
 
@@ -505,6 +546,7 @@ class PengeluaranTruckingHeader extends MyModel
                     'qty' => $item['qty'] ?? '',
                     'harga' => $item['harga'] ?? '',
                     'pengeluaranbank_id' => $item['pengeluaranbank_id'] ?? '',
+                    'keteranganheader' => $item['keteranganheader'] ?? '',
 
                 ]);
             }
@@ -557,6 +599,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'a.created_at',
                 'a.updated_at',
                 'a.pengeluaranbank_id',
+                'a.keteranganheader',
             );
 
         $this->totalRows = $query->count();
@@ -1807,6 +1850,7 @@ class PengeluaranTruckingHeader extends MyModel
             $table->longText('statuspostingtext')->nullable();
             $table->double('qty')->nullable();
             $table->double('harga')->nullable();
+            $table->longText('keteranganheader')->nullable();
         });
         $tempSupir = '##tempsupir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempSupir, function ($table) {
@@ -1847,6 +1891,44 @@ class PengeluaranTruckingHeader extends MyModel
             $table->longText('url')->nullable();
         });
         DB::table($tempurl)->insertUsing(['pengeluarantruckingheader_nobukti', 'nobuktipenerimaan', 'url'], $getpenerimaantruckingdetail);
+        
+        $tempKeteranganDetail = '##tempKeteranganDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempKeteranganDetail, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->index('nobukti');
+        });
+
+        $tempKeteranganDetaillist = '##tempKeteranganDetaillist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempKeteranganDetaillist, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->index('nobukti');
+        });
+
+        $getKeteranganDetaillist = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+            ->select(DB::raw("pengeluarantruckingheader.nobukti,pengeluarantruckingdetail.keterangan as keterangan"))
+            ->join(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.id', 'pengeluarantruckingdetail.pengeluarantruckingheader_id')
+            ->groupBy("pengeluarantruckingheader.nobukti")
+            ->groupBy("pengeluarantruckingdetail.keterangan");
+
+        if (request()->tgldariheader && request()->tglsampaiheader) {
+            $getKeteranganDetaillist->whereBetween('pengeluarantruckingheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+            if (request()->pengeluaranheader_id) {
+                $getKeteranganDetaillist->where('pengeluarantruckingheader.pengeluarantrucking_id', request()->pengeluaranheader_id);
+            }
+        }
+
+        DB::table($tempKeteranganDetaillist)->insertUsing(['nobukti', 'keterangan'], $getKeteranganDetaillist);
+
+
+        $getKeteranganDetail = DB::table($tempKeteranganDetaillist)->from(DB::raw($tempKeteranganDetaillist . " a"))
+            ->select(DB::raw("a.nobukti,STRING_AGG(cast(a.keterangan as nvarchar(max)),',') as keterangan"))
+            ->groupBy("a.nobukti");
+
+        DB::table($tempKeteranganDetail)->insertUsing(['nobukti', 'keterangan'], $getKeteranganDetail);
+
+
         $query = DB::table($this->table)->from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
             ->select(
                 'pengeluarantruckingheader.id',
@@ -1880,7 +1962,8 @@ class PengeluaranTruckingHeader extends MyModel
                 db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
                 db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
                 'statusposting.memo as statusposting',
-                'statusposting.text as statuspostingtext'
+                'statusposting.text as statuspostingtext',
+                DB::raw("(case when isnull(pengeluarantruckingheader.keterangan, '')='' then tblketerangan.keterangan else pengeluarantruckingheader.keterangan end) as keteranganheader"),
             )
             // ->whereBetween('pengeluarantruckingheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])            
             ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"), 'pengeluarantruckingheader.pengeluaran_nobukti', '=', 'pengeluaranheader.nobukti')
@@ -1894,9 +1977,12 @@ class PengeluaranTruckingHeader extends MyModel
             ->leftJoin(DB::raw("$tempSupir as getsupir with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'getsupir.nobukti')
             ->leftJoin(DB::raw("parameter as statusposting with (readuncommitted)"), 'pengeluarantruckingheader.statusposting', 'statusposting.id')
             ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'pengeluarantruckingheader.statuskirimberkas', 'statuskirimberkas.id')
+            ->leftJoin(DB::raw("$tempKeteranganDetail as tblketerangan with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'tblketerangan.nobukti')
             ->leftJoin(DB::raw("$tempurl as penerimaantruckingdetail with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti');
         $afkir = Parameter::from(DB::raw("pengeluaranstok with (readuncommitted)"))->where('kodepengeluaran', 'AFKIR')->first();
-
+        if (request()->tgldariheader) {
+            $query->whereBetween('pengeluarantruckingheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+        }
         if (request()->pengeluaranstok_id && request()->pengeluaranstok_id == $afkir->id) {
             $query
                 ->addSelect('pengeluarantruckingdetail.qty')
@@ -1969,6 +2055,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'statuspostingtext' => $item['statuspostingtext'],
                 'qty' => $item['qty'] ?? '',
                 'harga' => $item['harga'] ?? '',
+                'keteranganheader' => $item['keteranganheader'] ?? '',
             ]);
         }
         $query = DB::table($temp)->from(DB::raw($temp . " a "))
@@ -2008,6 +2095,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
+                'a.keteranganheader',
             );
         return $query;
     }
@@ -2051,6 +2139,7 @@ class PengeluaranTruckingHeader extends MyModel
             $table->string('modifiedby', 200)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
+            $table->longText('keteranganheader')->nullable();
             $table->increments('position');
         });
         // if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
@@ -2069,7 +2158,7 @@ class PengeluaranTruckingHeader extends MyModel
             $models->where('a.pengeluarantruckingid', request()->pengeluaranheader_id);
         }
 
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluaran_nobukti', 'penerimaantrucking_nobukti', 'nobuktipenerimaan', 'pengeluarantruckingid', 'pengeluarantrucking_id', 'bank_id', 'trado_id', 'trado', 'tradoheader_id', 'supirheader', 'supir', 'karyawan', 'gandengan', 'pengeluarantrucking_nobukti',  'tglbukacetak', 'statuscetak', 'statuscetaktext', 'userbukacetak', 'tglkirimberkas', 'statuskirimberkas', 'statuskirimberkastext', 'userkirimberkas', 'coa', 'tgldariheaderpengeluaranheader', 'tglsampaiheaderpengeluaranheader', 'statusposting', 'statuspostingtext', 'qty', 'harga', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluaran_nobukti', 'penerimaantrucking_nobukti', 'nobuktipenerimaan', 'pengeluarantruckingid', 'pengeluarantrucking_id', 'bank_id', 'trado_id', 'trado', 'tradoheader_id', 'supirheader', 'supir', 'karyawan', 'gandengan', 'pengeluarantrucking_nobukti',  'tglbukacetak', 'statuscetak', 'statuscetaktext', 'userbukacetak', 'tglkirimberkas', 'statuskirimberkas', 'statuskirimberkastext', 'userkirimberkas', 'coa', 'tgldariheaderpengeluaranheader', 'tglsampaiheaderpengeluaranheader', 'statusposting', 'statuspostingtext', 'qty', 'harga', 'modifiedby', 'created_at', 'updated_at','keteranganheader'], $models);
 
 
         return  $temp;
