@@ -52,6 +52,7 @@ class Error extends MyModel
         );
 
         $this->totalRows = $query->count();
+        dd($this->totalRows);
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         // $this->selectColumns($query);

@@ -17,7 +17,7 @@ class StoreSupplierRequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
+        return true; 
     }
 
     /**
@@ -27,7 +27,7 @@ class StoreSupplierRequest extends FormRequest
      */
     public function rules()
     {
-
+        // dd(request()->from);
         if (request()->from == 'tas') {
             return [];
         }
@@ -87,7 +87,7 @@ class StoreSupplierRequest extends FormRequest
             'email' => 'email:rfc,dns|nullable',
             'statusaktifnama' => ['required'],
             'namapemilik' => 'required',
-            'jenisusaha' => 'required',
+            'jenisusaha' => 'required', 
             'ketcoa' => ['required'],
             'namarekening' => 'required',
             'statusdaftarharganama' => ['required'],

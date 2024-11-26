@@ -31,7 +31,7 @@ class MyModel extends Model
     }
 
     public function setRequestParameters()
-    {
+    { 
         $this->params = [
             'offset' => request()->offset ?? ((request()->page - 1) * request()->limit),
             'limit' => request()->limit ?? 10,

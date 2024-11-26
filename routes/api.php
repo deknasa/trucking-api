@@ -325,7 +325,7 @@ use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
 use App\Http\Controllers\Api\LaporanKomisiSupirController;
-
+use App\Http\Controllers\Api\PenjualController;
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
@@ -477,7 +477,12 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('trado', TradoController::class)->whereNumber('trado');
     Route::resource('subkelompok', SubKelompokController::class)->parameters(['subkelompok' => 'subKelompok'])->whereNumber('subKelompok');
     Route::get('supplier/stok/{stok_id}', [SupplierController::class,'stokGetSupplier']);
-    Route::resource('supplier', SupplierController::class)->whereNumber('supplier');
+    Route::resource('supplier', SupplierController::class)->whereNumber('supplier'); 
+
+    Route::resource('penjual', PenjualController::class)->whereNumber('penjual');
+    Route::get('penjual/select2Coa', [PenjualController::class, 'select2Coa']);
+    Route::get('penjual/select2StatusAktif', [PenjualController::class, 'select2StatusAktif']);
+    Route::get('penjual/export', [PenjualController::class, 'export']);
     
     Route::get('stoks/supplier/{supplier_id}', [StokController::class,'supplierGetStok']);
     Route::apiResource('stok', StokController::class)->whereNumber('stok');
@@ -772,6 +777,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('ritasi/default', [RitasiController::class, 'default']);
     Route::get('ritasi/export', [RitasiController::class, 'export']);
     Route::resource('ritasi', RitasiController::class)->whereNumber('ritasi');
+
 
 });
 
@@ -2279,3 +2285,5 @@ Route::get('/reminder-saringanhawa', [ReminderOliController::class, 'sendEmailRe
 Route::get('/reminder-perseneling', [ReminderOliController::class, 'sendEmailReminder_perseneling']);
 Route::get('/reminder-oligardan', [ReminderOliController::class, 'sendEmailReminder_oligardan']);
 Route::get('/reminder-servicerutin', [ReminderOliController::class, 'sendEmailReminder_ServiceRutin']);
+
+

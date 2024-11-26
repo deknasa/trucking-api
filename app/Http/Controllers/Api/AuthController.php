@@ -8,6 +8,7 @@ use App\Models\AbsensiSupirHeader;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
@@ -70,7 +71,7 @@ class AuthController extends Controller
 
     public function cekIp(Request $request)
     {
-
+        dd(DB::table('cabang')->get());
         $ipclient = $this->get_client_ip();
         if ($request->ipclient) {
             $ipclient = $request->ipclient;

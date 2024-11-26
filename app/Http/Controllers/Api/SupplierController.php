@@ -53,8 +53,9 @@ class SupplierController extends Controller
         $supplier = new Supplier();
         $cekdata = $supplier->cekvalidasihapus($id);
         $dataMaster = Supplier::where('id',$id)->first();
-        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+        $akApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        // dd($cekdata, $dataMaster->namasupplier);
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
@@ -222,7 +223,7 @@ class SupplierController extends Controller
             ];
             // $supplier = (new Supplier())->processStore($data);
             $supplier = new Supplier();
-            $supplier->processStore($data, $supplier);            
+            $supplier->processStore($data, $supplier);
             if ($request->from == '') {
                 $supplier->position = $this->getPosition($supplier, $supplier->getTable())->position;
                 if ($request->limit == 0) {
@@ -232,9 +233,9 @@ class SupplierController extends Controller
                 }
             }
 
-
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
             $data['tas_id'] = $supplier->id;
+            // dd($data['tas_id'], $supplier->id);
 
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
@@ -247,8 +248,9 @@ class SupplierController extends Controller
 
             //     $postingTNL = (new Supplier())->postingTnl($data);
             // }
+            // dd($cekStatusPostingTnl, $supplier, $data['tas_id']);
             DB::commit();
-
+            
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -337,8 +339,9 @@ class SupplierController extends Controller
     public function destroy(DestroySupplierRequest $request, $id)
     {
         DB::beginTransaction();
-
+        
         try {
+            // dd($request);
             // $supplier = (new Supplier())->processDestroy($id);
             $supplier = new Supplier();
             $suppliers = $supplier->findOrFail($id);
@@ -379,7 +382,7 @@ class SupplierController extends Controller
     {
         $data = [];
         $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('supplier')->getColumns();
-
+        
         foreach ($columns as $index => $column) {
             $data[$index] = $column->getLength();
         }

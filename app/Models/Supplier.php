@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 
-
+ 
 class Supplier extends MyModel
 {
     use HasFactory;
@@ -112,11 +112,12 @@ class Supplier extends MyModel
             ->where('grp', 'JUDULAN LAPORAN')
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
-
+        // dd($getJudul);
 
         $aktif = request()->aktif ?? '';
         $from = request()->from ?? '';
-
+        // dd($aktif, $from);
+        
         $query = DB::table($this->table)->select(
             // "$this->table.*",
             'supplier.id',
@@ -167,8 +168,9 @@ class Supplier extends MyModel
                 ->where('grp', '=', 'STATUS AKTIF')
                 ->where('text', '=', 'AKTIF')
                 ->first();
-
+            // dd($statusaktif);
             $query->where('supplier.statusaktif', '=', $statusaktif->id);
+            
         }
         if ($from == 'pelunasanhutangheader') {
             $statusapproval = Parameter::from(
@@ -180,6 +182,7 @@ class Supplier extends MyModel
 
             $query->where('supplier.statusapproval', '=', $statusapproval->id);
         }
+        
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -187,8 +190,9 @@ class Supplier extends MyModel
         $this->filter($query);
         $this->paginate($query);
 
+        // dd($this);
         $data = $query->get();
-
+        // dd($data);
         return $data;
     }
 
@@ -488,6 +492,7 @@ class Supplier extends MyModel
             ->where('supplier.id', $id);
 
         $data = $query->first();
+        // dd($data);
 
         return $data;
     }
@@ -570,10 +575,12 @@ class Supplier extends MyModel
             $table->increments('position');
         });
         $this->setRequestParameters();
+        // dd($this->params);
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
+        
         // dd($models->get());
         DB::table($temp)->insertUsing(['id', 'namasupplier', 'namakontak', 'top', 'keterangan',  'alamat', 'kota', 'kodepos', 'notelp1', 'notelp2', 'email',  'statusaktif', 'web', 'namapemilik', 'jenisusaha', 'bank', 'coa', 'rekeningbank',  'namarekening', 'jabatan', 'statusdaftarharga', 'kategoriusaha', 'statusapproval', 'tglapproval', 'userapproval', 'modifiedby', 'created_at', 'updated_at'], $models);
 
@@ -589,6 +596,7 @@ class Supplier extends MyModel
 
     public function filter($query, $relationFields = [])
     {
+        // dd($this->params);
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
             switch ($this->params['filters']['groupOp']) {
                 case "AND":

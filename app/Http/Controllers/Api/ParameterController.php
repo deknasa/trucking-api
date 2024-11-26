@@ -432,7 +432,7 @@ class ParameterController extends Controller
 
     public function comboapproval(Request $request)
     {
-
+        // dd($request);
         $params = [
             'status' => $request->status ?? '',
             'grp' => $request->grp ?? '',
@@ -482,7 +482,9 @@ class ParameterController extends Controller
             'grp' => $request->grp ?? '',
             'subgrp' => $request->subgrp ?? '',
         ];
+        
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        // dd($temp);
         if ($params['status'] == 'entry') {
             $query = Parameter::select('id', 'text as keterangan')
                 ->where('grp', "=", $params['grp'])
@@ -512,7 +514,7 @@ class ParameterController extends Controller
         }
 
         $data = $query->get();
-
+        // dd($data);
 
         // $datajson[$index]['updated_at']
         return response([

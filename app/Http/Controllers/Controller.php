@@ -335,13 +335,14 @@ class Controller extends BaseController
     function getPosition(Model $model, string $modelTable, bool $isDeleting = false)
     {
         $data = new stdClass();
-
+ 
         $indexRow = request()->indexRow ?? 1;
         $limit = request()->limit ?? 10;
         $page = request()->page ?? 1;
 
         $temporaryTable = $model->createTemp($modelTable);
 
+        // dd($data, $indexRow, $limit, $page, $temporaryTable);
         if ($isDeleting) {
             if ($page == 1) {
                 $position = $indexRow + 1;
@@ -375,6 +376,7 @@ class Controller extends BaseController
         } else {
             $data = $query->first();
         }
+        // dd($data);
         return $data;
     }
 
